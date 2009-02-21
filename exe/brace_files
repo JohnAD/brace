@@ -1,0 +1,11 @@
+#!/bin/sh
+find "$@" \
+	\! -path "*/_darcs/*" \! -path "*/.build/*" \! -path "*/debian/*" \! -path "*/.svn/*" \! -path "*/CVS/*" \! -path "*/RCS/*" \
+	\( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' \) \
+	-type f \! \( -perm -u+x -o -perm -g+x -o -perm -o+x \)
+find "$@" \
+	\! -path "*/_darcs/*" \! -path "*/.build/*" \! -path "*/debian/*" \! -path "*/.svn/*" \! -path "*/CVS/*" \! -path "*/RCS/*" \
+	-type f \( -perm -u+x -o -perm -g+x -o -perm -o+x \) |
+while read F; do
+	( < "$F" head -n1 | grep -w 'bb\?$' >/dev/null 2>&1 ) && echo "$F"
+done

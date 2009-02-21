@@ -1,0 +1,136 @@
+brace (0.9.7) unstable; urgency=low
+
+  * fixing to work with msys
+    - fixed path.b to use both / and \ in win32
+  * brace now builds cleanly with both msys+mingw and unxutils+mingw on win32
+  * added a "make uninstall" target
+  * I got mk and brace_mk_cc / Brace::ResolveDeps working better, while trying
+    to build geon.
+  * includes GL graphics for win32
+  * fixed brace so that it runs on linux again! some troubles with curses.
+  * made gr buf an x-shm-pixmap so can poke directly, for new eg/pretty.b demo
+  * wrote qtrig.b (quick trig) for eg/pretty.b
+  * wrote sleep_step and asleep
+  * wrote bm routines (benchmark)
+  * fixed linux/sound dsp_buf was allocate too big, now synth works better
+  * always use -D_FILE_OFFSET_BITS=64
+  * always use -Wextra - found lots of bugs in libb when I added this!
+  * use --pedantic --std=gnu99
+  * added priq, timeout, locking, poll
+  * fixed bx to use a lockfile, and prevent multiple compilation attempts!
+
+ -- Sam Watkins <sam@nipl.net>  Fri, 30 Jan 2009 14:50:32 +0800
+
+brace (0.9.6) unstable; urgency=low
+
+  * compiling and working on gnu/linux, netbsd, openbsd, freebsd, gnu/hurd and
+    hopefully still on mingw with unxutils ...
+
+ -- Sam Watkins <sam@nipl.net>  Thu, 28 Sep 2006 18:03:49 +1000
+
+brace (0.9.5) unstable; urgency=low
+
+  * compiling and working on gnu/linux, netbsd, openbsd and mingw with
+    unxutils ...
+
+ -- Sam Watkins <sam@nipl.net>  Thu, 28 Sep 2006 14:07:53 +1000
+
+brace (0.9) unstable; urgency=low
+
+  * fixed hash.b so it works, with hashtest.b
+  * fixed bug in tokenizer with floats
+  * TODO remove loudmouth / jabber support, remove C++ library
+  * there is a bug in stdc.b   or in gcc/ld/libc6 ?
+    workaround: removed "Atexit" throughout
+  * extern "C" blocks were broken, fixed
+  * persuaded to support other compilers, specifically tcc.
+    let(...) won't work yet due to GNU-only "typeof".. wait, yes it does!
+    woot! :)
+  * make possible to disable the "incredibly dodgy and only partly complete
+    line number" thing.  improved that a bit too
+  * fixed build process for brace components: brace_rm_comments_blank, etc
+  * working on parse.b  :O)  going well  :O)
+  * renamed "vector" to "vec"  maybe do "buffer" to "buf" also?
+    or should it be "vect" or "vectr" or something longish?  need a standard
+    for type names vs. default variable names.  I guess vec -> v  buf -> b
+    are ok.
+  * fixed brace_mk_cc recursion problem to get "graph" to work
+  * examples: I put almost all the brace code I've written in eg/  :)
+  * fixed various issues that stopped it working with gcc 4
+  * fixed ResolveDeps.pm to get "rocks" (C++) to work again
+  * fixed mk etc to get "geon" to work again :)
+  * fixed Include.pm to get "graph" to work :)
+  * hacked around a syntax change in GNU "find" in utils/lsx and mk-clean
+  * renamed deque to deq
+  * added some functions from examples to libraries
+  * more work on hashtables, split, tsv, for_foo etc.
+  * sym.b, tok.b (maybe tok.b is not useful)
+  * clean the eg directory
+  * fixed a bug (use va_copy), now it works on powerpc :)
+  * porting so it can work on mingw and linux and *bsd...
+  * new "use" semantic will load ALL matching *.b files,
+    and can also add a directory to the search path.
+    The orignal intention of this is to support porting cleanly.
+  * sort of fixed bug in Strip.pm with array typedefs
+  * fixed strdup -> Strdup
+
+ -- Sam Watkins <sam@nipl.net>  Sun, 23 Apr 2006 16:51:52 +1000
+
+brace (0.8) unstable; urgency=low
+
+  * added an incredibly dodgy and only partly complete line number
+    preservation thingy brace_number_lines.  hopefully this will help with
+    debugging more often than it causes utter confusion :p
+
+ -- Sam Watkins <sam@nipl.net>  Sat, 29 Oct 2005 09:53:49 +0000
+
+brace (0.7) unstable; urgency=low
+
+  * fix dodgy cgi-png stuff so it at least works, for cgi-demo.b
+
+ -- Sam Watkins <sam@nipl.net>  Tue, 27 Sep 2005 11:53:50 +0000
+
+brace (0.6) unstable; urgency=low
+
+  * fixed a bug in brace_files introduced by the last "fix" :p
+
+ -- Sam Watkins <sam@nipl.net>  Fri, 16 Sep 2005 10:04:49 +0000
+
+brace (0.5) unstable; urgency=low
+
+  * fixed a bug in brace_files, it was only finding files called *.b, etc,
+    not executable files with a #!/lang/b, etc.
+
+ -- Sam Watkins <sam@nipl.net>  Fri, 16 Sep 2005 09:40:33 +0000
+
+brace (0.4) unstable; urgency=low
+
+  * changed from GPL to public-domain
+
+ -- Sam Watkins <sam@nipl.net>  Wed,  7 Sep 2005 09:55:02 +0000
+
+brace (0.3) unstable; urgency=low
+
+  * fix bug with rgb() in gr.b
+  * fix C++ include path so that "rocks" compiles again
+  * started work on e2b, for new syntax
+
+ -- Sam Watkins <sam@nipl.net>  Thu, 18 Aug 2005 21:43:10 +1000
+
+brace (0.2) unstable; urgency=low
+
+  * BR_CLEAN option for br
+
+ -- Sam Watkins <sam@nipl.net>  Tue, 19 Jul 2005 17:52:05 +0000
+
+brace (0.1) unstable; urgency=low
+
+  * Added some missing dependencis to debian/control.
+
+ -- Sam Watkins <sam@nipl.net>  Tue, 19 Jul 2005 00:57:57 +1000
+
+brace (0.0) unstable; urgency=low
+
+  * Initial release.
+
+ -- Sam Watkins <sam@nipl.net>  Sun, 17 Jul 2005 23:45:43 +0000

@@ -1,0 +1,79 @@
+#!/lang/b
+
+Main()
+	num x0, x1, y0, y1, t0, t1, t, dt
+	int xres, yres, tres
+
+	xres = 600
+	yres = int(600 / pi)
+	tres = xres
+
+	x0 = -pi ; x1 = pi
+	t0 = -pi ; t1 = pi
+	y0 = -1 ; y1 = 1
+	dt = 2*pi / xres
+
+	paper(xres, yres, coln("tan"))
+	gr_fast()
+
+	for(x, -300, 300)
+		rainbow(x*dt)
+		line(x, -yres/2, x, +yres/2)
+
+	origin(avg(x0, x1), avg(y0, y1))
+	zoom(xres / (x1-x0))
+
+	# TODO specify dx and dy (based on screen res), and reduce / increase dt until within that range
+
+
+	array(f)
+
+	black()
+	for(f)
+		plot()
+
+	done()
+
+def plot()
+	t = t0
+	move(X, Y)
+	for_step(t, dt)
+		draw(X, Y)
+
+Def mapper(name, type) type (*name)(type)
+
+typedef mapper(mapnum, num)
+
+num sin_cos_tan(num a)
+	return sin(cos(tan(a)))
+
+num id__num(num x)
+	return x
+
+# todo change brace_macro so it won't wrap a func call in parens
+def ID id__num
+
+struct parametric
+	mapnum xfunc
+	mapnum yfunc
+
+parametric f[] =
+	{ ID, sin },
+	{ ID, cos },
+	{ sin, cos },
+	{ ID, ID },
+	{ ID, tan },
+	{ ID, sin_cos_tan },
+
+def int(r) (int)(sgn(r)*floor(abs(r)+0.5))
+
+def X (*f->xfunc)(t)
+def Y (*f->yfunc)(t)
+
+use main
+use m
+use gr
+use error
+use time
+use io
+use util

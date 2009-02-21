@@ -1,0 +1,29 @@
+#!/lang/b
+use main util io
+
+Main()
+	decl(s, struct stat)
+	eachline(f)
+		if Stat(f, s)
+			let(m, s->st_mode)
+			if S_ISREG(m)
+				Print("file")
+			eif S_ISDIR(m)
+				Print("dir")
+			eif S_ISCHR(m)
+				Print("char")
+			eif S_ISBLK(m)
+				Print("block")
+			eif S_ISFIFO(m)
+				Print("fifo")
+			eif S_ISLNK(m)
+				Print("sym")
+			eif S_ISSOCK(m)
+				Print("sock")
+			else
+				Print("?")
+		 else
+			# the file ain't there
+		tab()
+		Print(f)
+		nl()

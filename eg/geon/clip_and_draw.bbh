@@ -1,0 +1,4 @@
+export poly
+
+poly_vec3_vp_clip_and_draw(const poly_vec3 &poly)
+

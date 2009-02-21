@@ -1,0 +1,5 @@
+#!/lang/b
+use b
+Main()
+	eacharg(a)
+		cstr_dump(a)

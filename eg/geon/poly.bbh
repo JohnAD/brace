@@ -1,0 +1,11 @@
+export vector
+export sphere
+
+using namespace std
+
+typedef vector<angle3> poly_angle3
+typedef vector<vec3> poly_vec3
+
+poly_angle3_to_poly_vec3(const poly_angle3 &poly_a, poly_vec3 &poly_v)
+poly_vec3_viewpoint_transform(poly_vec3 &poly_v)
+

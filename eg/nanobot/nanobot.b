@@ -1,0 +1,56 @@
+#!/lang/b
+
+Main()
+	let(nick, "nipl_alert")
+	let(pass, "mypassword") # TODO impl func like backticks
+	let(user, "alert")
+	let(server_addr, "irc.freenode.net")
+	let(server_port, 6667)
+	let(fullname, "Nipl Alert")
+	let(channel, "#nipl")
+
+	let(listen_sockaddr, "localhost")
+#	let(listen_sockaddr, Sockaddr"localhost")
+	let(listen_addr, "localhost")
+	int listen_port = 7777
+
+#	cstr message
+#
+#	which args
+#	1	message = arg[0]
+#	else	usage("message")
+
+	let(server, Fdopen(Client(server_addr, server_port)))  # TODO impl Gethostbyaddr, etc
+
+	Fsayf(server, "nick %s", nick)
+	Fsayf(server, "pass %s", pass)
+	Fsayf(server, "user %s %s %s :%s", user, Hostname(), server_addr, fullname)
+	Fsayf(server, "join %s", channel)
+
+	Fflush(server)
+
+
+	let(child, Fork())
+	if child > 0
+		# parent
+#		let(ear, Server(listen_addr, listen_port))
+		let(ear, Server("./sock"))
+
+		repeat
+			let(client, Fdopen(Accept(ear)))
+			eachline(message, client)
+				Fsayf(server, "privmsg %s :%s", channel, message)
+				Fflush(server)
+		
+		Fsayf(server, "quit")
+		Fclose(server)
+		Waitpid(child)
+	 else
+		# child
+		eachline(reply, server)
+			Say(reply)  # do something sensible with this?
+
+		Fclose(server)
+		exit()
+
+use b

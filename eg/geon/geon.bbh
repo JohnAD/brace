@@ -1,0 +1,10 @@
+export regions
+
+int main(int argc, char **argv)
+fill_region(region &r)
+
+extern int window_width
+extern int window_height
+extern int focus_region
+extern num window_radius
+

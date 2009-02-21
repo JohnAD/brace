@@ -1,0 +1,37 @@
+#!/bin/sh
+exec perl -e '
+# brace_tokens
+
+use strict;
+use warnings;
+
+require "brace_parser.pl";
+my $text = join "", <STDIN>;
+my $tokens = tokenize($text);
+
+# This tokenization process is exactly reversible by running brace_contlines.
+# It does not restore original line breakings, that is the only difference.
+#
+# If you run:
+#   < a brace_contlines > b
+#   < a brace_tokens | brace_contlines > c
+# then
+#   cmp b c
+# is true.
+
+# on each line you have a significant token (visible, tabs or newline), 0 or more spaces and a \
+# if the file starts with spaces, the first token will be spaces and \
+
+# every token except spaces has a line of its own
+
+
+my $cont = 0;
+for (@$tokens) {
+	if (!/^ +$/ && $cont) { print "\\\n" }
+	print;
+	$cont = $_ ne "\n";
+}
+
+
+# this works well - but I could also put spaces on separate lines.
+' "$@"

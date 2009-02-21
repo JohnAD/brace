@@ -1,0 +1,18 @@
+export m
+export sphere
+
+struct sector_id
+	int level, row, cell
+
+struct sector_bounds
+	num west, east, south, north
+
+calc_sector_bounds(const sector_id &id, sector_bounds &b)
+int sector_rows(int level)
+int sector_rows_eq_to_pole(int level)
+num sector_row_height(int level)
+num sector_width(int level, int row)
+int sectors_in_row(int level, int row)
+which_sector(const angle3 &a, sector_id &s)
+bool point_in_sector(const angle3 &p, const sector_bounds &b)
+

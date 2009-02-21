@@ -1,0 +1,35 @@
+export vector
+export ext/hash_map
+export regions
+
+using namespace std
+using namespace __gnu_cxx
+
+struct clipped_region
+	vector<region_arc> arcs
+
+struct region_arc
+	int from, to
+	poly_angle3 points_a
+	poly_vec3 points_v
+
+struct sector_regions
+	map<int, region_type> regions_containing_sector
+	map<int, clipped_region> regions_crossing_sector
+	map<int, region> regions_contained_in_sector
+
+struct hash_sector_id
+	size_t operator()(const sector_id &id) const
+		return id.level*115 + id.row*97 + id.cell
+
+struct eq_sector_id
+	size_t operator()(const sector_id &id0, const sector_id &id1) const
+		return id0.level == id1.level && id0.row == id1.row && id0.cell == id1.cell
+
+clip_regions_to_sectors(int level)
+bool point_in_region(angle3 &a, region &r)
+enumerate_visible_sectors(int level, vector<sector_id> &sectors)
+merge_sector_regions()
+
+extern hash_map<sector_id, sector_regions, hash_sector_id, eq_sector_id> regions_by_sector
+

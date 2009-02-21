@@ -1,0 +1,6 @@
+export vector
+export poly
+export clip_region_to_sector
+
+draw_clipped_arcs(poly_vec3 &poly, vector<clip_to_sector_arc> &clipped_arcs)
+

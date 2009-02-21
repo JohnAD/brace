@@ -1,0 +1,100 @@
+#!/lang/b
+
+Main()
+	#sched_init()
+
+	nonblock(STDIN_FILENO)
+
+	char buf[1024]
+
+	FD_ZERO(&readfds)
+	FD_ZERO(&writefds)
+	FD_ZERO(&exceptfds)
+
+	FD_SET(STDIN_FILENO, &readfds)
+
+	struct timeval timeout
+	timeout.tv_sec = 10
+	timeout.tv_usec = 0
+
+	warn("selecting...")
+
+	let(max_fd, STDIN_FILENO)
+	
+	let(n, Select(max_fd+1, &readfds, &writefds, &exceptfds, &timeout))
+	
+	if n == 0
+		warn("timeout")
+	 else
+		warn("got input?")
+		int num = Read(STDIN_FILENO, buf, 1024)
+		Sayf("%d", num)
+
+use b
+
+# non-blocking IO poller with select(2)
+
+use sys/select.h
+use sys/time.h
+
+int Select(int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+	let(rv, select(n, readfds, writefds, exceptfds, timeout))
+	if rv == -1
+		failed("select")
+	return rv
+
+struct poller
+	fd_set readfds, writefds, exceptfds
+	int max_fd
+
+poller_init(poller *p)
+	FD_ZERO(&p->readfds)
+	FD_ZERO(&p->writefds)
+	FD_ZERO(&p->exceptfds)
+	p->max_fd = -1
+
+# TODO add/rm from exceptfds automatically
+#    need to check this
+
+poller_add_read(poller *p, int fd)
+	FD_SET(fd, &p->readfds)
+	max_fd_up()
+
+poller_add_write(poller *p, int fd)
+	FD_SET(fd, &p->writefds)
+	max_fd_up()
+
+poller_rm_read(poller *p, int fd)
+	FD_CLR(fd, &p->readfds)
+	max_fd_down()
+
+poller_rm_write(poller *p, int fd)
+	FD_CLR(fd, &p->writefds)
+	max_fd_down()
+
+def max_fd_up()
+	if fd > p->max_fd
+		p->max_fd = fd
+
+ldef max_fd_down()
+	if fd == p->max_fd
+		repeat
+			--p->max_fd
+			if p->max_fd == -1 || FD_ISSET(fd, &p->readfds) || FD_ISSET(fd, &p->writefds)
+				break
+
+
+# not sure how to wrap fcntl
+
+nonblock(int fd)
+	if fcntl(fd, F_SETFL, O_NONBLOCK) == -1
+		failed("fcntl")
+
+#       FD_CLR(int fd, fd_set *set);
+#       FD_ISSET(int fd, fd_set *set);
+#       FD_SET(int fd, fd_set *set);
+#       FD_ZERO(fd_set *set);
+
+
+# timeout heap
+

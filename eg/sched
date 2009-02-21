@@ -1,0 +1,13 @@
+#!/lang/b
+use b
+
+Main()
+	if args < 1
+		usage("priority pid ...")
+
+	let(priority, atoi(arg[0]))
+	++arg
+
+	eacharg(a)
+		let(pid, atoi(a))
+		set_priority(pid, priority)

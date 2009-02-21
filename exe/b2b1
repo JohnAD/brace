@@ -1,0 +1,19 @@
+#!/bin/sh
+exec perl -e '
+
+use strict; use warnings;
+
+require "brace_parser.pl";
+
+our @lines;
+
+use Brace::B2b0;
+use Brace::B02b1;
+
+read_lines(\*STDIN);
+
+b2b0();
+b02b1();
+
+output_all();
+' "$@"

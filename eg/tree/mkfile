@@ -1,0 +1,7 @@
+#export BRACE_STANDALONE = 1
+#LDFLAGS += -L/usr/X11R6/lib -lX11 -lm
+export GR=1
+LDFLAGS += -L/usr/X11R6/lib -lX11 -lm -lb
+all: windy still
+still: still.o tree.o
+windy: windy.o tree.o

@@ -1,0 +1,31 @@
+#!/lang/b
+
+Main()
+	if args != 5
+		usage("red green blue white black")
+	space(800, 600)
+	num red = atof(arg[0])
+	num green = atof(arg[1])
+	num blue = atof(arg[2])
+	num white = atof(arg[3])
+	num black = atof(arg[4])
+	whiten()
+	blacken()
+	clear(rgb(red, green, blue))
+
+def whiten(x)
+	x = 1 - (1-x)*(1-white)
+def blacken(x)
+	x = x*(1-black)
+def whiten()
+	whiten(red)
+	whiten(green)
+	whiten(blue)
+def blacken()
+	blacken(red)
+	blacken(green)
+	blacken(blue)
+
+def trig_unit deg
+
+use b

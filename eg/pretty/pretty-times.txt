@@ -1,0 +1,125 @@
+pretty times
+
+before new sx() code, not using sx() or SX()
+
+got image: 0.014792
+calc done: 0.036495
+put image: 0.042765
+painted: 0.042994
+
+using SX()
+
+got image: 0.014536
+calc done: 0.102179
+put image: 0.108280
+painted: 0.108462
+
+using new sx() code, screen_trans full
+
+got image: 0.015136
+calc done: 0.064018
+put image: 0.073003
+painted: 0.073201
+
+using new sx() code, screen_trans fast
+
+got image: 0.015426
+calc done: 0.038946
+put image: 0.044588
+painted: 0.044651
+
+using *pixel() instead of XPutPixel()  (depends on 32bit at the moment)
+got image: 0.014957
+calc done: 0.025516
+put image: 0.030935
+painted: 0.031091
+
+write the pixels in RAM order!  (X first, not Y!)
+got image: 0.015410
+calc done: 0.020330
+put image: 0.026142
+painted: 0.026336
+
+use px counter instead of pixel()
+got image: 0.014424
+calc done: 0.017716
+put image: 0.023268
+painted: 0.023412
+
+-------------------------------------
+with proper calculation back:
+
+using mod()
+got image: 0.015978
+calc done: 0.260967
+put image: 0.266895
+painted: 0.267071
+
+with mod_fast()
+got image: 0.015266
+calc done: 0.145194
+put image: 0.158469
+painted: 0.172426
+
+without hypot()
+got image: 0.015825
+calc done: 0.112243
+put image: 0.118708
+painted: 0.118894
+
+with sqrt(x*x+y*y)
+got image: 0.022136
+calc done: 0.143840
+put image: 0.150070
+painted: 0.150431
+
+simplify to remove hypot
+got image: 0.014886
+calc done: 0.112489
+put image: 0.118659
+painted: 0.118960
+
+-- wasn't actually painting the pattern, now I am
+
+got image: 0.014417
+calc done: 0.234276
+put image: 0.247313
+painted: 0.252631
+
+use qsin - helps a lot!
+got image: 0.018809
+calc done: 0.152238
+put image: 0.156406
+painted: 0.156586
+
+use qatan2 - was expecting a bit faster
+got image: 0.014191
+calc done: 0.095776
+put image: 0.109040
+painted: 0.123130
+
+use qatan2 with deg already built in
+got image: 0.011121
+calc done: 0.079823
+put image: 0.086340
+painted: 0.086543
+
+full-screen, remove unneeded SX() SY()
+ (set processor to stay on high speed)
+got image: 0.015257
+calc done: 0.084101
+put image: 0.090604
+painted: 0.090796
+
+having a prob where it takes a bit longer dunno why
+got image: 0.014499
+calc done: 0.086877
+put image: 0.093420
+painted: 0.093605
+
+damn, I had disabled optimisation! now with -O3:
+got image: 0.014690
+calc done: 0.071439
+put image: 0.077648
+painted: 0.077807
+

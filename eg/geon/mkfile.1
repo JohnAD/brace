@@ -1,0 +1,88 @@
+export BRACE_LANGUAGE=C++
+DIR=$(PWD)
+#CFLAGS:=-Wall -Werror -I. $(CFLAGS)
+CFLAGS:=-Wall -Wextra -Werror -pedantic $(CFLAGS)
+
+ifndef BRACE_STANDALONE
+ifndef LIBB_BUILD
+#CFLAGS:=-I$(DIR) -I$(BRACE_LIB) $(CFLAGS)
+ifeq ($(BRACE_LANGUAGE),C++)
+#LDFLAGS:=-lstdc++ $(BRACE_L_SO) -lb -lbb $(LDFLAGS)
+LDFLAGS:=$(LDFLAGS) -lstdc++ $(BRACE_L_SO) -lb
+else
+LDFLAGS:=$(LDFLAGS) $(BRACE_L_SO) -lb
+endif
+endif
+endif
+
+ifeq ($(BRACE_LANGUAGE),C++)
+LDFLAGS:=$(LDFLAGS) -lstdc++
+CFLAGS:=$(CFLAGS) -Weffc++
+else
+CFLAGS:=$(CFLAGS) --std=gnu99 # -D_GNU_SOURCE
+endif
+
+ifdef DEBUG
+CFLAGS += -ggdb
+else
+LDFLAGS += -s   # does this work with tcc?  I guess not :/
+endif
+
+ifdef OPTIMISE
+CFLAGS += -O2
+endif
+
+#ifdef GR
+#LDFLAGS += -L/usr/X11R6/lib -lX11 #-lgr
+#endif
+#ifdef CURSES
+#LDFLAGS += -lcurses
+#endif
+#ifdef JABBER
+#CFLAGS += $(shell pkg-config --cflags loudmouth-1.0)
+#LDFLAGS += $(shell pkg-config --libs loudmouth-1.0)
+#export INCLUDE_PATH:=$(shell pkg-config --cflags loudmouth-1.0 | sed 's/-I//g;s/ /:/g'):$(INCLUDE_PATH)
+#endif
+
+#CFLAGS:=$(CFLAGS) -D_GNU_SOURCE
+CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
+
+# TODO redefine the %.o: %.c and %.o: %.cc patterns?
+
+.%.b1: %.b
+	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C b2b1 >'$@'
+.%.bb1: %.bb
+	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C++ b2b1 >'$@'
+.%.bh1: %.bh
+	<'$<' BRACE_LANGUAGE=C bh2bh1 "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
+.%.bbh1: %.bbh
+	<'$<' BRACE_LANGUAGE=C++ bh2bh1 "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
+
+.%.c: .%.b1
+	<'$<' BRACE_LANGUAGE=C brace >'$@'
+.%.cc: .%.bb1
+	<'$<' BRACE_LANGUAGE=C++ brace >'$@'
+%.c: .%.c
+	cp '$<' '$@'
+%.cc: .%.cc
+	cp '$<' '$@'
+
+#%.h: %.bh1
+#	<$< BRACE_LANGUAGE=C brace >$@
+#%.h: %.bbh1
+#	<$< BRACE_LANGUAGE=C++ brace >$@
+
+# These are handled by brace_update_headers:
+# %.bh: %.b
+# 	brace_header <$< >$@
+# %.bbh: %.bb
+# 	brace_header <$< >$@
+
+.PRECIOUS: .%.b1 .%.bb1 %.bh %.bbh .%.bh1 .%.bbh1 .%.c .%.cc %.h
+all: geon
+geon: clip_and_draw.o clip_and_fill.o clip_region_to_sector.o debug.o draw_basic.o draw_clipped_arcs.o draw_sectors.o geon.o palette.o points.o poly.o regions.o round_angle.o sectors.o sphere.o al.bbh
+#split_regions_among_sectors.o
+clean:
+	mk-clean
+	rm -f geon *.bbh *.cc *.o
+include mkfile_cc

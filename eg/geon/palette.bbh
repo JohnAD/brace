@@ -1,0 +1,13 @@
+export gr
+
+load_colour(FILE *f, colour &c)
+load_palette(const char *palfile)
+
+extern colour col_space
+extern colour col_sea
+extern colour col_land
+extern colour col_lake
+extern colour col_point
+extern colour col_focus
+extern colour col_grid
+

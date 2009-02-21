@@ -1,0 +1,3 @@
+#!/bin/sh
+find -name '*.b' |
+perl -pe 's/\n/\0/gs' | xargs -0 grep "$@"

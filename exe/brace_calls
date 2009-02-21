@@ -1,0 +1,38 @@
+#!/bin/sh
+exec perl -e '
+
+# brace_calls
+# this outputs a list of all functions called from this brace code
+
+# XXX TODO should look at assignments too
+
+use strict;
+use warnings;
+
+our (	@define,
+	@include, @extern_lang, @using_namespace,
+	@enum, @struct_union_class_template_proto, @struct_union_typedef,
+	@typedef, @struct_union_class_template, @function_proto, @var_proto,
+	@local_and_global_var, @var_assignment, @function,
+	
+	@lines, @local_var, @global_var,
+	);
+
+our ($sym, $bracketed, $in_brackets);
+
+require "brace_parser.pl";
+parse(\*STDIN);
+
+my %cache;
+
+for (@function) {
+	my $body = $_;
+	$body =~ s/.*//m;
+	while ($body =~ /(\w+)\(/g) {
+		if (!$cache{$1}) {
+			$cache{$1} = 1;
+			print "$1\n";
+		}
+	}
+}
+' "$@"

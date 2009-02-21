@@ -1,0 +1,432 @@
+g++ -Wall -Wextra -Werror -pedantic  -D_FILE_OFFSET_BITS=64 -I/usr/X11R6/include -Weffc++    -c -o geon.o geon.cc
+geon.cc:18:14: error: al: No such file or directory
+geon.cc:27: error: comma at end of enumerator list
+geon.cc:157: error: expected unqualified-id before string constant
+geon.cc:158: error: expected unqualified-id before string constant
+geon.cc:159: error: expected unqualified-id before string constant
+geon.cc:160: error: expected unqualified-id before string constant
+geon.cc:161: error: expected unqualified-id before string constant
+geon.cc:162: error: expected unqualified-id before string constant
+geon.cc:163: error: expected unqualified-id before string constant
+geon.cc:164: error: expected unqualified-id before string constant
+geon.cc:165: error: expected unqualified-id before string constant
+geon.cc:166: error: expected unqualified-id before string constant
+geon.cc:167: error: expected unqualified-id before string constant
+geon.cc:168: error: expected unqualified-id before string constant
+geon.cc:169: error: expected unqualified-id before string constant
+geon.cc:170: error: expected unqualified-id before string constant
+geon.cc:171: error: expected unqualified-id before string constant
+geon.cc:172: error: expected unqualified-id before string constant
+geon.cc:173: error: expected unqualified-id before string constant
+geon.cc:174: error: expected unqualified-id before string constant
+geon.cc:175: error: expected unqualified-id before string constant
+geon.cc:176: error: expected unqualified-id before string constant
+geon.cc:177: error: expected unqualified-id before string constant
+geon.cc:178: error: expected unqualified-id before string constant
+geon.cc:179: error: expected unqualified-id before string constant
+geon.cc:180: error: expected unqualified-id before string constant
+geon.cc:181: error: expected unqualified-id before string constant
+geon.cc:182: error: expected unqualified-id before string constant
+geon.cc:183: error: expected unqualified-id before string constant
+geon.cc:184: error: expected unqualified-id before string constant
+geon.cc:185: error: expected unqualified-id before string constant
+geon.cc:186: error: expected unqualified-id before string constant
+geon.cc:187: error: expected unqualified-id before string constant
+geon.cc:188: error: expected unqualified-id before string constant
+geon.cc:189: error: expected unqualified-id before string constant
+geon.cc:190: error: expected unqualified-id before string constant
+geon.cc:191: error: expected unqualified-id before string constant
+geon.cc:192: error: expected unqualified-id before string constant
+geon.cc:193: error: expected unqualified-id before string constant
+geon.cc:194: error: expected unqualified-id before string constant
+geon.cc:195: error: expected unqualified-id before string constant
+geon.cc:196: error: expected unqualified-id before string constant
+geon.cc:197: error: expected unqualified-id before string constant
+geon.cc:198: error: expected unqualified-id before string constant
+geon.cc:199: error: expected unqualified-id before string constant
+geon.cc:200: error: expected unqualified-id before string constant
+geon.cc:201: error: expected unqualified-id before string constant
+geon.cc:202: error: expected unqualified-id before string constant
+geon.cc:203: error: expected unqualified-id before string constant
+geon.cc:204: error: expected unqualified-id before string constant
+geon.cc:205: error: expected unqualified-id before string constant
+geon.cc:206: error: expected unqualified-id before string constant
+geon.cc:207: error: expected unqualified-id before string constant
+geon.cc:208: error: expected unqualified-id before string constant
+geon.cc:209: error: expected unqualified-id before string constant
+geon.cc:210: error: expected unqualified-id before string constant
+geon.cc:211: error: expected unqualified-id before string constant
+geon.cc:212: error: expected unqualified-id before string constant
+geon.cc:213: error: expected unqualified-id before string constant
+geon.cc:214: error: expected unqualified-id before string constant
+geon.cc:215: error: expected unqualified-id before string constant
+geon.cc:216: error: expected unqualified-id before string constant
+geon.cc:217: error: expected unqualified-id before string constant
+geon.cc:218: error: expected unqualified-id before string constant
+geon.cc:219: error: expected unqualified-id before string constant
+geon.cc:220: error: expected unqualified-id before string constant
+geon.cc:221: error: expected unqualified-id before string constant
+geon.cc:222: error: expected unqualified-id before string constant
+geon.cc:223: error: expected unqualified-id before string constant
+geon.cc:224: error: expected unqualified-id before string constant
+geon.cc:225: error: expected unqualified-id before string constant
+geon.cc:226: error: expected unqualified-id before string constant
+geon.cc:227: error: expected unqualified-id before string constant
+geon.cc:228: error: expected unqualified-id before string constant
+geon.cc:229: error: expected unqualified-id before string constant
+geon.cc:230: error: expected unqualified-id before string constant
+geon.cc:231: error: expected unqualified-id before string constant
+geon.cc:232: error: expected unqualified-id before string constant
+geon.cc:233: error: expected unqualified-id before string constant
+geon.cc:234: error: expected unqualified-id before string constant
+geon.cc:235: error: expected unqualified-id before string constant
+geon.cc:236: error: expected unqualified-id before string constant
+geon.cc:237: error: expected unqualified-id before string constant
+geon.cc:238: error: expected unqualified-id before string constant
+geon.cc:239: error: expected unqualified-id before string constant
+geon.cc:240: error: expected unqualified-id before string constant
+geon.cc:241: error: expected unqualified-id before string constant
+geon.cc:242: error: expected unqualified-id before string constant
+geon.cc:243: error: expected unqualified-id before string constant
+geon.cc:244: error: expected unqualified-id before string constant
+geon.cc:245: error: expected unqualified-id before string constant
+geon.cc:246: error: expected unqualified-id before string constant
+geon.cc:247: error: expected unqualified-id before string constant
+geon.cc:248: error: expected unqualified-id before string constant
+geon.cc:249: error: expected unqualified-id before string constant
+geon.cc:250: error: expected unqualified-id before string constant
+geon.cc:251: error: expected unqualified-id before string constant
+geon.cc:252: error: expected unqualified-id before string constant
+geon.cc:253: error: expected unqualified-id before string constant
+geon.cc:254: error: expected unqualified-id before string constant
+geon.cc:255: error: expected unqualified-id before string constant
+geon.cc:256: error: expected unqualified-id before string constant
+geon.cc:257: error: expected unqualified-id before string constant
+geon.cc:258: error: expected unqualified-id before string constant
+geon.cc:259: error: expected unqualified-id before string constant
+geon.cc:260: error: expected unqualified-id before string constant
+geon.cc:261: error: expected unqualified-id before string constant
+geon.cc:262: error: expected unqualified-id before string constant
+geon.cc:263: error: expected unqualified-id before string constant
+geon.cc:264: error: expected unqualified-id before string constant
+geon.cc:265: error: expected unqualified-id before string constant
+geon.cc:266: error: expected unqualified-id before string constant
+geon.cc:267: error: expected unqualified-id before string constant
+geon.cc:268: error: expected unqualified-id before string constant
+geon.cc:269: error: expected unqualified-id before string constant
+geon.cc:270: error: expected unqualified-id before string constant
+geon.cc:271: error: expected unqualified-id before string constant
+geon.cc:272: error: expected unqualified-id before string constant
+geon.cc:273: error: expected unqualified-id before string constant
+geon.cc:274: error: expected unqualified-id before string constant
+geon.cc:275: error: expected unqualified-id before string constant
+geon.cc:276: error: expected unqualified-id before string constant
+geon.cc:277: error: expected unqualified-id before string constant
+geon.cc:278: error: expected unqualified-id before string constant
+geon.cc:279: error: expected unqualified-id before string constant
+geon.cc:280: error: expected unqualified-id before string constant
+geon.cc:281: error: expected unqualified-id before string constant
+geon.cc:282: error: expected unqualified-id before string constant
+geon.cc:283: error: expected unqualified-id before string constant
+geon.cc:284: error: expected unqualified-id before string constant
+geon.cc:285: error: expected unqualified-id before string constant
+geon.cc:286: error: expected unqualified-id before string constant
+geon.cc:287: error: expected unqualified-id before string constant
+geon.cc:288: error: expected unqualified-id before string constant
+geon.cc:289: error: expected unqualified-id before string constant
+geon.cc:290: error: expected unqualified-id before string constant
+geon.cc:291: error: expected unqualified-id before string constant
+geon.cc:292: error: expected unqualified-id before string constant
+geon.cc:293: error: expected unqualified-id before string constant
+geon.cc:294: error: expected unqualified-id before string constant
+geon.cc:295: error: expected unqualified-id before string constant
+geon.cc:296: error: expected unqualified-id before string constant
+geon.cc:297: error: expected unqualified-id before string constant
+geon.cc:298: error: expected unqualified-id before string constant
+geon.cc:299: error: expected unqualified-id before string constant
+geon.cc:300: error: expected unqualified-id before string constant
+geon.cc:301: error: expected unqualified-id before string constant
+geon.cc:302: error: expected unqualified-id before string constant
+geon.cc:303: error: expected unqualified-id before string constant
+geon.cc:304: error: expected unqualified-id before string constant
+geon.cc:305: error: expected unqualified-id before string constant
+geon.cc:306: error: expected unqualified-id before string constant
+geon.cc:307: error: expected unqualified-id before string constant
+geon.cc:308: error: expected unqualified-id before string constant
+geon.cc:309: error: expected unqualified-id before string constant
+geon.cc:310: error: expected unqualified-id before string constant
+geon.cc:311: error: expected unqualified-id before string constant
+geon.cc:312: error: expected unqualified-id before string constant
+geon.cc:313: error: expected unqualified-id before string constant
+geon.cc:314: error: expected unqualified-id before string constant
+geon.cc:315: error: expected unqualified-id before string constant
+geon.cc:316: error: expected unqualified-id before string constant
+geon.cc:317: error: expected unqualified-id before string constant
+geon.cc:318: error: expected unqualified-id before string constant
+geon.cc:319: error: expected unqualified-id before string constant
+geon.cc:320: error: expected unqualified-id before string constant
+geon.cc:321: error: expected unqualified-id before string constant
+geon.cc:322: error: expected unqualified-id before string constant
+geon.cc:323: error: expected unqualified-id before string constant
+geon.cc:324: error: expected unqualified-id before string constant
+geon.cc:325: error: expected unqualified-id before string constant
+geon.cc:326: error: expected unqualified-id before string constant
+geon.cc:327: error: expected unqualified-id before string constant
+geon.cc:328: error: expected unqualified-id before string constant
+geon.cc:329: error: expected unqualified-id before string constant
+geon.cc:330: error: expected unqualified-id before string constant
+geon.cc:331: error: expected unqualified-id before string constant
+geon.cc:332: error: expected unqualified-id before string constant
+geon.cc:333: error: expected unqualified-id before string constant
+geon.cc:334: error: expected unqualified-id before string constant
+geon.cc:335: error: expected unqualified-id before string constant
+geon.cc:336: error: expected unqualified-id before string constant
+geon.cc:337: error: expected unqualified-id before string constant
+geon.cc:338: error: expected unqualified-id before string constant
+geon.cc:339: error: expected unqualified-id before string constant
+geon.cc:340: error: expected unqualified-id before string constant
+geon.cc:341: error: expected unqualified-id before string constant
+geon.cc:342: error: expected unqualified-id before string constant
+geon.cc:343: error: expected unqualified-id before string constant
+geon.cc:344: error: expected unqualified-id before string constant
+geon.cc:345: error: expected unqualified-id before string constant
+geon.cc:346: error: expected unqualified-id before string constant
+geon.cc:347: error: expected unqualified-id before string constant
+geon.cc:348: error: expected unqualified-id before string constant
+geon.cc:349: error: expected unqualified-id before string constant
+geon.cc:350: error: expected unqualified-id before string constant
+geon.cc:351: error: expected unqualified-id before string constant
+geon.cc:352: error: expected unqualified-id before string constant
+geon.cc:353: error: expected unqualified-id before string constant
+geon.cc:354: error: expected unqualified-id before string constant
+geon.cc:355: error: expected unqualified-id before string constant
+geon.cc:356: error: expected unqualified-id before string constant
+geon.cc:357: error: expected unqualified-id before string constant
+geon.cc:358: error: expected unqualified-id before string constant
+geon.cc:359: error: expected unqualified-id before string constant
+geon.cc:360: error: expected unqualified-id before string constant
+geon.cc:361: error: expected unqualified-id before string constant
+geon.cc:362: error: expected unqualified-id before string constant
+geon.cc:363: error: expected unqualified-id before string constant
+geon.cc:364: error: expected unqualified-id before string constant
+geon.cc:365: error: expected unqualified-id before string constant
+geon.cc:366: error: expected unqualified-id before string constant
+geon.cc:367: error: expected unqualified-id before string constant
+geon.cc:368: error: expected unqualified-id before string constant
+geon.cc:369: error: expected unqualified-id before string constant
+geon.cc:370: error: expected unqualified-id before string constant
+geon.cc:371: error: expected unqualified-id before string constant
+geon.cc:372: error: expected unqualified-id before string constant
+geon.cc:373: error: expected unqualified-id before string constant
+geon.cc:374: error: expected unqualified-id before string constant
+geon.cc:375: error: expected unqualified-id before string constant
+geon.cc:376: error: expected unqualified-id before string constant
+geon.cc:377: error: expected unqualified-id before string constant
+geon.cc:378: error: expected unqualified-id before string constant
+geon.cc:379: error: expected unqualified-id before string constant
+geon.cc:380: error: expected unqualified-id before string constant
+geon.cc:381: error: expected unqualified-id before string constant
+geon.cc:382: error: expected unqualified-id before string constant
+geon.cc:383: error: expected unqualified-id before string constant
+geon.cc:384: error: expected unqualified-id before string constant
+geon.cc:385: error: expected unqualified-id before string constant
+geon.cc:386: error: expected unqualified-id before string constant
+geon.cc:387: error: expected unqualified-id before string constant
+geon.cc:388: error: expected unqualified-id before string constant
+geon.cc:389: error: expected unqualified-id before string constant
+geon.cc:390: error: expected unqualified-id before string constant
+geon.cc:391: error: expected unqualified-id before string constant
+geon.cc:392: error: expected unqualified-id before string constant
+geon.cc:393: error: expected unqualified-id before string constant
+geon.cc:394: error: expected unqualified-id before string constant
+geon.cc:395: error: expected unqualified-id before string constant
+geon.cc:396: error: expected unqualified-id before string constant
+geon.cc:397: error: expected unqualified-id before string constant
+geon.cc:398: error: expected unqualified-id before string constant
+geon.cc:399: error: expected unqualified-id before string constant
+geon.cc:400: error: expected unqualified-id before string constant
+geon.cc:401: error: expected unqualified-id before string constant
+geon.cc:402: error: expected unqualified-id before string constant
+geon.cc:403: error: expected unqualified-id before string constant
+geon.cc:404: error: expected unqualified-id before string constant
+geon.cc:405: error: expected unqualified-id before string constant
+geon.cc:406: error: expected unqualified-id before string constant
+geon.cc:407: error: expected unqualified-id before string constant
+geon.cc:408: error: expected unqualified-id before string constant
+geon.cc:409: error: expected unqualified-id before string constant
+geon.cc:410: error: expected unqualified-id before string constant
+geon.cc:411: error: expected unqualified-id before string constant
+geon.cc:412: error: expected unqualified-id before string constant
+geon.cc:413: error: expected unqualified-id before string constant
+geon.cc:414: error: expected unqualified-id before string constant
+geon.cc:415: error: expected unqualified-id before string constant
+geon.cc:416: error: expected unqualified-id before string constant
+geon.cc:417: error: expected unqualified-id before string constant
+geon.cc:418: error: expected unqualified-id before string constant
+geon.cc:419: error: expected unqualified-id before string constant
+geon.cc:420: error: expected unqualified-id before string constant
+geon.cc:421: error: expected unqualified-id before string constant
+geon.cc:422: error: expected unqualified-id before string constant
+geon.cc:423: error: expected unqualified-id before string constant
+geon.cc:424: error: expected unqualified-id before string constant
+geon.cc:425: error: expected unqualified-id before string constant
+geon.cc:426: error: expected unqualified-id before string constant
+geon.cc:427: error: expected unqualified-id before string constant
+geon.cc:428: error: expected unqualified-id before string constant
+geon.cc:429: error: expected unqualified-id before string constant
+geon.cc:430: error: expected unqualified-id before string constant
+geon.cc:431: error: expected unqualified-id before string constant
+geon.cc:432: error: expected unqualified-id before string constant
+geon.cc:433: error: expected unqualified-id before string constant
+geon.cc:434: error: expected unqualified-id before string constant
+geon.cc:435: error: expected unqualified-id before string constant
+geon.cc:436: error: expected unqualified-id before string constant
+geon.cc:437: error: expected unqualified-id before string constant
+geon.cc:438: error: expected unqualified-id before string constant
+geon.cc:439: error: expected unqualified-id before string constant
+geon.cc:440: error: expected unqualified-id before string constant
+geon.cc:441: error: expected unqualified-id before string constant
+geon.cc:442: error: expected unqualified-id before string constant
+geon.cc:443: error: expected unqualified-id before string constant
+geon.cc:444: error: expected unqualified-id before string constant
+geon.cc:445: error: expected unqualified-id before string constant
+geon.cc:446: error: expected unqualified-id before string constant
+geon.cc:447: error: expected unqualified-id before string constant
+geon.cc:448: error: expected unqualified-id before string constant
+geon.cc:449: error: expected unqualified-id before string constant
+geon.cc:450: error: expected unqualified-id before string constant
+geon.cc:451: error: expected unqualified-id before string constant
+geon.cc:452: error: expected unqualified-id before string constant
+geon.cc:453: error: expected unqualified-id before string constant
+geon.cc:454: error: expected unqualified-id before string constant
+geon.cc:455: error: expected unqualified-id before string constant
+geon.cc:456: error: expected unqualified-id before string constant
+geon.cc:457: error: expected unqualified-id before string constant
+geon.cc:458: error: expected unqualified-id before string constant
+geon.cc:459: error: expected unqualified-id before string constant
+geon.cc:460: error: expected unqualified-id before string constant
+geon.cc:461: error: expected unqualified-id before string constant
+geon.cc:462: error: expected unqualified-id before string constant
+geon.cc:463: error: expected unqualified-id before string constant
+geon.cc:464: error: expected unqualified-id before string constant
+geon.cc:465: error: expected unqualified-id before string constant
+geon.cc:466: error: expected unqualified-id before string constant
+geon.cc:467: error: expected unqualified-id before string constant
+geon.cc:468: error: expected unqualified-id before string constant
+geon.cc:469: error: expected unqualified-id before string constant
+geon.cc:470: error: expected unqualified-id before string constant
+geon.cc:471: error: expected unqualified-id before string constant
+geon.cc:472: error: expected unqualified-id before string constant
+geon.cc:473: error: expected unqualified-id before string constant
+geon.cc:474: error: expected unqualified-id before string constant
+geon.cc:475: error: expected unqualified-id before string constant
+geon.cc:476: error: expected unqualified-id before string constant
+geon.cc:477: error: expected unqualified-id before string constant
+geon.cc:478: error: expected unqualified-id before string constant
+geon.cc:479: error: expected unqualified-id before string constant
+geon.cc:480: error: expected unqualified-id before string constant
+geon.cc:481: error: expected unqualified-id before string constant
+geon.cc:482: error: expected unqualified-id before string constant
+geon.cc:483: error: expected unqualified-id before string constant
+geon.cc:541: error: storage class specified for ‘latitude’
+geon.cc:541: error: declaration of ‘num angle3::latitude’
+geon.cc:114: error: conflicts with previous declaration ‘num angle3::latitude’
+geon.cc:542: error: storage class specified for ‘longitude’
+geon.cc:542: error: declaration of ‘num angle3::longitude’
+geon.cc:114: error: conflicts with previous declaration ‘num angle3::longitude’
+geon.cc:543: error: storage class specified for ‘spin’
+geon.cc:544: error: storage class specified for ‘r’
+geon.cc:545: error: storage class specified for ‘zm’
+geon.cc:546: error: storage class specified for ‘regions’
+geon.cc:547: error: storage class specified for ‘acceptable_deviation_from_arc_pixels’
+geon.cc:548: error: storage class specified for ‘col_space’
+geon.cc:549: error: storage class specified for ‘col_sea’
+geon.cc:550: error: storage class specified for ‘col_land’
+geon.cc:551: error: storage class specified for ‘col_lake’
+geon.cc:552: error: storage class specified for ‘col_point’
+geon.cc:553: error: storage class specified for ‘col_focus’
+geon.cc:554: error: storage class specified for ‘col_grid’
+geon.cc:555: error: storage class specified for ‘points’
+geon.cc:556: error: storage class specified for ‘points_v’
+geon.cc:557: error: storage class specified for ‘pixels_per_dot’
+geon.cc:558: error: storage class specified for ‘window_width’
+geon.cc:559: error: storage class specified for ‘window_height’
+geon.cc:560: error: storage class specified for ‘focus_region’
+geon.cc:564: error: ISO C++ forbids initialization of member ‘window_width’
+geon.cc:564: error: making ‘window_width’ static
+geon.cc:564: error: ISO C++ forbids in-class initialization of non-const static member ‘window_width’
+geon.cc:564: error: declaration of ‘int angle3::window_width’
+geon.cc:558: error: conflicts with previous declaration ‘int angle3::window_width’
+geon.cc:565: error: ISO C++ forbids initialization of member ‘window_height’
+geon.cc:565: error: making ‘window_height’ static
+geon.cc:565: error: ISO C++ forbids in-class initialization of non-const static member ‘window_height’
+geon.cc:565: error: declaration of ‘int angle3::window_height’
+geon.cc:559: error: conflicts with previous declaration ‘int angle3::window_height’
+geon.cc:566: error: ISO C++ forbids initialization of member ‘focus_region’
+geon.cc:566: error: making ‘focus_region’ static
+geon.cc:566: error: ISO C++ forbids in-class initialization of non-const static member ‘focus_region’
+geon.cc:566: error: declaration of ‘int angle3::focus_region’
+geon.cc:560: error: conflicts with previous declaration ‘int angle3::focus_region’
+geon.cc:568: error: ‘int angle3::main(int, char**)’ cannot be overloaded
+geon.cc:538: error: with ‘int angle3::main(int, char**)’
+geon.cc:664: error: ‘void angle3::fill_region(angle3::region&)’ cannot be overloaded
+geon.cc:539: error: with ‘void angle3::fill_region(angle3::region&)’
+geon.cc:679: error: expected `}' at end of input
+geon.cc: In constructor ‘angle3::angle3()’:
+geon.cc:115: error: expected `(' before ‘{’ token
+cc1plus: warnings being treated as errors
+geon.cc:115: error: ‘angle3::latitude’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::longitude’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::spin’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::r’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::zm’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::regions’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::acceptable_deviation_from_arc_pixels’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::col_space’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::col_sea’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::col_land’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::col_lake’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::col_point’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::col_focus’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::col_grid’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::points’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::points_v’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::pixels_per_dot’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::window_width’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::window_height’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::focus_region’ should be initialized in the member initialization list
+geon.cc:115: error: ‘angle3::window_radius’ should be initialized in the member initialization list
+geon.cc:115: error: expected `;' before ‘:’ token
+geon.cc:115: error: statement has no effect
+geon.cc:116: error: expected primary-expression before ‘(’ token
+geon.cc:116: error: expected primary-expression before ‘latitude’
+geon.cc:116: error: expected primary-expression before ‘longitude’
+geon.cc:116: error: expected `;' before ‘:’ token
+geon.cc: In member function ‘int angle3::main(int, char**)’:
+geon.cc:575: error: ‘error’ was not declared in this scope
+geon.cc:592: error: ‘gr_init’ was not declared in this scope
+geon.cc:593: error: ‘white’ was not declared in this scope
+geon.cc:593: error: ‘black’ was not declared in this scope
+geon.cc:593: error: ‘_paper’ was not declared in this scope
+geon.cc:594: error: ‘gr_fast’ was not declared in this scope
+geon.cc:597: error: ‘zoom’ was not declared in this scope
+geon.cc:621: error: ‘bg’ was not declared in this scope
+geon.cc:622: error: ‘clear’ was not declared in this scope
+geon.cc:623: error: ‘col’ was not declared in this scope
+geon.cc:624: error: ‘circle_fill’ was not declared in this scope
+geon.cc:628: error: ‘bg’ was not declared in this scope
+geon.cc:629: error: ‘clear’ was not declared in this scope
+geon.cc:631: error: ‘for_each’ was not declared in this scope
+geon.cc:634: error: ‘col’ was not declared in this scope
+geon.cc:638: error: ‘col’ was not declared in this scope
+geon.cc:641: error: ‘col’ was not declared in this scope
+geon.cc:648: error: ‘paint’ was not declared in this scope
+geon.cc:653: error: ‘rsleep’ was not declared in this scope
+geon.cc:660: error: ‘event_loop’ was not declared in this scope
+geon.cc: In member function ‘void angle3::fill_region(angle3::region&)’:
+geon.cc:668: error: ‘col’ was not declared in this scope
+geon.cc:672: error: ‘col’ was not declared in this scope
+geon.cc:676: error: ‘error’ was not declared in this scope
+geon.cc: At global scope:
+geon.cc:679: error: expected unqualified-id at end of input
+make: *** [geon.o] Error 1

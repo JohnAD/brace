@@ -1,0 +1,234 @@
+export loudmouth/loudmouth.h
+use error util io vec cstr
+
+struct jabber
+	LmConnection *c
+	LmMessage *roster
+	vec *present
+	vec struct__present
+
+LmConnection *Lm_connection_new(cstr server)
+	let(c, lm_connection_new(server))
+	if c == NULL
+		failed("lm_connection_new")
+	return c
+
+Lm_connection_open_and_block(LmConnection *c)
+	GError *err = NULL
+	unless(lm_connection_open_and_block(c, &err))
+		failed("lm_connection_open_and_block", err->message)
+
+jabber_init(jabber *j, cstr server, cstr user, cstr pass, cstr resource,
+  LmHandleMessageFunction handler)
+	j->present = &j->struct__present
+	vec_init(j->present, cstr, 16)
+
+	j->c = Lm_connection_new(server)
+	lm_connection_set_jid(j->c, format("%s@%s", user, server))
+	lm_connection_set_keep_alive_rate(j->c, 30)
+	Lm_connection_open_and_block(j->c)
+	Lm_connection_authenticate_and_block(j->c, user, pass, resource)
+
+	let(h, lm_message_handler_new(jabber_h_presence, j, NULL))
+	lm_connection_register_message_handler(j->c, h, PRESENCE, PRIORITY_NORMAL)
+	j->roster = jabber_get_roster(j)
+	jabber_presence(j, 1)
+	jabber_loop(1)
+	lm_connection_unregister_message_handler(j->c, h, PRESENCE)
+
+	jabber_handler(j, handler)
+
+jabber_handler(jabber *j, LmHandleMessageFunction handler)
+	let(h, lm_message_handler_new(handler, j, NULL))
+	int types[] = { MESSAGE, PRESENCE, IQ, STREAM, STREAM_ERROR }
+	array(types)
+	for(type, types)
+		lm_connection_register_message_handler(j->c, h, *type, PRIORITY_NORMAL)
+
+jabber_free(jabber *j)
+	jabber_message_free(j->roster)
+	jabber_presence(j, 0)
+	GError *err = NULL
+	unless(lm_connection_close(j->c, &err))
+		error("lm_connection_close failed: %s", err->message)
+	lm_connection_unref(j->c)
+	vec_free(j->present)
+
+const char *jabber_get_server(jabber *j)
+	return lm_connection_get_server(j->c)
+
+Lm_connection_authenticate_and_block(LmConnection *c, cstr user, cstr pass, cstr resource)
+	GError *err = NULL
+	unless(lm_connection_authenticate_and_block(c, user, pass, resource, &err))
+		failed("lm_connection_authenticate_and_block", err->message)
+
+LmMessage *Lm_connection_send_with_reply_and_block(LmConnection *c, LmMessage *m)
+	GError *err
+	let(m_ret, lm_connection_send_with_reply_and_block(c, m, &err))
+	if m_ret == NULL
+		failed("lm_connection_send_with_reply_and_block", err->message)
+	return m_ret
+
+jabber_send(jabber *j, const char *peer, cstr message)
+	let(m, lm_message_new_with_sub_type(peer, MESSAGE, CHAT))
+	lm_message_node_add_child (m->node, "body", message);
+	Lm_connection_send(j->c, m)
+	lm_message_unref(m)
+
+jabber_presence(jabber *j, boolean available)
+	let(m, lm_message_new_with_sub_type(
+	  NULL, PRESENCE,
+	  available ?
+	    AVAILABLE :
+	    UNAVAILABLE))
+	Lm_connection_send(j->c, m)
+	lm_message_unref(m)
+
+Lm_connection_send(LmConnection *c, LmMessage *m)
+	GError *err
+	unless(lm_connection_send(c, m, &err))
+		failed("lm_connection_send", err->message)
+
+LmMessage *jabber_get_roster(jabber *j)
+	let(m, lm_message_new_with_sub_type(NULL, IQ, GET))
+	let(n, lm_message_node_add_child(m->node, "query", NULL))
+	lm_message_node_set_attributes (n, "xmlns", "jabber:iq:roster", NULL)
+	let(reply, Lm_connection_send_with_reply_and_block(j->c, m))
+	lm_message_unref(m)
+	return reply
+
+typedef LmMessage jabber_message
+
+jabber_message_dump(jabber_message *m)
+	let(type, lm_message_get_type(m))
+	let(subtype, lm_message_get_sub_type(m))
+
+	which type
+	MESSAGE	Print("MESSAGE")
+	PRESENCE	Print("PRESENCE")
+	IQ	Print("IQ")
+	STREAM	Print("STREAM")
+	STREAM_ERROR	Print("STREAM_ERROR")
+	UNKNOWN	Print("UNKNOWN")
+	else	Print("????")
+
+	spc()
+
+	which subtype
+	NOT_SET	Say("NOT_SET")
+	AVAILABLE	Say("AVAILABLE")
+	NORMAL	Say("NORMAL")
+	CHAT	Say("CHAT")
+	GROUPCHAT	Say("GROUPCHAT")
+	HEADLINE	Say("HEADLINE")
+	UNAVAILABLE	Say("UNAVAILABLE")
+	PROBE	Say("PROBE")
+	SUBSCRIBE	Say("SUBSCRIBE")
+	UNSUBSCRIBE	Say("UNSUBSCRIBE")
+	SUBSCRIBED	Say("SUBSCRIBED")
+	UNSUBSCRIBED	Say("UNSUBSCRIBED")
+	GET	Say("GET")
+	SET	Say("SET")
+	RESULT	Say("RESULT")
+	ERROR	Say("ERROR")
+	else	Print("????")
+
+	let(node, lm_message_get_node(m))
+	jabber_node_dump(node, 0)
+
+struct KeyValuePair
+	cstr key
+	cstr value
+
+jabber_node_dump(LmMessageNode *n, int indent)
+	if n == NULL
+		return
+	spcs(indent * 2)
+	Sayf("%s %s", n->name, n->value)
+	let(attr_list, n->attributes)
+	while attr_list != NULL
+		KeyValuePair *kvp = attr_list->data
+		spcs(indent * 2 + 1)
+		Sayf("%s:%s", kvp->key, kvp->value)
+		attr_list = attr_list->next
+	
+	let(child, n->children)
+	while child != NULL
+		jabber_node_dump(child, indent + 1)
+		child = child->next
+		
+#	Say(lm_message_node_to_string(n))
+
+def jabber_message_free(m) lm_message_unref(m)
+
+jabber_loop(num delay)
+	if delay != 0
+		g_timeout_add((int)(delay * 1000), timeout_h, NULL)
+	_jabber_loop = g_main_loop_new(NULL, FALSE)
+	g_main_loop_run(_jabber_loop)
+def jabber_loop() jabber_loop(0)
+
+GMainLoop *_jabber_loop
+
+gboolean timeout_h(gpointer data)
+	use(data)
+	g_main_loop_quit(_jabber_loop)
+	return FALSE
+
+LmHandlerResult jabber_h_dump(LmMessageHandler *h, LmConnection *c, LmMessage *m, gpointer user_data)
+	use(h)
+	use(c)
+	use(user_data)
+	jabber_message_dump(m)
+	jabber_message_free(m)
+	return REMOVE_MESSAGE
+
+cstr jabber_sender(LmMessage *m)
+	let(node, lm_message_get_node(m))
+	return (cstr)lm_message_node_get_attribute(node, "from")
+
+LmHandlerResult jabber_h_presence(LmMessageHandler *h, LmConnection *c, LmMessage *m, gpointer user_data)
+	use(h)
+	use(c)
+	let(j, (jabber *)user_data)
+	let(type, lm_message_get_type(m))
+	let(subtype, lm_message_get_sub_type(m))
+
+	if type == PRESENCE && subtype == AVAILABLE
+		let(contact_jid, jabber_sender(m))
+		contact_jid = strdup(contact_jid)
+		vec_push(j->present, contact_jid)
+		jabber_message_free(m)
+		return REMOVE_MESSAGE
+
+	jabber_message_free(m)
+	return ALLOW_MORE_HANDLERS
+
+def MESSAGE LM_MESSAGE_TYPE_MESSAGE
+def PRESENCE LM_MESSAGE_TYPE_PRESENCE
+def IQ LM_MESSAGE_TYPE_IQ
+def STREAM LM_MESSAGE_TYPE_STREAM
+def STREAM_ERROR LM_MESSAGE_TYPE_STREAM_ERROR
+def UNKNOWN LM_MESSAGE_TYPE_UNKNOWN
+
+def NOT_SET LM_MESSAGE_SUB_TYPE_NOT_SET
+def AVAILABLE LM_MESSAGE_SUB_TYPE_AVAILABLE
+def NORMAL LM_MESSAGE_SUB_TYPE_NORMAL
+def CHAT LM_MESSAGE_SUB_TYPE_CHAT
+def GROUPCHAT LM_MESSAGE_SUB_TYPE_GROUPCHAT
+def HEADLINE LM_MESSAGE_SUB_TYPE_HEADLINE
+def UNAVAILABLE LM_MESSAGE_SUB_TYPE_UNAVAILABLE
+def PROBE LM_MESSAGE_SUB_TYPE_PROBE
+def SUBSCRIBE LM_MESSAGE_SUB_TYPE_SUBSCRIBE
+def UNSUBSCRIBE LM_MESSAGE_SUB_TYPE_UNSUBSCRIBE
+def SUBSCRIBED LM_MESSAGE_SUB_TYPE_SUBSCRIBED
+def UNSUBSCRIBED LM_MESSAGE_SUB_TYPE_UNSUBSCRIBED
+def GET LM_MESSAGE_SUB_TYPE_GET
+def SET LM_MESSAGE_SUB_TYPE_SET
+def RESULT LM_MESSAGE_SUB_TYPE_RESULT
+def ERROR LM_MESSAGE_SUB_TYPE_ERROR
+
+def REMOVE_MESSAGE LM_HANDLER_RESULT_REMOVE_MESSAGE
+def ALLOW_MORE_HANDLERS LM_HANDLER_RESULT_ALLOW_MORE_HANDLERS
+
+def PRIORITY_NORMAL LM_HANDLER_PRIORITY_NORMAL

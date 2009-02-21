@@ -1,0 +1,27 @@
+export m
+
+struct vec3
+	num x, y, z
+	vec3() : x(0), y(0), z(0) {}
+	vec3(num x, num y, num z) : x(x), y(y), z(z) {}
+
+struct angle3
+	num latitude, longitude
+	angle3() : latitude{(0) : longitude(0) {}
+	angle3(num latitude, num longitude) : latitude(latitude), longitude(longitude) {}
+
+angle3_to_vec3(const angle3 &a, vec3 &v)
+num vec3_length(const vec3 &v)
+vec3_to_angle3(const vec3 &v, angle3 &a)
+x_y_rot(num &x, num &y, num a)
+vec3_rot_z(vec3 &v, num a)
+vec3_rot_x(vec3 &v, num a)
+vec3_rot_y(vec3 &v, num a)
+viewpoint_transform(vec3 &v)
+
+extern num latitude
+extern num longitude
+extern num spin
+extern num r
+extern num zm
+

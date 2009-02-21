@@ -1,0 +1,72 @@
+#!/lang/b
+
+Main()
+	paper(640, 480)
+#	rb_green_power = 1
+	gr_fast()
+
+	dt = angle2rad(1)
+
+	num r = 480/2*.9
+#	num a = 0
+
+	spectrum()
+#	cycle()
+
+
+def cycle()
+	repeat
+		spectrum()
+		num power
+#		spin()
+		pulse_spin(red)
+		pulse_spin(green)
+		pulse_spin(blue)
+
+def X Sin(a)*r
+def Y Cos(a)*r
+  # these REALLY want to be local macros!
+
+def spectrum()
+	num a = -0.5
+	move(X, Y)
+	for a = 0 ; a<360.5 ;
+		num rb_angle_fudge
+		if a >= 0.0 && a < 120.0
+			rb_angle_fudge = a
+		if a >= 120.0 && a < 210.0
+			rb_angle_fudge = (a-120.0) * 4.0/3.0 + 120.0
+		if a >= 210.0
+			rb_angle_fudge = (a-210.0) * 4.0/5.0 + 240.0
+		rainbow(rb_angle_fudge)
+		move(0, 0)
+		a+=0.5
+		triangle(X, Y)
+		a+=0.5
+	paint()
+	sleep(0.01)
+
+num dt
+
+def spin()
+	rb_red_angle += 1.6*dt
+	rb_green_angle += 2*dt
+	rb_blue_angle += 1*dt
+
+def pulse(which)
+	for power=0; power < 360.1; power += 5
+		rb_^^which^^_power = (Cos(power)+1)/2 * 0.8
+		spectrum()
+
+def pulse_spin(which)
+	pulse(which)
+		spin()
+
+def trig_unit deg
+
+use main
+use m
+use gr
+use error
+use time
+use io

@@ -1,0 +1,23 @@
+#!/usr/bin/perl -n
+sub scramble {
+	my ($in, $out);
+	do {
+		$in = $_[0];
+		if ($in eq substr($in, 0, 1) x length($in)) { return $in }
+		$out = "";
+		while ($in ne "") {
+			my $i = int rand(length $in);
+			my $c = substr $in, $i, 1, "";
+			$out .= $c;
+		}
+	} while ($out eq $_[0]);
+	return $out;
+}
+while (/(\w*)(\W*)/g) {
+	($word, $spaces) = ($1, $2);
+	if ($word eq "" and $spaces eq "") { last }
+	if (length $word > 3) {
+		$word =~ s/^(.)(.*)(.)$/$1.scramble($2).$3/e;
+	}
+	print "$word$spaces";
+}

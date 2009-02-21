@@ -1,0 +1,34 @@
+clip_region_to_sector.bb1: clip_region_to_sector.bb /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh sectors.bbh sphere.bbh poly.bbh
+clip_region_to_sector.o: clip_region_to_sector.cc
+points.bb1: points.bb /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh poly.bbh sphere.bbh
+points.o: points.cc
+clip_and_fill.bb1: clip_and_fill.bb /usr/bin/../include/gr.bh /usr/bin/../include/types.bh /usr/bin/../include/x/gr.bh /usr/bin/../include/x/colours.bh al.bbh sphere.bbh /usr/bin/../include/m.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh poly.bbh
+clip_and_fill.o: clip_and_fill.cc
+al.bb1: al.bb
+al.o: al.cc
+sphere.bb1: sphere.bb /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh
+sphere.o: sphere.cc
+sectors.bb1: sectors.bb /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh sphere.bbh
+sectors.o: sectors.cc
+split_regions_among_sectors.bb1: split_regions_among_sectors.bb regions.bbh poly.bbh sphere.bbh /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh
+split_regions_among_sectors.o: split_regions_among_sectors.cc
+debug.bb1: debug.bb sphere.bbh /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh
+debug.o: debug.cc
+geon.bb1: geon.bb /usr/bin/../include/gr.bh /usr/bin/../include/types.bh /usr/bin/../include/x/gr.bh /usr/bin/../include/x/colours.bh /usr/bin/../include/m.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh al.bbh sphere.bbh poly.bbh regions.bbh debug.bbh clip_and_draw.bbh clip_and_fill.bbh palette.bbh draw_basic.bbh points.bbh clip_region_to_sector.bbh sectors.bbh draw_clipped_arcs.bbh draw_sectors.bbh
+geon.o: geon.cc
+draw_clipped_arcs.bb1: draw_clipped_arcs.bb poly.bbh sphere.bbh /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh clip_region_to_sector.bbh sectors.bbh /usr/bin/../include/gr.bh /usr/bin/../include/x/gr.bh /usr/bin/../include/x/colours.bh
+draw_clipped_arcs.o: draw_clipped_arcs.cc
+draw_sectors.bb1: draw_sectors.bb /usr/bin/../include/gr.bh /usr/bin/../include/types.bh /usr/bin/../include/x/gr.bh /usr/bin/../include/x/colours.bh /usr/bin/../include/m.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh al.bbh sphere.bbh sectors.bbh draw_basic.bbh poly.bbh
+draw_sectors.o: draw_sectors.cc
+draw_basic.bb1: draw_basic.bb al.bbh /usr/bin/../include/gr.bh /usr/bin/../include/types.bh /usr/bin/../include/x/gr.bh /usr/bin/../include/x/colours.bh sphere.bbh /usr/bin/../include/m.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh poly.bbh
+draw_basic.o: draw_basic.cc
+palette.bb1: palette.bb /usr/bin/../include/gr.bh /usr/bin/../include/types.bh /usr/bin/../include/x/gr.bh /usr/bin/../include/x/colours.bh /usr/bin/../include/m.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh
+palette.o: palette.cc
+round_angle.bb1: round_angle.bb /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh
+round_angle.o: round_angle.cc
+regions.bb1: regions.bb /usr/bin/../include/error.bh sphere.bbh /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh poly.bbh
+regions.o: regions.cc
+poly.bb1: poly.bb al.bbh sphere.bbh /usr/bin/../include/m.bh /usr/bin/../include/types.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh
+poly.o: poly.cc
+clip_and_draw.bb1: clip_and_draw.bb /usr/bin/../include/gr.bh /usr/bin/../include/types.bh /usr/bin/../include/x/gr.bh /usr/bin/../include/x/colours.bh sphere.bbh /usr/bin/../include/m.bh /usr/bin/../include/util.bh /usr/bin/../include/io.bh /usr/bin/../include/str.bh /usr/bin/../include/error.bh /usr/bin/../include/buffer.bh /usr/bin/../include/alloc.bh /usr/bin/../include/time.bh poly.bbh
+clip_and_draw.o: clip_and_draw.cc

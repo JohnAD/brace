@@ -1,0 +1,5 @@
+#!/bin/sh
+[ -n "$1" ] || fail "syntax: `basename "$0" foo.$b"
+B="$1"
+BBAK="$dirname/.${basename%.*}.${b}.bak"
+exec diff -u "$BBAK" "$B"

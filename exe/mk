@@ -1,0 +1,180 @@
+#!/bin/sh -e
+
+# TODO remove .b files etc from .build if they are no-longer in the source dir
+# TODO use a gcc option to make warnings fatal ??
+
+#MK_LIB=`readlink -f \`dirname "$0"\`/../include/mk`
+MK_LIB="`dirname "$0"`/../lib/mk"
+
+CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
+
+which() {
+	# this unfortunately depends on the shell
+	local A
+	A=`type "$@" 2>/dev/null || true`
+	B="${A%: not found}"
+	if [ "$A" != "$B" ]; then
+		A=""
+	fi
+	if [ -n "$A" ]; then
+		A="/${A#*/}"
+		echo "$A"
+	else
+		return 1
+	fi
+}
+
+MINGW=
+EXE=
+if [ -n "$WINDIR" -o -n "$windir" ]; then
+	MINGW=1
+	EXE=.exe
+fi
+
+BRACE_DIR=`which brace$EXE`
+BRACE_DIR=`dirname "$BRACE_DIR"`
+BRACE_DIR=`dirname "$BRACE_DIR"`
+if [ -z "$BRACE_SO" ]; then
+	BRACE_SO="$BRACE_DIR/lib"
+fi
+BRACE_L_SO="-L\"$BRACE_SO\""
+if [ -z "$BRACE_LIB" ]; then
+	BRACE_LIB="$BRACE_DIR/include"
+	if [ \! -d "$BRACE_LIB" ]; then
+		BRACE_LIB="$BRACE_SO"
+	fi
+fi
+LDFLAGS="$LDFLAGS $BRACE_L_SO"
+if [ -z "$BRACE_USE" ]; then
+	if [ -n "$WINDIR" -o -n "$windir" ]; then
+		BRACE_USE="mingw"
+		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
+		LDLIBS="$LDLIBS -lws2_32"
+		LDLIBS_FANCY="$LDLIBS_FANCY -lopengl32 -lglu32 -lgdi32"
+	else
+		BRACE_USE="unix" 
+		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h ]; then
+			BRACE_USE="$BRACE_USE x"
+			LDLIBS_FANCY="$LDLIBS_FANCY -L/usr/X11R6/lib -lX11 -lXext"
+			CFLAGS="$CFLAGS -I/usr/X11R6/include"
+		else
+			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
+		fi
+#		if [ -e /usr/include/curses.h ]; then          
+#			BRACE_USE="$BRACE_USE curses"
+#			LDFLAGS="$LDFLAGS -lncurses"
+#		fi
+		uname > .uname
+		<.uname tr 'A-Z' 'a-z' >.uname.1
+#		UNAME=`uname | tr 'A-Z' 'a-z'`
+		if grep -i bsd <.uname.1 >/dev/null; then
+			BRACE_USE="$BRACE_USE bsd"
+		fi
+		<.uname.1 read UNAME
+		rm .uname .uname.1  # coping with borken pipes in unxutils
+		BRACE_USE="$BRACE_USE $UNAME"
+#		elif echo $UNAME | grep -i linux >/dev/null; then
+#			BRACE_USE="$BRACE_USE linux"
+#		fi
+		BU=""
+		for A in $BRACE_USE; do
+			[ -e "$BRACE_LIB/$A" ] && BU="$BU $A"
+		done
+		BRACE_USE="${BU## }"
+		echo "BRACE_USE: $BRACE_USE"
+	fi
+fi
+export MK_LIB BRACE_LIB BRACE_USE CFLAGS LDFLAGS LDLIBS LDLIBS_PLAIN
+
+LDLIBS_PLAIN="$LDLIBS"
+LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
+
+#mkdir -p .build
+export D="$PWD"
+#find . -mindepth 1 -type d \! \( -name '.build' -or -path '*/.build/*' -or -name '_darcs' -or -path '*/_darcs/*' \) |
+#while read A; do
+#	mkdir -p .build/"$A"
+#done
+
+#find . -type f \( -name '*.b' -or -name '*.bb' -or \! -perm ++x \) \! \( -path '*/.build/*' -or -path '*/_darcs/*' \) |
+#while read A; do
+#	ln -f "$D/$A" .build/"$A"
+#done
+#
+#cd .build
+
+# remove empty files to cope with build errors . disabled because some files are meant to be empty
+# find . -type f -size 0 -print0 | xargs -0 rm -f
+
+if [ -z "$BRACE_HEADER_GUARD_PREFIX" ]; then
+	BRACE_HEADER_GUARD_PREFIX="BRACE_HEADER_GUARD_`basename "$D"`_"
+	export BRACE_HEADER_GUARD_PREFIX
+fi
+echo "BRACE_HEADER_GUARD_PREFIX=$BRACE_HEADER_GUARD_PREFIX" >&2
+
+brace_update_headers
+
+brace_mk_cc >mkfile_cc
+
+# split the mkfile, so var decls come before include
+# FIXME this is a bit dodgy, e.g. won't work if we have
+# an assignment with a ': ' in it!
+<mkfile sed -n '/: /q; p' >mkfile.1
+#echo 'include $(MK_LIB)' >>mkfile.1
+cat "$MK_LIB" >>mkfile.1
+<mkfile sed -n '/: /,$p' >>mkfile.1
+echo 'include mkfile_cc' >>mkfile.1
+
+rm -f mk.failed
+export A="$*"
+
+#( make -f mkfile.1 $A 2>&1 || touch mk.failed ) |
+#grep --line-buffered -ve 'Each undeclared identifier is reported only once' \
+#  -e 'for each function it appears in' |
+#sed -u 's,^[^.:]*\.\(c\|cc\):,.build/&,' |
+#tee mk.log
+
+if [ -z "$MAKE" ]; then
+	MAKE=make
+	which gmake >/dev/null && MAKE=gmake
+fi
+
+( $MAKE -f mkfile.1 $A 2>&1 || touch mk.failed ) |
+perl -ne '
+	BEGIN { $|=1; }
+	/Each undeclared identifier is reported only once/ ||
+	/for each function it appears in/ ||
+	print
+	 # || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
+' |
+tee mk.log
+
+[ -e mk.failed ] && {
+	rm -f mk.failed
+	echo >&2 mk: failed
+	exit 1
+}
+
+exit 0
+
+#find \( -type f -o -type l \) \( -perm ++x -o -name '*.so' -o -name '*.so.[0-9]*' -o -name '*.dll' \) |
+#while read A; do
+#	# find -perm ++x returns true for all symlinks :/
+#	if [ -x "$A" ]; then
+#		rm -f ../"$A"
+#	 	cp -a "$A" ../"$A"
+#	else
+#		case "$A" in
+#		*.so|*.so.[0-9]*)
+#		rm -f ../"$A"
+#		cp -a "$A" ../"$A" ;;
+#		esac
+#	fi
+#done
+#
+#if [ -n "$MK_HEADERS" ]; then
+#	find -type f \( -name '*.bh' -o -name '*.bbh' \) |
+#	while read A; do
+#		ln -f "$A" ../"$A"
+#	done
+#fi

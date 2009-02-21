@@ -1,0 +1,822 @@
+export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h
+
+export str error buffer types net
+use m alloc util path env
+
+use io
+
+# todo split io and fs
+
+int Open(const char *pathname, int flags, mode_t mode)
+	int fd = open(pathname, flags, mode)
+	if fd == -1
+		failed("open")
+	return fd
+def Open(pathname, flags) Open(pathname, flags, 0666)
+
+def openin(pathname) open(pathname, O_RDONLY)
+def openout(pathname, mode) open(pathname, O_WRONLY, mode)
+def openout(pathname) openout(pathname, 0666)
+def Open(pathname) openin(pathname)
+
+Close(int fd)
+	winsock_close(fd)
+	if close(fd) != 0
+		failed("close")
+
+# Read_some (and Read) return 0 at EOF, and also return 0 if a non-blocking fd
+# has no bytes to read. In that case, use Read_eof(fd) to check errno whether
+# it is 0 (eof) or EAGAIN (no bytes were read).
+
+ssize_t Read_some(int fd, void *buf, size_t count)
+	errno = 0
+	ssize_t bytes_read = read(fd, buf, count)
+	if bytes_read == -1
+		if errno == EAGAIN
+			bytes_read = 0
+		 else
+			failed("read")
+	return bytes_read
+
+ssize_t Read(int fd, void *buf, size_t count)
+	ssize_t bytes_read_tot = 0
+	repeat
+		ssize_t bytes_read = Read_some(fd, buf, count)
+		bytes_read_tot += bytes_read
+		count -= bytes_read
+		if count == 0 || bytes_read == 0
+			break
+		buf = (char *)buf + bytes_read
+	return bytes_read_tot
+
+def Read_eof(fd) errno == 0
+
+ssize_t Write_some(int fd, const void *buf, size_t count)
+	ssize_t bytes_written = write(fd, buf, count)
+	if bytes_written == -1
+		if errno == EAGAIN
+			bytes_written = 0
+		 else
+			failed("write")
+	return bytes_written
+
+Write(int fd, const void *buf, size_t count)
+	repeat
+		ssize_t bytes_written = Write_some(fd, buf, count)
+		count -= bytes_written
+		if count == 0
+			break
+		buf = (char *)buf + bytes_written
+
+slurp_2(int fd, buffer *b)
+	int space = buffer_get_space(b)
+	int size = buffer_get_size(b)
+	char *start = buffer_get_start(b)
+	repeat
+		let(bytes_read, Read(fd, start + size, space - size))
+		if bytes_read == 0
+			break
+		buffer_grow(b, bytes_read)
+		size += bytes_read
+		if size == space
+			buffer_double(b)
+			space = buffer_get_space(b)
+			size = buffer_get_size(b)
+			start = buffer_get_start(b)
+
+# TODO fix slurp(fd, buffer) so that it does the fstat instead of this one
+
+buffer *slurp_1(int filedes)
+	decl(s, stats)
+	Fstat(filedes, s)
+	int size = s->st_size
+
+	if size == 0
+		size = 1024
+	 else
+	 	++size
+		# to avoid a problem with
+		# doubling the buffer on the last read at EOF.
+		# Also this is handy if client wants to convert to a cstr :)
+
+	New(b, buffer, size)
+	slurp_2(filedes, b)
+
+	return b
+
+def slurp(fd, b) slurp_2(fd)
+def slurp(fd) slurp_1(fd)
+def slurp() slurp(STDIN_FILENO)
+
+def spurt(b) spurt(STDOUT_FILENO, b)
+
+spurt(int fd, buffer *b)
+	Write(fd, buffer_get_start(b), buffer_get_size(b))
+
+FILE *Fopen(const char *path, const char *mode)
+	FILE *f = fopen(path, mode)
+	if f == NULL
+		failed("fopen")
+	return f
+def Fopen(pathname) Fopen(pathname, "r")
+
+Fclose(FILE *fp)
+	winsock_fclose(fp)
+	if fclose(fp) == EOF
+		failed("fclose")
+
+char *Fgets(char *s, int size, FILE *stream)
+	errno = 0
+	char *rv = fgets(s, size, stream)
+	if errno
+		failed("fgets")
+	return rv
+
+# NOTE you should reset the size of the buffer to 0
+# before calling Freadline, else it will append the line to the buffer.
+int Freadline(buffer *b, FILE *stream)
+	size_t len = buffer_get_size(b)
+	repeat
+		char *rv = Fgets(b->start+len, buffer_get_space(b)-len, stream)
+		if rv == NULL
+			return EOF
+		len += strlen(b->start+len)
+		if b->start[len-1] == '\n'
+			# chomp it - XXX should we do this?
+			b->start[len-1] = '\0'
+			--len
+			break
+		if len < buffer_get_space(b) - 1
+			break
+		buffer_double(b)
+	buffer_set_size(b, len)
+	return 0
+
+int Readline(buffer *b)
+	return Freadline(b, stdin)
+
+int Printf(const char *format, ...)
+	collect(Vprintf, format)
+int Vprintf(const char *format, va_list ap)
+	winsock_vfprintf(stdout, format, ap)
+	int len = vprintf(format, ap)
+	if len < 0
+		failed("vprintf")
+	return len
+
+int Fprintf(FILE *stream, const char *format, ...)
+	collect(Vfprintf, stream, format)
+int Vfprintf(FILE *stream, const char *format, va_list ap)
+	winsock_vfprintf(stream, format, ap)
+	int len = vfprintf(stream, format, ap)
+	if len < 0
+		failed("vfprintf")
+	return len
+
+Fflush(FILE *stream)
+	winsock_fflush(stream)
+	if fflush(stream) != 0
+		failed("fflush")
+
+def Fflush()
+	Fflush(stdout)
+
+# don't forget to use the "b" flag, e.g. "r+b"
+FILE *Fdopen(int filedes, const char *mode)
+	FILE *f = fdopen(filedes, mode)
+	if f == NULL
+		failed("fdopen")
+#	windows_setmode_binary(f)
+	return f
+def Fdopen(filedes) Fdopen(filedes, "r+b")
+
+def nl(stream)
+	Putc('\n', stream)
+def nl()
+	nl(stdout)
+def nls(stream, n)
+	repeat(n)
+		nl(stream)
+def nls(n)
+	nls(stdout, n)
+Nl(FILE *stream)
+	nl(stream)
+def Nl() Nl(stdout)
+
+def tab(stream)
+	Putc('\t', stream)
+def tab()
+	tab(stdout)
+def tabs(stream, n)
+	repeat(n)
+		tab(stream)
+def tabs(n)
+	tabs(stdout, n)
+
+def spc(stream)
+	Putc(' ', stream)
+def spc()
+	spc(stdout)
+def spcs(stream, n)
+	repeat(n)
+		spc(stream)
+def spcs(n)
+	spcs(stdout, n)
+
+crnl(FILE *stream)
+	Fprint(stream, "\r\n")
+def crnl()
+	crnl(stdout)
+
+# like perl, Say adds a newline, Print doesn't
+def Print(s)
+	Fprint(stdout, s)
+def Fprint(stream, s)
+	Fprintf(stream, "%s", s)
+
+def Say(s)
+	Puts(s)
+Puts(const char *s)
+	winsock_fsay(stdout, s)
+	if puts(s) < 0
+		failed("puts")
+
+Fsay(FILE *stream, const char *s)
+	winsock_fsay(stream, s)
+	Fputs(s, stream)
+	nl(stream)
+
+Fputs(const char *s, FILE *stream)
+	winsock_fsay(stream, s)
+	if fputs(s, stream) < 0
+		failed("fputs")
+
+int Sayf(const char *format, ...)
+	collect(Vsayf, format)
+int Vsayf(const char *format, va_list ap)
+	winsock_vfsayf(stdout, format, ap)
+	int len = Vprintf(format, ap)
+	nl()
+	return len
+
+int Fsayf(FILE *stream, const char *format, ...)
+	collect(Vfsayf, stream, format)
+int Vfsayf(FILE *stream, const char *format, va_list ap)
+	winsock_vfsayf(stdout, format, ap)
+	int len = Vfprintf(stream, format, ap)
+	nl(stream)
+	return len
+
+# TODO: improve brace so can make this var-args stuff nicer
+
+char *Input(const char *prompt)
+	return Inputf("%s", prompt)
+def Input() Input("")
+
+# XXX Inputf doesn't handle lines with '\0' in them properly
+# XXX Inputf calls fgets too many times.  should use a static buffer then
+# copy to return?  but it's meant for terminal input, who cares if it's slow?
+
+char *Inputf(const char *format, ...)
+	collect(Vinputf, format)
+char *Vinputf(const char *format, va_list ap)
+	return Vfinputf(stdin, stdout, format, ap)
+char *Vfinputf(FILE *in, FILE *out, const char *format, va_list ap)
+	if *format
+		Vfprintf(out, format, ap)
+	Fflush(out)
+	
+	new(b, buffer, 2)
+	int rv = Freadline(b, in)
+	if rv == 0
+		return buffer_to_cstr(b)
+	else
+		buffer_free(b)
+		return NULL
+
+char *Finput(FILE *in, FILE *out, const char *prompt)
+	return Finputf(in, out, "%s", prompt)
+def Finput(in, out) Finput(in, out, "")
+
+char *Finputf(FILE *in, FILE *out, const char *format, ...)
+	collect(Vfinputf, in, out, format)
+
+char *Sinput(FILE *s, const char *prompt)
+	return Sinputf(s, "%s", prompt)
+def Sinput(s) Sinput(s, "")
+
+char *Sinputf(FILE *s, const char *format, ...)
+	collect(Vfinputf, s, s, format)
+
+# TODO would be good to use sscanf to scan a line?
+
+# TODO: BelchIfChanged
+
+DIR *Opendir(const char *name)
+	DIR *d = opendir(name)
+	if d == NULL
+		failed("opendir")
+	return d
+
+typedef struct dirent dirent
+dirent *Readdir(DIR *dir)
+	errno = 0
+	struct dirent *e = readdir(dir)
+	if errno
+		failed("readdir")
+	return e
+
+Closedir(DIR *dir)
+	if closedir(dir) != 0
+		failed("closedir")
+
+Remove(const char *path)
+	if remove(path) != 0
+		failed("remove")
+
+int Temp(buffer *b, char *prefix, char *suffix)
+	return Tempfile(b, prefix, suffix, NULL, 0, 0600)
+
+int Tempdir(buffer *b, char *prefix, char *suffix)
+	return Tempfile(b, prefix, suffix, NULL, 1, 0600)
+
+# TODO while else, for else and do-while else loops
+
+int Tempfile(buffer *b, char *prefix, char *suffix, char *tmpdir, int dir, int mode)
+	int n_random_chars = 6
+	char random[n_random_chars + 1]
+	char *pathname = b->start
+	if tmpdir == NULL
+		tmpdir = "/tmp"
+		# FIXME is this okay on mingw?
+	uint len = strlen(tmpdir) + 1 + strlen(prefix) + strlen(suffix) + n_random_chars + 1
+	if buffer_get_space(b) < len
+		buffer_set_space(b, len)
+	random[n_random_chars] = '\0'
+	int try
+	for try=0; try < 10; ++try
+		int i
+		for i=0; i<n_random_chars; ++i
+			random[i] = random_alphanum()
+		snprintf(pathname, len, "%s/%s%s%s", tmpdir, prefix, random, suffix)
+		buffer_set_size(b, strlen(pathname))
+		if dir
+			if mkdir(pathname, mode) == 0
+				return -1
+		else
+			int fd = open(pathname, O_RDWR|O_CREAT|O_EXCL, mode)
+			if fd >= 0
+				return fd
+	serror("cannot create tempfile of form %s/%sXXXXXX%s", tmpdir, prefix, suffix)
+	# this is not reached, just to keep cc happy
+	return -1
+
+char random_alphanum()
+	int r = Randint(10 + 26 * 2)
+	if r < 10
+		return '0' + r
+	if r < 10 + 26
+		return 'A' + r - 10
+	return 'a' + r - 10 - 26
+
+# Theoretically don't need to stat a file to find out if it exists -
+# (just look for the directory entry).  but no quick way to do that
+# - a unix bug?
+
+int Exists(const char *file_name)
+	struct stat buf
+	return Stat(file_name, &buf)
+
+# Stat returns 1 if the file exists, 0 if not
+# FIXME is this ok?  not consistent with stat(2)
+
+int Stat(const char *file_name, struct stat *buf)
+	errno = 0
+	int rv = stat(file_name, buf)
+	if rv == 0
+		return 1
+	if errno == ENOENT || errno == ENOTDIR
+		return 0
+	failed("stat")
+	# keep gcc happy
+	return 0
+
+int is_dir(const char *file_name)
+	struct stat buf
+	return Stat(file_name, &buf) && S_ISDIR(buf.st_mode)
+
+int is_real_dir(const char *file_name)
+	struct stat buf
+	return Lstat(file_name, &buf) && S_ISDIR(buf.st_mode)
+
+# TODO make io stateful, so use like
+#   out(channel) say(...)
+#   instead of e.g. Fsay(channel, ...)
+#  then get rid of all the ffoo functions
+#  Problem: I already used "out" and "in" for redirection of stdout, stdin
+#  to a named file.
+#  another problem: should save the current stream in a "process local"
+#  variable I guess.  although processes should really use a different sort of
+#  IO altogether.
+
+Fstat(int filedes, struct stat *buf)
+	if fstat(filedes, buf) == -1
+		failed("fstat")
+
+cx(const char *path)
+	chmod_add(path, S_IXUSR | S_IXGRP | S_IXOTH)
+
+cnotx(const char *path)
+	chmod_sub(path, S_IXUSR | S_IXGRP | S_IXOTH)
+
+chmod_add(const char *path, mode_t add_mode)
+	new(s, stats, path)
+	Chmod(path, s->st_mode | add_mode)
+
+chmod_sub(const char *path, mode_t sub_mode)
+	new(s, stats, path)
+	Chmod(path, s->st_mode & ~sub_mode)
+
+typedef struct stat stats
+typedef struct stat lstats
+
+stats_init(stats *s, const char *file_name)
+	if !Stat(file_name, s)
+		s->st_mode = 0
+
+lstats_init(stats *s, const char *file_name)
+	if !Lstat(file_name, s)
+		s->st_mode = 0
+
+def S_EXISTS(m) m
+
+int Lstat(const char *file_name, struct stat *buf)
+	errno = 0
+	int rv = lstat(file_name, buf)
+	if rv == 0
+		return 1
+	if errno == ENOENT || errno == ENOTDIR
+		return 0
+	failed("lstat")
+	# keep gcc happy
+	return 0
+
+#struct stat Stat(const char *file_name)
+#	decl(s, struct stat)
+#	Stat(file_name, s)
+#	return struct__s
+#def Stat(file_name, buf) _Stat(file_name, buf)
+
+FILE *Popen(const char *command, const char *type)
+	FILE *rv = popen(command, type)
+	if rv == NULL
+		failed("popen")
+	return rv
+
+int Pclose(FILE *stream)
+	int rv = pclose(stream)
+	if rv == -1
+		failed("pclose")
+	return -1
+
+int Fgetc(FILE *stream)
+	int c = fgetc(stream)
+	if c == EOF && ferror(stream)
+		failed("fgetc")
+	return c
+
+def Getc(c, stream)
+	c = getc(stream)
+	if c == EOF && ferror(stream)
+		failed("getc")
+
+def Getchar(c)
+	c = getchar()
+	if c == EOF && ferror(stdin)
+		failed("getchar")
+def Getchar()
+	# this is only useful to wait for an unneeded keypress or something
+	int my(c)
+	Getchar(my(c))
+
+Fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
+	winsock_fwrite(ptr, size, nmemb, stream)
+	size_t count = fwrite(ptr, size, nmemb, stream)
+	if count != nmemb
+		failed("fwrite")
+
+size_t Fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
+	size_t count = fread(ptr, size, nmemb, stream)
+	if count < nmemb && ferror(stream)
+		failed("fread")
+	return count
+
+Fwrite_str(FILE *stream, str s)
+	Fwrite(s.start, str_get_size(s), 1, stream)
+
+Fputc(int c, FILE *stream)
+	winsock_putc(c, stream)
+	eif fputc(c, stream) == EOF
+			failed("fputc")
+
+# TODO swap args? or an alias that has them in the right order?
+def Putc(c, stream)
+	winsock_putc(c, stream)
+	eif putc(c, stream) == EOF
+		failed("putc")
+
+def Putchar(c)
+	winsock_putc(c, stdout)
+	eif putchar(c) == EOF
+		failed("putchar")
+
+Fseek(FILE *stream, long offset, int whence)	
+	if fseek(stream, offset, whence)
+		failed("fseek")
+
+long Ftell(FILE *stream)
+	long ret = ftell(stream)
+	if ret == -1
+		failed("ftell")
+	return ret
+
+# these don't seem to work:
+#Fseeko(FILE *stream, off_t offset, int whence)	
+#	if fseeko(stream, offset, whence)
+#		failed("fseeko")
+#
+#off_t Ftello(FILE *stream)
+#	off_t ret = ftello(stream)
+#	if ret == -1
+#		failed("ftello")
+#	return ret
+
+off_t Lseek(int fd, off_t offset, int whence)
+	off_t ret = lseek(fd, offset, whence)
+	if ret == -1
+		failed("lseek")
+	return ret
+
+Truncate(const char *path, off_t length)
+	int ret = truncate(path, length)
+	if ret
+		failed("truncate")
+
+Ftruncate(int fd, off_t length)
+	int ret = ftruncate(fd, length)
+	if ret
+		failed("ftruncate")
+
+_Readlink(const char *path, buffer *b)
+	repeat
+		let(len, readlink(path, buffer_get_end(b), buffer_get_free(b)))
+		if len == -1
+			if errno == ENAMETOOLONG
+				buffer_double(b)
+			 else
+				failed("readlink")
+		 else
+			buffer_grow(b, len)
+			return
+
+Def Readlink(path, b) _Readlink(path, b)
+
+# this returns a malloc'd cstr
+
+cstr Readlink(const char *path)
+	new(b, buffer, 256)
+	Readlink(path, b)
+	return buffer_to_cstr(b)
+
+# this must be called with a malloc'd string
+# i.e. use Strdup.
+# it will free it if it was a link
+# the string it returns will also be malloc'd
+
+# this does NOT necessarily resolve to the canonical name,
+# it just reads links recursively
+
+typedef enum { if_dead_error, if_dead_null, if_dead_path, if_dead_warn=1<<31 } readlinks_if_dead
+
+cstr readlinks(cstr path, readlinks_if_dead if_dead)
+	path = strdup(path)
+	let(warn_if_dead, (if_dead & if_dead_warn) != 0)
+	if_dead &= ~if_dead_warn
+
+	decl(stat_b, stats)
+	repeat
+		if !Lstat(path, stat_b)
+			if warn_if_dead
+				warn("broken symlink to %s", path)
+			which if_dead
+			if_dead_null	return NULL
+			if_dead_path	return path
+			else	error("broken symlink to %s", path)
+		if !S_ISLNK(stat_b->st_mode)
+			break
+		let(path1, Readlink(path))
+		Path_relative_to(path1, path)
+		Free(path)
+		path = path1
+	return path
+
+def readlinks(path) readlinks(path, if_dead_error)
+
+_Getcwd(buffer *b)
+	repeat
+		if getcwd(buffer_get_end(b), buffer_get_free(b)) == NULL
+			if errno == ERANGE
+				buffer_double(b)
+			 else
+				failed("getcwd")
+		 else
+			buffer_grow(b, strlen(buffer_get_end(b)))
+#			if buffer_last_char(b) != '/'
+#				buffer_cat_char(b, '/')
+			return
+
+Def Getcwd(b) _Getcwd(b)
+
+# this returns a malloc'd cstr
+
+cstr Getcwd()
+	new(b, buffer, 256)
+	Getcwd(b)
+	return buffer_to_cstr(b)
+
+Chdir(const char *path)
+	if chdir(path) != 0
+		failed("chdir")
+
+Mkdir(const char *pathname, mode_t mode)	
+	int rv = mkdir(pathname, mode)
+	if rv
+		failed("mkdir")
+
+def Mkdir(pathname) Mkdir(pathname, 0777)
+
+Mkdir_if(const char *pathname, mode_t mode)
+	if !is_dir(pathname)
+		Mkdir(pathname, mode)
+
+def Mkdir_if(pathname) Mkdir_if(pathname, 0777)
+
+say_cstr(cstr s)
+	Say(s)
+	Free(s)
+
+Rename(const char *oldpath, const char *newpath)
+	if rename(oldpath, newpath) == -1
+		failed("rename")
+
+Chmod(const char *path, mode_t mode)
+	if chmod(path, mode) != 0
+		failed("chmod")
+
+Symlink(const char *oldpath, const char *newpath)
+	if symlink(oldpath, newpath) == -1
+		failed("symlink")
+
+Link(const char *oldpath, const char *newpath)
+	if link(oldpath, newpath) == -1
+		failed("link")
+
+Pipe(int filedes[2])
+	if pipe(filedes) != 0
+		failed("pipe")
+
+int Dup(int oldfd)
+	int fd = dup(oldfd)
+	if fd == -1
+		failed("dup")
+	return fd
+int Dup2(int oldfd, int newfd)
+	int fd = dup2(oldfd, newfd)
+	# FIXME should call close(newfd) explicitly and check for errors? nah!
+	if fd == -1
+		failed("dup2")
+	return fd
+
+FILE *Freopen(const char *path, const char *mode, FILE *stream);
+	FILE *f = freopen(path, mode, stream)
+	if f == NULL
+		failed("freopen")
+	return f
+
+print_range(char *start, char *end)
+	fprint_range(stdout, start, end)
+fprint_range(FILE *stream, char *start, char *end)
+	Fwrite(start, 1, end-start, stream)
+say_range(char *start, char *end)
+	fsay_range(stdout, start, end)
+fsay_range(FILE *stream, char *start, char *end)
+	fprint_range(stream, start, end)
+
+stats_dump(stats *s)
+	Sayf("dev\t%d", s->st_dev)
+	Sayf("ino\t%d", s->st_ino)
+	Sayf("mode\t%d", s->st_mode)
+	Sayf("nlink\t%d", s->st_nlink)
+	Sayf("uid\t%d", s->st_uid)
+	Sayf("gid\t%d", s->st_gid)
+	Sayf("rdev\t%d", s->st_rdev)
+	Sayf("size\t%d", s->st_size)
+ 	
+	# not in mingw
+	#	Sayf("blksize\t%d", s->st_blksize)
+	#	Sayf("blocks\t%d", s->st_blocks)
+	
+	Sayf("atime\t%d", s->st_atime)
+	Sayf("mtime\t%d", s->st_mtime)
+	Sayf("ctime\t%d", s->st_ctime)
+
+mode_t mode(const char *file_name)
+	new(s, stats, file_name)
+	return s->st_mode
+
+def cp(oldpath, newpath) cp(oldpath, newpath, 0666)
+cp(const char *from, const char *to, int mode)
+	int in, out
+	in = openin(from)
+	out = openout(to, mode)
+	cp_fd(in, out)
+	close(out)
+	close(in)
+
+cp_fd(int in, int out)
+	char buf[4096]
+	repeat
+		size_t len = Read(in, buf, sizeof(buf))
+		if len == 0
+			break
+		Write(out, buf, len)
+
+int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+	int rv = select(nfds, readfds, writefds, exceptfds, timeout)
+	# TODO check for EINTR ?
+	if rv == -1
+		failed("select")
+	return rv
+
+def Select(nfds, readfds, writefds, exceptfds) Select(nfds, readfds, writefds, exceptfds, NULL)
+
+fd_set_init(fd_set *o)
+	fd_zero(o)
+
+# contextual io!  but this isn't the right way!
+
+def in(filename) Freopen(filename, "r", stdin)
+def out(filename) Freopen(filename, "w", stdout)
+# this is a bit of a mess..
+
+# FIXME Input, tsv, in, etc - need a better way to do contextual IO!
+# just store current file descriptor/filehandle in a varible "in"  ??
+
+# use local / static?
+
+cstr which(cstr file)
+	cstr PATH = strdup(Getenv("PATH"))
+	new(v, vec, cstr, 32)
+	split_cstr(v, PATH, PATH_sep)
+	cstr path = NULL
+	for_vec(dir, v, cstr)
+		path = path_cat(*dir, file)
+		if Exists(path)
+			break
+		Free(path)
+		 # sets path = NULL again
+	vec_free(v)
+	Free(PATH)
+	return path
+
+def fd_clr(fd, set)
+	FD_CLR(fd_to_socket(fd), set)
+def fd_isset(fd, set) FD_ISSET(fd_to_socket(fd), set)
+def fd_set(fd, set)
+	FD_SET(fd_to_socket(fd), set)
+def fd_zero(set)
+	FD_ZERO(set)
+
+fd_set *tmp_fd_set = NULL
+
+int can_read(int fd)
+	select_wrap(fd, tmp_fd_set, NULL, NULL)
+
+int can_write(int fd)
+	select_wrap(fd, NULL, tmp_fd_set, NULL)
+
+int has_error(int fd)
+	select_wrap(fd, NULL, NULL, tmp_fd_set)
+
+def select_wrap(fd, read_fds, write_fds, except_fds)
+	if !tmp_fd_set
+		global(tmp_fd_set, fd_set)
+	timeval tv
+	rtime_to_timeval(0, &tv)
+	fd_set(fd, tmp_fd_set)
+	int n_ready = select(fd+1, read_fds, write_fds, except_fds, &tv)
+	fd_clr(fd, tmp_fd_set)
+	if n_ready == -1
+		failed("select")
+	return n_ready
+

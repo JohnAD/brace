@@ -1,0 +1,7 @@
+#!/lang/b
+use b
+
+Main()
+	if args != 2
+		usage("file size")
+	Truncate(arg[0], atoll(arg[1]))

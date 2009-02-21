@@ -1,0 +1,70 @@
+#!/bin/sh
+exec perl -e '
+
+use strict; use warnings;
+
+unless ($ENV{BRACE_LINE_NUMBERS}) {
+	while (defined ($_=<STDIN>)) { print }
+	exit;
+}
+
+my ($filename) = @ARGV;
+$filename = "<stdin>" unless defined $filename;
+(my $filename_quoted = $filename) =~ s/ ( ["\\] ) /\\$1/msxg;
+$filename_quoted = qq{"$filename_quoted"};
+
+# FIXME do not put line numbers in macros or anything that ends up
+# in a .bh file...
+# but probably should do something when including such a file
+# hmm actually macro expansions should all report a single caller line number
+# for all lines of the expansion.. and possibly the line in the macro source
+# too, etc for nested macro expansions.  complex
+
+my $i = 1;
+while (defined ($_=<STDIN>)) {
+	chomp;
+	(my $tabs = $_) =~ tr/\t//dc;
+	$tabs = length($tabs);
+	my ($spaces) = m/ \A (?:\t*) ([ ]*) /msx;
+	$spaces = length($spaces);
+	my $not_blank = m/ \S /msx;
+	my $is_comment = m/ \A \s* \# /msx;
+
+	if ($tabs > 0 && $spaces == 0 && $not_blank && !$is_comment) {
+		my ($labels_and_tabs, $rest) = m/ \A ([^#]* \t) (.*) /msx;  # this is a mess!
+		if ($labels_and_tabs =~ /[^\t]/) {
+			(my $all_tabs = $labels_and_tabs) =~ s/[^\t]//g;
+			print "$labels_and_tabs.\n";
+			print $all_tabs, qq{^line $i $filename_quoted}, "\n";
+			$_ = "$all_tabs$rest";
+###			# too complex with case statements, etc, skip it
+		} else {
+			print "\t" x $tabs, qq{^line $i $filename_quoted}, "\n";
+		}
+		# XXX this is a mess, fix when / if I care
+	}
+	print "$_\n";
+	++$i;
+}
+' "$@"
+
+#Main()
+#	cstr filename
+#	which args
+#	1	filename = arg[0]
+#	else	filename = "<stdin>"
+#
+#	# I hope no `"' in the filename :)
+#
+#	let(i, 1)
+#	eachline(line)
+#		if line[0] == '\t'
+#			let(tab_count, 1)
+#			while line[tab_count] == '\t'
+#				++tab_count
+#			tabs(tab_count)
+#			Sayf("^line %d \"%s\"", i, filename)
+#		Say(line)
+#		++i
+#
+#use b

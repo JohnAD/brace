@@ -1,0 +1,8 @@
+export m
+
+num round_angle(num a)
+
+extern const num round_angle_constant
+extern const num angle_epsilon
+extern const num pi_times_2_rounded
+

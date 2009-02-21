@@ -1,0 +1,7 @@
+export BRACE_LANGUAGE=C++
+all: geon
+geon: clip_and_draw.o clip_and_fill.o clip_region_to_sector.o debug.o draw_basic.o draw_clipped_arcs.o draw_sectors.o geon.o palette.o points.o poly.o regions.o round_angle.o sectors.o sphere.o al.bbh
+#split_regions_among_sectors.o
+clean:
+	mk-clean
+	rm -f geon *.bbh *.cc *.o
