@@ -18,6 +18,7 @@ brace (0.9.7) unstable; urgency=low
   * use --pedantic --std=gnu99
   * added priq, timeout, locking, poll
   * fixed bx to use a lockfile, and prevent multiple compilation attempts!
+  * added b1 for running one-liners
 
  -- Sam Watkins <sam@nipl.net>  Fri, 30 Jan 2009 14:50:32 +0800
 

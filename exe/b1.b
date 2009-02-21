@@ -28,4 +28,6 @@ Main()
 	cx(file)
 	int status = Systeml(file, arg)
 	Remove(file)
+	dirbasename(file, dir, base)
+	Systemf("rm %s/.%s*", dir, base)
 	return status

@@ -94,14 +94,14 @@ if [ -z "$BRACE_USE" ]; then
 		else
 			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
 		fi
-		uname > .uname
-		<.uname tr 'A-Z' 'a-z' >.uname.1
+		uname > .uname.$$
+		<.uname.$$ tr 'A-Z' 'a-z' >.uname.$$.1
 #		UNAME=`uname | tr 'A-Z' 'a-z'`
-		if grep -i bsd <.uname.1 >/dev/null; then
+		if grep -i bsd <.uname.$$.1 >/dev/null; then
 			BRACE_USE="$BRACE_USE bsd"
 		fi
-		<.uname.1 read UNAME
-		rm .uname .uname.1  # coping with borken pipes in unxutils
+		<.uname.$$.1 read UNAME
+		rm .uname.$$ .uname.$$.1  # coping with borken pipes in unxutils
 		BRACE_USE="$BRACE_USE $UNAME"
 #		elif echo $UNAME | grep -i linux >/dev/null; then
 #			BRACE_USE="$BRACE_USE linux"
