@@ -147,9 +147,7 @@ def ignore_ctrl_c()
 def allow_ctrl_c()
 	Signal(2, SIG_DFL)
 
-int Systemv(const char *filename, char *const argv[])
-	# the filename is repeated in argv[0] - so skip it
-	++argv;
+int Systema(const char *filename, char *const argv[])
 	new(b, buffer, 256)
 	system_quote(filename, b)
 	while (*argv) {
@@ -162,6 +160,10 @@ int Systemv(const char *filename, char *const argv[])
 	let(rv, System(command))
 	buffer_free(b)
 	return rv
+
+int Systemv(const char *filename, char *const argv[])
+	# the filename is repeated in argv[0] - so skip it
+	return Systema(filename, argv+1)
 
 # note: for Systeml, unlike exec, and unlike Systemv, the
 # filename is not repeated

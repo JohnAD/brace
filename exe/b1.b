@@ -20,13 +20,13 @@ Main()
 	Fsayf(f, "Main()")
 	if args > 0
 		Fsayf(f, "\t%s", arg[0])
-		++arg
+		++arg ; --args
 	 else
 		eachline(l)
 			Fsayf(f, "\t%s", l)
 	Fclose(f)
 	cx(file)
-	int status = Systeml(file, arg)
+	int status = Systema(file, arg)
 	Remove(file)
 	dirbasename(file, dir, base)
 	Systemf("rm %s/.%s*", dir, base)
