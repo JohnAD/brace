@@ -94,12 +94,12 @@ def sqr(x) x*x
 num notpot(num hypotenuse, num x)
 	return sqrt(sqr(hypotenuse) - sqr(x))
 
-def Randint(max) (int)max*(double)Rand()
+def Randint(max) (int)(max*(double)Rand())
 #int Randint(int max)
 #	return (int)max*(double)Rand()
 def Randint(min, max) Randint(max-min)+min
 
-def Rand() ((num)random())/RAND_MAX
+def Rand() (num)random()/RAND_MAX
 # FIXME is this enough precision for a double?  I guess not?
 #num Rand()
 #	# FIXME is this enough precision for a double?  I guess not?

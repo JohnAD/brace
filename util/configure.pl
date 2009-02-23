@@ -19,11 +19,12 @@ for (@ARGV) {
 	}
 }
 $pwd=fix_path($ENV{PWD});
+$build="$pwd/.build";
 $realprefix=$prefix;
 
 
 while (defined ($_=<STDIN>)) {
-	s/^(srcdir=).*/$1$pwd/;
+	s/^(srcdir=).*/$1$build/;
 	s/^(realprefix=).*/$1$realprefix/;
 	s{[\\/]}{$sep}g;
 	print;

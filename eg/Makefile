@@ -1,6 +1,6 @@
 # just for cleaning at the moment!
 
-include ../Make.conf
+include ../.Make.conf
 
 PATH:=$(srcdir)/exe:$(srcdir)/util:$(PATH)
 

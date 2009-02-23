@@ -1,4 +1,4 @@
-include ../Make.conf
+include ../.Make.conf
 
 LIBB_BUILD:=1
 

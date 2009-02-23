@@ -1,17 +1,23 @@
-include Make.conf
+include .Make.conf
 
+export BRACE_STANDALONE=
+
+dotbuild:
+	mkdir -p .build
+	cp -alf .Make.conf * .build/
+	cd .build ; $(MAKE) build
 build:
-	if [ -n "$(BRACE_STANDALONE)" ]; then echo; echo >&2 please unset BRACE_STANDALONE; echo; exit 1; fi
 	cd exe ; $(MAKE) boot
 	cd lib ; $(MAKE)
 	cd exe ; $(MAKE)
 clean:
-	cd exe ; $(MAKE) clean
-	cd lib ; $(MAKE) clean
+	rm -rf .build
+#	cd exe ; $(MAKE) clean
+#	cd lib ; $(MAKE) clean
 	cd eg ; $(MAKE) clean
-install: build
-	cd exe ; $(MAKE) install
-	cd lib ; $(MAKE) install
+install: .build
+	cd .build/exe ; $(MAKE) install
+	cd .build/lib ; $(MAKE) install
 	install -d "$(libdir)" "$(perldir)"
 	install -m 644 lib/mk "$(libdir)"/mk
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
@@ -20,16 +26,13 @@ install: build
 	perl -MIO::String -e '' 2>/dev/null || cp -pR cpan/IO "$(perldir)"
 
 uninstall:
-	cd exe ; $(MAKE) uninstall
-	cd lib ; $(MAKE) uninstall
+	cd .build/exe ; $(MAKE) uninstall
+	cd .build/lib ; $(MAKE) uninstall
 	rm -f '$(libdir)'/mk
-	for D in `ls perl`; do rm -rf '$(perldir)'/"$$D"; done
+	for D in `ls perl`; do rm -rf '$(perldir)'/"$$D"; done  # XXX this could trash other Brace::* packages
 	rmdir '$(libdir)' '$(includedir)' '$(perldir)' '$(bindir)' '$(langdir)' '$(realprefix)' || true
 
 distclean: clean
-	rm Make.conf
-#Make.conf: Make.conf.in
-#	./configure
-#	# to keep the "clean/distclean" targets working after a distclean
+	rm .Make.conf
 
-.PHONY: build clean install distclean
+.PHONY: dotbuild build clean install distclean
