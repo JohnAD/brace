@@ -55,9 +55,14 @@ failed(const char *funcname)
 # I think this 2 arg version isn't used
 failed2(const char *funcname, const char *errmsg)
 	serror("%s failed: %s", funcname, errmsg)
+failed3(const char *funcname, const char *msg1, const char *msg2)
+	serror("%s failed: %s, %s", funcname, msg1, msg2)
 
 def failed(funcname, errmsg)
 	failed2(funcname, errmsg)
+
+def failed(funcname, msg1, msg2)
+	failed3(funcname, msg1, msg2)
 
 def failed0(const char *funcname)
 	error("%s failed", funcname)

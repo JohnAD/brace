@@ -163,7 +163,7 @@ Main()
 					if i != earth
 						planet()
 
-			i = earth
+			int i = earth
 			planet()
 
 			paint()
@@ -215,7 +215,7 @@ def stars()
 		else
 			white()
 		point(star_x[c], star_y[c])
-	c = Rand(n_stars)
+	int c = Rand(n_stars)
 	star(c)
 
 def star(c)

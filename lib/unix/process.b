@@ -79,3 +79,9 @@ def ignore_hup()
 	Signal(SIGHUP, SIG_IGN)
 
 def system_quote sh_quote
+
+uid_t uid_root = 0
+int myuid = -1
+int mygid = -1
+def Getuid() (uid_t)(myuid != -1 ? myuid : (myuid = getuid()))
+def Getgid() (gid_t)(mygid != -1 ? mygid : (mygid = getgid()))

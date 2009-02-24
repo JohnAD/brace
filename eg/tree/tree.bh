@@ -1,5 +1,5 @@
 def tree(f, x, y, r, a, a0, a1, m0, m1)
-	rb = 1
+	use_rb = 1
 	wf = 1
 	tree1(f, x, y, r, a, a0, a1, m0, m1)
 
@@ -12,7 +12,7 @@ tree1(int forks,  num x, num y, num r, num a,  num a0, num a1, num m0, num m1)
 branch(num x0, num y0, num x1, num y1, num w)
 leaf(num x, num y, num a, num r)
 
-extern boolean rb
+extern boolean use_rb
 extern num wf
 extern colour branchcol
 

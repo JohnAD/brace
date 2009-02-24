@@ -10,14 +10,24 @@ use io
 int Open(const char *pathname, int flags, mode_t mode)
 	int fd = open(pathname, flags, mode)
 	if fd == -1
-		failed("open")
+		char msg[8]
+		cstr how
+		strcpy(msg, "open ")
+		which flags & 3
+		O_RDONLY	how = "r"
+		O_WRONLY	how = "w"
+		O_RDWR	how = "rw"
+		strcat(msg, how)
+		failed(msg, pathname)
 	return fd
 def Open(pathname, flags) Open(pathname, flags, 0666)
 
-def openin(pathname) open(pathname, O_RDONLY)
-def openout(pathname, mode) open(pathname, O_WRONLY, mode)
+def openin(pathname) Open(pathname, O_RDONLY)
+def openout(pathname, mode) Open(pathname, O_WRONLY|O_CREAT, mode)
 def openout(pathname) openout(pathname, 0666)
 def Open(pathname) openin(pathname)
+
+# FIXME many uses of openout would want O_TRUNC
 
 Close(int fd)
 	winsock_close(fd)
@@ -579,14 +589,13 @@ _Readlink(const char *path, buffer *b)
 			buffer_grow(b, len)
 			return
 
-Def Readlink(path, b) _Readlink(path, b)
+def Readlink(path, b) _Readlink(path, b), buffer_to_cstr(b)
 
 # this returns a malloc'd cstr
 
 cstr Readlink(const char *path)
 	new(b, buffer, 256)
-	Readlink(path, b)
-	return buffer_to_cstr(b)
+	return Readlink(path, b)
 
 # this must be called with a malloc'd string
 # i.e. use Strdup.
@@ -673,9 +682,17 @@ Chmod(const char *path, mode_t mode)
 	if chmod(path, mode) != 0
 		failed("chmod")
 
+Chown(const char *path, uid_t uid, gid_t gid)
+	if chown(path, uid, gid) != 0
+		failed("chown")
+
+Lchown(const char *path, uid_t uid, gid_t gid)
+	if lchown(path, uid, gid) != 0
+		failed("lchown")
+
 Symlink(const char *oldpath, const char *newpath)
 	if symlink(oldpath, newpath) == -1
-		failed("symlink")
+		failed("symlink", oldpath, newpath)
 
 Link(const char *oldpath, const char *newpath)
 	if link(oldpath, newpath) == -1
@@ -740,8 +757,8 @@ cp(const char *from, const char *to, int mode)
 	in = openin(from)
 	out = openout(to, mode)
 	cp_fd(in, out)
-	close(out)
-	close(in)
+	Close(out)
+	Close(in)
 
 cp_fd(int in, int out)
 	char buf[4096]
@@ -820,3 +837,49 @@ def select_wrap(fd, read_fds, write_fds, except_fds)
 		failed("select")
 	return n_ready
 
+def dir1rest(path, d, b)
+	let(d, path)
+	let(b, path)
+	while path__is_sep(*b)
+		++b
+	while *b != '\0' && !path__is_sep(*b)
+		++b
+	if *b
+		*b = '\0'
+		++b
+	 else
+		b = NULL
+
+Mkdirs(const char *pathname, mode_t mode)
+	cstr basedir = Getcwd()
+	cstr dir1 = strdup(pathname)
+	cstr dir = dir1
+	repeat
+		dir1rest(dir, d, b)
+		warn("mkdir %s", d)
+		mkdir(d, mode)
+		warn("chdir %s", d)
+		Chdir(d)
+		if !b || !*b
+			break
+		dir = b
+	
+	Free(dir1)
+	Chdir(basedir)
+
+def Mkdirs(pathname) Mkdirs(pathname, 0777)
+
+Rmdirs(const char *pathname)
+	cstr dir = strdup(pathname)
+	repeat
+		warn("rmdir %s", dir)
+		if rmdir(dir)
+			warn("b1")
+			break
+		let(d, dir_name(dir))
+		if (*d == '.' || *d == '/') && d[1] == '\0'
+			warn("b2")
+			break
+		dir = d
+	
+	Free(dir)

@@ -208,10 +208,31 @@ def find(root, f, s)
 	find_deq(my(q), f, s)
 		.
 
+def find_all(root, f, s)
+	new(my(q), deq, cstr)
+	deq_push(my(q), root)
+	# need proper macros!! this is ugly![
+	find_deq_all(my(q), f, s)
+		.
+
+def find_dirs(root, f, s)
+	new(my(q), deq, cstr)
+	deq_push(my(q), root)
+	# need proper macros!! this is ugly![
+	find_deq_dirs(my(q), f, s)
+		.
+
+def find_reg(root, f, s)
+	new(my(q), deq, cstr)
+	deq_push(my(q), root)
+	# need proper macros!! this is ugly![
+	find_deq_reg(my(q), f, s)
+		.
+
 # IDEA - non-homogenous deq, queue, etc?  nah!  couldn't do random access..
 # not that I ever do anyway yet
 
-def find_deq(q, f, s)
+def find_deq_all(q, f, s)
 	cstr f
 	while deq_get_size(q)
 		deq_shift(q, f)
@@ -220,6 +241,23 @@ def find_deq(q, f, s)
 			continue
 		if S_ISDIR(s->st_mode)
 			find__its_a_dir(q, f)
+		.
+
+def find_deq(q, f, s)
+	find_deq_all(q, f, s)
+		if S_ISDIR(s->st_mode)
+			continue
+		.
+
+def find_deq_dirs(q, f, s)
+	find_deq_d(q, f, s)
+		if !S_ISDIR(s->st_mode)
+			continue
+		.
+
+def find_deq_reg(q, f, s)
+	find_deq_d(q, f, s)
+		if !S_ISREG(s->st_mode)
 			continue
 		.
 

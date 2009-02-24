@@ -1,18 +1,18 @@
-boolean rb
+boolean use_rb
 num wf
 colour branchcol
 
 def tree(f, x, y, r, a, a0, a1, m0, m1)
-	rb = 1
+	use_rb = 1
 	wf = 1
 	tree1(f, x, y, r, a, a0, a1, m0, m1)
 
-#	rb = 0
+#	use_rb = 0
 #	wf = 0.7
 #	branchcol = black
 #	tree1(f, x, y, r, a, a0, a1, m0, m1)
 #
-#	rb = 0
+#	use_rb = 0
 #	wf = 0.2
 #	branchcol = white
 #	tree1(f, x, y, r, a, a0, a1, m0, m1)
@@ -32,7 +32,7 @@ tree1(int forks,
 
 branch(num x0, num y0, num x1, num y1, num w)
 	w *= wf
-	if rb
+	if use_rb
 		rainbow(x0/2)
 	else
 		col(branchcol)
@@ -42,8 +42,9 @@ branch(num x0, num y0, num x1, num y1, num w)
 	dot(x0, y0, w/2*1.1)
 
 leaf(num x, num y, num a, num r)
+	use(a)
 	r *= wf
-	if rb
+	if use_rb
 		rainbow(x/2)
 	else
 		black()

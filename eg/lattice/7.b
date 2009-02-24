@@ -8,14 +8,23 @@ Main()
 	zoom(40)
 	rt3 = sqrt(3.0)
 
-	num a
-	for a = 0; ; a+=0.5
+	num a = -360
+	num da = 0
+	num dda = 0.01
+
+	repeat
 		move(0, 0)
 		east()
 		rt(a)
 		clear()
 		draw_lattice()
 		paint()
+		a += da
+		if a > 0
+			dda = -0.01
+		 eif a < 0
+			dda = 0.01
+		da += dda
 
 def draw_lattice()
 #	Printf("%f ", rtime())
