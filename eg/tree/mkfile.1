@@ -1,50 +1,39 @@
 #export BRACE_STANDALONE = 1
-#LDFLAGS += -L/usr/X11R6/lib -lX11 -lm
-export GR=1
 LDFLAGS += -L/usr/X11R6/lib -lX11 -lm -lb
+CC=gcc -pedantic -std=gnu99
+
 DIR=$(PWD)
 #CFLAGS:=-Wall -Werror -I. $(CFLAGS)
-CFLAGS:=-Wall -Werror $(CFLAGS)
+CFLAGS:=-Wall -Wextra -Werror $(CFLAGS)
 
 ifndef BRACE_STANDALONE
 ifndef LIBB_BUILD
-#CFLAGS:=-I$(DIR) -I$(BRACE_LIB) $(CFLAGS)
 ifeq ($(BRACE_LANGUAGE),C++)
-#LDFLAGS:=-lstdc++ $(BRACE_L_SO) -lb -lbb $(LDFLAGS)
-LDFLAGS:=$(LDFLAGS) -lstdc++ $(BRACE_L_SO) -lb
+LDLIBS:=$(LDLIBS) -lb -lstdc++
 else
-LDFLAGS:=$(LDFLAGS) $(BRACE_L_SO) -lb
+LDLIBS:=$(LDLIBS) -lb
 endif
 endif
 endif
+LDLIBS:=$(LDLIBS) -lm
 
 ifeq ($(BRACE_LANGUAGE),C++)
-LDFLAGS:=$(LDFLAGS) -lstdc++
+LDLIBS:=$(LDLIBS) -lstdc++
+CFLAGS:=$(CFLAGS) -Weffc++
+else
+CFLAGS:=$(CFLAGS)
 endif
 
 ifdef DEBUG
 CFLAGS += -ggdb
 else
-LDFLAGS += -s   # does this work with tcc?  I guess not :/
+LDFLAGS += -s
 endif
 
 ifdef OPTIMISE
 CFLAGS += -O2
 endif
 
-#ifdef GR
-#LDFLAGS += -L/usr/X11R6/lib -lX11 #-lgr
-#endif
-#ifdef CURSES
-#LDFLAGS += -lcurses
-#endif
-#ifdef JABBER
-#CFLAGS += $(shell pkg-config --cflags loudmouth-1.0)
-#LDFLAGS += $(shell pkg-config --libs loudmouth-1.0)
-#export INCLUDE_PATH:=$(shell pkg-config --cflags loudmouth-1.0 | sed 's/-I//g;s/ /:/g'):$(INCLUDE_PATH)
-#endif
-
-#CFLAGS:=$(CFLAGS) -D_GNU_SOURCE
 CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
 
 # TODO redefine the %.o: %.c and %.o: %.cc patterns?
@@ -54,9 +43,9 @@ CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
 .%.bb1: %.bb
 	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C++ b2b1 >'$@'
 .%.bh1: %.bh
-	<'$<' BRACE_LANGUAGE=C bh2bh1 "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
+	<'$<' BRACE_LANGUAGE=C brace_header_export "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
 .%.bbh1: %.bbh
-	<'$<' BRACE_LANGUAGE=C++ bh2bh1 "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
+	<'$<' BRACE_LANGUAGE=C++ brace_header_export "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
 
 .%.c: .%.b1
 	<'$<' BRACE_LANGUAGE=C brace >'$@'
@@ -67,16 +56,16 @@ CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
 %.cc: .%.cc
 	cp '$<' '$@'
 
-#%.h: %.bh1
-#	<$< BRACE_LANGUAGE=C brace >$@
-#%.h: %.bbh1
-#	<$< BRACE_LANGUAGE=C++ brace >$@
+%.h: .%.bh1
+	<$< BRACE_LANGUAGE=C brace >$@
+%.h: .%.bbh1
+	<$< BRACE_LANGUAGE=C++ brace >$@
 
-# These are handled by brace_update_headers:
-# %.bh: %.b
-# 	brace_header <$< >$@
-# %.bbh: %.bb
-# 	brace_header <$< >$@
+# These are also handled by brace_update_headers:
+.%.bh: %.b
+	brace_header <$< >$@
+.%.bbh: %.bb
+	brace_header <$< >$@
 
 .PRECIOUS: .%.b1 .%.bb1 %.bh %.bbh .%.bh1 .%.bbh1 .%.c .%.cc %.h
 all: windy still

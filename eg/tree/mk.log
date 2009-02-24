@@ -1,14 +1,7 @@
 <'windy.b' brace_number_lines 'windy.b' | BRACE_LANGUAGE=C b2b1 >'.windy.b1'
 <'.windy.b1' BRACE_LANGUAGE=C brace >'.windy.c'
 cp '.windy.c' 'windy.c'
-cc -Wall -Werror    -c -o windy.o windy.c
-<'tree.b' brace_number_lines 'tree.b' | BRACE_LANGUAGE=C b2b1 >'.tree.b1'
-<'.tree.b1' BRACE_LANGUAGE=C brace >'.tree.c'
-cp '.tree.c' 'tree.c'
-cc -Wall -Werror    -c -o tree.o tree.c
-cc -L/usr/X11R6/lib -lX11 -lm -lb  -lb -s     windy.o tree.o   -o windy
-<'still.b' brace_number_lines 'still.b' | BRACE_LANGUAGE=C b2b1 >'.still.b1'
-<'.still.b1' BRACE_LANGUAGE=C brace >'.still.c'
-cp '.still.c' 'still.c'
-cc -Wall -Werror    -c -o still.o still.c
-cc -L/usr/X11R6/lib -lX11 -lm -lb  -lb -s     still.o tree.o   -o still
+gcc -pedantic -std=gnu99 -Wall -Wextra -Werror  -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -I/usr/X11R6/include   -c -o windy.o windy.c
+gcc -pedantic -std=gnu99  -L"/usr/lib" -L/usr/X11R6/lib -lX11 -lm -lb -s  windy.o tree.o    -L/usr/X11R6/lib -lX11 -lXext -lb -lm -o windy
+gcc -pedantic -std=gnu99 -Wall -Wextra -Werror  -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -I/usr/X11R6/include   -c -o still.o still.c
+gcc -pedantic -std=gnu99  -L"/usr/lib" -L/usr/X11R6/lib -lX11 -lm -lb -s  still.o tree.o    -L/usr/X11R6/lib -lX11 -lXext -lb -lm -o still

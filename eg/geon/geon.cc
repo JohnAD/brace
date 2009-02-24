@@ -11,11 +11,20 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <errno.h>
 #include <string.h>
+#include <errno.h>
+#include <setjmp.h>
+#include <ctype.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/un.h>
+#include <sys/select.h>
+#include <poll.h>
 #include <time.h>
 #include <sys/time.h>
-#include <al>
+#include <algorithm>
 #include <vector>
 #include <map>
 
@@ -43,6 +52,19 @@ enum region_sector_containment
 struct polygon;
 struct str;
 struct buffer;
+struct vec;
+struct list;
+struct list_x;
+struct hashtable;
+struct key_value;
+struct node_kv;
+struct circbuf;
+struct deq;
+struct thunk;
+struct err;
+struct error_handler;
+template<class S, class F> F for_each(S &s, F f);
+template<class S1, class S2, class F> void mapp(S1 &s1, S2 &s2, F &f);
 struct vec3;
 struct angle3;
 struct region;
@@ -55,6 +77,17 @@ struct clip_to_sector_arc;
 typedef struct polygon polygon;
 typedef struct str str;
 typedef struct buffer buffer;
+typedef struct vec vec;
+typedef struct list list;
+typedef struct list_x list_x;
+typedef struct hashtable hashtable;
+typedef struct key_value key_value;
+typedef struct node_kv node_kv;
+typedef struct circbuf circbuf;
+typedef struct deq deq;
+typedef struct thunk thunk;
+typedef struct err err;
+typedef struct error_handler error_handler;
 typedef struct vec3 vec3;
 typedef struct angle3 angle3;
 typedef struct region region;
@@ -66,17 +99,23 @@ typedef struct clip_to_sector_arc clip_to_sector_arc;
 
 typedef unsigned char byte;
 typedef double num;
-typedef int boolean;
+typedef unsigned char boolean;
 typedef char *cstr;
 typedef unsigned int count_t;
-typedef void (*Thunk)(void);
-typedef void (*handler_cstr)(cstr s);
 typedef unsigned char uchar;
+typedef struct timeval timeval;
+typedef struct timespec timespec;
 typedef long colour;
+typedef unsigned int (*hash_func)(void *key);
+typedef boolean (*eq_func)(void *k1, void *k2);
+typedef void *(*thunk_func)(void *obj, void *common_arg, void *specific_arg);
+typedef struct hostent hostent;
+typedef int SOCKET;
 typedef struct dirent dirent;
 typedef struct stat stats;
 typedef struct stat lstats;
 typedef enum { if_dead_error, if_dead_null, if_dead_path, if_dead_warn=1<<31 } readlinks_if_dead;
+typedef struct pollfd pollfd;
 typedef struct tm datetime;
 typedef vector<angle3> poly_angle3;
 typedef vector<vec3> poly_vec3;
@@ -86,7 +125,7 @@ struct polygon
 {
 	XPoint *points;
 	int n_points;
-	int capacity;
+	int space;
 };
 
 struct str
@@ -101,6 +140,101 @@ struct buffer
 	char *end;
 	char *space_end;
 };
+
+struct vec
+{
+	buffer b;
+	size_t element_size;
+	size_t space;
+	size_t size;
+};
+
+struct list
+{
+	list *next;
+};
+
+struct list_x
+{
+	list *next;
+	void *o;
+};
+
+struct hashtable
+{
+	list *buckets;
+	size_t size;
+	hash_func hash;
+	eq_func eq;
+};
+
+struct key_value
+{
+	void *key;
+	void *value;
+};
+
+struct node_kv
+{
+	list l;
+	key_value kv;
+};
+
+struct circbuf
+{
+	size_t size;
+	size_t space;
+	size_t start;
+	char *data;
+};
+
+struct deq
+{
+	circbuf b;
+	size_t element_size;
+	size_t space;
+	size_t size;
+	size_t start;
+};
+
+struct thunk
+{
+	thunk_func func;
+	void *obj;
+	void *common_arg;
+};
+
+struct err
+{
+	cstr msg;
+	int no;
+	void *data;
+};
+
+struct error_handler
+{
+	sigjmp_buf *jump;
+	thunk handler;
+	int err;
+};
+
+template<class S, class F> F for_each(S &s, F f)
+{
+	return for_each(s.begin(), s.end(), f);
+}
+
+template<class S1, class S2, class F> void mapp(S1 &s1, S2 &s2, F &f)
+{
+	s2.clear();
+	typename S1::const_iterator i = s1.begin();
+	typename S1::const_iterator end = s1.end();
+	for(; i!=end ; ++i)
+	{
+		typename S2::value_type i2;
+		f(*i, i2);
+		s2.push_back(i2);
+	}
+}
 
 struct vec3
 {
@@ -195,6 +329,7 @@ extern "C" num isd(num sd);
 extern "C" void move(num x, num y);
 extern "C" void move2(num x1, num y1, num x2, num y2);
 extern "C" void draw(num x, num y);
+extern "C" void gprint_anchor(num xanc, num yanc);
 extern "C" int gprintf(const char *format, ...);
 extern "C" int vgprintf(const char *format, va_list ap);
 extern "C" void gsay(char *p);
@@ -230,15 +365,6 @@ extern "C" void fprint_str(FILE *stream, str s);
 extern "C" void print_str(str s);
 extern "C" void fsay_str(FILE *stream, str s);
 extern "C" void say_str(str s);
-extern "C" void error(const char *format, ...);
-extern "C" void warn(const char *format, ...);
-extern "C" void serror(const char *format, ...);
-extern "C" void failed(const char *funcname);
-extern "C" void failed_2(const char *funcname, const char *errmsg);
-extern "C" void swarning(const char *format, ...);
-extern "C" void memdump(const char *from, const char *to);
-extern "C" void error__assert(int should_be_true, const char *format, ...);
-extern "C" void usage(char *syntax);
 extern "C" size_t buffer_get_space(buffer *b);
 extern "C" void buffer_init(buffer *b, size_t space);
 extern "C" void buffer_free(buffer *b);
@@ -247,8 +373,9 @@ extern "C" void buffer_set_size(buffer *b, size_t size);
 extern "C" void buffer_double(buffer *b);
 extern "C" void buffer_squeeze(buffer *b);
 extern "C" void buffer_cat_char(buffer *b, char c);
-extern "C" void buffer_cat_cstr(buffer *b, cstr s);
+extern "C" void buffer_cat_cstr(buffer *b, const char *s);
 extern "C" void buffer_cat_str(buffer *b, str s);
+extern "C" void buffer_cat_range(buffer *b, const char *start, const char *end);
 extern "C" void buffer_grow(buffer *b, size_t delta_size);
 extern "C" void buffer_clear(buffer *b);
 extern "C" size_t buffer_get_free(buffer *b);
@@ -271,6 +398,138 @@ extern "C" void buffer_shift(buffer *b, size_t shift);
 extern "C" void buffer_ensure_space(buffer *b, size_t space);
 extern "C" void buffer_ensure_size(buffer *b, size_t size);
 extern "C" void buffer_ensure_free(buffer *b, size_t free);
+extern "C" void buffer_nl(buffer *b);
+extern "C" void vec_init_el_size(vec *v, size_t element_size, size_t space);
+extern "C" void vec_clear(vec *v);
+extern "C" void vec_free(vec *v);
+extern "C" void vec_space(vec *v, size_t space);
+extern "C" void vec_size(vec *v, size_t size);
+extern "C" void vec_double(vec *v);
+extern "C" void vec_squeeze(vec *v);
+extern "C" void *vec_element(vec *v, size_t index);
+extern "C" void *vec_top(vec *v, size_t index);
+extern "C" void *vec_push(vec *v);
+extern "C" void vec_pop(vec *v);
+extern "C" void vec_dup(vec *to, vec *from);
+extern "C" void vec_ensure_size(vec *v, size_t size);
+extern "C" void list_init(list *l);
+extern "C" boolean list_is_empty(list *l);
+extern "C" list *list_last(list *l);
+extern "C" void list_dump(list *l);
+extern "C" list *list_reverse(list *l);
+extern "C" list *list_reverse_fast(list *l);
+extern "C" void list_push(list **list_pp, list *new_node);
+extern "C" void list_pop(list **list_pp);
+extern "C" void list_free(list **l);
+extern "C" void list_x_init(list_x *n, void *o);
+extern "C" void cstr_dos_to_unix(cstr s);
+extern "C" cstr cstr_unix_to_dos(cstr s);
+extern "C" void cstr_chomp(cstr s);
+extern "C" int cstr_eq(cstr s1, cstr s2);
+extern "C" int cstr_is_empty(cstr s1);
+extern "C" int cstr_ends_with(cstr s, cstr substr);
+extern "C" cstr cstr_begins_with(cstr s, cstr substr);
+extern "C" cstr cstr_from_buffer(buffer *b);
+extern "C" cstr cstr_of_size(size_t n);
+extern "C" cstr Strdup(cstr s);
+extern "C" cstr cstr_chop_end(cstr c, cstr end);
+extern "C" cstr cstr_chop_start(cstr c, cstr start);
+extern "C" void void_cstr(cstr s);
+extern "C" void split_cstr(vec *v, cstr s, char c);
+extern "C" void hashtable_init(hashtable *ht, hash_func hash, eq_func eq, size_t size);
+extern "C" list *alloc_buckets(size_t size);
+extern "C" list *hashtable_lookup_ref(hashtable *ht, void *key);
+extern "C" key_value *hashtable_lookup(hashtable *ht, void *key);
+extern "C" key_value *hashtable_ref_lookup(list *l);
+extern "C" void *hashtable_value(hashtable *ht, void *key);
+extern "C" key_value *hashtable_add(hashtable *ht, void *key, void *value);
+extern "C" void hashtable_ref_add(list *l, void *key, void *value);
+extern "C" key_value hashtable_delete(hashtable *ht, void *key);
+extern "C" void hashtable_delete_maybe(hashtable *ht, void *key);
+extern "C" key_value hashtable_ref_delete(list *l);
+extern "C" node_kv *hashtable_ref_node(list *l);
+extern "C" boolean hashtable_ref_exists(list *l);
+extern "C" key_value *hashtable_ref_key_value(list *l);
+extern "C" list *which_bucket(hashtable *ht, void *key);
+extern "C" size_t hashtable_sensible_size(size_t size);
+extern "C" unsigned int cstr_hash(void *s);
+extern "C" void hashtable_dump(hashtable *ht);
+extern "C" key_value *hashtable_lookup_or_add_key(hashtable *ht, void *key, void *value_init);
+extern "C" unsigned int int_hash(void *i_ptr);
+extern "C" boolean int_eq(int *a, int *b);
+extern "C" void hashtable_free(hashtable *ht);
+extern "C" void circbuf_init(circbuf *b, size_t space);
+extern "C" char *circbuf_get_pos(circbuf *b, int index);
+extern "C" void circbuf_free(circbuf *b);
+extern "C" void circbuf_set_space(circbuf *b, size_t space);
+extern "C" void circbuf_set_size(circbuf *b, size_t size);
+extern "C" void circbuf_grow(circbuf *b, size_t delta_size);
+extern "C" void circbuf_shift(circbuf *b, size_t delta_size);
+extern "C" void circbuf_double(circbuf *b);
+extern "C" void circbuf_squeeze(circbuf *b);
+extern "C" void _deq_init(deq *q, size_t element_size, size_t space);
+extern "C" void deq_free(deq *q);
+extern "C" void deq_space(deq *q, size_t space);
+extern "C" void deq_size(deq *q, size_t size);
+extern "C" void deq_double(deq *q);
+extern "C" void deq_squeeze(deq *q);
+extern "C" void *deq_element(deq *q, size_t index);
+extern "C" void *deq_push(deq *q);
+extern "C" void deq_pop(deq *q);
+extern "C" void *deq_top(deq *q, size_t index);
+extern "C" void *deq_unshift(deq *q);
+extern "C" void deq_shift(deq *q);
+extern "C" void *thunk_ignore(void *obj, void *common_arg, void *specific_arg);
+extern "C" void *thunk_void(void *obj, void *common_arg, void *specific_arg);
+extern "C" void *thunk_thunks(void *obj, void *common_arg, void *specific_arg);
+extern "C" void *thunks_call(deq *q, void *specific_arg);
+extern "C" void error(const char *format, ...);
+extern "C" void serror(const char *format, ...);
+extern "C" void warn(const char *format, ...);
+extern "C" void failed(const char *funcname);
+extern "C" void failed2(const char *funcname, const char *errmsg);
+extern "C" void failed3(const char *funcname, const char *msg1, const char *msg2);
+extern "C" void swarning(const char *format, ...);
+extern "C" void memdump(const char *from, const char *to);
+extern "C" void error__assert(int should_be_true, const char *format, ...);
+extern "C" void usage(char *syntax);
+extern "C" void error_init(void);
+extern "C" err *error_add(cstr msg, int no, void *data);
+extern "C" void Throw(cstr msg, int no, void *data);
+extern "C" void throw_(err *e);
+extern "C" void clear_errors(void);
+extern "C" void warn_errors(void);
+extern "C" void warn_errors_keep(void);
+extern "C" void debug_errors(void);
+extern "C" void debug_errors_keep(void);
+extern "C" void fault_(char *file, int line, const char *format, ...);
+extern "C" void add_error_message(int errnum, cstr message);
+extern "C" cstr Strerror(int errnum);
+extern "C" void Perror(const char *s);
+extern "C" void *error_warn(void *obj, void *common_arg, void *er);
+extern "C" void *error_ignore(void *obj, void *common_arg, void *er);
+extern "C" int Socket(int domain, int type, int protocol);
+extern "C" void Bind(int sockfd, struct sockaddr *my_addr, socklen_t addrlen);
+extern "C" void Listen(int sockfd, int backlog);
+extern "C" int Accept(int earfd, struct sockaddr *addr, socklen_t *addrlen);
+extern "C" void Connect(int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen);
+extern "C" void Sockaddr_in(struct sockaddr *sockaddr, char *addr, int port);
+extern "C" hostent *Gethostbyname(const char *name);
+extern "C" cstr name_to_ip(const char *name);
+extern "C" int Server_tcp(char *addr, int port);
+extern "C" void Setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen);
+extern "C" int Client_tcp(char *addr, int port);
+extern "C" cstr Hostname(void);
+extern "C" ssize_t Send(int s, const void *buf, size_t len, int flags);
+extern "C" ssize_t Recv(int s, void *buf, size_t len, int flags);
+extern "C" ssize_t SendTo(int s, const void *buf, size_t len, int flags, const struct sockaddr *to, socklen_t tolen);
+extern "C" ssize_t RecvFrom(int s, void *buf, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen);
+extern "C" void Shutdown(int s, int how);
+extern "C" void Closesocket(int fd);
+extern "C" void keepalive(int fd);
+extern "C" int Server_unix_stream(char *addr);
+extern "C" int Client_unix_stream(char *addr);
+extern "C" void Sockaddr_unix(struct sockaddr *sockaddr, char *addr);
 extern "C" int Open(const char *pathname, int flags, mode_t mode);
 extern "C" void Close(int fd);
 extern "C" ssize_t Read_some(int fd, void *buf, size_t count);
@@ -279,7 +538,7 @@ extern "C" ssize_t Write_some(int fd, const void *buf, size_t count);
 extern "C" void Write(int fd, const void *buf, size_t count);
 extern "C" void slurp_2(int fd, buffer *b);
 extern "C" buffer *slurp_1(int filedes);
-extern "C" void belch(int fd, buffer *b);
+extern "C" void spurt(int fd, buffer *b);
 extern "C" FILE *Fopen(const char *path, const char *mode);
 extern "C" void Fclose(FILE *fp);
 extern "C" char *Fgets(char *s, int size, FILE *stream);
@@ -293,16 +552,21 @@ extern "C" void Fflush(FILE *stream);
 extern "C" FILE *Fdopen(int filedes, const char *mode);
 extern "C" void Nl(FILE *stream);
 extern "C" void crnl(FILE *stream);
-extern "C" void Fputs(const char *s, FILE *stream);
 extern "C" void Puts(const char *s);
+extern "C" void Fsay(FILE *stream, const char *s);
+extern "C" void Fputs(const char *s, FILE *stream);
 extern "C" int Sayf(const char *format, ...);
 extern "C" int Vsayf(const char *format, va_list ap);
 extern "C" int Fsayf(FILE *stream, const char *format, ...);
 extern "C" int Vfsayf(FILE *stream, const char *format, va_list ap);
-extern "C" void Fsay(FILE *stream, const char *s);
-extern "C" char *Input(const char *s);
+extern "C" char *Input(const char *prompt);
 extern "C" char *Inputf(const char *format, ...);
 extern "C" char *Vinputf(const char *format, va_list ap);
+extern "C" char *Vfinputf(FILE *in, FILE *out, const char *format, va_list ap);
+extern "C" char *Finput(FILE *in, FILE *out, const char *prompt);
+extern "C" char *Finputf(FILE *in, FILE *out, const char *format, ...);
+extern "C" char *Sinput(FILE *s, const char *prompt);
+extern "C" char *Sinputf(FILE *s, const char *format, ...);
 extern "C" DIR *Opendir(const char *name);
 extern "C" dirent *Readdir(DIR *dir);
 extern "C" void Closedir(DIR *dir);
@@ -333,6 +597,7 @@ extern "C" void Fputc(int c, FILE *stream);
 extern "C" long Ftell(FILE *stream);
 extern "C" off_t Lseek(int fd, off_t offset, int whence);
 extern "C" void Truncate(const char *path, off_t length);
+extern "C" void Ftruncate(int fd, off_t length);
 extern "C" void _Readlink(const char *path, buffer *b);
 extern "C" cstr Readlink(const char *path);
 extern "C" cstr readlinks(cstr path, readlinks_if_dead if_dead);
@@ -343,6 +608,8 @@ extern "C" void Mkdir_if(const char *pathname, mode_t mode);
 extern "C" void say_cstr(cstr s);
 extern "C" void Rename(const char *oldpath, const char *newpath);
 extern "C" void Chmod(const char *path, mode_t mode);
+extern "C" void Chown(const char *path, uid_t uid, gid_t gid);
+extern "C" void Lchown(const char *path, uid_t uid, gid_t gid);
 extern "C" void Symlink(const char *oldpath, const char *newpath);
 extern "C" void Link(const char *oldpath, const char *newpath);
 extern "C" void Pipe(int filedes[2]);
@@ -359,7 +626,16 @@ extern "C" void cp(const char *from, const char *to, int mode);
 extern "C" void cp_fd(int in, int out);
 extern "C" int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 extern "C" void fd_set_init(fd_set *o);
+extern "C" cstr which(cstr file);
+extern "C" int can_read(int fd);
+extern "C" int can_write(int fd);
+extern "C" int has_error(int fd);
+extern "C" void Mkdirs(const char *pathname, mode_t mode);
+extern "C" void Rmdirs(const char *pathname);
+extern "C" int Poll(struct pollfd *fds, nfds_t nfds, int timeout);
+extern "C" int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask);
 extern "C" void nonblock(int fd);
+extern "C" int Fcntl_flock(int fd, int cmd, short type, short whence, off_t start, off_t len);
 extern "C" void *Malloc(size_t size);
 extern "C" void *_Realloc(void *ptr, size_t size);
 extern "C" void *Calloc(size_t nmemb, size_t size);
@@ -383,15 +659,17 @@ extern "C" void Timef(buffer *b, const datetime *tm, const char *format);
 extern "C" cstr Timef_cstr(datetime *dt, const char *format);
 extern "C" void datetime_init(datetime *dt, int year, int month, int day,  int hour, int min, int sec);
 extern "C" void sleep_step(long double step);
-extern "C" void asleep(long double dt);
+extern "C" long double asleep(long double dt, long double t);
+extern "C" void rtime_to_timeval(num rtime, struct timeval *tv);
+extern "C" void rtime_to_timespec(num rtime, struct timespec *ts);
+extern "C" num timeval_to_rtime(struct timeval *tv);
+extern "C" num timespec_to_rtime(struct timespec *ts);
 extern "C" int sgn(num x);
 extern "C" num nmin(num x, num y);
 extern "C" num nmax(num x, num y);
 extern "C" int imin(int x, int y);
 extern "C" int imax(int x, int y);
 extern "C" num notpot(num hypotenuse, num x);
-extern "C" int Randint(int max);
-extern "C" num Rand(void);
 extern "C" void seed(void);
 extern "C" int mod(int i, int base);
 extern "C" int Div(int i, int base);
@@ -404,6 +682,7 @@ extern "C" void rdivmod(num r, num base, num *div, num *_mod);
 extern "C" void rdivmod_range(num r, num low, num high, num *div, num *_mod);
 extern "C" num clamp(num x, num min, num max);
 extern "C" int iclamp(int x, int min, int max);
+extern "C" num spow(num b, num e);
 extern "C" colour black;
 extern "C" colour white;
 extern "C" colour red;
@@ -430,6 +709,7 @@ extern "C" Display *display;
 extern "C" Window root_window;
 extern "C" Window window;
 extern "C" Visual *visual;
+extern "C" XVisualInfo *visual_info;
 extern "C" int depth;
 extern "C" num pixel_size;
 extern "C" Pixmap buf;
@@ -452,6 +732,8 @@ extern "C" int text_at_col0;
 extern "C" char *vid;
 extern "C" num a_pixel;
 extern "C" boolean gr_auto_event_loop;
+extern "C" num _xanc;
+extern "C" num _yanc;
 extern "C" int root_w;
 extern "C" int root_h;
 extern "C" int w;
@@ -474,6 +756,18 @@ extern "C" num rb_green_power;
 extern "C" num rb_blue_power;
 extern "C" colour rb[360];
 extern "C" str str_null;
+extern "C" thunk _thunk_null;
+extern "C" thunk *thunk_null;
+extern "C" thunk _thunk_error_warn;
+extern "C" thunk *thunk_error_warn;
+extern "C" thunk _thunk_error_ignore;
+extern "C" thunk *thunk_error_ignore;
+extern "C" vec *error_handlers;
+extern "C" vec *errors;
+extern "C" hashtable *extra_error_messages;
+extern "C" char hostname__[256];
+extern "C" int h_errno;
+extern "C" fd_set *tmp_fd_set;
 extern "C" cstr dt_format;
 extern "C" cstr dt_format_tz;
 extern "C" long double sleep_step_last;
@@ -481,6 +775,8 @@ extern "C" boolean sleep_step_debug;
 extern "C" long double asleep_small;
 extern "C" num bm_start;
 extern "C" boolean bm_enabled;
+extern "C" const double pi;
+extern "C" const double e;
 
 void angle3_to_vec3(const angle3 &a, vec3 &v);
 num vec3_length(const vec3 &v);
@@ -574,13 +870,13 @@ int main(int argc, char **argv)
 	{
 		error("syntax: geon ns ew rot zoom dns dew drot fzoom delay focus_region level row cell");
 	}
-	latitude = ((atof(argv[1])) * M_PI / 180.0);
-	longitude = ((atof(argv[2])) * M_PI / 180.0);
-	spin = ((atof(argv[3])) * M_PI / 180.0);
+	latitude = ((atof(argv[1])) * pi / 180.0);
+	longitude = ((atof(argv[2])) * pi / 180.0);
+	spin = ((atof(argv[3])) * pi / 180.0);
 	zm = atof(argv[4]);
-	delta_latitude = ((atof(argv[5])) * M_PI / 180.0);
-	delta_longitude = ((atof(argv[6])) * M_PI / 180.0);
-	delta_spin = ((atof(argv[7])) * M_PI / 180.0);
+	delta_latitude = ((atof(argv[5])) * pi / 180.0);
+	delta_longitude = ((atof(argv[6])) * pi / 180.0);
+	delta_spin = ((atof(argv[7])) * pi / 180.0);
 	dfac_zoom = atof(argv[8]);
 	delay = atof(argv[9]);
 	focus_region = atoi(argv[10]);

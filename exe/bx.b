@@ -71,7 +71,7 @@ Main()
 						status = Systeml(format("sh%s", EXE), br, langopt, b, x, NULL)
 					 else
 						status = Systeml(br, langopt, b, x, NULL)
-				 while WIFEXITED(status) && WEXITSTATUS(status) == br_return_again_after_fix
+				 while status == br_return_again_after_fix
 					
 				if status
 					error("%s compile failed...", br)
