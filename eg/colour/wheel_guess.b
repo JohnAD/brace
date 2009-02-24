@@ -73,7 +73,7 @@ def read_tsv_vec(v, l)
 		cstr l = Input()
 		if l == NULL
 			break
-		split_cstr(v, l)
+		split(v, l)
 
 def read_tsv_vec_n(v, n)
 	read_tsv_vec_n(v, n, my(l))
@@ -144,9 +144,9 @@ def _read_tsv(v, a1, a2, a3, a4, a5)
 
 # etc!  need snazzy variadic macros :)
 
-# FIXME is this split_cstr, fixed s->i, in the latest brace?  I think not
+# FIXME is this split, fixed s->i, in the latest brace?  I think not
 
-split_cstr(vec *v, cstr s, char c)
+split(vec *v, cstr s, char c)
 	vec_clear(v)
 	vec_push(v, s)
 	for_cstr(i, s)
@@ -154,7 +154,7 @@ split_cstr(vec *v, cstr s, char c)
 			*i = '\0'
 			vec_push(v, i+1)
 
-def split_cstr(v, s) split_cstr(v, s, '\t')
+def split(v, s) split(v, s, '\t')
 
 def for_cstr(i, s)
 	char *i

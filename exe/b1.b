@@ -1,4 +1,5 @@
 use b
+# TODO cache the excutables by hash of source code?
 Main()
 	boolean cplusplus = 0
 	cstr lang = "b"
@@ -19,7 +20,18 @@ Main()
 		Fsayf(f, "use iostream")
 	Fsayf(f, "Main()")
 	if args > 0
-		Fsayf(f, "\t%s", arg[0])
+		cstr start = arg[0]
+		int cont = 1
+		while cont
+			cstr end = strchr(start, '\n');
+			if end
+				*end = '\0'
+				if end>start && end[-1] == '\r'
+					end[-1] = '\0'
+			 else
+			 	cont = 0
+			Fsayf(f, "\t%s", start)
+			start = end+1
 		++arg ; --args
 	 else
 		eachline(l)
