@@ -9,7 +9,7 @@ struct vec3
 
 struct angle3
 	num latitude, longitude
-	angle3() : latitude{(0) : longitude(0) {}
+	angle3() : latitude(0), longitude(0) {}
 	angle3(num latitude, num longitude) : latitude(latitude), longitude(longitude) {}
 
 angle3_to_vec3(const angle3 &a, vec3 &v)

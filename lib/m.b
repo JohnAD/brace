@@ -157,9 +157,8 @@ def rdiv(r, base) floor(r / base)
 num dist(num x0, num y0, num x1, num y1)
 	return hypot(x1-x0, y1-y0)
 
-def id(a) a
-def rad2rad id
-def deg2deg id
+def rad2rad Id
+def deg2deg Id
 
 Def angle2rad trig_unit^^2^^rad
 Def angle2deg trig_unit^^2^^deg

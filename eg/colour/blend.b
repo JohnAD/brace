@@ -135,7 +135,7 @@ num ucube(num x)
 
 def cstr_to_int atoi
 def cstr_to_num atof
-def cstr_to_cstr id
+def cstr_to_cstr Id
 
 # Sym should be called with a literal string,
 # it is not copied on inserting to the hash-table,

@@ -1,3 +1,3 @@
 #!/bin/sh
-find -path '*/.*' -prune -o -name '*.b' -print |
+find -path '*/.*' -prune -o -name '*.b' -o -name '*.bb' -print |
 perl -pe 's/\n/\0/gs' | xargs -0 grep "$@"

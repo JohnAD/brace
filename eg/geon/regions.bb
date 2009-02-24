@@ -20,6 +20,7 @@ struct region
 	region_type type
 	poly_angle3 points_a
 	poly_vec3 points_v
+	region() : id(-1), type(LAND), points_a(), points_v() {}
 
 vector<region> regions
 

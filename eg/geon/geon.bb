@@ -2,6 +2,7 @@
 
 use stdio.h
 
+use main
 use gr
 use m
 use error
@@ -31,7 +32,7 @@ num window_radius
 
 int focus_region = -1
 
-int main(int argc, char **argv)
+Main()
 	num delta_latitude, delta_longitude, delta_spin, dfac_zoom
 	num delay = 0
 	int level, row, cell

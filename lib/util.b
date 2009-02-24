@@ -327,7 +327,7 @@ def eachline(v, stream)
 #def ln log
 #def log log10
 
-def id(x) x
+def Id(x) x
 
 def ref(v, obj)
 	let(v, &obj)

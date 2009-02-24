@@ -1,7 +1,0 @@
-def debug null_function
-
-export sphere
-
-inline void null_function(...)
-dump_angle3(const angle3 &a)
-
