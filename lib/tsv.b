@@ -7,7 +7,7 @@ def read_tsv_vec(v, l)
 		cstr l = Input()
 		if l == NULL
 			break
-		split_cstr(v, l)
+		split(v, l)
 
 def read_tsv_vec_n(v, n)
 	read_tsv_vec_n(v, n, my(l))

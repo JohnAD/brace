@@ -121,18 +121,29 @@ def cstr_last_char(s) s[(strlen(s) ? strlen(s) : 1)-1]
 def cstr_dump(s)
 	hexdump(cstr_range(s))
 
-# you need to clear the vec if necessary before calling split_cstr
+# you need to clear the vec if necessary before calling split
 
-split_cstr(vec *v, cstr s, char c)
+split(vec *v, cstr s, char c)
 	vec_push(v, s)
 	for_cstr(i, s)
 		if *i == c
 			*i = '\0'
 			vec_push(v, i+1)
 
-def split_cstr(v, s) split_cstr(v, s, '\t')
+def split(v, s) split(v, s, '\t')
 
 def for_cstr(i, s)
 	char *i
 	for i=s; *i != '\0'; ++i
 		.
+
+cstr join(cstr sep, cstr *s)
+	new(b, buffer, 256)
+	if *s
+		repeat
+			buffer_cat_cstr(b, *s)
+			++s
+			if !*s
+				break
+			buffer_cat_cstr(b, sep)
+	return buffer_to_cstr(b)

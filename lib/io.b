@@ -794,7 +794,7 @@ def out(filename) Freopen(filename, "w", stdout)
 cstr which(cstr file)
 	cstr PATH = strdup(Getenv("PATH"))
 	new(v, vec, cstr, 32)
-	split_cstr(v, PATH, PATH_sep)
+	split(v, PATH, PATH_sep)
 	cstr path = NULL
 	for_vec(dir, v, cstr)
 		path = path_cat(*dir, file)

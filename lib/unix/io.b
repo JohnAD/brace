@@ -11,15 +11,16 @@ int Poll(struct pollfd *fds, nfds_t nfds, int timeout)
 		failed("poll")
 	return rv
 
-int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask)
-	int rv = ppoll(fds, nfds, timeout, sigmask)
-	if rv == -1
-		failed("ppoll")
-	return rv
-
-def Ppoll(fds, nfds, timeout) Ppoll(fds, nfds, timeout, NULL)
-def Ppoll(fds, nfds) Ppoll(fds, nfds, NULL, NULL)
 def Poll(fds, nfds) Poll(fds, nfds, -1)
+
+#int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask)
+#	int rv = ppoll(fds, nfds, timeout, sigmask)
+#	if rv == -1
+#		failed("ppoll")
+#	return rv
+
+#def Ppoll(fds, nfds, timeout) Ppoll(fds, nfds, timeout, NULL)
+#def Ppoll(fds, nfds) Ppoll(fds, nfds, NULL, NULL)
 
 nonblock(int fd)
 	if fcntl(fd, F_SETFL, O_NONBLOCK) == -1
