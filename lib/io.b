@@ -768,6 +768,14 @@ cp_fd(int in, int out)
 			break
 		Write(out, buf, len)
 
+fcp(FILE *in, FILE *out)
+	char buf[4096]
+	repeat
+		size_t len = Fread(buf, 1, sizeof(buf), in)
+		if len == 0
+			break
+		Fwrite(buf, 1, len, out)
+
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
 	int rv = select(nfds, readfds, writefds, exceptfds, timeout)
 	# TODO check for EINTR ?

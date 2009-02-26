@@ -52,6 +52,23 @@ url_decode(cstr q)
 		++o
 	*o = '\0'
 
+# this isn't strictly a CGI thing, more an http thing,
+# but it can go here for now.
+# This is a bit dodgy yet, because have to encode different bits of the url
+# differently I think.  Returns alloc'd
+
+cstr url_encode(cstr q)
+	new(b, buffer, 256)
+	while *q
+		char c = *q
+		if c == ' '
+			buffer_cat_char(b, '+')
+		 eif !isalnum(c) && !strchr(":_-/?", c)
+			Sprintf(b, "%%02x", c)
+		 else
+			buffer_cat_char(b, c)
+	return buffer_to_cstr(b)
+
 cstr cgi(cstr k, cstr _default)
 	# XXX not efficient, use a buffer?
 	k = cstr_cat(cgi__prefix, k)

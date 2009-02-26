@@ -1,7 +1,0 @@
-<'windy.b' brace_number_lines 'windy.b' | BRACE_LANGUAGE=C b2b1 >'.windy.b1'
-<'.windy.b1' BRACE_LANGUAGE=C brace >'.windy.c'
-cp '.windy.c' 'windy.c'
-gcc -pedantic -std=gnu99 -Wall -Wextra -Werror  -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -I/usr/X11R6/include   -c -o windy.o windy.c
-gcc -pedantic -std=gnu99  -L"/usr/lib" -L/usr/X11R6/lib -lX11 -lm -lb -s  windy.o tree.o    -L/usr/X11R6/lib -lX11 -lXext -lb -lm -o windy
-gcc -pedantic -std=gnu99 -Wall -Wextra -Werror  -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -I/usr/X11R6/include   -c -o still.o still.c
-gcc -pedantic -std=gnu99  -L"/usr/lib" -L/usr/X11R6/lib -lX11 -lm -lb -s  still.o tree.o    -L/usr/X11R6/lib -lX11 -lXext -lb -lm -o still

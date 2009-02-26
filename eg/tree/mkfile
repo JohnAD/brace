@@ -3,3 +3,6 @@ LDFLAGS += -L/usr/X11R6/lib -lX11 -lm -lb
 all: windy still
 still: still.o tree.o
 windy: windy.o tree.o
+clean:
+	mk-clean
+	rm -f *.pyc *.o mk.log *.bh dreamy/*.bh *.c still windy
