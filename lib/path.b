@@ -202,63 +202,116 @@ def is_slash_or_nul(c) path__is_sep(c) || c == '\0'
 # XXX TODO should free the deq q !
 
 def find(root, f, s)
-	new(my(q), deq, cstr)
-	deq_push(my(q), root)
-	# need proper macros!! this is ugly![
-	find_deq(my(q), f, s)
+	find_deq_x(normal, root, f, s)
+		.
+
+def find_init(q, root)
+	new(q, deq, cstr)
+	deq_push(q, root)
+
+def find_deq_x(what, root, f, s)
+	find_init(my(q), root)
+	find_deq_^^what(my(q), f, s)
+		.
+
+def find_deq_normal(q, f, s)
+	find_deq(q, f, s)
+		.
+
+def find_leaves(root, f, s)
+	find_deq_x(leaves, root, f, s)
 		.
 
 def find_all(root, f, s)
-	new(my(q), deq, cstr)
-	deq_push(my(q), root)
-	# need proper macros!! this is ugly![
-	find_deq_all(my(q), f, s)
+	find_deq_x(all, root, f, s)
+		.
+
+def find_all_leaves(root, f, s)
+	find_deq_x(all_leaves, root, f, s)
 		.
 
 def find_dirs(root, f, s)
-	new(my(q), deq, cstr)
-	deq_push(my(q), root)
-	# need proper macros!! this is ugly![
-	find_deq_dirs(my(q), f, s)
+	find_deq_x(dirs, root, f, s)
 		.
 
 def find_reg(root, f, s)
-	new(my(q), deq, cstr)
-	deq_push(my(q), root)
-	# need proper macros!! this is ugly![
-	find_deq_reg(my(q), f, s)
+	find_deq_x(reg, root, f, s)
+		.
+
+def find_lnk(root, f, s)
+	find_deq_x(lnk, root, f, s)
 		.
 
 # IDEA - non-homogenous deq, queue, etc?  nah!  couldn't do random access..
 # not that I ever do anyway yet
 
-def find_deq_all(q, f, s)
+def find_deq_1(q, f, s)
 	cstr f
 	while deq_get_size(q)
 		deq_shift(q, f)
 		new(s, lstats, f)
-		if !S_EXISTS(s->st_mode)
+		if !S_EXISTS(s->st_mode)   # why wouldn't it exist?? maybe if a bad parameter?
 			continue
-		if S_ISDIR(s->st_mode)
-			find__its_a_dir(q, f)
+		.
+
+def find_deq_recurse(q, f, s)
+	if S_ISDIR(s->st_mode)
+		find__its_a_dir(q, f)
+
+def find_deq_all(q, f, s)
+	find_deq_1(q, f, s)
+		find_deq_recurse(q, f, s)
 		.
 
 def find_deq(q, f, s)
+	find_deq_1(q, f, s)
+		find_skip_hidden(f)
+		find_deq_recurse(q, f, s)
+		.
+
+def find_skip_dir(s)
+	if S_ISDIR(s->st_mode)
+		continue
+
+def find_skip_hidden(f)
+	if path_hidden(f)
+		continue
+
+def find_only_dir(s)
+	if !S_ISDIR(s->st_mode)
+		continue
+
+def find_only_reg(s)
+	if !S_ISREG(s->st_mode)
+		continue
+
+def find_only_lnk(s)
+	if !S_ISLNK(s->st_mode)
+		continue
+
+def find_deq_leaves(q, f, s)
+	find_deq(q, f, s)
+		find_skip_dir(s)
+		.
+
+def find_deq_all_leaves(q, f, s)
 	find_deq_all(q, f, s)
-		if S_ISDIR(s->st_mode)
-			continue
+		find_skip_dir(s)
 		.
 
 def find_deq_dirs(q, f, s)
-	find_deq_d(q, f, s)
-		if !S_ISDIR(s->st_mode)
-			continue
+	find_deq_all(q, f, s)
+		find_only_dir(s)
 		.
 
 def find_deq_reg(q, f, s)
-	find_deq_d(q, f, s)
-		if !S_ISREG(s->st_mode)
-			continue
+	find_deq(q, f, s)
+		find_only_reg(s)
+		.
+
+def find_deq_lnk(q, f, s)
+	find_deq(q, f, s)
+		find_only_lnk(s)
 		.
 
 # IDEA - for a particular directory, do all files first,
@@ -337,6 +390,8 @@ def best_path(path) best_path(path, Getcwd())
 def best_path_main(path) best_path(path, main_dir)
 
 boolean path_hidden(cstr p)
+	if p[0] == '.' && p[1] == '\0'
+		return 0
 	while *p != '\0'
 		if path__is_sep(*p)
 			++p

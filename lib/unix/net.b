@@ -12,7 +12,7 @@ typedef int SOCKET
 
 def closesocket(s) close(s)
 
-extern int h_errno
+#extern int h_errno
 
 int Server_unix_stream(char *addr)
 	int ear = Socket(PF_UNIX, SOCK_STREAM, 0)

@@ -123,6 +123,16 @@ if [ "-bb" = "$1" -o "-b" = "$1" ]; then
 	shift
 fi
 
+[ -n "$1" ] || fail "syntax: ${b}r [-b|-bb] foo.$b [foo [cc/ld flags]]"
+
+B="$1"
+shift
+X="$1"
+
+if perl -ne 'exit !m{^#!/lang/bb$}' "$B"; then
+	BRACE_LANGUAGE=C++
+fi
+
 if [ "$BRACE_LANGUAGE" = C++ ]; then
 	b=bb
 	c=cc
@@ -152,11 +162,6 @@ else
 	fi
 fi
 
-[ -n "$1" ] || fail "syntax: ${b}r [-b|-bb] foo.$b [foo [cc/ld flags]]"
-
-B="$1"
-shift
-X="$1"
 dirname="`dirname "$B"`"
 basename="`basename "$B"`"
 if [ -n "$X" -a "$X" = "${X#-}" ]; then

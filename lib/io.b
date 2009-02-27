@@ -452,7 +452,7 @@ typedef struct stat lstats
 
 stats_init(stats *s, const char *file_name)
 	if !Stat(file_name, s)
-		s->st_mode = 0
+		bzero(s)
 
 lstats_init(stats *s, const char *file_name)
 	if !Lstat(file_name, s)
@@ -891,3 +891,24 @@ Rmdirs(const char *pathname)
 		dir = d
 	
 	Free(dir)
+
+boolean newer(const char *file1, const char *file2)
+	new(s1, stats, file1)
+	new(s2, stats, file2)
+	return s1->st_mtime - s2->st_mtime > 0
+
+lnsa(cstr from, cstr to, cstr cwd)
+	cstr cwd1 = path_cat(cwd, "")
+	from = path_tidy(path_relative_to(strdup(from), cwd1))
+	if is_dir(to)
+		cstr from1 = strdup(from)  # this is ugly, write a base_name which does not modify the string
+		cstr to1 = path_cat(to, base_name(from1))
+		Free(from1)
+		remove(to1)
+		Symlink(from, to1)
+		Free(to1)
+	 else
+		remove(to)
+		Symlink(from, to)
+	Free(cwd1)
+	Free(from)
