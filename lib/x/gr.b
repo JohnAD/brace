@@ -331,6 +331,10 @@ def gprint_debug()
 def gprint_debug()
 	void()
 
+num text_width(char *p)
+	int len = strlen(p)
+	return isd(XTextWidth(_font, p, len))
+
 # this one doesn't do word wrapping but does do anchors!
 gprint(char *p)
 	int len = strlen(p)

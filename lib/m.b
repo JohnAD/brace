@@ -172,8 +172,17 @@ def polar_to_rec(x0, y0, a, r, x1, y1)
 	let(x1, Cos(a)*r + x0)
 	let(y1, Sin(a)*r + y0)
 
+def avg(x) x
 def avg(x, y) (x+y)/2.0
 def avg(x, y, z) (x+y+z)/3.0
+
+def avg(a0, a1, a2, a3) (a0 + a1 + a2 + a3)/4.0
+def avg(a0, a1, a2, a3, a4) (a0 + a1 + a2 + a3 + a4)/5.0
+def avg(a0, a1, a2, a3, a4, a5) (a0 + a1 + a2 + a3 + a4 + a5)/6.0
+def avg(a0, a1, a2, a3, a4, a5, a6) (a0 + a1 + a2 + a3 + a4 + a5 + a6)/7.0
+def avg(a0, a1, a2, a3, a4, a5, a6, a7) (a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7)/8.0
+def avg(a0, a1, a2, a3, a4, a5, a6, a7, a8) (a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8)/9.0
+def avg(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) (a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9)/10.0
 
 num double_or_nothing(num factor)
 	# this returns 1, 2, 4, 1/2, 1/4 only (the closest)
@@ -228,3 +237,14 @@ num spow(num b, num e)
 def ssqrt(b) spow(b, 0.5)
 def ssqr(b) spow(b, 2)
 
+# FIXME this is inefficient, and anyway if using this method should have varargs macros!
+def max(a0) a0
+def max(a0, a1) nmax(a0, a1)
+def max(a0, a1, a2) max(max(a0, a1), a2)
+def max(a0, a1, a2, a3) max(max(a0, a1, a2), a3)
+def max(a0, a1, a2, a3, a4) max(max(a0, a1, a2, a3), a4)
+def max(a0, a1, a2, a3, a4, a5) max(max(a0, a1, a2, a3, a4), a5)
+def max(a0, a1, a2, a3, a4, a5, a6) max(max(a0, a1, a2, a3, a4, a5), a6)
+def max(a0, a1, a2, a3, a4, a5, a6, a7) max(max(a0, a1, a2, a3, a4, a5, a6), a7)
+def max(a0, a1, a2, a3, a4, a5, a6, a7, a8) max(max(a0, a1, a2, a3, a4, a5, a6, a7), a8)
+def max(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) max(max(a0, a1, a2, a3, a4, a5, a6, a7, a8), a9)

@@ -60,11 +60,11 @@ url_decode(cstr q)
 cstr url_encode(cstr q)
 	new(b, buffer, 256)
 	while *q
-		char c = *q
-		if c == ' '
-			buffer_cat_char(b, '+')
-		 eif !isalnum(c) && !strchr(":_-/?", c)
-			Sprintf(b, "%%02x", c)
+		char c = *q++
+#		if c == ' '
+#			buffer_cat_char(b, '+')
+		if !isalnum(c) && !strchr(":_-/?.", c)
+			Sprintf(b, "%%%02x", c)
 		 else
 			buffer_cat_char(b, c)
 	return buffer_to_cstr(b)
