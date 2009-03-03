@@ -1041,7 +1041,7 @@ vstream struct__in, *in
 vstream struct__out, *out
 vstream struct__er, *er
 
-vstream_init()
+vstreams_init()
 	in = &struct__in ; out = &struct__out ; er = &struct__er
 	vstream_init_stdio(in, stdin)
 	vstream_init_stdio(out, stdout)
