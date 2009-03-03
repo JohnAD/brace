@@ -2,6 +2,11 @@ include .Make.conf
 
 export BRACE_STANDALONE=
 
+all: tgz
+
+tgz: dotbuild
+	tgz `readlink -f .`
+
 dotbuild:
 	mkdir -p .build
 	cp -alf .Make.conf * .build/
