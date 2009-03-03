@@ -1,3 +1,6 @@
+use m util
+export gr
+
 num turtle_a = 0
 num turtle_pendown = 1
 
@@ -84,5 +87,13 @@ def triangle(a, b, c)
 	triangle(a.lx, a.ly, b.lx, b.ly, c.lx, c.ly)
 	gr__change_hook()  # put in main triangle func
 
-use m util
-export gr
+# design: how to use triangle() or quad() with turtle?
+
+#int turtle_flip_factor = 1
+#
+#def turtle_flip()
+#	turtle_flip_factor *= -1
+#
+#def _turn(da) turtle_a += da * turtle_flip_factor
+#
+# todo: turtle_zoom ?

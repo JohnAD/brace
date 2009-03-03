@@ -123,14 +123,21 @@ def cstr_dump(s)
 
 # you need to clear the vec if necessary before calling split
 
-split(vec *v, cstr s, char c)
+splitv(vec *v, cstr s, char c)
 	vec_push(v, s)
 	for_cstr(i, s)
 		if *i == c
 			*i = '\0'
 			vec_push(v, i+1)
 
-def split(v, s) split(v, s, '\t')
+def splitv(v, s) splitv(v, s, '\t')
+
+cstr *split(cstr s, char c)
+	New(v, vec, 16)
+	splitv(v, s, c)
+	return vec_to_array(v)
+
+def split(s) split(s, '\t')
 
 def for_cstr(i, s)
 	char *i
@@ -147,3 +154,33 @@ cstr join(cstr sep, cstr *s)
 				break
 			buffer_cat_cstr(b, sep)
 	return buffer_to_cstr(b)
+
+char *Strndup(const char *s, size_t n)
+	char *rv = strndup(s, n)
+	if !rv
+		failed("strndup")
+	return rv
+
+char *Strstr(const char *haystack, const char *needle)
+	char *rv = strstr(haystack, needle)
+	if !rv
+		failed("strstr")
+	return rv
+
+char *Strcasestr(const char *haystack, const char *needle)
+	char *rv = strcasestr(haystack, needle)
+	if !rv
+		failed("strcasestr")
+	return rv
+
+char *Strchr(const char *s, int c)
+	char *rv = strchr(s, c)
+	if !rv
+		failed("strchr")
+	return rv
+
+char *Strrchr(const char *s, int c)
+	char *rv = strrchr(s, c)
+	if !rv
+		failed("strrchr")
+	return rv

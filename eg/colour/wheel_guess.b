@@ -73,7 +73,7 @@ def read_tsv_vec(v, l)
 		cstr l = Input()
 		if l == NULL
 			break
-		split(v, l)
+		splitv(v, l)
 
 def read_tsv_vec_n(v, n)
 	read_tsv_vec_n(v, n, my(l))
@@ -146,7 +146,7 @@ def _read_tsv(v, a1, a2, a3, a4, a5)
 
 # FIXME is this split, fixed s->i, in the latest brace?  I think not
 
-split(vec *v, cstr s, char c)
+splitv(vec *v, cstr s, char c)
 	vec_clear(v)
 	vec_push(v, s)
 	for_cstr(i, s)
@@ -154,7 +154,7 @@ split(vec *v, cstr s, char c)
 			*i = '\0'
 			vec_push(v, i+1)
 
-def split(v, s) split(v, s, '\t')
+def splitv(v, s) splitv(v, s, '\t')
 
 def for_cstr(i, s)
 	char *i

@@ -50,37 +50,3 @@ def draw_star()
 		turtle_branch()
 			fd(rt3)
 		rt(60)
-
-def turtle_branch()
-	let(my(p), get_pos())
-	for(my(i), 0, 2)
-		if my(i)==1
-			set_pos(my(p))
-			break
-
-north(num d)
-	north()
-	forward(d)
-def north() _turn_to(0)
-
-east(num d)
-	east()
-	forward(d)
-def east() _turn_to(pi/2)
-
-south(num d)
-	south()
-	forward(d)
-def south() _turn_to(pi)
-
-west(num d)
-	west()
-	forward(d)
-def west() _turn_to(-pi/2)
-
-def point()
-	point(lx,ly)
-
-def space(bg)
-	paper(bg)
-	col(white)

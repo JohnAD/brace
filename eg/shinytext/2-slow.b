@@ -44,7 +44,7 @@ def shiny(pixel_type)
 	clear()
 
 	back(r, r1, -1)
-		Sayf("%d", r)
+#		Sayf("%d", r)
 		font("helvetica-medium", fs)
 		hsv((r*16) % 360, 1, r*1.0/r1)
 		for_vec(i, v, XPoint)
@@ -56,13 +56,6 @@ def shiny(pixel_type)
 	move(0, 0)
 	gsayf(s)
 	Paint()
-
-rect(num x, num y, num w, num h)
-	move(x, y)
-	draw(x+w-1, y)
-	draw(x+w-1, y+h-1)
-	draw(x, y+h-1)
-	draw(x, y)
 
 # assuming 32 bit colour again:
 def r(x) x >> 16 & 0xFF

@@ -18,9 +18,9 @@ Main()
 
 		Say(program)
 
-		if Exists(program)
+		if exists(program)
 			cstr tilde = format("%s~", program)
-			if Exists(tilde)
+			if exists(tilde)
 				error("tilde file %s exists already", tilde)
 			Rename(program, tilde)
 			Free(tilde)

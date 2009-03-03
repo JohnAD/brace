@@ -60,5 +60,3 @@ def trig_unit deg
 def screen_trans fast
 
 use b
-
-use sched.h

@@ -9,11 +9,10 @@ Main()
 #	space(320, 240)
 	gr_fast()
 	gprint_anchor(0, 0)
-	font("helvetica-medium", 200)
-	cstr s = args ? join(" ", arg) : "Hello World!"
-	num tw = text_width(s)
-	int fs = (int)(200*(w-r1*2)/tw * 0.95)
-	font("helvetica-medium", fs)
+
+	cstr s = fortune()
+	int fs = font_size_to_fit(s)
+
 	col(black)
 	move(0, 0)
 	gsayf(s)
@@ -28,62 +27,39 @@ Main()
 	 else
 		error("shinytext only works in 32 bit colour for now")
 
+cstr fortune()
+	cstr s = args ? join(" ", arg) : cmd("fortune -s -n 40")
+	if !s || !*s
+		s = "Hello World"
+	return s
+
+int font_size_to_fit(cstr s)
+	font("helvetica-medium", 200)
+	num tw = text_width(s)
+	int fs = (int)(200*(w-r1*2)/tw * 0.95)
+	font("helvetica-medium", fs)
+	return fs
+
 def shiny(pixel_type)
-	new(corners, vec, XPoint)
-	new(left, vec, XPoint)
-	new(right, vec, XPoint)
-	new(up, vec, XPoint)
-	new(down, vec, XPoint)
+	new(v, vec, XPoint)
 	pixel_type *px = (pixel_type *)pixel(vid, 1, 1)
-	back(y, h_2-2, -h_2)
-		for(x, -w_2+1, w_2-1)
-			pixel_type o=*px, l=px[-1], r=px[1], u=px[-w], d=px[w]
-			if o == black
-				int count = 0
-				if l == black
-					++count
-				if r == black
-					++count
-				if u == black
-					++count
-				if d == black
-					++count
-				if count != 4
-					XPoint *p
-					if count < 3
-						p = vec_push(corners)
-						red()
-						point(x, y)
-					 eif count == 3
-						if l == white
-							p = vec_push(left)
-						 eif r == white
-							p = vec_push(right)
-						 eif u == white
-							p = vec_push(up)
-						 eif d == white
-							p = vec_push(down)
-						green()
-						point(x, y)
-					p->x = x ; p->y = y
+	for(y, 1, h-1)
+		for(x, 1, w-1)
+			pixel_type o = *px
+			if o == black &&
+			  (px[-1] != black || px[1] != black || px[-w] != black || px[w] != black)
+				XPoint *p = vec_push(v)
+				p->x = x-w_2
+				p->y = h_2-1-y
 			++px
 		px += 2
 	clear()
 
 	back(r, r1, -1)
-		Sayf("%d", r)
 		font("helvetica-medium", fs)
 		hsv((r*16) % 360, 1, r*1.0/r1)
-		for_vec(i, corners, XPoint)
+		for_vec(i, v, XPoint)
 			circle(i->x, i->y, r)
-		for_vec(i, up, XPoint)
-			point(i->x, i->y + r)
-		for_vec(i, right, XPoint)
-			point(i->x + r, i->y)
-		for_vec(i, down, XPoint)
-			point(i->x, i->y - r)
-		for_vec(i, left, XPoint)
-			point(i->x - r, i->y)
 		Paint()
 
 	font("helvetica-medium", fs)
@@ -91,13 +67,6 @@ def shiny(pixel_type)
 	move(0, 0)
 	gsayf(s)
 	Paint()
-
-rect(num x, num y, num w, num h)
-	move(x, y)
-	draw(x+w-1, y)
-	draw(x+w-1, y+h-1)
-	draw(x, y+h-1)
-	draw(x, y)
 
 # assuming 32 bit colour again:
 def r(x) x >> 16 & 0xFF

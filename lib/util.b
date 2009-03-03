@@ -562,3 +562,11 @@ def pre(x)
 
 # instead of having extra pointers in the struct, could use accessor methods /
 # macros. But I can't define macros in a macro yet.
+
+size_t arylen(void *_p)
+	void **p = _p
+	int count = 0
+	while (*p++)
+		++count
+	return count
+

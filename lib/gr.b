@@ -312,3 +312,16 @@ colour _hsv(num hue, num sat, num val)
 
 def point()
 	point(lx,ly)
+
+# dodgy, need a better way?
+def triangle(a, b, c)
+	triangle(a.lx, a.ly, b.lx, b.ly, c.lx, c.ly)
+
+def circle(r)
+	circle(lx, ly, r)
+
+def circle_fill(r)
+	circle_fill(lx, ly, r)
+
+def disc(r)
+	disc(lx, ly, r)

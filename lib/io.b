@@ -97,9 +97,9 @@ slurp_2(int fd, buffer *b)
 # TODO fix slurp(fd, buffer) so that it does the fstat instead of this one
 
 buffer *slurp_1(int filedes)
-	decl(s, stats)
-	Fstat(filedes, s)
-	int size = s->st_size
+	decl(st, stats)
+	Fstat(filedes, st)
+	int size = st->st_size
 
 	if size == 0
 		size = 1024
@@ -123,10 +123,55 @@ def spurt(b) spurt(STDOUT_FILENO, b)
 spurt(int fd, buffer *b)
 	Write(fd, buffer_get_start(b), buffer_get_size(b))
 
+fslurp_2(FILE *s, buffer *b)
+	int space = buffer_get_space(b)
+	int size = buffer_get_size(b)
+	char *start = buffer_get_start(b)
+	repeat
+		let(bytes_read, Fread(start + size, 1, space - size, s))
+		if bytes_read == 0
+			break
+		buffer_grow(b, bytes_read)
+		size += bytes_read
+		if size == space
+			buffer_double(b)
+			space = buffer_get_space(b)
+			size = buffer_get_size(b)
+			start = buffer_get_start(b)
+
+# TODO fix slurp(fd, buffer) so that it does the fstat instead of this one
+
+buffer *fslurp_1(FILE *s)
+	decl(st, stats)
+	Fstat(fileno(s), st)
+	int size = st->st_size
+
+	if size == 0
+		size = 1024
+	 else
+	 	++size
+		# to avoid a problem with
+		# doubling the buffer on the last read at EOF.
+		# Also this is handy if client wants to convert to a cstr :)
+
+	New(b, buffer, size)
+	fslurp_2(s, b)
+
+	return b
+
+def fslurp(s, b) fslurp_2(s, b)
+def fslurp(s) fslurp_1(s)
+def fslurp() fslurp(stdin)
+
+def fspurt(b) fspurt(stdout, b)
+
+fspurt(FILE *s, buffer *b)
+	Fwrite(buffer_get_start(b), 1, buffer_get_size(b), s)
+
 FILE *Fopen(const char *path, const char *mode)
 	FILE *f = fopen(path, mode)
 	if f == NULL
-		failed("fopen")
+		failed("fopen", mode, path)
 	return f
 def Fopen(pathname) Fopen(pathname, "r")
 
@@ -393,9 +438,14 @@ char random_alphanum()
 # (just look for the directory entry).  but no quick way to do that
 # - a unix bug?
 
-int Exists(const char *file_name)
+int exists(const char *file_name)
 	struct stat buf
 	return Stat(file_name, &buf)
+
+int file_size(const char *file_name)
+	struct stat buf
+	Stat(file_name, &buf)
+	return buf.st_size
 
 # Stat returns 1 if the file exists, 0 if not
 # FIXME is this ok?  not consistent with stat(2)
@@ -523,6 +573,12 @@ size_t Fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 
 Fwrite_str(FILE *stream, str s)
 	Fwrite(s.start, str_get_size(s), 1, stream)
+
+Fwrite_buffer(FILE *stream, buffer *b)
+	Fwrite(buffer_get_start(b), buffer_get_size(b), 1, stream)
+
+size_t Fread_buffer(FILE *stream, buffer *b)
+	return Fread(buffer_get_end(b), buffer_get_free(b), 1, stream)
 
 Fputc(int c, FILE *stream)
 	winsock_putc(c, stream)
@@ -802,11 +858,11 @@ def out(filename) Freopen(filename, "w", stdout)
 cstr which(cstr file)
 	cstr PATH = strdup(Getenv("PATH"))
 	new(v, vec, cstr, 32)
-	split(v, PATH, PATH_sep)
+	splitv(v, PATH, PATH_sep)
 	cstr path = NULL
 	for_vec(dir, v, cstr)
 		path = path_cat(*dir, file)
-		if Exists(path)
+		if exists(path)
 			break
 		Free(path)
 		 # sets path = NULL again
@@ -912,3 +968,258 @@ lnsa(cstr from, cstr to, cstr cwd)
 		Symlink(from, to)
 	Free(cwd1)
 	Free(from)
+
+# vstream contextual io!
+
+# TODO it really only needs read, write and flush?
+
+typedef void (*vs_putc_t)(int c, vstream *vs)
+typedef int (*vs_getc_t)(vstream *vs)
+typedef int (*vs_printf_t)(vstream *vs, const char *format, va_list ap)
+typedef char *(*vs_gets_t)(char *s, int size, vstream *vs)
+typedef void (*vs_write_t)(const void *ptr, size_t size, size_t nmemb, vstream *vs)
+typedef size_t (*vs_read_t)(void *ptr, size_t size, size_t nmemb, vstream *vs)
+typedef void (*vs_flush_t)(vstream *vs)
+typedef void (*vs_close_t)(vstream *vs)
+typedef void (*vs_shutdown_t)(vstream *vs, int how)
+
+struct vstream
+	vs_putc_t putc
+	vs_getc_t getc
+	vs_printf_t printf
+	vs_gets_t gets
+	vs_write_t write
+	vs_read_t read
+	vs_flush_t flush
+	vs_close_t close
+	vs_shutdown_t shutdown
+	void *data
+
+def vstream_init_x(vs, x, d)
+	vs->putc = vs_putc_^^x
+	vs->getc = vs_getc_^^x
+	vs->printf = vs_printf_^^x
+	vs->gets = vs_gets_^^x
+	vs->write = vs_write_^^x
+	vs->read = vs_read_^^x
+	vs->flush = vs_flush_^^x
+	vs->close = vs_close_^^x
+	vs->shutdown = vs_shutdown_^^x
+	vs->data = d
+
+vstream_init_stdio(vstream *vs, FILE *s)
+	vstream_init_x(vs, stdio, s)
+
+vs_putc_stdio(int c, vstream *vs)
+	Fputc(c, vs->data)
+
+int vs_getc_stdio(vstream *vs)
+	return Fgetc(vs->data)
+
+int vs_printf_stdio(vstream *vs, const char *format, va_list ap)
+	return Vfprintf(vs->data, format, ap)
+
+char *vs_gets_stdio(char *s, int size, vstream *vs)
+	return Fgets(s, size, vs->data)
+
+vs_write_stdio(const void *ptr, size_t size, size_t nmemb, vstream *vs)
+	Fwrite(ptr, size, nmemb, vs->data)
+
+size_t vs_read_stdio(void *ptr, size_t size, size_t nmemb, vstream *vs)
+	return Fread(ptr, size, nmemb, vs->data)
+
+vs_flush_stdio(vstream *vs)
+	Fflush(vs->data)
+
+vs_close_stdio(vstream *vs)
+	Fclose(vs->data)
+
+vs_shutdown_stdio(vstream *vs, int how)
+	Shutdown(fileno(vs->data), how)
+
+vstream struct__in, *in
+vstream struct__out, *out
+vstream struct__er, *er
+
+vstream_init()
+	in = &struct__in ; out = &struct__out ; er = &struct__er
+	vstream_init_stdio(in, stdin)
+	vstream_init_stdio(out, stdout)
+	vstream_init_stdio(er, stderr)
+
+vstream_init_buffer(vstream *vs, buffer *b)
+	vstream_init_x(vs, buffer, b)
+
+vs_putc_buffer(int c, vstream *vs)
+	buffer *b = vs->data
+	buffer_cat_char(b, c)
+
+# XXX this is inefficient - it wants to be using circbuf!
+
+int vs_getc_buffer(vstream *vs)
+	buffer *b = vs->data
+	int c = buffer_first_char(b)
+	buffer_shift(b)
+	return c
+
+int vs_printf_buffer(vstream *vs, const char *format, va_list ap)
+	buffer *b = vs->data
+	return Vsprintf(b, format, ap)
+
+char *vs_gets_buffer(char *s, int size, vstream *vs)
+	buffer *b = vs->data
+	char *c = buffer_get_start(b)
+	char *e = buffer_get_end(b)
+	char *o = s
+	if e > c+size-1
+		e = c+size-1
+	while c < e && *c != '\0' && *c != '\n'
+		*o++ = *c++
+	*o = '\0'
+	if o == s && c == e
+		return NULL
+	buffer_shift(b, o-s+1)
+	return s
+
+vs_write_buffer(const void *ptr, size_t size, size_t nmemb, vstream *vs)
+	buffer *b = vs->data
+	size_t len = size * nmemb
+	buffer_grow(b, len)
+	memmove(buffer_get_end(b)-len, ptr, len)
+
+size_t vs_read_buffer(void *ptr, size_t size, size_t nmemb, vstream *vs)
+	buffer *b = vs->data
+	size_t len = size * nmemb
+	if len > buffer_get_size(b)
+		len = buffer_get_size(b)
+	memmove(ptr, buffer_get_start(b), len)
+	buffer_shift(b, len)
+	return nmemb
+
+vs_flush_buffer(vstream *vs)
+	buffer *b = vs->data
+	buffer_nul_terminate(b)
+
+vs_close_buffer(vstream *vs)
+	buffer *b = vs->data
+	buffer_to_cstr(b)
+
+vs_shutdown_buffer(vstream *vs, int how)
+	if among(how, SHUT_WR, SHUT_RDWR)
+		vs_close_buffer(vs)
+
+def in(new_in)
+	in(new_in, my(old_in))
+def in(new_in, old_in)
+	vstream *old_in = in
+	post()
+		in = old_in
+	pre()
+		old_in = in
+		in = new_in
+		.
+
+def out(new_in)
+	out(new_in, my(old_out))
+def out(new_in, old_out)
+	vstream *old_out = out
+	post()
+		out = old_out
+	pre()
+		old_out = out
+		out = new_in
+		.
+
+def er(new_er)
+	er(new_er, my(old_er))
+def er(new_er, old_er)
+	vstream old_er = er
+	post()
+		er = old_er
+	pre()
+		old_er = er
+		er = new_er
+		.
+
+def io(new_in, new_out)
+	io(new_in, new_out, my(old_in), my(old_out))
+def io(new_in, new_out, old_in, old_out)
+	vstream old_in = in, old_out = out
+	post()
+		in = old_in ; out = old_out
+	pre()
+		old_in = in ; old_out = out
+		in = new_in ; out = new_out
+		.
+
+def oe(new_out, new_er)
+	oe(new_out, new_er, my(old_out), my(old_er))
+def oe(new_out, new_er, old_out, old_er)
+	vstream old_out = out, old_er = er
+	post()
+		out = old_out ; er = old_er
+	pre()
+		old_out = out ; old_er = er
+		out = new_out ; er = new_er
+		.
+
+def ioe(new_in, new_out, new_er)
+	ioe(new_in, new_out, new_er, old_in, old_out, old_er)
+def ioe(new_in, new_out, new_er, old_in, old_out, old_er)
+	vstream old_in = in, old_out = out, old_er = er
+	post()
+		in = old_in ; out = old_out ; er = old_er
+	pre()
+		old_in = in ; old_out = out ; old_er = er
+		in = new_in ; out = new_out ; er = new_er
+		.
+
+int vs_printf(const char *format, va_list ap)
+	return (*out->printf)(out, format, ap)
+
+char *vs_gets(char *s, int size)
+	return (*in->gets)(s, size, in)
+
+def vs_write(ptr, size) vs_write(ptr, 1, size)
+vs_write(const void *ptr, size_t size, size_t nmemb)
+	(*out->write)(ptr, size, nmemb, out)
+
+def vs_read(ptr, size) vs_read(ptr, 1, size)
+size_t vs_read(void *ptr, size_t size, size_t nmemb)
+	return (*in->read)(ptr, size, nmemb, in)
+
+int pf(const char *format, ...)
+	collect(vs_printf, format)
+
+int vs_sayf(const char *format, va_list ap)
+	int rv = (*out->printf)(out, format, ap)
+	(*out->putc)('\n', out)
+	++rv
+	return rv
+
+int sf(const char *format, ...)
+	collect(vs_sayf, format)
+
+int print(const char *s)
+	return pf("%s", s)
+
+int say(const char *s)
+	return sf("%s", s)
+
+int rl(buffer *b)
+	size_t len = buffer_get_size(b)
+	repeat
+		char *rv = vs_gets(b->start+len, buffer_get_space(b)-len)
+		if rv == NULL
+			return EOF
+		len += strlen(b->start+len)
+		if b->start[len-1] == '\n'
+			# chomp it - XXX should we do this?
+			b->start[len-1] = '\0'
+			--len
+			break
+		if len < buffer_get_space(b) - 1
+			break
+		buffer_double(b)
+	buffer_set_size(b, len)
+	return 0

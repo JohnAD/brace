@@ -169,16 +169,16 @@ if [ -n "$X" -a "$X" = "${X#-}" ]; then
 	X="${X%$EXE}$EXE"
 	XBAK="$dirname/.${basename}.xbak$EXE"
 else
-	X="$B$EXE"
+	X="${B%.*}$EXE"
 	[ "$X" = "$B" ] &&
 		fail "please specify a name for the executable"
 fi
 #C=`tempfile -s .c`
-B1="$dirname/.$basename.${b}1"
-C="$dirname/.$basename.$c"
-BBAK="$dirname/.$basename.bak"
-BBAK2="$dirname/.$basename.bak2"
-LOG="$dirname/.$basename.log"
+B1="$dirname/.${basename%.*}.${b}1"
+C="$dirname/.${basename%.*}.${c}"
+BBAK="$dirname/.${basename%.*}.bak"
+BBAK2="$dirname/.${basename%.*}.bak2"
+LOG="$dirname/.${basename%.*}.log"
 if [ -n "$BR_DEBUG" ]; then echo \< "$B" brace_number_lines \| b2b1 \> "$B1"; fi
 <"$B" brace_number_lines "$B" | b2b1 2>"$LOG" >"$B1" || log_fix_exit
 if [ -n "$BR_DEBUG" ]; then echo \< "$B1" brace \> "$C"; fi

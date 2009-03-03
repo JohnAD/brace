@@ -184,3 +184,9 @@ int Systeml(const char *filename, ...)
 	return Systemv(filename, (char *const *)exec_argv.b.start)
 
 def Systeml(filename) Systeml(filename, NULL)
+
+cstr cmd(cstr c)
+	FILE *f = Popen(c, "r")
+	cstr rv = buffer_to_cstr(fslurp(f))
+	Pclose(f)
+	return rv

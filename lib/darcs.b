@@ -1,7 +1,7 @@
 # returns malloc'd
 cstr darcs_root()
 	new(b, buffer, 256)
-	until(Exists("_darcs"))
+	until(exists("_darcs"))
 		Getcwd(b)
 		if cstr_eq(buffer_to_cstr(b), "/")
 			error("not in a darcs repository")
@@ -35,7 +35,7 @@ def darcs_path(path)
 
 cstr darcs_exists(cstr darcs_path)
 	let(rv, cstr_cat("_darcs/current/", darcs_path))
-	return Exists(rv) ? rv : NULL
+	return exists(rv) ? rv : NULL
 
 export cstr
 use io error util buffer path alloc

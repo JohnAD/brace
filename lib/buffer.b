@@ -94,6 +94,13 @@ size_t buffer_get_free(buffer *b)
 char buffer_last_char(buffer *b)
 	return b->start[buffer_get_size(b)-1]
 
+boolean buffer_ends_with_char(buffer *b, char c)
+	return buffer_get_size(b) && buffer_last_char(b) == c
+
+boolean buffer_ends_with(buffer *b, cstr s)
+	size_t len = strlen(s)
+	return buffer_get_size(b) >= len && !strncmp(b->end-len, s, len)
+
 char buffer_first_char(buffer *b)
 	return b->start[0]
 
@@ -196,6 +203,23 @@ cstr buffer_to_cstr(buffer *b)
 	buffer_squeeze(b)
 	return buffer_get_start(b)
 
+buffer_from_cstr(buffer *b, cstr s, size_t len)
+	b->start = s
+	b->end = s + len
+	b->space_end = b->end + 1
+
+def buffer_from_cstr(b, s)
+	buffer_from_cstr(b, s, strlen(s))
+
+buffer *buffer_from_cstr_1(cstr s)
+	size_t len = strlen(s)
+	New(b, buffer, len+1)
+	buffer_from_cstr(b, s, len)
+	return b
+
+def buffer_from_cstr(s)
+	buffer_from_cstr_1(s)
+
 def for_buffer(i, b)
 	char *i
 	char *my(end) = buffer_get_end(b)
@@ -217,6 +241,9 @@ buffer_shift(buffer *b, size_t shift)
 	size_t size = buffer_get_size(b)
 	memmove(start, start+shift, size-shift)
 	buffer_grow(b, -shift)
+
+def buffer_shift(b)
+	buffer_shift(b, 1)
 
 # TODO unshift, push, pop ? better names? more efficient impl (circbuf) ?
 

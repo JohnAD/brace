@@ -11,10 +11,9 @@ Main()
 	space()
 	gr_fast()
 	gprint_anchor(0, 0)
-	font("helvetica-bold", 200)
-	cstr s = args ? join(" ", arg) : "Hello World!"
-	num tw = text_width(s)
-	int fs = (int)(200*w/tw * 0.8)
+
+	cstr s = fortune()
+	int fs = font_size_to_fit(s)
 
 	repeat(50)
 		col(rb[Randint(0,360)])
@@ -41,28 +40,38 @@ Main()
 
 #def shiny1(pixel_type, r, g, b, rgb)
 
+cstr fortune()
+	cstr s = args ? join(" ", arg) : cmd("fortune -s -n 40")
+	if !s || !*s
+		s = "Hello World"
+	return s
+
+int font_size_to_fit(cstr s)
+	font("helvetica-medium", 200)
+	num tw = text_width(s)
+	int fs = (int)(200*w/tw * 0.90)
+	font("helvetica-medium", fs)
+	return fs
+
 def shiny(pixel_type)
 	int c = 0
 	colour cl = white
 	repeat
 		font("helvetica-bold", fs)
-		int m = c++ % 100
+		int m = ++c % 100
 		if m == 0
 			cl = white
 		 eif m == 50
 			cl = rb[Randint(0, 360)]
 		if Rand() < 0.3
-#			move(Randint(-w_2, w_2), Randint(-h_2, h_2))
-#			r1 = Rand(5, 50)
-#			r2 = r1 * rt3
-#			whiteness = Rand(0.2, 0.8)
-#			fill_star(0)
 			col(rb[Randint(0,360)])
 			font("helvetica-medium", fs/Randint(2, 5))
 			move(Randint(-w_2, w_2), Randint(-h_2, h_2))
 			gsayf(s)
 			paint()
 		if m == 0 || m == 50
+			s = fortune()
+			fs = font_size_to_fit(s)
 			col(cl)
 			font("helvetica-bold", fs)
 			move(0, 0)
@@ -96,13 +105,6 @@ def shiny(pixel_type)
 
 		Paint()
 
-rect(num x, num y, num w, num h)
-	move(x, y)
-	draw(x+w-1, y)
-	draw(x+w-1, y+h-1)
-	draw(x, y+h-1)
-	draw(x, y)
-
 # assuming 32 bit colour again:
 def r(x) x >> 16 & 0xFF
 def g(x) x >> 8 & 0xFF
@@ -115,34 +117,3 @@ def fnp 3
 
 #def fn(o, x0, x1, x2, x3) iclamp(toss() ? avg(o, x0, x1, x2, x3) : max(o, x0, x1, x2, x3)*0.8, 0, 255)
 def fn(o, x0, x1, x2, x3) avg(o, x0, x1, x2, x3)
-
-int star_colors[][12] =
-	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
-	{ 7, 6, 9, 8, 11, 10, 1, 0, 3, 2, 5, 4 },
-	{ 7, 6, 9, 8, 4, 5, 1, 0, 3, 2, 10, 11 },
-	{ 0, 1, 2, 3, 11, 10, 6, 7, 8, 9, 5, 4 },
-
-fill_star(int n)
-	move()
-	let(o, get_pos())
-	fd(r1)
-	let(a, get_pos())
-	for(i, 0, 6)
-		int c = star_colors[n][i*2]
-		hsv(c*30, 1, whiteness)
-		set_pos(o)
-		lt(60*i+30)
-		fd(r2)
-		let(b, get_pos())
-		triangle(a, o, b)
-		c = star_colors[n][i*2+1]
-		hsv(c*30, 1, whiteness)
-		set_pos(o)
-		lt(60*i+60)
-		fd(r1)
-		a = get_pos()
-		triangle(b, o, a)
-	set_pos(o)
-	draw()
-
-def trig_unit deg

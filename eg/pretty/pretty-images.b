@@ -136,4 +136,3 @@ use b
 use X11/extensions/XShm.h
 use sys/ipc.h
 use sys/shm.h
-use sched.h

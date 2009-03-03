@@ -1,10 +1,14 @@
 cgi_html()
 	cgi_content_type("text/html")
 
+int cgi__sent_headers = 0
+
 cgi_content_type(cstr type)
-	Printf("Content-Type: %s", type)
-	crnl() ; crnl()
-	Fflush()
+	if !cgi__sent_headers
+		Printf("Content-Type: %s", type)
+		crnl() ; crnl()
+		Fflush()
+		cgi__sent_headers = 1
 
 cgi_text()
 	cgi_content_type("text/plain")
@@ -37,38 +41,6 @@ cgi_env_load(cstr data)
 
 # this only handles "get" method cgi parameters so far
 
-url_decode(cstr q)
-	cstr o = q
-	while *q
-		if *q == '+'
-			*o = ' '
-		 eif *q == '%' && q[1] && q[2]
-			char c[3] = { q[1], q[2], '\0' }
-			*o = (char)strtol(c, NULL, 16)
-			q+=2
-		 else
-			*o = *q
-		++q
-		++o
-	*o = '\0'
-
-# this isn't strictly a CGI thing, more an http thing,
-# but it can go here for now.
-# This is a bit dodgy yet, because have to encode different bits of the url
-# differently I think.  Returns alloc'd
-
-cstr url_encode(cstr q)
-	new(b, buffer, 256)
-	while *q
-		char c = *q++
-#		if c == ' '
-#			buffer_cat_char(b, '+')
-		if !isalnum(c) && !strchr(":_-/?.", c)
-			Sprintf(b, "%%%02x", c)
-		 else
-			buffer_cat_char(b, c)
-	return buffer_to_cstr(b)
-
 cstr cgi(cstr k, cstr _default)
 	# XXX not efficient, use a buffer?
 	k = cstr_cat(cgi__prefix, k)
@@ -80,5 +52,23 @@ def cgi(k) cgi(k, "")
 def cgi_or_null(k) cgi(k, NULL)
 def cgi_required(k) cgi(k, env__required)
 
+cgi_errors_to_browser()
+	error_handler *h = vec_push(error_handlers)
+	h->handler.func = cgi_error_to_browser
+	h->handler.obj = NULL
+	h->handler.common_arg = NULL
+	h->jump = NULL
+	h->err = 0
+
+void *cgi_error_to_browser(void *obj, void *common_arg, void *specific_arg)
+	use(obj) ; use(common_arg)
+	err *e = specific_arg
+	cgi_text()
+	Say(e->msg)
+	Fflush()
+	vec_pop(error_handlers)
+	Throw()
+	return thunk_yes
+
 use io process env stdc gr time cstr util alloc
-export types
+export types http

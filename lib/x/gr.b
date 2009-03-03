@@ -203,6 +203,13 @@ line_width(num width)
 def width(w) line_width(w)
 num _line_width = 0
 
+rect(num x, num y, num w, num h)
+	move(x, y)
+	draw(x+w-1, y)
+	draw(x+w-1, y+h-1)
+	draw(x, y+h-1)
+	draw(x, y)
+
 rect_fill(num x, num y, num w, num h)
 	# this impl won't work with a rotated transform
 	int X, Y, W, H

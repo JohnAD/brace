@@ -135,9 +135,3 @@ fill_star(int n)
 	set_pos(o)
 	draw()
 
-#int turtle_flip_factor = 1
-#
-#def turtle_flip()
-#	turtle_flip_factor *= -1
-#
-#def _turn(da) turtle_a += da * turtle_flip_factor

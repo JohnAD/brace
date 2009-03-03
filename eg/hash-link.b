@@ -43,7 +43,7 @@ Main()
 
 			cstr hash_path = path_cat(hash_dir, hash_file)
 
-			if Exists(hash_path)
+			if exists(hash_path)
 				# Link(hash_path, f)
 				.
 			 else

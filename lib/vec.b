@@ -127,3 +127,8 @@ def vec_copy_element(v, to, from)
 def vec_copy_element(v, to, from, type)
 	*(type *)vec_element(v, to) = *(type *)vec_element(v, from)
 
+void *vec_to_array(vec *v)
+	vec_push(v, NULL)
+	vec_squeeze(v)
+	vec_pop(v)
+	return vec_get_start(v)

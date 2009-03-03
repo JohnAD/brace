@@ -9,14 +9,14 @@ basename() {
 
 d=`dirname "$file"`
 b=`basename "$file"`
-#stem="${b%.*}"
-c="$d/.$b.c"
-cc="$d/.$b.cc"
+stem="${b%.*}"
+c="$d/.$stem.c"
+cc="$d/.$stem.cc"
 if [ ! -e "$c" -a -e "$cc" ]; then
 	c="$cc"
 fi
 
-log="$d/.$b.log"
+log="$d/.$stem.log"
 if [ ! -e "$log" ]; then
 	if [ -e "$d/mk.log" ]; then
 		log="$d/mk.log"

@@ -5,7 +5,7 @@ export error alloc io path cstr m time env stdc
 export sched proc shuttle pipe timeout
 export types main util
 export darcs
-export html
+export html http
 export tsv
 export tok
 
