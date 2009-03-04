@@ -1,4 +1,4 @@
-use util io buffer alloc cstr
+use util io buffer alloc cstr vio
 
 # idea - functions that have access to env of caller "automatically" without
 # having to pass in params, create automatically for each macro YYY!
@@ -35,7 +35,7 @@ ldef nl_to_cr()
 # split and join are inverses, unless there is a newline in middle of a tag
 
 ldef rd_ch()
-	Getchar(c)
+	c = gc()
 
 ldef copy_to(end)
 	while strchr(end, c) == NULL && c != EOF
@@ -53,7 +53,7 @@ ldef add_b()
 	buffer_cat_char(b, c)
 
 ldef out()
-	Say(buffer_to_cstr(b))
+	say(buffer_to_cstr(b))
 	buffer_clear(b)
 
 html_join()
@@ -61,20 +61,20 @@ html_join()
 		for(i, cstr_range(l))
 			which *i
 			'\r'	*i = '\n'
-		Print(l)
+		print(l)
 
-def tag(name) tagn(stdout, name, NULL)
-def tag(name, k0, v0) tagn(stdout, name, k0, v0, NULL)
-def tag(name, k0, v0, k1, v1) tagn(stdout, name, k0, v0, k1, v1, NULL)
-def tag(name, k0, v0, k1, v1, k2, v2) tagn(stdout, name, k0, v0, k1, v1, k2, v2, NULL)
-def tag(name, k0, v0, k1, v1, k2, v2, k3, v3) tagn(stdout, name, k0, v0, k1, v1, k2, v2, k3, v3, NULL)
-def tag(name, k0, v0, k1, v1, k2, v2, k3, v3, k4, v4) tagn(stdout, name, k0, v0, k1, v1, k2, v2, k3, v3, k4, v4, NULL)
+def tag(name) tagn(name, NULL)
+def tag(name, k0, v0) tagn(name, k0, v0, NULL)
+def tag(name, k0, v0, k1, v1) tagn(name, k0, v0, k1, v1, NULL)
+def tag(name, k0, v0, k1, v1, k2, v2) tagn(name, k0, v0, k1, v1, k2, v2, NULL)
+def tag(name, k0, v0, k1, v1, k2, v2, k3, v3) tagn(name, k0, v0, k1, v1, k2, v2, k3, v3, NULL)
+def tag(name, k0, v0, k1, v1, k2, v2, k3, v3, k4, v4) tagn(name, k0, v0, k1, v1, k2, v2, k3, v3, k4, v4, NULL)
 
 cstr tag__no_value = (cstr)-1
-tagn(FILE *stream, cstr name, ...)
-	collect_void(vtag, stream, name)
-vtag(FILE *stream, cstr name, va_list ap)
-	Fprintf(stream, "<%s", name)
+tagn(cstr name, ...)
+	collect_void(vtag, name)
+vtag(cstr name, va_list ap)
+	pf("<%s", name)
 	repeat
 		cstr k = va_arg(ap, cstr)
 		if !k
@@ -83,12 +83,12 @@ vtag(FILE *stream, cstr name, va_list ap)
 		if !v
 			error("tag: missing value for key %s", k)
 		if v == tag__no_value
-			Fprintf(stream, " %s", k)
+			pf(" %s", k)
 		 else
 			let(v1, html_encode(v))
-		 	Fprintf(stream, " %s=\"%s\"", k, v1)
+		 	pf(" %s=\"%s\"", k, v1)
 			Free(v1)
-	Fprintf(stream, ">")
+	pf(">")
 
 
 _html_encode(buffer *b, cstr v)
@@ -109,3 +109,28 @@ cstr html_encode(cstr v)
 	_html_encode(b, v)
 	return buffer_to_cstr(b)
 def html_encode(b, v) _html_encode(b, v)
+
+cstr html2text(cstr html)
+	decl(b_html, buffer)
+	buffer_from_cstr(b_html, html)
+
+	new(b_split, buffer, 1024)
+	b_io(b_html, b_split)
+		html_split()
+
+	new(b_text, buffer, 1024)
+
+	b_io(b_split, b_text)
+		eachline(s)
+			if s[0] != '<'
+				print(s)
+			 eif !strcasecmp(s, "<br>") || !strcasecmp(s, "</p>")
+				say()
+			 eif !strcasecmp(s, "</td>")
+				print("\t")
+			 else
+				print(" ")
+
+	buffer_free(b_split)
+
+	return buffer_to_cstr(b_text)

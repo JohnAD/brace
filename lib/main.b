@@ -1,4 +1,4 @@
-use m path cstr error io net env
+use m path cstr error io net env vio
 
 use main
 
@@ -22,7 +22,7 @@ main__init(int _argc, char *_argv[], char *_envp[])
 	argv = _argv
 	envp = _envp
 	mingw = is_env("WINDIR") || is_env("windir")
-	vstream_init()
+	vstreams_init()
 	error_init()
 	main_dir = Getcwd()
 	program_full = argv[0]

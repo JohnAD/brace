@@ -6,11 +6,11 @@ use error alloc util
 
 cstr_dos_to_unix(cstr s)
 	cstr p1, p2
-	for p1=p2=s; *p1 != 0; ++p1
+	for p1=p2=s; *p1 != '\0'; ++p1
 		if *p1 != '\r'
 			*p2 = *p1
 			++p2
-	*p2 = 0
+	*p2 = '\0'
 
 # returns malloc'd
 cstr cstr_unix_to_dos(cstr s)

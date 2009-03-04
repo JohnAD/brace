@@ -15,7 +15,7 @@ Main()
 		if mingw
 			brace = strdup("c:\\Program Files\\brace\\bin\\brace.exe")
 			add_to_PATH = 1
-			if !Exists(brace)
+			if !exists(brace)
 				brace = NULL
 	if brace == NULL
 		error("Please ensure brace is installed and in your PATH.")

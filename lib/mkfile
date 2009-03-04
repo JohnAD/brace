@@ -12,11 +12,11 @@ BHEADERS_PLAIN=$(shell $(finder) "*.b" | perl -pe 's/\.b$$/.bh/' | $(grep_plain)
 all: $(SONAME) libb.a $(PLAIN_SONAME) libb_plain.a b.h b_plain.h
 
 $(SONAME): $(BOBJ)
-	$(CC) -o$@ $(CFLAGS) -s -shared -fpic -Wl,-soname,$(SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
+	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
 	chmod -x $@
 
 $(PLAIN_SONAME): $(BOBJ_PLAIN)
-	$(CC) -o$@ $(CFLAGS) -s -shared -fpic -Wl,-soname,$(PLAIN_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
+	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(PLAIN_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
 	chmod -x $@
 
 libb.a: $(BOBJ)
