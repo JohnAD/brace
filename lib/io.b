@@ -920,9 +920,7 @@ Mkdirs(const char *pathname, mode_t mode)
 	cstr dir = dir1
 	repeat
 		dir1rest(dir, d, b)
-		warn("mkdir %s", d)
 		mkdir(d, mode)
-		warn("chdir %s", d)
 		Chdir(d)
 		if !b || !*b
 			break
@@ -936,13 +934,10 @@ def Mkdirs(pathname) Mkdirs(pathname, 0777)
 Rmdirs(const char *pathname)
 	cstr dir = strdup(pathname)
 	repeat
-		warn("rmdir %s", dir)
 		if rmdir(dir)
-			warn("b1")
 			break
 		let(d, dir_name(dir))
 		if (*d == '.' || *d == '/') && d[1] == '\0'
-			warn("b2")
 			break
 		dir = d
 	
