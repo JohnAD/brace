@@ -8,6 +8,7 @@ export darcs
 export html http
 export tsv
 export tok
+export vio
 
 # export tty
 #   curses has conflicting symbols with libb etc, see ../curses_syms_conflicts

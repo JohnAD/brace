@@ -31,12 +31,23 @@ cstr url_encode(cstr q)
 cstr url_host(cstr url)
 	cstr host = Strstr(url, "//") + 2
 	cstr host_end = Strchr(host, '/')
+	if !host_end
+		host_end = host+strlen(host)
 	host = Strndup(host, host_end-host)
 	return host
 
+int _http_fake_browser = 0
+def http_fake_browser() http_fake_browser(1)
+http_fake_browser(int f)
+	_http_fake_browser = f
+
 cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *rsp_headers, buffer *rsp_data)
-	cstr host = url_host(url)
+	cstr host_port = url_host(url)
+	cstr path = Strchr(Strstr(url, "//") + 2, '/')
+	if !*path
+		path = "/"
 	int port = 80
+	cstr host = strdup(host_port)
 	cstr port_s = strchr(host, ':')
 	if port_s
 		*port_s++ = '\0'
@@ -44,7 +55,12 @@ cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *
 
 	int fd = Client(host, port)
 	FILE *s = Fdopen(fd, "r+b")
-	Fprintf(s, "%s %s HTTP/1.0\r\n", method, url)
+	Fprintf(s, "%s %s HTTP/1.1\r\n", method, path)
+	Fprintf(s, "Host: %s\r\n", host_port)
+	if _http_fake_browser == 1
+		Fprintf(s, "User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.6) Gecko/2009020911 Ubuntu/8.10 (intrepid) Firefox/3.0.6\r\n")
+		Fprintf(s, "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n")
+
 	if req_headers
 		Fwrite_buffer(s, req_headers)
 	crnl(s)
@@ -77,26 +93,37 @@ cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *
 
 	Fclose(s)
 
+	Free(host_port)
 	Free(host)
 
 	if !rsp_data && rsp_headers
 		rsp_data = rsp_headers
 	if rsp_data
-		return buffer_to_cstr(rsp_data)
+		buffer_nul_terminate(rsp_data)
+		return buffer_get_start(rsp_data)
 	return NULL
 
-cstr http_get(cstr url)
-	new(rsp_data, buffer, 1024)
+def http_get(url) http_get_1(url)
+cstr http_get_1(cstr url)
+	New(rsp_data, buffer, 1024)
+	return http_get(url, rsp_data)
+cstr http_get(cstr url, buffer *rsp_data)
 	return http("GET", url, NULL, NULL, NULL, rsp_data)
 
-cstr http_head(cstr url)
-	new(rsp_headers, buffer, 1024)
+def http_head(url) http_head_1(url)
+cstr http_head_1(cstr url)
+	New(rsp_headers, buffer, 1024)
+	return http_head(url, rsp_headers)
+cstr http_head(cstr url, buffer *rsp_headers)
 	return http("HEAD", url, NULL, NULL, rsp_headers, NULL)
 
-cstr http_post(cstr url, cstr _req_data)
+def http_post(url, req_data) http_post_1(url, req_data)
+cstr http_post_1(cstr url, cstr req_data)
+	New(rsp_data, buffer, 1024)
+	return http_post(url, req_data, rsp_data)
+cstr http_post(cstr url, cstr _req_data, buffer *rsp_data)
 	decl(req_data, buffer)
 	buffer_from_cstr(req_data, _req_data)
-	new(rsp_data, buffer, 1024)
 	return http("POST", url, NULL, req_data, NULL, rsp_data)
 
-use cstr
+use cstr alloc util io

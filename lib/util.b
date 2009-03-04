@@ -306,20 +306,17 @@ def swap(a, b)
 
 # FIXME why v?
 
-def eachline(v)
-	eachline(v, stdin)
-
 def eacharg(a)
 	for(my(i), arg, arg+args)
 		let(a, *my(i))
 		if a == NULL
 			break
 
-def eachline(v, stream)
+def eachline(v)
 	new(my(b), buffer)
 	repeat
 		buffer_clear(my(b))
-		if Freadline(my(b), stream)
+		if rl(my(b))
 			break
 		char *v = buffer_get_start(my(b))
 
