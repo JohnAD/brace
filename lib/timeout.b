@@ -30,6 +30,9 @@ def timeouts_init(q)
 def timeouts_init(q, space)
 	init(q, priq, timeout_p, space)
 
+def timeouts_free(q)
+	priq_free(q)
+
 def timeouts_cmp_macro(a, b) (*(timeout_p*)a)->time - (*(timeout_p*)b)->time
 
 timeouts_add(timeouts *q, timeout *o)

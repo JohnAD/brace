@@ -43,7 +43,9 @@ boolean printable(uchar c)
 	#return c >= 32 && c != 127
  # tab is excluded
 
-Def let(to, from) sametype(to, from) = from
+Def lett(to, from) sametype(to, from) = from
+
+Def let(to, from) state lett(to, from)
 
 Def sametype(to, ref) typeof(ref) to
 
@@ -75,7 +77,7 @@ def for_keep(v, from, to, step)
 	let(v, from)
 	let(my(end), to)
 	let(my(st), step)
-	for let(v, from); v<my(end); v+=my(st)
+	for ; v<my(end); v+=my(st)
 
 def repeat(n)
 	for(my(i), 0, n)
@@ -111,8 +113,11 @@ def natatime(v, n, sep)
 			my(i) = 0
 		++my(i)
 
-Def ptr(var, type)
+Def ptrt(var, type)
 	type *var
+
+Def ptr(var, type)
+	state type *var
 
 Def stack(var, type)
 	type struct__^^var
@@ -127,9 +132,14 @@ Def heap(var, type)
 
 # This decl can be used as a global too, not in a struct though.
 
-Def decl(var, type)
+Def declt(var, type)
 	type struct__^^var
 	type *var = &struct__^^var
+#	type *const var = &struct__^^var
+
+Def decl(var, type)
+	state type struct__^^var
+	state type *var = &struct__^^var
 #	type *const var = &struct__^^var
 
 # decl_member was for structs, but I think it is better to do it differently in
@@ -185,6 +195,25 @@ Def New(var, type, a1, a2, a3, a4)
 	init(var, type, a1, a2, a3, a4)
 Def New(var, type, a1, a2, a3, a4, a5)
 	Decl(var, type)
+	init(var, type, a1, a2, a3, a4, a5)
+
+Def NEW(var, type)
+	heap(var, type)
+	init(var, type)
+Def NEW(var, type, a1)
+	heap(var, type)
+	init(var, type, a1)
+Def NEW(var, type, a1, a2)
+	heap(var, type)
+	init(var, type, a1, a2)
+Def NEW(var, type, a1, a2, a3)
+	heap(var, type)
+	init(var, type, a1, a2, a3)
+Def NEW(var, type, a1, a2, a3, a4)
+	heap(var, type)
+	init(var, type, a1, a2, a3, a4)
+Def NEW(var, type, a1, a2, a3, a4, a5)
+	heap(var, type)
 	init(var, type, a1, a2, a3, a4, a5)
 
 Def init(var, type)
@@ -536,6 +565,9 @@ int int_cmp(const void *a, const void *b)
 	int diff = *(int*)a - *(int*)b
 	return diff
 
+def sort_cstr_array(x)
+	qsort(x, array_size(x), sizeof(*x), cstrp_cmp)
+
 # post / pre usage:
 # post(x)
 # 	Say("done after")
@@ -566,4 +598,60 @@ size_t arylen(void *_p)
 	while (*p++)
 		++count
 	return count
+
+typedef int (*cmp_t)(const void *, const void *)
+
+sort_vec(vec *v, cmp_t cmp)
+	qsort(vec_get_start(v), vec_get_size(v), vec_get_el_size(v), cmp)
+
+int cstrp_cmp(const void *_a, const void *_b)
+	char * const *a = _a
+	char * const *b = _b
+	return strcmp(*a, *b)
+
+int cstrp_cmp_null(const void *_a, const void *_b)
+	char * const *a = _a
+	char * const *b = _b
+	if !*a || !*b
+		if *a
+			return -1
+		eif *b
+			return 1
+		return 0
+	return strcmp(*a, *b)
+
+comm_vecs(vec *merge_v, vec *comm_v, cmp_t cmp, vec *va, vec *vb)
+	vec_null_terminate(va)
+	vec_null_terminate(vb)
+	void **a = vec_get_start(va)
+	void **b = vec_get_start(vb)
+	repeat
+		int c = cmp(a, b)
+		void **m
+		byte w
+		if c == 0
+			if !*a
+				break
+			m = *a
+			w = 3
+			++a ; ++b
+		 eif c < 0
+			m = *a
+			w = 1
+			++a
+		 eif c > 0
+			m = *b
+			w = 2
+			++b
+		vec_push(merge_v, m)
+		vec_push(comm_v, w)
+
+comm_dump_cstr(vec *merge_v, vec *comm_v)
+	assert(vec_get_size(comm_v) == vec_get_size(merge_v), "badcall: comm_dump_cstr %d %d", vec_get_size(comm_v), vec_get_size(merge_v))
+	vec_null_terminate(merge_v)
+	cstr *m = vec_get_start(merge_v)
+	byte *c = vec_get_start(comm_v)
+	while *m
+		Sayf("%d\t%s", *c, *m)
+		++m ; ++c
 

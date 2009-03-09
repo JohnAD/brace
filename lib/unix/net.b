@@ -9,6 +9,7 @@ use string.h
 def INVALID_SOCKET -1
 def UNIX_PATH_MAX 108
 typedef int SOCKET
+typedef struct sockaddr_un sockaddr_un
 
 def closesocket(s) close(s)
 

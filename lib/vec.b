@@ -132,3 +132,16 @@ void *vec_to_array(vec *v)
 	vec_squeeze(v)
 	vec_pop(v)
 	return vec_get_start(v)
+
+def vec_null_terminate(v)
+	vec_push(v, NULL)
+	vec_pop(v)
+
+def vec_get_el_size(v) v->element_size
+
+def v(vec, i) vec_element(vec, i)
+
+def veclen(v) vec_get_size(v)
+def vec0(v) vec_get_start(v)
+def vecend(v) vec_get_end(v)
+def vecclr(v) vec_clear(v)

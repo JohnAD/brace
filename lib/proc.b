@@ -5,15 +5,17 @@ use error
 use io
 use util
 
+def proc_debug void
+#def proc_debug warn
+
 typedef int (*proc_func)(proc *p)
 struct proc
 	proc_func f
 	int pc
+typedef proc *proc_p
 proc_init(proc *p, proc_func f)
 	p->f = f
 	p->pc = 1
-
-def proc_debug void
 
 int resume(proc *p)
 	proc_debug("resuming: %08x at %d", p, p->pc)
@@ -50,7 +52,7 @@ def wait
 ##		...
 ##		stop
 
-def b__d(foo) b__P->foo
+def b__d(foo) This->foo
 
 # a fancy macro to declare and init a proc
 # XXX does not work if the proc init function takes arguments

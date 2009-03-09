@@ -3,6 +3,10 @@ use error io util
 
 use net
 
+typedef struct sockaddr sockaddr
+typedef struct sockaddr_in sockaddr_in
+typedef struct sockaddr_un sockaddr_un
+
 int Socket(int domain, int type, int protocol)
 	int fd = socket(domain, type, protocol)
 	if fd == -1

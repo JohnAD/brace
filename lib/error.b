@@ -142,7 +142,7 @@ def try(h)
 def try(h, thunk)
 	try(h, thunk, 0)
 def try(h, thunk, need_jump)
-	error_handler *h = vec_push(error_handlers)
+	state error_handler *h = vec_push(error_handlers)
 	h->handler = *thunk
 	if need_jump
 		h->jump = Talloc(sigjmp_buf)
@@ -150,7 +150,7 @@ def try(h, thunk, need_jump)
 	 else
 		h->jump = NULL
 		h->err = 0
-	int my(stage)
+	state int my(stage)
 	for my(stage) = 0 ; h->err == 0 ; ++my(stage)
 		if my(stage) == 1
 			if need_jump

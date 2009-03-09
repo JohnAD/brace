@@ -1,0 +1,261 @@
+#!/lang/b
+
+use b
+
+cstr listen_addr = "0.0.0.0"
+int listen_port = 80
+cstr www_root = "/www"
+cstr www_default_user = "www-data"
+
+def max_line_length 2048
+
+hashtable *users
+
+def verbose warn
+
+Main()
+	uid_t uid = geteuid()
+	if uid != 0
+		error("%s must be run as root", program)
+
+	ignore_pipe()
+
+	users = load_passwd()
+
+	sched_init()
+
+	new(l, listener_tcp, listen_addr, listen_port)
+	new(w, httpd_launcher)
+
+	sh(sock_p, l, w)
+
+	start(l) ; start(w)
+	run()
+
+proc httpd_launcher()
+	port sock_p in
+	state sock_p sk
+	repeat
+		rd(in, sk)
+		New(s, httpd, sk)
+		start(s)
+
+proc httpd(sock *sk)
+	port buffer in
+	port buffer out
+	port buffer fin
+	state int fd = sk->fd
+	state reader r
+	state reader fr
+	state writer w
+	state cstr method = NULL
+	state cstr url = NULL
+	state cstr proto = NULL
+	state cstr host = NULL
+	state cstr path = NULL
+	state cstr root = NULL
+	state cstr fullpath = NULL
+	state cstr user = www_default_user
+	state cstr pass = NULL
+	state off_t len
+	state int file_fd = -1
+	state passwd *u
+	state int code
+	state cstr msg
+
+	init(&r, reader, fd)
+	init(&w, writer, fd)
+
+	sh(buffer, &r, This)
+	sh(buffer, This, &w)
+
+	init(&in, buffer, block_size)
+	init(&out, buffer, block_size)
+
+	start(&r) ; start(&w)
+
+	# read_method_url_proto
+
+	breadln(in)
+	if !buflen(&in)
+		quit
+	cstr s = buf0(&in)
+	size_t l = strlen(s)+1
+	cstr_dos_to_unix(s)
+	cstr *words = split(s, ' ')
+	if arylen(words) != 3
+		bad
+	method = strdup(words[0]) ; url = strdup(words[1]) ; proto = strdup(words[2])
+	Free(words)
+	buffer_shift(&in, l)
+
+	# read_headers
+
+	repeat
+		breadln(in)
+		if !buflen(&in)
+			quit
+		cstr s = buf0(&in)
+		size_t l = strlen(s)+1
+		cstr_dos_to_unix(s)
+		if !*s
+			break
+		cstr *words = split(s, ':', 2)
+		if arylen(words) != 2
+			bad
+		while isspace(words[1][0])
+			++words[1]
+		if !strcasecmp(words[0], "Host")
+			host = strdup(words[1])
+		 eif !strcasecmp(words[0], "Authorization")
+			if !strncasecmp(words[1], "Basic ", 6)
+				decl(base64, buffer)
+				buffer_from_cstr(base64, words[1]+6)
+				new(o, buffer, 32)
+				base64_decode_buffers(base64, o)
+				user = buffer_to_cstr(o)
+				cstr *user_pass = split(user, ':', 2)
+				if arylen(user_pass) != 2
+					Free(user_pass)
+					bad
+				pass = user_pass[1]
+		Free(words)
+		buffer_shift(&in, l)
+
+	if host == NULL
+		host = get_host_from_url(url)
+	if host == NULL
+		host = strdup("default")
+
+	path = get_path_from_url(url)
+
+	root = path_cat(www_root, host)
+	fullpath = path_cat(root, path)
+
+	if fullpath[strlen(fullpath)-1] == '/'
+		cstr fullpath_index = path_cat(fullpath, "index.html")
+		if is_file(fullpath_index)
+			Free(fullpath)
+			fullpath = fullpath_index
+
+	fullpath = path_tidy(fullpath)
+	unless(cstr_begins_with(fullpath, root) && fullpath[strlen(root)] == '/')
+		bad
+
+	verbose("%s %s", method, fullpath)
+
+	# set user and respond
+
+	u = get(users, user)
+
+	if user != www_default_user && !(u && pass && auth(u, pass))
+		reqauth
+		# FIXME incorrect password message / request auth
+
+	if pass
+		bzero(pass, strlen(pass))
+
+	# TODO use try if it works?
+
+	Setegid(u->pw_gid) ; Seteuid(u->pw_uid)
+
+	decl(st, stats)
+	if stat(fullpath, st)
+		if errno == EACCES
+			reqauth
+		 else
+			notf
+
+	if S_ISREG(st->st_mode)
+		file_fd = open(fullpath, O_RDONLY)
+		if file_fd == -1
+			if errno == EACCES
+				reqauth
+			 else
+				srv_er
+		nonblock(file_fd)
+		add_fd(file_fd)
+
+		bsay(out, "HTTP/1.1 200 OK\r")
+		bsayf(out, "Content-Length: %lld\r", (long long int)st->st_size)
+		bcrlf(out)
+
+		init(&fr, reader, file_fd)
+		sh(buffer, &fr, out, This, fin)
+		init(&fin, buffer, block_size)
+		start(&fr)
+
+		repeat
+			pull(fin)
+			if !buflen(&fin)
+				break
+			bwrite(out, buffer_range(&fin)) # FIXME don't copy data
+			bflush(out)
+			if buflen(&out) # error
+				break
+			buffer_clear(&fin)
+			push(fin)
+
+		buffer_free(&fin)
+		quit
+
+	 eif S_ISDIR(st->st_mode)
+		if fullpath[strlen(fullpath)-1] != '/'
+			bsay(out, "HTTP/1.1 301 Moved Permanently\r")
+			bsayf(out, "Location: %s/", url)
+			bcrlf(out)
+			bsayf(out, "httpd: redirected to %s/\r", url)
+			bflush(out)
+			quit
+		 else
+			new(path_esc, buffer, 64)
+			sh_quote(fullpath, path_esc)
+			cstr command = format("ls -1F %s", buffer_to_cstr(path_esc))
+			buffer_free(path_esc)
+			state cstr ls = cmd(command)
+			Free(command)
+			bsay(out, "HTTP/1.1 200 OK\r")
+			bcrlf(out)
+			bprint(out, ls)
+			bflush(out)
+			Free(ls)
+			quit
+	 else
+		notf
+
+	fault("this code should not be reached")
+
+quit	if file_fd != -1
+		rm_fd(file_fd)
+		close(file_fd)
+	Seteuid(0) ; Setegid(0)
+	Free(method) ; Free(url) ; Free(proto) ; Free(host) ; Free(root) ; Free(fullpath)
+	rm_fd(fd)
+	sock_free(sk)
+	Free(This)
+	stop
+
+error	bsayf(out, "HTTP/1.1 %d %s\r", code, msg)
+	bcrlf(out)
+	bsayf(out, "httpd %d %s\r", code, msg)
+	bsayf(out, "  %s %s\r", method, fullpath)
+	bflush(out)
+	quit
+
+bad	code = 400 ; msg = "Bad Request"
+	error
+
+notf	code = 404 ; msg = "Not Found"
+	error
+
+srv_er	code = 500 ; msg = "Internal Server Error"
+	error
+
+reqauth	bsay(out, "HTTP/1.1 401 Unauthorized\r")
+	bsayf(out, "WWW-Authenticate: Basic realm=\"%s\"", host)
+	bcrlf(out)
+	bsayf(out, "httpd: Unauthorized\r", url)
+	bsayf(out, "  %s %s\r", method, fullpath)
+	bflush(out)
+	quit
+

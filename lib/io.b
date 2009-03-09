@@ -1,7 +1,7 @@
-export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h
+export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
 export str error buffer types net
-use m alloc util path env
+use m alloc util path env process
 
 use io
 
@@ -278,10 +278,10 @@ def spcs(stream, n)
 def spcs(n)
 	spcs(stdout, n)
 
-crnl(FILE *stream)
+crlf(FILE *stream)
 	Fprint(stream, "\r\n")
-def crnl()
-	crnl(stdout)
+def crlf()
+	crlf(stdout)
 
 # like perl, Say adds a newline, Print doesn't
 def Print(s)
@@ -442,7 +442,11 @@ int exists(const char *file_name)
 	struct stat buf
 	return Stat(file_name, &buf)
 
-int file_size(const char *file_name)
+int is_file(const char *file_name)
+	struct stat buf
+	return Stat(file_name, &buf) && S_ISREG(buf.st_mode)
+
+off_t file_size(const char *file_name)
 	struct stat buf
 	Stat(file_name, &buf)
 	return buf.st_size
@@ -931,6 +935,10 @@ Mkdirs(const char *pathname, mode_t mode)
 
 def Mkdirs(pathname) Mkdirs(pathname, 0777)
 
+Rmdir(const char *pathname)
+	if rmdir(pathname)
+		failed("rmdir")
+
 Rmdirs(const char *pathname)
 	cstr dir = strdup(pathname)
 	repeat
@@ -963,3 +971,71 @@ lnsa(cstr from, cstr to, cstr cwd)
 		Symlink(from, to)
 	Free(cwd1)
 	Free(from)
+
+buffer _Cp_symlink, *Cp_symlink = NULL
+
+def Cp(from, to)
+	new(my(sf), lstats, from)
+	Cp(from, to, sf)
+Cp(cstr from, cstr to, lstats *sf)
+	if S_ISLNK(sf->st_mode)
+		if !Cp_symlink
+			Cp_symlink = &_Cp_symlink
+			init(Cp_symlink, buffer, 256)
+		buffer_clear(Cp_symlink)
+		Symlink(Readlink(from, Cp_symlink), to)
+	 else
+		cp(from, to)
+
+def CP(cstr from, cstr to)
+	new(my(sf), lstats, from)
+	CP(from, to, sf)
+CP(cstr from, cstr to, lstats *sf)
+	Cp(from, to, sf)
+	cp_attrs_st(sf, to)
+
+cp_attrs(cstr from, cstr to)
+	new(sf, lstats, from)
+	cp_attrs_st(sf, to)
+
+cp_attrs_st(lstats *sf, cstr to)
+	if !S_ISLNK(sf->st_mode)
+		cp_mode(sf, to)
+	if Getuid() == uid_root
+		cp_owner(sf, to)
+	cp_times(sf, to)
+
+cp_mode(stats *sf, cstr to)
+	warn("chmod %s %0d", to, sf->st_mode)
+	Chmod(to, sf->st_mode)
+
+cp_owner(lstats *sf, cstr to)
+	Chown(to, sf->st_uid, sf->st_gid)
+
+Utime(const char *filename, const struct utimbuf *times)
+	if utime(filename, times)
+		failed("utime", filename)
+
+cp_times(lstats *sf, cstr to)
+	struct utimbuf times
+	times.actime = sf->st_atime
+	times.modtime = sf->st_mtime
+	Utime(to, &times)
+
+def cp_atime(sf, to)
+	new(my(st), lstats, to)
+	cp_atime(sf, to, st)
+cp_atime(lstats *sf, cstr to, lstats *st)
+	struct utimbuf times
+	times.actime = sf->st_atime
+	times.modtime = st->st_mtime
+	Utime(to, &times)
+
+def cp_mtime(sf, to)
+	new(my(st), lstats, to)
+	cp_mtime(sf, to, st)
+cp_mtime(lstats *sf, cstr to, lstats *st)
+	struct utimbuf times
+	times.actime = st->st_atime
+	times.modtime = sf->st_mtime
+	Utime(to, &times)

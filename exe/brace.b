@@ -7,9 +7,9 @@ enum { MAXLINE = 1024 }
 char buf[MAXLINE]
 
 enum { MAXTABS = 256 }
-enum { SWITCH, WHICH, STRUCT, CLASS, INIT, VOID_MAIN, MACRO, DO, DOWHILE, OTHER }
+enum { SWITCH, WHICH, STRUCT, CLASS, INIT, VOID_MAIN, MACRO, DO, DOWHILE, ELSE, OTHER }
 
-char *kwdparens[] = { "if", "else if", "while", "do", "for", "switch", 0 }
+char *kwdparens[] = { "if", "else if", "while", "do", "for", "switch", "else", 0 }
 
 char *line
 int len
@@ -181,10 +181,11 @@ procstmt()
 	else
 		for k=kwdparens; *k != 0; ++k
 			int l = strlen(*k)
-			if cstr_begins_with(line, *k) && line[l] == ' '
-				line[l] = '('
-				writes(line)
-				line = ")" ; len = 1
+			if cstr_begins_with(line, *k) && (line[l] == ' ' || line[l] == '\0')
+				if line[l] == ' '
+					line[l] = '('
+					writes(line)
+					line = ")" ; len = 1
 				is_kwdparens = 1
 				break
 
@@ -227,6 +228,8 @@ writestmt()
 		blocktype[tabs] = DOWHILE
 	eif cstr_begins_with(line, "switch ")
 		blocktype[tabs] = SWITCH
+	eif cstr_begins_with(line, "else") && (len == 4 || line[4] == ' ')
+		blocktype[tabs] = ELSE
 	eif cstr_begins_with(line, "which ")
 		blocktype[tabs] = WHICH
 	eif (cstr_begins_with(line, "enum") && (len == 4 || line[4] == ' ')) || \

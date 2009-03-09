@@ -5,6 +5,11 @@ use io
 # TODO could be simpler, it really only needs read, write and flush?
 # TODO integrate with rd, wr of shuttle.b
 
+# Can't use vstreams in a proc yet, would need to:
+#  - auto-declare state vars
+#  - reset in and out when returning from an io() block - or make them local variables - already have in and out ports in a proc
+# Maybe return could be regarded as a type of exception, and try / final could use used?
+
 typedef void (*vs_putc_t)(int c, vstream *vs)
 typedef int (*vs_getc_t)(vstream *vs)
 typedef int (*vs_printf_t)(vstream *vs, const char *format, va_list ap)
@@ -14,6 +19,8 @@ typedef size_t (*vs_read_t)(void *ptr, size_t size, size_t nmemb, vstream *vs)
 typedef void (*vs_flush_t)(vstream *vs)
 typedef void (*vs_close_t)(vstream *vs)
 typedef void (*vs_shutdown_t)(vstream *vs, int how)
+
+# TODO use class structs instead of duplicating all the function pointers in each vstream
 
 struct vstream
 	vs_putc_t putc
@@ -295,8 +302,10 @@ def rl() rl_0()
 cstr rl_0()
 	New(b, buffer, 128)
 	if rl(b) == 0
+		buffer_squeeze(b)
 		return buffer_to_cstr(b)
 	 else
+		buffer_free(b)
 		Free(b)
 		return NULL
 
@@ -374,3 +383,65 @@ def f_ioe(i, o, e)
 	new(my(vse), vstream, stdio, e)
 	ioe(my(vsi), my(vso), my(vse))
 		.
+
+# this is a bit ugly because can't re-indent a block after a macro yet.
+# it should use f_in
+def F_in(i)
+	state FILE *my(s) = Fopen(i)
+	state vstream *my(old_in) = in
+	new(my(vs), vstream, stdio, my(s))
+	post(my(p))
+		Fclose(my(s))
+		in = my(old_in)
+	pre(my(p))
+		my(old_in) = in
+		in = my(vs)
+		.
+
+#def F_out(o)
+#	new(my(vs), vstream, stdio, o)
+#	out(my(vs))
+#		.
+#
+#def F_err(e)
+#	new(my(vs), vstream, stdio, e)
+#	err(my(vs))
+#		.
+#
+#def F_io(i, o)
+#	new(my(vsi), vstream, stdio, i)
+#	new(my(vso), vstream, stdio, o)
+#	io(my(vsi), my(vso))
+#		.
+#
+#def F_oe(i, o)
+#	new(my(vso), vstream, stdio, o)
+#	new(my(vse), vstream, stdio, e)
+#	oe(my(vso), my(vse))
+#		.
+#
+#def F_ioe(i, o, e)
+#	new(my(vsi), vstream, stdio, i)
+#	new(my(vso), vstream, stdio, o)
+#	new(my(vse), vstream, stdio, e)
+#	ioe(my(vsi), my(vso), my(vse))
+#		.
+
+
+vec *read_ints(cstr file)
+	read_file_to_vec(file, int, l, (int)atoi(l))
+
+vec *read_nums(cstr file)
+	read_file_to_vec(file, num, l, (num)atof(l))
+
+vec *read_cstrs(cstr file)
+	read_file_to_vec(file, cstr, l, strdup(l))
+
+def read_file_to_vec(file, type, l, map)
+	New(v, vec, type, 200)
+	F_in(file)
+		eachline(l)
+			vec_push(v, map)
+	vec_squeeze(v)
+	return v
+

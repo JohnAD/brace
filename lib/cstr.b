@@ -137,7 +137,23 @@ cstr *split(cstr s, char c)
 	splitv(v, s, c)
 	return vec_to_array(v)
 
+cstr *splitn(cstr s, char c, int n)
+	New(v, vec, 16)
+	splitvn(v, s, c, n)
+	return vec_to_array(v)
+
+splitvn(vec *v, cstr s, char c, int n)
+	vec_push(v, s)
+	if --n
+		for_cstr(i, s)
+			if *i == c
+				*i = '\0'
+				vec_push(v, i+1)
+				if --n == 0
+					break
+
 def split(s) split(s, '\t')
+def split(s, c, n) splitn(s, c, n)
 
 def for_cstr(i, s)
 	char *i

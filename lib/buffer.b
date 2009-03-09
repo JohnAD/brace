@@ -177,8 +177,9 @@ buffer_add_nul(buffer *b)
 		buffer_cat_char(b, '\0')
 
 buffer_nul_terminate(buffer *b)
-	buffer_add_nul(b)
-	buffer_grow(b, -1)
+	if buffer_get_size(b) == 0 || buffer_last_char(b) != '\0'
+		buffer_cat_char(b, '\0')
+		buffer_grow(b, -1)
 
 buffer_strip_nul(buffer *b)
 	if buffer_get_size(b) && buffer_last_char(b) == '\0'
@@ -265,3 +266,10 @@ buffer_ensure_free(buffer *b, size_t free)
 
 buffer_nl(buffer *b)
 	buffer_cat_char(b, '\n')
+
+def b(buf, i) b->start+i
+
+def buflen(b) buffer_get_size(b)
+def buf0(b) buffer_get_start(b)
+def bufend(b) buffer_get_start(b)
+def bufclr(b) buffer_clear(b)

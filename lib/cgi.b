@@ -6,7 +6,7 @@ int cgi__sent_headers = 0
 cgi_content_type(cstr type)
 	if !cgi__sent_headers
 		Printf("Content-Type: %s", type)
-		crnl() ; crnl()
+		crlf() ; crlf()
 		Fflush()
 		cgi__sent_headers = 1
 

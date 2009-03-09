@@ -21,6 +21,7 @@ void *_Realloc(void *ptr, size_t size)
 def Realloc(ptr, size)
 	ptr = _Realloc(ptr, size)
 
+def Calloc(nmemb) Calloc(nmemb, 1)
 void *Calloc(size_t nmemb, size_t size)
 	void *ptr = calloc(nmemb, size)
 	if (ptr == NULL)

@@ -39,6 +39,11 @@ main__init(int _argc, char *_argv[], char *_envp[])
 	seed()
 	os_main_init()
 
+def shift(n)
+	arg += n ; args -= n
+def shift()
+	shift(1)
+
 # TODO
 #namemap
 #	main__main main

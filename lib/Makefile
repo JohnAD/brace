@@ -18,7 +18,7 @@ clean:
 
 install:
 	install -d '$(libdir)'
-	for D in `find . -type d`; do \
+	for D in `find . -path '*/.*' -prune -or -type d -print`; do \
 		install -d '$(includedir)'/"$$D"; \
 		install -m 644 `find "$$D" -maxdepth 1 -type f \
 		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' \)` '$(includedir)'/"$$D"; \
@@ -40,7 +40,7 @@ install:
 	@echo you might need to run ldconfig
 
 uninstall:
-	find . -type d -depth >.tmp.1 ; \
+	find . -depth -path '*/.*' -prune -or -type d -print >.tmp.1 ; \
 	<.tmp.1 sed 's,\\,/,g' >.tmp.2 ; \
 	while read D; do \
 		find "$$D" -maxdepth 1 -type f \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' \) >.tmp.3 ; \

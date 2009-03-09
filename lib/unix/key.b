@@ -12,7 +12,7 @@ termios term, term_orig
 
 raw()
 	int rv
-	rv = tcgetattr (STDIN_FILENO, &term)
+	rv = tcgetattr(STDIN_FILENO, &term)
 	if rv < 0
 		error("tcgetattr failed")
 	term_orig = term
@@ -35,6 +35,20 @@ raw()
 cooked()
 	int rv
 	rv = tcsetattr(STDIN_FILENO, TCSAFLUSH, &term_orig)
+	if rv < 0
+		error("tcsetattr failed")
+
+noecho()
+	int rv
+	rv = tcgetattr(STDIN_FILENO, &term)
+	if rv < 0
+		error("tcgetattr failed")
+	term_orig = term
+
+	term.c_lflag &= ~(ECHO|ECHONL)
+	term.c_lflag |= ISIG
+
+	rv = tcsetattr(STDIN_FILENO, TCSANOW, &term)
 	if rv < 0
 		error("tcsetattr failed")
 
@@ -63,3 +77,11 @@ int_handler(int signum)
 	use(signum)
 	cooked()
 	exit(1)
+
+def Input_passwd() Input_passwd("Password: ")
+cstr Input_passwd(cstr prompt)
+	noecho()
+	cstr pass = Input(prompt)
+	nl()
+	cooked()
+	return pass

@@ -248,3 +248,18 @@ def max(a0, a1, a2, a3, a4, a5, a6) max(max(a0, a1, a2, a3, a4, a5), a6)
 def max(a0, a1, a2, a3, a4, a5, a6, a7) max(max(a0, a1, a2, a3, a4, a5, a6), a7)
 def max(a0, a1, a2, a3, a4, a5, a6, a7, a8) max(max(a0, a1, a2, a3, a4, a5, a6, a7), a8)
 def max(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) max(max(a0, a1, a2, a3, a4, a5, a6, a7, a8), a9)
+
+def rand_normal(av, sd) rand_normal()*sd+av
+
+num rand_normal()
+	num U = Rand()
+	num V = Rand()
+	num X = sqrt(-2 * log(U)) * cos(2*pi*V)
+#	num Y = sqrt(-2 * log(V)) * sin(2*pi*U)
+	return X
+
+def ln(x) log(x)
+
+# uses the box-mueller method, from:
+# http://en.wikipedia.org/wiki/Normal_distribution#Generating_values_for_normal_random_variables
+# The Ziggurat method is faster, I could try that later.

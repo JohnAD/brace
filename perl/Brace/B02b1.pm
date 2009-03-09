@@ -19,11 +19,11 @@ use Brace::Uniq;
 sub b02b1 {
 
 #brace_split_use();
-brace_process();
-brace_wrap();
 brace_include();
 #brace_split_vars();
 brace_expand();
+brace_process();
+brace_wrap();
 if ($ENV{BRACE_STANDALONE}) {
 	brace_strip(["main"]);
 }

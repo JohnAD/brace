@@ -17,6 +17,16 @@ struct hashtable
 	hash_func hash
 	eq_func eq
 
+# hashtable abbrevs:
+
+def get(ht, key) hashtable_value_or_null(ht, key)
+def put(ht, key, value) hashtable_add(ht, key, value)
+def kv(ht, key) hashtable_lookup(ht, key)
+def del(ht, key) hashtable_delete(ht, key)
+def kv(ht, key, init) hashtable_lookup_or_add_key(ht, key, init)
+# TODO, simplify hashtable so that it always returns a ref, and use key() and
+# val() to get the key and value parts.
+
 typedef unsigned int (*hash_func)(void *key)
 typedef boolean (*eq_func)(void *k1, void *k2)
 
@@ -85,6 +95,13 @@ void *hashtable_value(hashtable *ht, void *key)
 	if kv == NULL
 		error("hashtable_value: key does not exist")
 		return NULL # keep GCC happy
+	 else
+		return kv->value
+
+void *hashtable_value_or_null(hashtable *ht, void *key)
+	key_value *kv = hashtable_lookup(ht, key)
+	if kv == NULL
+		return NULL
 	 else
 		return kv->value
 

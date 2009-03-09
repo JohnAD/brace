@@ -94,6 +94,7 @@ if [ -z "$BRACE_USE" ]; then
 		else
 			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
 		fi
+		LDLIBS="$LDLIBS -lcrypt"
 		uname > .uname.$$
 		<.uname.$$ tr 'A-Z' 'a-z' >.uname.$$.1
 #		UNAME=`uname | tr 'A-Z' 'a-z'`

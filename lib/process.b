@@ -115,12 +115,21 @@ int System(const char *s)
 	return -1
 
 int Systemf(const char *format, ...)
-	int rv
-	va_list ap
-	va_start(ap, format)
-	rv = Vsystemf(format, ap)
-	va_end(ap)
-	return rv
+	collect(Vsystemf, format)
+
+# SYSTEM, SYSTEMF - this one fails if the subprocess fails
+
+SYSTEM(const char *s)
+	if System(s)
+		failed("system", s)
+
+SYSTEMF(const char *format, ...)
+	collect_void(VSYSTEMF, format)
+
+VSYSTEMF(const char *format, va_list ap)
+	int rv = Vsystemf(format, ap)
+	if rv
+		failed("system")
 
 # TODO rename buffer to string??
 # but would conflict with C++ standard.  buffer is ok
