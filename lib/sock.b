@@ -173,7 +173,7 @@ def breaduntil(in, eol, c)
 			if !buflen(&in)
 				break
 #	warn("breadln: %s", !buflen(&in) ? NULL : buf0(&in))
-#	proc_debug("breadln: %s", !buflen(&in) ? NULL : buf0(&in))
+	proc_debug("breadln: %s", !buflen(&in) ? NULL : buf0(&in))
 	# can return an empty buffer at EOF
 
 def bprint(out, s)
