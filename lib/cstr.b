@@ -138,7 +138,7 @@ cstr *split(cstr s, char c)
 	return vec_to_array(v)
 
 cstr *splitn(cstr s, char c, int n)
-	New(v, vec, 16)
+	New(v, vec, cstr, 16)
 	splitvn(v, s, c, n)
 	return vec_to_array(v)
 

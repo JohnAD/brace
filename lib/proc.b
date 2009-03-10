@@ -5,8 +5,8 @@ use error
 use io
 use util
 
-#def proc_debug void
-def proc_debug warn
+def proc_debug void
+#def proc_debug warn
 
 typedef int (*proc_func)(proc *p)
 struct proc

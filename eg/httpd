@@ -3,7 +3,7 @@
 use b
 
 cstr listen_addr = "0.0.0.0"
-int listen_port = 81
+int listen_port = 80
 cstr www_root = "/www"
 cstr www_default_user = "www-data"
 
@@ -79,13 +79,10 @@ proc httpd(sock *sk)
 	breadln(in)
 	if !buflen(&in)
 		quit
-	warn("1")
 	cstr s = buf0(&in)
 	size_t l = strlen(s)+1
 	cstr_dos_to_unix(s)
-	warn("2 %s %d", s, l)
 	cstr *words = split(s, ' ')
-	warn("3 %d", arylen(words))
 	if arylen(words) != 3
 		bad
 	method = strdup(words[0]) ; url = strdup(words[1]) ; proto = strdup(words[2])
