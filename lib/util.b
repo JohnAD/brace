@@ -43,11 +43,11 @@ boolean printable(uchar c)
 	#return c >= 32 && c != 127
  # tab is excluded
 
-Def lett(to, from) sametype(to, from) = from
-
+Def lett(to, from) sametypet(to, from) = from
 Def let(to, from) state lett(to, from)
 
-Def sametype(to, ref) typeof(ref) to
+Def sametypet(to, ref) typeof(ref) to
+Def sametype(to, ref) state sametypet(to, ref)
 
 #Def castto(from, type) (*(type *)&(from))
 Def castto(from, type) ((type)(from))
@@ -340,6 +340,25 @@ def eacharg(a)
 		let(a, *my(i))
 		if a == NULL
 			break
+
+def foraryp_null(i, a)
+	for let(i, &a[0]) ; *i ; ++i
+		.
+
+def forary_null(e, a)
+	foraryp(my(i), a)
+		let(e, *my(i))
+		.
+
+def foraryp(i, a)
+	let(my(end), &a[sizeof(a)/sizeof(a[0])])
+	for let(i, &a[0]) ; i<my(end) ; ++i
+		.
+
+def forary(e, a)
+	foraryp(my(i), a)
+		let(e, *my(i))
+		.
 
 def eachline(v)
 	new(my(b), buffer)
@@ -655,3 +674,305 @@ comm_dump_cstr(vec *merge_v, vec *comm_v)
 		Sayf("%d\t%s", *c, *m)
 		++m ; ++c
 
+# is this "never" macro a good idea or just namespace pollution?
+# IDEA instead of calling macros macros, just call them defs.
+
+def never
+	if 0
+
+def ary_null(a)
+	void *a[1]
+	a[0] = NULL
+
+def ary_null(a, a0)
+	sametype(a, a0)[2]
+	a[0] = a0
+	a[1] = NULL
+
+def ary_null(a, a0, a1)
+	sametype(a, a0)[3]
+	a[0] = a0 ; a[1] = a1
+	a[2] = NULL
+
+def ary_null(a, a0, a1, a2)
+	sametype(a, a0)[4]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2
+	a[3] = NULL
+
+def ary_null(a, a0, a1, a2, a3)
+	sametype(a, a0)[5]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3
+	a[4] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4)
+	sametype(a, a0)[6]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4
+	a[5] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5)
+	sametype(a, a0)[7]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5
+	a[6] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5, a6)
+	sametype(a, a0)[8]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6
+	a[7] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5, a6, a7)
+	sametype(a, a0)[9]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7
+	a[8] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	sametype(a, a0)[10]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8
+	a[9] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	sametype(a, a0)[11]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8 ; a[9] = a9
+	a[10] = NULL
+
+def aryp_null(a)
+	void *a[1]
+	a[0] = NULL
+
+def aryp_null(a, a0)
+	sametype(*a, a0)[2]
+	a[0] = &a0
+	a[1] = NULL
+
+def aryp_null(a, a0, a1)
+	sametype(*a, a0)[3]
+	a[0] = &a0 ; a[1] = &a1
+	a[2] = NULL
+
+def aryp_null(a, a0, a1, a2)
+	sametype(*a, a0)[4]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2
+	a[3] = NULL
+
+def aryp_null(a, a0, a1, a2, a3)
+	sametype(*a, a0)[5]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3
+	a[4] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4)
+	sametype(*a, a0)[6]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4
+	a[5] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5)
+	sametype(*a, a0)[7]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5
+	a[6] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5, a6)
+	sametype(*a, a0)[8]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6
+	a[7] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5, a6, a7)
+	sametype(*a, a0)[9]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7
+	a[8] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	sametype(*a, a0)[10]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7 ; a[8] = &a8
+	a[9] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	sametype(*a, a0)[11]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7 ; a[8] = &a8 ; a[9] = &a9
+	a[10] = NULL
+
+def ary(a)
+	void *a[0]
+
+def ary(a, a0)
+	sametype(a, a0)[1]
+	a[0] = a0
+
+def ary(a, a0, a1)
+	sametype(a, a0)[2]
+	a[0] = a0 ; a[1] = a1
+
+def ary(a, a0, a1, a2)
+	sametype(a, a0)[3]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2
+
+def ary(a, a0, a1, a2, a3)
+	sametype(a, a0)[4]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3
+
+def ary(a, a0, a1, a2, a3, a4)
+	sametype(a, a0)[5]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4
+
+def ary(a, a0, a1, a2, a3, a4, a5)
+	sametype(a, a0)[6]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6)
+	sametype(a, a0)[7]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6, a7)
+	sametype(a, a0)[8]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	sametype(a, a0)[9]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	sametype(a, a0)[10]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8 ; a[9] = a9
+
+def aryp(a)
+	void *a[0]
+
+def aryp(a, a0)
+	sametype(*a, a0)[1]
+	a[0] = &a0
+
+def aryp(a, a0, a1)
+	sametype(*a, a0)[2]
+	a[0] = &a0 ; a[1] = &a1
+
+def aryp(a, a0, a1, a2)
+	sametype(*a, a0)[3]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2
+
+def aryp(a, a0, a1, a2, a3)
+	sametype(*a, a0)[4]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3
+
+def aryp(a, a0, a1, a2, a3, a4)
+	sametype(*a, a0)[5]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4
+
+def aryp(a, a0, a1, a2, a3, a4, a5)
+	sametype(*a, a0)[6]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5
+
+def aryp(a, a0, a1, a2, a3, a4, a5, a6)
+	sametype(*a, a0)[7]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6
+
+def aryp(a, a0, a1, a2, a3, a4, a5, a6, a7)
+	sametype(*a, a0)[8]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7
+
+def aryp(a, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	sametype(*a, a0)[9]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7 ; a[8] = &a8
+
+def aryp(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	sametype(*a, a0)[10]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7 ; a[8] = &a8 ; a[9] = &a9
+
+
+
+def eachp(i)
+	never
+		.
+
+def eachp(i, a0)
+	.
+		let(i, &a0)
+		.
+
+def eachp(i, a0, a1)
+	aryp(my(ary), a0, a1)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2)
+	aryp(my(ary), a0, a1, a2)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3)
+	aryp(my(ary), a0, a1, a2, a3)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4)
+	aryp(my(ary), a0, a1, a2, a3, a4)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6, a7)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	forary(i, my(ary))
+		.
+
+def each(e)
+	never
+		.
+
+def each(e, a0)
+	.
+		let(e, a0)
+		.
+
+def each(e, a0, a1)
+	ary(my(ary), a0, a1)
+	forary(e, my(ary))
+		.
+
+def each(e, a0, a1, a2)
+	ary(my(ary), a0, a1, a2)
+	forary(e, my(ary))
+		.
+
+def each(e, a0, a1, a2, a3)
+	eachp(my(i), a0, a1, a2, a3)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4)
+	eachp(my(i), a0, a1, a2, a3, a4)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5)
+	eachp(my(i), a0, a1, a2, a3, a4, a5)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5, a6)
+	eachp(my(i), a0, a1, a2, a3, a4, a5, a6)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5, a6, a7)
+	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7, a8)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+		let(e, *my(i))

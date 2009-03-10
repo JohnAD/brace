@@ -107,6 +107,13 @@ def become(uid, gid)
 		Seteuid(uid)
 		.
 
+def Seteuidgid(pw)
+	Seteuidgid(pw->pw_uid, pw->pw_gid)
+def Seteuidgid(uid, gid)
+	Setegid(gid) ; Seteuid(uid)
+def Seteuidgid_root()
+	Seteuid(0) ; Setegid(0)
+
 typedef struct passwd passwd
 typedef struct spwd spwd
 

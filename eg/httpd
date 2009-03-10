@@ -58,12 +58,14 @@ proc httpd(sock *sk)
 	state cstr fullpath = NULL
 	state cstr user = default_user
 	state cstr pass = NULL
-	state off_t len
+	state off_t reqlen = 0
 	state int file_fd = -1
 	state passwd *u
 	state int code
 	state cstr msg
 	state cstr location
+	state boolean keep_alive = 1
+	state boolean statable
 
 	init(&r, reader, fd)
 	init(&w, writer, fd)
@@ -78,10 +80,13 @@ proc httpd(sock *sk)
 
 	# read_method_url_proto
 
-	breadln(in)
-	if !buflen(&in)
-		quit
-	cstr s = buf0(&in)
+	cstr s
+req	do
+		breadln(in)
+		if !buflen(&in)
+			quit
+		s = buf0(&in)
+	 while !*s
 	size_t l = strlen(s)+1
 	cstr_dos_to_unix(s)
 	cstr *words = split(s, ' ')
@@ -90,6 +95,11 @@ proc httpd(sock *sk)
 	method = strdup(words[0]) ; url = strdup(words[1]) ; proto = strdup(words[2])
 	Free(words)
 	buffer_shift(&in, l)
+
+	# check proto
+	if !strncmp(proto, "HTTP/", 5)
+		if atof(proto+5) < 1.1
+			keep_alive = 0
 
 	# read_headers
 
@@ -121,8 +131,19 @@ proc httpd(sock *sk)
 					Free(user_pass)
 					bad
 				pass = user_pass[1]
+		 eif !strcasecmp(words[0], "Content-Length")
+			reqlen = atoi(words[1])
+		 eif !strcasecmp(words[0], "Connection")
+			if !strcasecmp(words[1], "close")
+				keep_alive = 0
+			 eif !strcasecmp(words[1], "Keep-Alive")
+				keep_alive = 1
 		Free(words)
 		buffer_shift(&in, l)
+
+	# read data if any. at the moment, the data is simply discarded
+	if reqlen
+		bread(in, reqlen)
 
 	if host == NULL
 		host = get_host_from_url(url)
@@ -177,22 +198,27 @@ proc httpd(sock *sk)
 
 	# TODO use try if it works?
 
-	Setegid(u->pw_gid) ; Seteuid(u->pw_uid)
+	Seteuidgid(u)
+	  # must reset this to root before yielding! a bit ugly
 
 	decl(st, stats)
-	if stat(fullpath, st)
-		if errno == EACCES
+	statable = !stat(fullpath, st)
+
+	if !statable
+		int errno_stat = errno
+		Seteuidgid_root()
+		if errno_stat == EACCES
 			reqauth
-		 else
-			notf
+		notf
 
 	if S_ISREG(st->st_mode)
+		# TODO CGI, if authorized
 		file_fd = open(fullpath, O_RDONLY)
+		Seteuidgid_root()
 		if file_fd == -1
 			if errno == EACCES
 				reqauth
-			 else
-				srv_er
+			srv_er
 		nonblock(file_fd)
 		add_fd(file_fd)
 
@@ -217,10 +243,14 @@ proc httpd(sock *sk)
 			push(fin)
 
 		buffer_free(&fin)
-		quit
+		if file_fd != -1
+			rm_fd(file_fd)
+			close(file_fd)
+		again
 
 	 eif S_ISDIR(st->st_mode)
 		if fullpath[strlen(fullpath)-1] != '/'
+			Seteuidgid_root()
 			location = format("%s/", url)
 			loc
 		 else
@@ -230,33 +260,42 @@ proc httpd(sock *sk)
 			buffer_free(path_esc)
 			state cstr ls = cmd(command)
 			Free(command)
+			Seteuidgid_root()
 			bsay(out, "HTTP/1.1 200 OK\r")
+			bsayf(out, "Content-Length: %d\r", strlen(ls))
 			bcrlf(out)
 			bprint(out, ls)
 			bflush(out)
 			Free(ls)
-			quit
+			again
+
 	 else
+		Seteuidgid_root()
 		notf
 
 	fault("this code should not be reached")
 
-quit	if file_fd != -1
-		rm_fd(file_fd)
-		close(file_fd)
-	Seteuid(0) ; Setegid(0)
-	Free(method) ; Free(url) ; Free(proto) ; Free(host) ; Free(root) ; Free(fullpath)
-	rm_fd(fd)
+again	Free(method) ; Free(url) ; Free(proto) ; Free(host)
+	Free(root) ; Free(fullpath)
+	if keep_alive
+		req
+	quit
+
+quit	rm_fd(fd)
 	sock_free(sk)
 	Free(This)
 	stop
 
 error	bsayf(out, "HTTP/1.1 %d %s\r", code, msg)
+	msg = format("httpd: %d %s\r\n  %s %s\r\n", code, msg, method, fullpath)
+	lenmsg
+
+lenmsg	bsayf(out, "Content-Length: %d\r", strlen(msg))
 	bcrlf(out)
-	bsayf(out, "httpd %d %s\r", code, msg)
-	bsayf(out, "  %s %s\r", method, fullpath)
+	bprint(out, msg)
+	Free(msg)
 	bflush(out)
-	quit
+	again
 
 bad	code = 400 ; msg = "Bad Request"
 	error
@@ -269,16 +308,11 @@ srv_er	code = 500 ; msg = "Internal Server Error"
 
 reqauth	bsay(out, "HTTP/1.1 401 Unauthorized\r")
 	bsayf(out, "WWW-Authenticate: Basic realm=\"%s\"", host)
-	bcrlf(out)
-	bsayf(out, "httpd: Unauthorized\r", url)
-	bsayf(out, "  %s %s\r", method, fullpath)
-	bflush(out)
-	quit
+	msg = format("httpd: Unauthorized\r\n  %s %s\r\n", method, fullpath)
+	lenmsg
 
 loc	bsay(out, "HTTP/1.1 301 Moved Permanently\r")
 	bsayf(out, "Location: %s", location)
-	bcrlf(out)
-	bsayf(out, "httpd: redirected to %s\r", location)
-	bflush(out)
+	msg = format("httpd: redirected to %s\r\n", location)
 	Free(location)
-	quit
+	lenmsg

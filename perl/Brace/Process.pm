@@ -53,9 +53,10 @@ End
 		# TODO initialisers
 
 #		while ($body =~ /^(.*?\n)??(\t*)(for )?(state|port) (.*?)([A-Za-z_][A-Za-z_0-9]*?)( *=.*?)?\n(.*)\z/s) {
-		while ($body =~ /^(.*?)(\t+)(for )?(state|port) (.*?)([A-Za-z_][A-Za-z_0-9]*?)( *=.*?)?\n(.*)\z/s) {
-			my ($start, $indent, $for, $state_port, $decl1, $var_name, $assign, $rest) = ($1, $2, $3, $4, $5, $6, $7, $8);
+		while ($body =~ /^(.*?)(\t+)(for )?(state|port) (.*?)([A-Za-z_][A-Za-z_0-9]*?)(\[.*?\])?( *=.*?)?\n(.*)\z/s) {
+			my ($start, $indent, $for, $state_port, $decl1, $var_name, $ary, $assign, $rest) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 			$start ||= "";
+			$ary ||= "";
 			$for ||= "";
 			if ($state_port eq "port") {
 				$decl1 =~ s/ +$//;
@@ -65,7 +66,7 @@ End
 				($state_type{$var_name} = $decl1) =~ s/ +$//;
 			}
 			if ($assign || $for) {
-				$body = "$start$indent$for$var_name$assign\n$rest";
+				$body = "$start$indent$for$var_name$ary$assign\n$rest";
 			} else {
 				$body = "$start$rest";
 			}
@@ -74,7 +75,7 @@ End
 			$decl1 =~ s{^typeof\((\w+)\)}{$state_type{$1}||$port_type{$1}||die "unknown state $1"}e;
 			$decl1 =~ s{^typeof\(&(\w+)\)}{($state_type{$1}||$port_type{$1}||die "unknown state $1")." *"}e;
 			if ($decl1 =~ /typeof\(/) { die "a typeof remains in a state/port variable declaration which needs to go in a struct:\n $_"; }
-			$struct .= "\t$decl1$var_name\n";
+			$struct .= "\t$decl1$var_name$ary\n";
 		}
 		# replace references to state var foo with This->foo in body (data)
 		# replace references to port var foo with This->foo->d
@@ -111,12 +112,13 @@ End
 		my ($ret, $proc_name, $args, $body) = $function =~ /^(.*?)([^\s\*\&]+?)\(([^\n]*)\)\n(.*)\z/s;
 		next unless $proc_name;
 
-		while ($body =~ /^(.*?\n)?(\t*)(for )?(state) (.*?)([A-Za-z_][A-Za-z_0-9]*?)( *=.*?)?\n(.*)\z/s) {
-			my ($start, $indent, $for, $state_port, $decl1, $var_name, $assign, $rest) = ($1, $2, $3, $4, $5, $6, $7, $8);
+		while ($body =~ /^(.*?\n)?(\t*)(for )?(state) (.*?)([A-Za-z_][A-Za-z_0-9]*?)(\[.*?\])?( *=.*?)?\n(.*)\z/s) {
+			my ($start, $indent, $for, $state_port, $decl1, $var_name, $ary, $assign, $rest) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 			$start ||= "";
+			$ary ||= "";
 			$assign ||= "";
 			$for ||= "";
-			$body = "$start$indent$for$decl1$var_name$assign\n$rest";
+			$body = "$start$indent$for$decl1$var_name$ary$assign\n$rest";
 		}
 		chomp($body);
 		my $new_func = <<End;
