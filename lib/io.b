@@ -442,10 +442,6 @@ int exists(const char *file_name)
 	struct stat buf
 	return Stat(file_name, &buf)
 
-int is_file(const char *file_name)
-	struct stat buf
-	return Stat(file_name, &buf) && S_ISREG(buf.st_mode)
-
 off_t file_size(const char *file_name)
 	struct stat buf
 	Stat(file_name, &buf)
@@ -465,9 +461,17 @@ int Stat(const char *file_name, struct stat *buf)
 	# keep gcc happy
 	return 0
 
+int is_file(const char *file_name)
+	struct stat buf
+	return Stat(file_name, &buf) && S_ISREG(buf.st_mode)
+
 int is_dir(const char *file_name)
 	struct stat buf
 	return Stat(file_name, &buf) && S_ISDIR(buf.st_mode)
+
+int is_symlink(const char *file_name)
+	struct stat buf
+	return Stat(file_name, &buf) && S_ISLNK(buf.st_mode)
 
 int is_real_dir(const char *file_name)
 	struct stat buf

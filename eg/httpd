@@ -63,6 +63,7 @@ proc httpd(sock *sk)
 	state passwd *u
 	state int code
 	state cstr msg
+	state cstr location
 
 	init(&r, reader, fd)
 	init(&w, writer, fd)
@@ -131,7 +132,22 @@ proc httpd(sock *sk)
 	path = get_path_from_url(url)
 
 	root = path_cat(www_root, host)
+
+	if is_symlink(root)
+		cstr realhost = readlinks(root, if_dead_path)
+		
+		cstr tmp = path_cat(www_root, realhost)
+		location = path_cat(tmp, path)
+		Free(tmp)
+		loc
+
 	fullpath = path_cat(root, path)
+
+	# redirect /index.html -> /  so each file has a single url
+	if cstr_ends_with(fullpath, "/index.html")
+		strrchr(fullpath, '/')[1] = '\0'
+		location = fullpath
+		loc
 
 	if fullpath[strlen(fullpath)-1] == '/'
 		cstr fullpath_index = path_cat(fullpath, "index.html")
@@ -205,12 +221,8 @@ proc httpd(sock *sk)
 
 	 eif S_ISDIR(st->st_mode)
 		if fullpath[strlen(fullpath)-1] != '/'
-			bsay(out, "HTTP/1.1 301 Moved Permanently\r")
-			bsayf(out, "Location: %s/", url)
-			bcrlf(out)
-			bsayf(out, "httpd: redirected to %s/\r", url)
-			bflush(out)
-			quit
+			location = format("%s/", url)
+			loc
 		 else
 			new(path_esc, buffer, 64)
 			sh_quote(fullpath, path_esc)
@@ -263,3 +275,10 @@ reqauth	bsay(out, "HTTP/1.1 401 Unauthorized\r")
 	bflush(out)
 	quit
 
+loc	bsay(out, "HTTP/1.1 301 Moved Permanently\r")
+	bsayf(out, "Location: %s", location)
+	bcrlf(out)
+	bsayf(out, "httpd: redirected to %s\r", location)
+	bflush(out)
+	Free(location)
+	quit
