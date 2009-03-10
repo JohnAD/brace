@@ -106,7 +106,9 @@ vec_dup(vec *to, vec *from)
 	to->size = from->size
 
 def for_vec(i, v, type)
-	for(i, vec_range(v, type))
+	type *my(end) = vecend(v)
+	for type *i = vec0(v) ; i!=my(end) ; ++i
+		.
 
 def vec_set_space vec_space
 def vec_get_space(v) v->space

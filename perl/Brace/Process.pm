@@ -74,7 +74,7 @@ End
 			$decl1 =~ s{^typeof\(\&(\w+)->d\)}{($port_type{$1}||die "unknown port $1")." *"}e;
 			$decl1 =~ s{^typeof\((\w+)\)}{$state_type{$1}||$port_type{$1}||die "unknown state $1"}e;
 			$decl1 =~ s{^typeof\(&(\w+)\)}{($state_type{$1}||$port_type{$1}||die "unknown state $1")." *"}e;
-			if ($decl1 =~ /typeof\(/) { die "a typeof remains in a state/port variable declaration which needs to go in a struct:\n $_"; }
+			if ($decl1 =~ /typeof\(/) { die "a typeof remains in a state/port variable declaration which needs to go in a struct:\n $decl1"; }
 			$struct .= "\t$decl1$var_name$ary\n";
 		}
 		# replace references to state var foo with This->foo in body (data)

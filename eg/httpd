@@ -21,6 +21,8 @@ Main()
 	if uid != 0
 		error("%s must be run as root", program)
 
+	block_size = 16*1024
+
 	ignore_pipe()
 
 	users = load_passwd()
@@ -52,43 +54,20 @@ proc httpd(sock *sk)
 	port buffer in
 	port buffer out
 	port buffer fin
+
 	state int fd = sk->fd
 	state reader r
 	state reader fr
 	state writer w
-	state cstr method = NULL
-	state cstr url = NULL
-	state cstr proto = NULL
-	state cstr host = NULL
-	state cstr path = NULL
-	state cstr scheme = "http"
-	state cstr root = NULL
-	state cstr fullpath = NULL
-	state cstr user = default_user
-	state cstr pass = NULL
-	state off_t reqlen = 0
-	state int file_fd = -1
-	state passwd *u
-	state int code
-	state cstr msg
-	state cstr location
-<<<<<<< HEAD:eg/httpd
-	state boolean keep_alive = 1
-	state boolean statable
-=======
 	state sockaddr_in sockname
 	state socklen_t namelen
-	state int private = 0
-	state int expire_already = 0
-	state cstr user_agent = NULL
+	state cstr scheme = "http"
 
 	if getsockname(fd, &sockname, &namelen) == 0
 		if sockname.sin_family == AF_INET
 			int port = ntohs(sockname.sin_port)
 			if listen_addr_stunnel && port == listen_port_stunnel
 				scheme = "https"
-	
->>>>>>> 908c467fe1928d9efffc21cbc19ba3c0117dde56:eg/httpd
 
 	init(&r, reader, fd)
 	init(&w, writer, fd)
@@ -103,26 +82,54 @@ proc httpd(sock *sk)
 
 	# read_method_url_proto
 
-	cstr s
-req	do
+req	state cstr s
+	state size_t l
+	state cstr method = NULL
+	state cstr url = NULL
+	state cstr proto = NULL
+	state cstr host = NULL
+	state cstr path = NULL
+	state cstr root = NULL
+	state cstr fullpath = NULL
+	state cstr user = default_user
+	state cstr pass = NULL
+	state off_t reqlen = 0
+	state int file_fd = -1
+	state passwd *u
+	state int code
+	state cstr msg
+	state cstr location
+	state int private = 0
+	state int expire_already = 0
+	state cstr user_agent = NULL
+	state boolean keep_alive = 1
+	state boolean statable
+	state float proto_f = 0
+	state cstr body = NULL
+
+	repeat
 		breadln(in)
 		if !buflen(&in)
 			quit
 		s = buf0(&in)
-	 while !*s
-	size_t l = strlen(s)+1
-	cstr_dos_to_unix(s)
+		l = strlen(s)+1
+		cstr_dos_to_unix(s)
+		if *s
+			break
+		buffer_shift(&in, l)
+
 	cstr *words = split(s, ' ')
 	if arylen(words) != 3
 		bad
 	method = strdup(words[0]) ; url = strdup(words[1]) ; proto = strdup(words[2])
-#	verbose("%s %s %s", method, url, proto)
+	verbose("%s %s", method, url)
 	Free(words)
 	buffer_shift(&in, l)
 
 	# check proto
 	if !strncmp(proto, "HTTP/", 5)
-		if atof(proto+5) < 1.1
+		proto_f = atof(proto+5)
+		if num_lt(proto_f, 1.1)
 			keep_alive = 0
 
 	# read_headers
@@ -131,12 +138,13 @@ req	do
 		breadln(in)
 		if !buflen(&in)
 			quit
-		cstr s = buf0(&in)
-		size_t l = strlen(s)+1
+		s = buf0(&in)
+		l = strlen(s)+1
 		cstr_dos_to_unix(s)
 		if !*s
+			buffer_shift(&in, l)
 			break
-#		verbose(s)
+		#verbose(s)
 		cstr *words = split(s, ':', 2)
 		if arylen(words) != 2
 			bad
@@ -156,7 +164,8 @@ req	do
 					Free(user_pass)
 					bad
 				pass = user_pass[1]
-<<<<<<< HEAD:eg/httpd
+		 eif !strcasecmp(words[0], "User-Agent")
+			user_agent = strdup(words[1])
 		 eif !strcasecmp(words[0], "Content-Length")
 			reqlen = atoi(words[1])
 		 eif !strcasecmp(words[0], "Connection")
@@ -164,15 +173,12 @@ req	do
 				keep_alive = 0
 			 eif !strcasecmp(words[1], "Keep-Alive")
 				keep_alive = 1
-=======
-		 eif !strcasecmp(words[0], "User-Agent")
-			user_agent = strdup(words[1])
->>>>>>> 908c467fe1928d9efffc21cbc19ba3c0117dde56:eg/httpd
 		Free(words)
 		buffer_shift(&in, l)
 
 	# read data if any. at the moment, the data is simply discarded
 	if reqlen
+		verbose("  reading request of length %lld", (long long int)reqlen)
 		bread(in, reqlen)
 
 	if host == NULL
@@ -209,9 +215,9 @@ req	do
 		bad
 
 	if strstr(fullpath, "/.")
-		bad
+		forbid
 
-	verbose("%s %s", method, fullpath)
+	#verbose("  %s", fullpath)
 
 	# set user and respond
 
@@ -233,11 +239,8 @@ req	do
 	statable = !stat(fullpath, st)
 
 	if !statable
-		int errno_stat = errno
 		Seteuidgid_root()
-		if errno_stat == EACCES
-			reqauth
-		notf
+		accerr
 
 	if !(st->st_mode & S_IROTH)
 		private = 1
@@ -249,16 +252,11 @@ req	do
 		file_fd = open(fullpath, O_RDONLY)
 		Seteuidgid_root()
 		if file_fd == -1
-			if errno == EACCES
-				reqauth
-			srv_er
+			accerr
 		nonblock(file_fd)
 		add_fd(file_fd)
 
-		bsay(out, "HTTP/1.1 200 OK\r")
-		bsayf(out, "Content-Length: %lld\r", (long long int)st->st_size)
-		if expire_already
-			expire_already_headers()
+		headers(200, "OK", st->st_size)
 		bcrlf(out)
 
 		init(&fr, reader, file_fd)
@@ -281,7 +279,7 @@ req	do
 		if file_fd != -1
 			rm_fd(file_fd)
 			close(file_fd)
-		again
+		done
 
 	 eif S_ISDIR(st->st_mode)
 		if fullpath[strlen(fullpath)-1] != '/'
@@ -289,25 +287,48 @@ req	do
 			location = format("%s/", url)
 			loc
 		 else
-			new(path_esc, buffer, 64)
-			sh_quote(fullpath, path_esc)
-			cstr command = format("ls -1F %s", buffer_to_cstr(path_esc))
-			buffer_free(path_esc)
-			state cstr ls = cmd(command)
-			Free(command)
+			vec *v = slurpdir(fullpath)  # TODO use d_type
+			if !v
+				accerr
+			sort_vec(v, cstrp_cmp)
+			new(dirs, buffer, 256)
+			new(files, buffer, 256)
+			for_vec(i, v, cstr)
+				if (*i)[0] == '.'
+					continue
+				cstr entpath = path_cat(fullpath, *i) # or chdir
+				int dir = is_dir(entpath)
+				cstr line
+				if dir
+					line = format("<a href=\"%s/\"><b>%s</b>/</a><br>\n", *i, *i)
+					buffer_cat_cstr(dirs, line)
+				 else
+					line = format("<a href=\"%s\">%s</a><br>\n", *i, *i)
+					buffer_cat_cstr(files, line)
+				Free(line) ; Free(entpath)
+			buffer_cat_cstr(dirs, "<br>")
+			buffer_cat_cstr(files, "<br>")
+
+			buffer_nul_terminate(dirs)
+			buffer_nul_terminate(files)
+
+#			new(path_esc, buffer, 64)
+#			sh_quote(fullpath, path_esc)
+#			cstr command = format("ls -1F %s", buffer_to_cstr(path_esc))
+#			buffer_free(path_esc)
+#			state cstr ls = cmd(command)
+#			Free(command)
+
 			Seteuidgid_root()
-			bsay(out, "HTTP/1.1 200 OK\r")
-<<<<<<< HEAD:eg/httpd
-			bsayf(out, "Content-Length: %d\r", strlen(ls))
-=======
-			if expire_already
-				expire_already_headers()
->>>>>>> 908c467fe1928d9efffc21cbc19ba3c0117dde56:eg/httpd
+			headers(200, "OK", buflen(dirs)+buflen(files))
+			bsay(out, "Content-Type: text/html\r")
 			bcrlf(out)
-			bprint(out, ls)
-			bflush(out)
-			Free(ls)
-			again
+			bwrite(out, buffer_range(dirs))
+			bwrite(out, buffer_range(files))
+			buffer_free(dirs)
+			buffer_free(files)
+#			Free(ls)
+			done
 
 	 else
 		Seteuidgid_root()
@@ -315,29 +336,31 @@ req	do
 
 	fault("this code should not be reached")
 
-again	Free(method) ; Free(url) ; Free(proto) ; Free(host)
-	Free(root) ; Free(fullpath)
+done	bflush(out)
+	Free(method) ; Free(url) ; Free(proto) ; Free(host)
+	Free(root) ; Free(fullpath) ; Free(body)
 	if keep_alive
 		req
 	quit
 
-quit	rm_fd(fd)
+quit	verbose("")
+	rm_fd(fd)
 	sock_free(sk)
 	Free(This)
 	stop
 
-error	bsayf(out, "HTTP/1.1 %d %s\r", code, msg)
-	msg = format("httpd: %d %s\r\n  %s %s\r\n", code, msg, method, fullpath)
-	lenmsg
+error	body = format("httpd: %d %s\r\n", code, msg)
+	headers(code, msg, strlen(body))
+	bodymsg
 
-lenmsg	bsayf(out, "Content-Length: %d\r", strlen(msg))
-	bcrlf(out)
-	bprint(out, msg)
-	Free(msg)
-	bflush(out)
-	again
+bodymsg	bcrlf(out)
+	bprint(out, body)
+	done
 
 bad	code = 400 ; msg = "Bad Request"
+	error
+
+forbid	code = 403 ; msg = "Forbidden"
 	error
 
 notf	code = 404 ; msg = "Not Found"
@@ -348,29 +371,33 @@ srv_er	code = 500 ; msg = "Internal Server Error"
 
 reqauth	if !cstr_eq(scheme, "https")
 		https
-	bsay(out, "HTTP/1.1 401 Unauthorized\r")
+	body = format("httpd: Unauthorized\r\n  %s %s\r\n", method, fullpath)
+	headers(401, "Unauthorized", strlen(body))
 	bsayf(out, "WWW-Authenticate: Basic realm=\"%s\"", host)
-	msg = format("httpd: Unauthorized\r\n  %s %s\r\n", method, fullpath)
-	lenmsg
+	bodymsg
 
-loc	bsay(out, "HTTP/1.1 301 Moved Permanently\r")
+loc	body = format("httpd: redirected to %s\r\n", location)
+	headers(301, "Moved Permanently", strlen(body))
 	bsayf(out, "Location: %s", location)
-<<<<<<< HEAD:eg/httpd
-	msg = format("httpd: redirected to %s\r\n", location)
+	verbose("  %s", location)
 	Free(location)
-	lenmsg
-=======
-	bcrlf(out)
-	bsayf(out, "httpd: redirected to %s\r", location)
-	bflush(out)
-#	verbose("    %s", location)
-	Free(location)
-	quit
+	bodymsg
 
 https	location = format("https://%s%s", host, path)
 	loc
 
-def expire_already_headers()
-	bsay(out, "Cache-Control: private, no-cache, no-store")
-	bsay(out, "Expires: 0")
->>>>>>> 908c467fe1928d9efffc21cbc19ba3c0117dde56:eg/httpd
+accerr	which errno
+	EACCES	reqauth
+	ENOENT	notf
+	ENOTDIR	notf
+	ENAMETOOLONG	bad
+	else	srv_er
+
+def headers(code, msg, size)
+	bsayf(out, "HTTP/1.1 %d %s\r", code, msg)
+	bsayf(out, "Content-Length: %lld\r", (long long int)size)
+	if code == 200 && expire_already
+		bsay(out, "Cache-Control: private, no-cache, no-store")
+		bsay(out, "Expires: 0")
+	if num_lt(proto_f, 1.1) && keep_alive
+		bsay(out, "Connection: Keep-Alive")

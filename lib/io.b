@@ -1,6 +1,6 @@
 export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
-export str error buffer types net
+export str error buffer types net vec
 use m alloc util path env process
 
 use io
@@ -384,6 +384,34 @@ dirent *Readdir(DIR *dir)
 Closedir(DIR *dir)
 	if closedir(dir) != 0
 		failed("closedir")
+
+vec *Slurpdir(const char *name)
+	vec *v = slurpdir(name)
+	if !v
+		failed("slurpdir", name)
+	return v
+
+# TODO use dir->d_type ?
+
+vec *slurpdir(const char *name)
+	struct dirent *e
+	DIR *dir = opendir(name)
+	if dir == NULL
+		return NULL
+	New(v, vec, cstr, 64)
+	repeat
+		errno = 0
+		e = readdir(dir)
+		if errno
+			Free(v)
+			v = NULL
+			break
+		if !e
+			break
+		*(cstr*)vec_push(v) = strdup(e->d_name)
+		
+	closedir(dir)
+	return v
 
 Remove(const char *path)
 	if remove(path) != 0

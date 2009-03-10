@@ -1,3 +1,11 @@
+brace (0.9.8) unstable; urgency=low
+
+  * eg/httpd
+  * select-based IO for coroutines
+  * graphics peeking - eg/shinytext
+
+ -- Sam Watkins <sam@nipl.net>  Wed, 11 Mar 2009 05:36:17 +0800
+
 brace (0.9.7) unstable; urgency=low
 
   * fixing to work with msys

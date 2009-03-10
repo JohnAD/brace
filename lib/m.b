@@ -227,7 +227,13 @@ int iclamp(int x, int min, int max)
 	return x < min ? min : x > max ? max : x
 
 def Floor(x) (int)(x+tinynum)
+
 def num_eq(a, b) fabs(b-a)<tinynum
+def num_lt(a, b) a<b-tinynum
+def num_le(a, b) a<b+tinynum
+def num_gt(a, b) a>b+tinynum
+def num_ge(a, b) a>b-tinynum
+def num_ne(a, b) !num_eq(a, b)
 
 num spow(num b, num e)
 	if b >= 0

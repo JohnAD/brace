@@ -83,7 +83,6 @@ def reader_init(reader, fd)
 proc reader(int fd, size_t block_size)
 	port buffer out
 	repeat
-		proc_debug("reader - before pull")
 		pull(out)
 		proc_debug("reader - after pull")
 		buffer_ensure_free(&out, block_size)
@@ -94,7 +93,7 @@ proc reader(int fd, size_t block_size)
 			swarning("reader: error")
 		 eif n
 			buffer_grow(&out, n)
-		 eif Read_eof(fd)
+		 else
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
 			buffer_clear(&out)
 		push(out)
@@ -107,16 +106,14 @@ proc writer(int fd)
 		proc_debug("writer - after pull")
 		if buflen(&in)
 			while buflen(&in)
+				write(fd)
 				ssize_t n = write(fd, buf0(&in), buflen(&in))
 				if n == -1
 					n = 0
-					if errno == EAGAIN
-						write(fd)
-					 else
-						swarning("writer: error")
-						# signals the caller that we have an error,
-						# by the fact that the buffer is not empty.
-						break
+					swarning("writer: error")
+					# signals the caller that we have an error,
+					# by the fact that the buffer is not empty.
+					break
 				 else
 					buffer_shift(&in, n)
 		 else
@@ -172,6 +169,8 @@ def breaduntil(in, eol, c)
 			pull(in)
 			if !buflen(&in)
 				break
+#		warn("breadln: buflen %d\n[%s]\n", buflen(&in), buffer_nul_terminate(&in))
+#		buffer_dump(stderr, &in)
 #	warn("breadln: %s", !buflen(&in) ? NULL : buf0(&in))
 	proc_debug("breadln: %s", !buflen(&in) ? NULL : buf0(&in))
 	# can return an empty buffer at EOF
@@ -252,4 +251,59 @@ def bsayf(out, fmt, a0, a1, a2, a3, a4, a5)
 	state cstr my(s) = format(fmt, a0, a1, a2, a3, a4, a5)
 	bsay(out, my(s))
 	Free(my(s))
+
+# I remember Paul / Dancer recommending to try writing before selecting.
+# (they didn't say anything about anticipating reading).
+# I'm not convinced that it speeds things up, I would want to check an strace.
+# It actually seems to slow things down.
+
+# here are the reader and writer that anticipate they they might be able to
+# read or write without calling select unless the read / write fails.
+
+proc reader_ant(int fd, size_t block_size)
+	port buffer out
+	pull(out)
+	repeat
+		proc_debug("reader - after pull")
+		buffer_ensure_free(&out, block_size)
+#		read(fd)
+		ssize_t n = read(fd, bufend(&out), buffer_get_free(&out))
+		if n == -1
+			if errno == EAGAIN
+				read(fd)
+				continue
+			 else
+				n = 0
+				swarning("reader: error")
+		 eif n
+			buffer_grow(&out, n)
+		 else
+			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
+			buffer_clear(&out)
+		push(out)
+		pull(out)
+
+proc writer_ant(int fd)
+	port buffer in
+	repeat
+		proc_debug("writer - before pull")
+		pull(in)
+		proc_debug("writer - after pull")
+		if buflen(&in)
+			while buflen(&in)
+				ssize_t n = write(fd, buf0(&in), buflen(&in))
+				if n == -1
+					n = 0
+					if errno == EAGAIN
+						write(fd)
+					 else
+						swarning("writer: error")
+						# signals the caller that we have an error,
+						# by the fact that the buffer is not empty.
+						break
+				 else
+					buffer_shift(&in, n)
+		 else
+			shutdown(fd, SHUT_WR)
+		push(in)
 

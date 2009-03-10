@@ -176,10 +176,11 @@ buffer_add_nul(buffer *b)
 	if buffer_get_size(b) == 0 || buffer_last_char(b) != '\0'
 		buffer_cat_char(b, '\0')
 
-buffer_nul_terminate(buffer *b)
+char *buffer_nul_terminate(buffer *b)
 	if buffer_get_size(b) == 0 || buffer_last_char(b) != '\0'
 		buffer_cat_char(b, '\0')
 		buffer_grow(b, -1)
+	return buf0(b)
 
 buffer_strip_nul(buffer *b)
 	if buffer_get_size(b) && buffer_last_char(b) == '\0'
