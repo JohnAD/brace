@@ -132,6 +132,9 @@ proc httpd(sock *sk)
 	root = path_cat(www_root, host)
 	fullpath = path_cat(root, path)
 
+	if strstr(fullpath, "/.")
+		bad
+
 	if fullpath[strlen(fullpath)-1] == '/'
 		cstr fullpath_index = path_cat(fullpath, "index.html")
 		if is_file(fullpath_index)
