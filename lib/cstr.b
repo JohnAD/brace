@@ -133,7 +133,7 @@ splitv(vec *v, cstr s, char c)
 def splitv(v, s) splitv(v, s, '\t')
 
 cstr *split(cstr s, char c)
-	New(v, vec, 16)
+	New(v, vec, cstr, 16)
 	splitv(v, s, c)
 	return vec_to_array(v)
 
