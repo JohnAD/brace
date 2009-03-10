@@ -125,7 +125,7 @@ def bread(in)
 def bread(in, size)
 	repeat
 		pull(in)
-		if buflen(&in) >= size || !buflen(&in)
+		if (size_t)buflen(&in) >= (size_t)size || !buflen(&in)
 			break
 		buffer_ensure_space(&in, size)
 		push(in)
