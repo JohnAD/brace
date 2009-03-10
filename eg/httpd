@@ -5,7 +5,8 @@ use b
 cstr listen_addr = "0.0.0.0"
 int listen_port = 80
 cstr www_root = "/www"
-cstr www_default_user = "www-data"
+cstr default_user = "www-data"
+cstr default_host = "default"
 
 def max_line_length 2048
 
@@ -55,7 +56,7 @@ proc httpd(sock *sk)
 	state cstr path = NULL
 	state cstr root = NULL
 	state cstr fullpath = NULL
-	state cstr user = www_default_user
+	state cstr user = default_user
 	state cstr pass = NULL
 	state off_t len
 	state int file_fd = -1
@@ -125,7 +126,7 @@ proc httpd(sock *sk)
 	if host == NULL
 		host = get_host_from_url(url)
 	if host == NULL
-		host = strdup("default")
+		host = strdup(default_host)
 
 	path = get_path_from_url(url)
 
@@ -151,7 +152,7 @@ proc httpd(sock *sk)
 
 	u = get(users, user)
 
-	if user != www_default_user && !(u && pass && auth(u, pass))
+	if user != default_user && !(u && pass && auth(u, pass))
 		reqauth
 		# FIXME incorrect password message / request auth
 
