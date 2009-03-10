@@ -471,7 +471,7 @@ int is_dir(const char *file_name)
 
 int is_symlink(const char *file_name)
 	struct stat buf
-	return Stat(file_name, &buf) && S_ISLNK(buf.st_mode)
+	return Lstat(file_name, &buf) && S_ISLNK(buf.st_mode)
 
 int is_real_dir(const char *file_name)
 	struct stat buf

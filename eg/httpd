@@ -4,6 +4,8 @@ use b
 
 cstr listen_addr = "0.0.0.0"
 int listen_port = 80
+cstr listen_addr_stunnel = "127.0.0.1"
+int listen_port_stunnel = 81
 cstr www_root = "/www"
 cstr default_user = "www-data"
 cstr default_host = "default"
@@ -27,10 +29,15 @@ Main()
 
 	new(l, listener_tcp, listen_addr, listen_port)
 	new(w, httpd_launcher)
-
 	sh(sock_p, l, w)
-
 	start(l) ; start(w)
+
+	if listen_addr_stunnel && listen_port_stunnel
+		new(l_https, listener_tcp, listen_addr_stunnel, listen_port_stunnel)
+		new(w_https, httpd_launcher)
+		sh(sock_p, l_https, w_https)
+		start(l_https) ; start(w_https)
+
 	run()
 
 proc httpd_launcher()
@@ -54,6 +61,7 @@ proc httpd(sock *sk)
 	state cstr proto = NULL
 	state cstr host = NULL
 	state cstr path = NULL
+	state cstr scheme = "http"
 	state cstr root = NULL
 	state cstr fullpath = NULL
 	state cstr user = default_user
@@ -64,8 +72,23 @@ proc httpd(sock *sk)
 	state int code
 	state cstr msg
 	state cstr location
+<<<<<<< HEAD:eg/httpd
 	state boolean keep_alive = 1
 	state boolean statable
+=======
+	state sockaddr_in sockname
+	state socklen_t namelen
+	state int private = 0
+	state int expire_already = 0
+	state cstr user_agent = NULL
+
+	if getsockname(fd, &sockname, &namelen) == 0
+		if sockname.sin_family == AF_INET
+			int port = ntohs(sockname.sin_port)
+			if listen_addr_stunnel && port == listen_port_stunnel
+				scheme = "https"
+	
+>>>>>>> 908c467fe1928d9efffc21cbc19ba3c0117dde56:eg/httpd
 
 	init(&r, reader, fd)
 	init(&w, writer, fd)
@@ -93,6 +116,7 @@ req	do
 	if arylen(words) != 3
 		bad
 	method = strdup(words[0]) ; url = strdup(words[1]) ; proto = strdup(words[2])
+#	verbose("%s %s %s", method, url, proto)
 	Free(words)
 	buffer_shift(&in, l)
 
@@ -112,6 +136,7 @@ req	do
 		cstr_dos_to_unix(s)
 		if !*s
 			break
+#		verbose(s)
 		cstr *words = split(s, ':', 2)
 		if arylen(words) != 2
 			bad
@@ -131,6 +156,7 @@ req	do
 					Free(user_pass)
 					bad
 				pass = user_pass[1]
+<<<<<<< HEAD:eg/httpd
 		 eif !strcasecmp(words[0], "Content-Length")
 			reqlen = atoi(words[1])
 		 eif !strcasecmp(words[0], "Connection")
@@ -138,6 +164,10 @@ req	do
 				keep_alive = 0
 			 eif !strcasecmp(words[1], "Keep-Alive")
 				keep_alive = 1
+=======
+		 eif !strcasecmp(words[0], "User-Agent")
+			user_agent = strdup(words[1])
+>>>>>>> 908c467fe1928d9efffc21cbc19ba3c0117dde56:eg/httpd
 		Free(words)
 		buffer_shift(&in, l)
 
@@ -156,18 +186,16 @@ req	do
 
 	if is_symlink(root)
 		cstr realhost = readlinks(root, if_dead_path)
-		
-		cstr tmp = path_cat(www_root, realhost)
-		location = path_cat(tmp, path)
-		Free(tmp)
+		location = format("%s://%s%s", scheme, base_name(realhost), path)
+		Free(realhost)
 		loc
 
 	fullpath = path_cat(root, path)
 
 	# redirect /index.html -> /  so each file has a single url
-	if cstr_ends_with(fullpath, "/index.html")
-		strrchr(fullpath, '/')[1] = '\0'
-		location = fullpath
+	if cstr_ends_with(url, "/index.html")
+		location = strdup(url)
+		strrchr(location, '/')[1] = '\0'
 		loc
 
 	if fullpath[strlen(fullpath)-1] == '/'
@@ -211,6 +239,11 @@ req	do
 			reqauth
 		notf
 
+	if !(st->st_mode & S_IROTH)
+		private = 1
+		if !user_agent || strcasestr(user_agent, "MSIE") || !strcasestr(user_agent, "Mozilla/5.0")
+			expire_already = 1
+
 	if S_ISREG(st->st_mode)
 		# TODO CGI, if authorized
 		file_fd = open(fullpath, O_RDONLY)
@@ -224,6 +257,8 @@ req	do
 
 		bsay(out, "HTTP/1.1 200 OK\r")
 		bsayf(out, "Content-Length: %lld\r", (long long int)st->st_size)
+		if expire_already
+			expire_already_headers()
 		bcrlf(out)
 
 		init(&fr, reader, file_fd)
@@ -262,7 +297,12 @@ req	do
 			Free(command)
 			Seteuidgid_root()
 			bsay(out, "HTTP/1.1 200 OK\r")
+<<<<<<< HEAD:eg/httpd
 			bsayf(out, "Content-Length: %d\r", strlen(ls))
+=======
+			if expire_already
+				expire_already_headers()
+>>>>>>> 908c467fe1928d9efffc21cbc19ba3c0117dde56:eg/httpd
 			bcrlf(out)
 			bprint(out, ls)
 			bflush(out)
@@ -306,13 +346,31 @@ notf	code = 404 ; msg = "Not Found"
 srv_er	code = 500 ; msg = "Internal Server Error"
 	error
 
-reqauth	bsay(out, "HTTP/1.1 401 Unauthorized\r")
+reqauth	if !cstr_eq(scheme, "https")
+		https
+	bsay(out, "HTTP/1.1 401 Unauthorized\r")
 	bsayf(out, "WWW-Authenticate: Basic realm=\"%s\"", host)
 	msg = format("httpd: Unauthorized\r\n  %s %s\r\n", method, fullpath)
 	lenmsg
 
 loc	bsay(out, "HTTP/1.1 301 Moved Permanently\r")
 	bsayf(out, "Location: %s", location)
+<<<<<<< HEAD:eg/httpd
 	msg = format("httpd: redirected to %s\r\n", location)
 	Free(location)
 	lenmsg
+=======
+	bcrlf(out)
+	bsayf(out, "httpd: redirected to %s\r", location)
+	bflush(out)
+#	verbose("    %s", location)
+	Free(location)
+	quit
+
+https	location = format("https://%s%s", host, path)
+	loc
+
+def expire_already_headers()
+	bsay(out, "Cache-Control: private, no-cache, no-store")
+	bsay(out, "Expires: 0")
+>>>>>>> 908c467fe1928d9efffc21cbc19ba3c0117dde56:eg/httpd
