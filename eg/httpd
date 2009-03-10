@@ -127,21 +127,10 @@ proc httpd(sock *sk)
 	if host == NULL
 		host = strdup("default")
 
-	warn("host: %s", host)
-
 	path = get_path_from_url(url)
-
-	warn("path: %s", path)
 
 	root = path_cat(www_root, host)
 	fullpath = path_cat(root, path)
-
-	warn("root: %s", root)
-
-	warn("fullpath: %s", fullpath)
-
-	if strstr(fullpath, "/.")
-		bad
 
 	if fullpath[strlen(fullpath)-1] == '/'
 		cstr fullpath_index = path_cat(fullpath, "index.html")
@@ -151,6 +140,9 @@ proc httpd(sock *sk)
 
 	fullpath = path_tidy(fullpath)
 	unless(cstr_begins_with(fullpath, root) && fullpath[strlen(root)] == '/')
+		bad
+
+	if strstr(fullpath, "/.")
 		bad
 
 	verbose("%s %s", method, fullpath)
