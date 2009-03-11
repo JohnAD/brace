@@ -4,7 +4,7 @@ Main()
 	if args
 		usage("< file")
 	let(lines, slurp_lines())
-	int n = veclen(lines)
+	int n = lines->size
 	for_vec(i, lines, cstr)
 		swap(*i, i[Randi(n--)])
 		Say(*i)
