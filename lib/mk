@@ -36,33 +36,29 @@ CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
 
 # TODO redefine the %.o: %.c and %.o: %.cc patterns?
 
-.%.b1: %.b
+%.b1: %.b
 	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C b2b1 >'$@'
-.%.bb1: %.bb
+%.bb1: %.bb
 	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C++ b2b1 >'$@'
-.%.bh1: %.bh
+%.bh1: %.bh
 	<'$<' BRACE_LANGUAGE=C brace_header_export "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
-.%.bbh1: %.bbh
+%.bbh1: %.bbh
 	<'$<' BRACE_LANGUAGE=C++ brace_header_export "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
 
-.%.c: .%.b1
+%.c: %.b1
 	<'$<' BRACE_LANGUAGE=C brace >'$@'
-.%.cc: .%.bb1
+%.cc: %.bb1
 	<'$<' BRACE_LANGUAGE=C++ brace >'$@'
-%.c: .%.c
-	cp '$<' '$@'
-%.cc: .%.cc
-	cp '$<' '$@'
 
-%.h: .%.bh1
+%.h: %.bh1
 	<$< BRACE_LANGUAGE=C brace >$@
-%.h: .%.bbh1
+%.h: %.bbh1
 	<$< BRACE_LANGUAGE=C++ brace >$@
 
 # These are also handled by brace_update_headers:
-.%.bh: %.b
+%.bh: %.b
 	brace_header <$< >$@
-.%.bbh: %.bb
+%.bbh: %.bb
 	brace_header <$< >$@
 
-.PRECIOUS: .%.b1 .%.bb1 %.bh %.bbh .%.bh1 .%.bbh1 .%.c .%.cc %.h
+.PRECIOUS: %.b1 %.bb1 %.bh %.bbh %.bh1 %.bbh1 %.c %.cc %.h

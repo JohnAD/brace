@@ -330,7 +330,7 @@ Def Min(a, b) a < b ? a : b
 
 def swap(a, b)
 	swap(a, b, my(ap), my(bp), my(tmp))
-def swap(a, b)
+def swap(a, b, ap, bp, tmp)
 	let(ap, &a) ; let(bp, &b)
 	let(tmp, *bp)
 	*bp = *ap ; *ap = tmp
