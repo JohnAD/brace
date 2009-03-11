@@ -1,9 +1,9 @@
 url_decode(cstr q)
 	cstr o = q
 	while *q
-		if *q == '+'
-			*o = ' '
-		 eif *q == '%' && q[1] && q[2]
+#		if *q == '+'
+#			*o = ' '
+		if *q == '%' && q[1] && q[2]
 			char c[3] = { q[1], q[2], '\0' }
 			*o = (char)strtol(c, NULL, 16)
 			q+=2

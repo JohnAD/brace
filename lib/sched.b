@@ -8,7 +8,7 @@ use error
 export timeout
 
 struct scheduler
-	int quit
+	int exit
 	deq q
 	fd_set readfds, writefds, exceptfds
 	fd_set readfds_ready, writefds_ready, exceptfds_ready
@@ -18,6 +18,7 @@ struct scheduler
 	int io_wait_count
 	num now
 	timeouts tos
+	int step
 
 scheduler struct__sched, *sched = &struct__sched
 
@@ -25,10 +26,8 @@ def sched_init()
 	scheduler_init(sched)
 
 scheduler_init(scheduler *sched)
-	sched->quit = 0
-
+	sched->exit = 0
 	deq_init(&sched->q, proc_p, 8)
-
 	init(&sched->readfds, fd_set)
 	init(&sched->writefds, fd_set)
 	init(&sched->exceptfds, fd_set)
@@ -39,8 +38,9 @@ scheduler_init(scheduler *sched)
 	init(&sched->readers, vec, proc_p, 8)
 	init(&sched->writers, vec, proc_p, 8)
 	sched->io_wait_count = 0
-
+	sched->now = rtime()
 	init(&sched->tos, timeouts)
+	sched->step = 0
 
 def sched_free()
 	scheduler_free(sched)
@@ -59,61 +59,61 @@ def start(coro)
 	start_f(&coro->p)
 
 run()
-	while !sched->quit
-		if step()
-			break
+	while !sched->exit
+		step()
 #		queue_dump(&sched->q)
 
 int sched_delay = 0
+              # = 0      # don't sleep between steps
+              # = 0.01   # sleep for 0.01 secs between steps
 
-sched_set_delay(int d)
-	sched_delay = d
+int sched_busy = 16
+             # = 0       # check IO only when no procs queued
+             # = 1       # check IO at every step
+             # = n       # check IO when no procs queued or every n steps
 
-int sched_get_delay()
-	return sched_delay
+# sched->now is set to the startup time, or the time after the last select
+# If you need more precise timing, call rtime() yourself.
 
-int step()
-	sched->now = rtime()
+def delay_forever -1
+
+step()
 	struct timeval struct__delay_tv, *delay_tv = &struct__delay_tv
-	int need_select = 1
+	int need_select
 	num delay
 	int n_ready = 0
 
 	if sched->q.size
 		delay = sched_delay
-		if delay == 0
-			need_select = 0
-	 else
+	 eif !timeouts_empty(&sched->tos)
+		sched->now = rtime()
 		delay = timeouts_delay(&sched->tos, sched->now)
-		if sched->io_wait_count == 0
-			if delay < 0
-				return 1
-			if delay == 0
-				need_select = 0
-		 else
-			if delay < 0
-				delay_tv = NULL
-			 else
-				rtime_to_timeval(delay, delay_tv)
+	 else
+		delay = delay_forever
+
+	if delay == delay_forever && sched->io_wait_count == 0
+		sched->exit = 1
+		return
+
+	need_select = delay ||
+	 (sched_busy && sched->io_wait_count && sched->step % sched_busy == 0)
 
 	if need_select
+		if delay == delay_forever
+			delay_tv = NULL
+		 else
+			rtime_to_timeval(delay, delay_tv)
 		sched->readfds_ready = sched->readfds
 		sched->writefds_ready = sched->writefds
 		sched->exceptfds_ready = sched->exceptfds
 		proc_debug("calling select on %d waiters for %f secs", sched->io_wait_count, delay)
-		int fd
-		for fd=0; fd < sched->max_fd_plus_1; ++fd
-			if fd_isset(fd, &sched->readfds)
-				proc_debug("wantread %d", fd)
-			if fd_isset(fd, &sched->writefds)
-				proc_debug("wantwrite %d", fd)
-			if fd_isset(fd, &sched->exceptfds)
-				proc_debug("wantexcept %d", fd)
+		proc_debug_selectors()
 		n_ready = Select(sched->max_fd_plus_1, &sched->readfds_ready, &sched->writefds_ready, &sched->exceptfds_ready, delay_tv)
 		proc_debug("select done")
 		sched->now = rtime()
 
-	timeouts_call(&sched->tos, sched->now)
+	if !timeouts_empty(&sched->tos)
+		timeouts_call(&sched->tos, sched->now)
 
 	if n_ready
 		int fd
@@ -122,34 +122,36 @@ int step()
 			int can_write = fd_isset(fd, &sched->writefds_ready)
 			int has_error = fd_isset(fd, &sched->exceptfds_ready)
 			if has_error
-				# FIXME how to handle errors?
-				# should notify reader at least?
+				# XXX how to handle errors properly?
 				warn("sched: fd %d has an error - closing", fd)
 				fd_has_error(fd)
-			 else
-				if can_read
-					proc_debug("fd %d ready to read", fd)
-					proc *p = *(proc **)vec_element(&sched->readers, fd)
-					clr_reader(fd)
-					proc_debug("waking up reader %08x", p)
-					sched_resume(p)
-					proc_debug("fd %d done reading", fd)
-				if fd_alive(fd)
-					if can_write
-						proc_debug("fd %d at %s ready to write", fd)
-						proc *p = *(proc **)vec_element(&sched->writers, fd)
-						clr_writer(fd)
-						proc_debug("waking up writer %08x", p)
-						sched_resume(p)
-						proc_debug("fd %d done writing", fd)
+			if can_read && fd_alive(fd)
+				clr_reader(fd)
+				proc *p = *(proc **)vec_element(&sched->readers, fd)
+				proc_debug("fd %d ready to read - resuming %08x", fd, p)
+				sched_resume(p)
+			if can_write && fd_alive(fd)
+				clr_writer(fd)
+				proc *p = *(proc **)vec_element(&sched->writers, fd)
+				proc_debug("fd %d ready to write - resuming %08x", fd, p)
+				sched_resume(p)
 
 	if sched->q.size
 		proc *p = *(proc **)deq_element(&sched->q, 0)
 		deq_shift(&sched->q)
-		proc_debug("stepping to %08x", p)
+		proc_debug("resuming %08x", p)
 		sched_resume(p)
 
-	return 0
+	++sched->step
+
+def proc_debug_selectors()
+	for(fd, 0, sched->max_fd_plus_1)
+		if fd_isset(fd, &sched->readfds)
+			proc_debug("wantread %d", fd)
+		if fd_isset(fd, &sched->writefds)
+			proc_debug("wantwrite %d", fd)
+		if fd_isset(fd, &sched->exceptfds)
+			proc_debug("wantexcept %d", fd)
 
 def fd_alive(fd) fd_isset(fd, &sched->exceptfds)
 

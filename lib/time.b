@@ -1,14 +1,13 @@
 export time.h
+export sys/time.h
+export locale.h
 use math.h
 use stdio.h
 use stdlib.h
-export sys/time.h
 use string.h
 
 export buffer
-use error
-use util
-use m
+use error util m env
 
 use time
 
@@ -200,3 +199,13 @@ num timeval_to_rtime(struct timeval *tv)
 
 num timespec_to_rtime(struct timespec *ts)
 	return (num)ts->tv_sec + ts->tv_nsec / 1e9
+
+date_rfc1123_init()
+	setlocale(LC_TIME, "POSIX")
+	Putenv("TZ=GMT")
+	tzset()
+
+char *date_rfc1123(time_t t)
+	static char date[32]
+	strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT", gmtime(&t))
+	return date

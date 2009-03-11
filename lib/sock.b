@@ -77,12 +77,21 @@ proc write_sock()
 # NOTE at EOF, reader will return an ungrown buffer, might not be an empty buffer
 # they need to check for that.
 
-def reader_init(reader, fd)
-	reader_init(reader, fd, block_size)
+def reader reader_try
+def writer writer_try
+#def reader reader_sel
+#def writer writer_sel
 
-proc reader(int fd, size_t block_size)
+def reader_sel_init(r, fd)
+	reader_sel_init(r, fd, block_size)
+
+# Here are the reader and writer that call select first,
+# to check if it's ready to read or write.
+
+proc reader_sel(int fd, size_t block_size)
 	port buffer out
-	repeat
+	state boolean done = 0
+	while !done
 		pull(out)
 		proc_debug("reader - after pull")
 		buffer_ensure_free(&out, block_size)
@@ -91,33 +100,37 @@ proc reader(int fd, size_t block_size)
 		if n == -1
 			n = 0
 			swarning("reader: error")
+			done = 1
 		 eif n
 			buffer_grow(&out, n)
 		 else
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
 			buffer_clear(&out)
+			done = 1
 		push(out)
 
-proc writer(int fd)
+proc writer_sel(int fd)
 	port buffer in
-	repeat
+	state boolean done = 0
+	while !done
 		proc_debug("writer - before pull")
 		pull(in)
 		proc_debug("writer - after pull")
-		if buflen(&in)
-			while buflen(&in)
-				write(fd)
-				ssize_t n = write(fd, buf0(&in), buflen(&in))
-				if n == -1
-					n = 0
-					swarning("writer: error")
-					# signals the caller that we have an error,
-					# by the fact that the buffer is not empty.
-					break
-				 else
-					buffer_shift(&in, n)
-		 else
+		if !buflen(&in)
 			shutdown(fd, SHUT_WR)
+			done = 1
+		while buflen(&in)
+			write(fd)
+			ssize_t n = write(fd, buf0(&in), buflen(&in))
+			if n == -1
+				n = 0
+				swarning("writer: error")
+				# signals the caller that we have an error,
+				# by the fact that the buffer is not empty.
+				done = 1
+				break
+			 else
+				buffer_shift(&in, n)
 		push(in)
 
 def bread(in)
@@ -254,19 +267,21 @@ def bsayf(out, fmt, a0, a1, a2, a3, a4, a5)
 
 # I remember Paul / Dancer recommending to try writing before selecting.
 # (they didn't say anything about anticipating reading).
-# I'm not convinced that it speeds things up, I would want to check an strace.
-# It actually seems to slow things down.
+# I'm not sure it if speeds things up or not.
 
-# here are the reader and writer that anticipate they they might be able to
-# read or write without calling select unless the read / write fails.
+# Here are the reader and writer that try to read or write first,
+# and calling select only if the read / write fails.
 
-proc reader_ant(int fd, size_t block_size)
+def reader_try_init(r, fd)
+	reader_try_init(r, fd, block_size)
+
+proc reader_try(int fd, size_t block_size)
 	port buffer out
+	state boolean done = 0
 	pull(out)
-	repeat
+	while !done
 		proc_debug("reader - after pull")
 		buffer_ensure_free(&out, block_size)
-#		read(fd)
 		ssize_t n = read(fd, bufend(&out), buffer_get_free(&out))
 		if n == -1
 			if errno == EAGAIN
@@ -275,35 +290,40 @@ proc reader_ant(int fd, size_t block_size)
 			 else
 				n = 0
 				swarning("reader: error")
+				done = 1
 		 eif n
 			buffer_grow(&out, n)
-		 else
+		 else  # n == 0
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
 			buffer_clear(&out)
+			done = 1
 		push(out)
 		pull(out)
 
-proc writer_ant(int fd)
+proc writer_try(int fd)
 	port buffer in
-	repeat
+	state boolean done = 0
+	while !done
 		proc_debug("writer - before pull")
 		pull(in)
 		proc_debug("writer - after pull")
-		if buflen(&in)
-			while buflen(&in)
-				ssize_t n = write(fd, buf0(&in), buflen(&in))
-				if n == -1
-					n = 0
-					if errno == EAGAIN
-						write(fd)
-					 else
-						swarning("writer: error")
-						# signals the caller that we have an error,
-						# by the fact that the buffer is not empty.
-						break
-				 else
-					buffer_shift(&in, n)
-		 else
+		if !buflen(&in)
 			shutdown(fd, SHUT_WR)
+			done = 1
+		while buflen(&in)
+			ssize_t n = write(fd, buf0(&in), buflen(&in))
+			if n == -1
+				n = 0
+				if errno == EAGAIN
+					write(fd)
+					continue
+				 else
+					swarning("writer: error")
+					# signals the caller that we have an error,
+					# by the fact that the buffer is not empty.
+					done = 1
+					break
+			 else
+				buffer_shift(&in, n)
 		push(in)
 
