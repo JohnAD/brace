@@ -1,4 +1,5 @@
 #!/bin/sh -e
+
 cd "`dirname $(readlink -f "$0")`"
 if [ ! -e Make.conf ]; then
 	./configure.sh
