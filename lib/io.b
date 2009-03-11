@@ -1,6 +1,6 @@
 export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
-export str error buffer types net vec
+export str error buffer types net vec vio
 use m alloc util path env process
 
 use io
@@ -413,6 +413,12 @@ vec *slurpdir(const char *name)
 	closedir(dir)
 	return v
 
+vec *slurp_lines()
+	New(lines, vec, cstr, 256)
+	eachline(s)
+		vec_push(lines, strdup(s))
+	return lines
+
 Remove(const char *path)
 	if remove(path) != 0
 		failed("remove")
@@ -455,7 +461,7 @@ int Tempfile(buffer *b, char *prefix, char *suffix, char *tmpdir, int dir, int m
 	return -1
 
 char random_alphanum()
-	int r = Randint(10 + 26 * 2)
+	int r = Randi(10 + 26 * 2)
 	if r < 10
 		return '0' + r
 	if r < 10 + 26

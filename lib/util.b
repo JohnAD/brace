@@ -329,9 +329,11 @@ Def Max(a, b) a > b ? a : b
 Def Min(a, b) a < b ? a : b
 
 def swap(a, b)
-	let(my(tmp), b)
-	b = a
-	a = my(tmp)
+	swap(a, b, my(ap), my(bp), my(tmp))
+def swap(a, b)
+	let(ap, &a) ; let(bp, &b)
+	let(tmp, *bp)
+	*bp = *ap ; *ap = tmp
 
 # FIXME why v?
 

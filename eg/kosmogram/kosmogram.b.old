@@ -44,8 +44,8 @@ Main()
 
 	switch args
 	1	person_name = arg[0]
-	0	datetime_init(birth_t, Randint(1970, 2006), Randint(1, 13), Randint(1, 28),  Randint(24), Randint(60), Randint(60))
-		place_init(birth_p, Randint(-90, -90), Randint(60), Randint(60),  Randint(-180, 180), Randint(60), Randint(60))
+	0	datetime_init(birth_t, Randi(1970, 2006), Randi(1, 13), Randi(1, 28),  Randi(24), Randi(60), Randi(60))
+		place_init(birth_p, Randi(-90, -90), Randi(60), Randi(60),  Randi(-180, 180), Randi(60), Randi(60))
 		break
 		#datetime_init(birth_t, 1976,9,1, 0,0,0)
 		#place_init(birth_p, +42,30,17, 10,7,3)

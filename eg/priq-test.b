@@ -6,7 +6,7 @@ Main()
 	int n_ints = 30
 	new(q, priq, int, n_ints+1)
 	for(c, 0, n_ints)
-		int v = Randint(0, max_int)
+		int v = Randi(0, max_int)
 		priq_push(q, int, int_cmp_macro, &v)
 		if toss()
 			priq_shift(q, int, int_cmp_macro)
@@ -14,10 +14,10 @@ Main()
 
 	decl(q2, vec)
 	vec_dup(q2, q)
-	int from = Randint(0, priq_get_size(q2))
+	int from = Randi(0, priq_get_size(q2))
 	int i = from
 	int v0 = *(int *)priq_element(q, i)
-	int v = Randint(0, max_int)
+	int v = Randi(0, max_int)
 	*(int *)priq_element(q2, i) = v
 	priq_repos(q2, int, int_cmp_macro, i, move_notify, (void*)1)
 
