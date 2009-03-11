@@ -98,7 +98,7 @@ def Randi(max) (int)(max*Rand())
 def Randi(min, max) Randi(max-min)+min
 
 def RAND_TOP RAND_MAX+1
-def RANDL_TOP RAND_TOP*RAND_TOP
+def RANDL_TOP (long long int)RAND_TOP*RAND_TOP
 def RANDL_MAX RANDL_TOP-1
 
 def Randl() (long long int)random()*RANDL_TOP+random()
