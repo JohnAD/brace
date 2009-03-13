@@ -174,6 +174,7 @@ procstmt()
 		writes("else if(")
 		writes(line+4)
 		line = ")" ; len = 1
+		is_kwdparens = 1
 	eif strcmp(line, "repeat") == 0
 		line = "while(1)" ; len = 8
 	#eif strcmp(line, "stop") == 0

@@ -11,14 +11,15 @@ export tok
 export vio
 export hunk
 
-# export tty
-#   curses has conflicting symbols with libb etc, see ../curses_syms_conflicts
-
 export net process
 export cgi
 export place
+export qmath
+
 export sound music
 export key
 export gr turtle
-export qtrig
 export cgi_png
+
+# export tty
+#   curses has conflicting symbols with libb etc, see ../curses_syms_conflicts

@@ -51,14 +51,14 @@ CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
 	<'$<' BRACE_LANGUAGE=C++ brace >'$@'
 
 %.h: %.bh1
-	<$< BRACE_LANGUAGE=C brace >$@
+	<'$<' BRACE_LANGUAGE=C brace >'$@'
 %.h: %.bbh1
-	<$< BRACE_LANGUAGE=C++ brace >$@
+	<'$<' BRACE_LANGUAGE=C++ brace >'$@'
 
 # These are also handled by brace_update_headers:
 %.bh: %.b
-	brace_header <$< >$@
+	<'$<' brace_number_lines '$<' | b2bh >'$@'
 %.bbh: %.bb
-	brace_header <$< >$@
+	<'$<' brace_number_lines '$<' | b2bh >'$@'
 
 .PRECIOUS: %.b1 %.bb1 %.bh %.bbh %.bh1 %.bbh1 %.c %.cc %.h

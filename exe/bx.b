@@ -28,7 +28,7 @@ Main()
 	let(brace_lib_dir, path_cat(brace_dir, "lib"))
 	libb = path_cat(brace_lib_dir, "libb" SO)
 
-	new(libb_stat, stats, libb)
+	new(libb_stat, Stats, libb)
 	if !S_EXISTS(libb_stat->st_mode)
 		error("Please ensure libb" SO " is installed.")
 
@@ -41,11 +41,11 @@ Main()
 	cstr lockfile = path_tidy(format("%s%c.%s.lock", dir, path__sep, base))
 	cstr log = path_tidy(format("%s%c.%s.log", dir, path__sep, base))
 
-	new(b_stat, stats, b)
+	new(b_stat, Stats, b)
 	if !S_EXISTS(b_stat->st_mode)
 		error("source file %s does not exist!", b)
 
-	new(log_stat, stats, log)
+	new(log_stat, Stats, log)
 
 	# debugging
 
@@ -59,7 +59,7 @@ Main()
 	int status = 0
 
 	lock(lockfile)
-		new(x_stat, stats, x)
+		new(x_stat, Stats, x)
 		int need_compile = !S_EXISTS(x_stat->st_mode) || x_stat->st_size == 0 || x_stat->st_mtime < b_stat->st_mtime || x_stat->st_mtime < libb_stat->st_mtime
 		int already_compiled = S_EXISTS(log_stat->st_mode) && b_stat->st_mtime < log_stat->st_mtime && log_stat->st_mtime > libb_stat->st_mtime
 		if already_compiled

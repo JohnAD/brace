@@ -63,7 +63,7 @@ void *deq_push(deq *q)
 	q->b.size += q->element_size
 	return deq_element(q, q->size-1)
 def deq_push(q, data)
-	*(typeof(&data))deq_push(q) = data
+	*(typeof(data) *)deq_push(q) = data
 
 deq_pop(deq *q)
 	--q->size

@@ -18,7 +18,7 @@ for (@lines) {
 	chomp;
 	if ($bslashcont == 1) {
 		s/^\s*//;
-	} elsif (/^\t* +/ and $indent >= $last_indent) {
+	} elsif (/^\t* +/ and $indent >= $last_indent and !/^\t* +((else|eif|while) )/) {
 		$_ = substr($_, $last_indent);
 	} else {
 		$line .= "\n";

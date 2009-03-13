@@ -1,6 +1,6 @@
 export errno.h setjmp.h
 use stdio.h stdarg.h stdlib.h
-use main buffer util path
+use main buffer util path env
 export vec hash thunk
 
 export error
@@ -184,11 +184,8 @@ Throw(cstr msg, int no, void *data)
 	throw_(error_add(msg, no, data))
 
 throw_(err *e)
-	if vec_get_size(error_handlers) == 0
-		fflush(stdout)
-		# TODO flush / close all open files?
-		warn_errors()
-		exit(1)
+	if vec_is_empty(error_handlers)
+		die_errors()
 	error_handler *h = vec_top(error_handlers)
 	if thunk_not_null(&h->handler)
 		if thunk_call(&h->handler, e)
@@ -196,6 +193,12 @@ throw_(err *e)
 	if h->jump
 		vec_pop(error_handlers)
 		siglongjmp(*h->jump, 1)
+
+die_errors()
+	warn_errors()
+	if *env("DEBUG")
+		abort()
+	exit(1)
 
 clear_errors()
 	for_vec(e, errors, err)
@@ -264,6 +267,8 @@ def fault(format, a0, a1, a2, a3)
 def fault(format, a0, a1, a2, a3, a4)
 	fault_(__FILE__, __LINE__, format, a0, a1, a2, a3, a4)
 
+int throw_faults = 0
+
 fault_(char *file, int line, const char *format, ...)
 	file = best_path_main(strdup(file))
 	New(b, buffer)
@@ -274,7 +279,11 @@ fault_(char *file, int line, const char *format, ...)
 	va_end(ap)
 	buffer_add_nul(b)
 	buffer_squeeze(b)
-	Throw(buffer_get_start(b), 0, NULL)
+	if throw_faults
+		Throw(buf0(b), 0, NULL)
+	 else
+		error_add(buf0(b), 0, NULL)
+		die_errors()
 
 hashtable *extra_error_messages
 

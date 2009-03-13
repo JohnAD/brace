@@ -1,0 +1,7 @@
+#!/lang/b
+use b
+Main()
+	long long int total = 0
+	eachline(l)
+		total += atoll(l)
+	Sayf("%lld", total)

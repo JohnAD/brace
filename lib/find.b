@@ -53,44 +53,52 @@ export path deq
 # XXX TODO should free the deq q !
 
 def find(root, f, s)
-	find_deq_x(normal, root, f, s)
+	find_x(normal, root, f, s)
 		.
 
 def find_init(q, root)
 	new(q, deq, cstr)
 	deq_push(q, root)
 
-def find_deq_x(what, root, f, s)
+def find_x(what, root, f, s)
 	find_init(my(q), root)
 	find_deq_^^what(my(q), f, s)
+		.
+
+def find_deq_x(what, q, f, s)
+	find_deq_^^what(q, f, s)
 		.
 
 def find_deq_normal(q, f, s)
 	find_deq(q, f, s)
 		.
 
+def find_1(root, f, s)
+	find_x(1, root, f, s)
+		.
+
 def find_leaves(root, f, s)
-	find_deq_x(leaves, root, f, s)
+	find_x(leaves, root, f, s)
 		.
 
 def find_all(root, f, s)
-	find_deq_x(all, root, f, s)
+	find_x(all, root, f, s)
 		.
 
 def find_all_leaves(root, f, s)
-	find_deq_x(all_leaves, root, f, s)
+	find_x(all_leaves, root, f, s)
 		.
 
 def find_dirs(root, f, s)
-	find_deq_x(dirs, root, f, s)
+	find_x(dirs, root, f, s)
 		.
 
 def find_reg(root, f, s)
-	find_deq_x(reg, root, f, s)
+	find_x(reg, root, f, s)
 		.
 
 def find_lnk(root, f, s)
-	find_deq_x(lnk, root, f, s)
+	find_x(lnk, root, f, s)
 		.
 
 # IDEA - non-homogenous deq, queue, etc?  nah!  couldn't do random access..
@@ -102,6 +110,7 @@ def find_deq_1(q, f, s)
 		deq_shift(q, f)
 		new(s, lstats, f)
 		if !S_EXISTS(s->st_mode)   # why wouldn't it exist?? maybe if a bad parameter?
+			warn("find: can't stat: %s", f)
 			continue
 		.
 
@@ -130,6 +139,10 @@ def find_skip_hidden(f)
 
 def find_only_dir(s)
 	if !S_ISDIR(s->st_mode)
+		continue
+
+def find_only_hidden(f)
+	if !path_hidden(f)
 		continue
 
 def find_only_reg(s)
@@ -173,21 +186,24 @@ def find_deq_lnk(q, f, s)
 
 def find__its_a_dir(q, f)
 	new(my(v), vec, cstr)
-	let(my(dir), Opendir(f))
-	repeat
-		let(my(ent), Readdir(my(dir)))
-		if my(ent) == NULL
-			break
-		cstr my(new_f) = my(ent)->d_name
-		unless(cstr_eq(my(new_f), ".") || cstr_eq(my(new_f), ".."))
-			my(new_f) = path_cat(f, my(new_f))
-			vec_push(my(v), my(new_f))
-	Closedir(my(dir))
-	
-	while vec_get_size(my(v))
-		cstr my(new_f)
-		vec_pop(my(v), my(new_f))
-		deq_unshift(q, my(new_f))
+	let(my(dir), opendir(f))
+	if !my(dir)
+		warn("find: can't opendir %s", f)
+	else
+		repeat
+			let(my(ent), Readdir(my(dir)))
+			if my(ent) == NULL
+				break
+			cstr my(new_f) = my(ent)->d_name
+			unless(cstr_eq(my(new_f), ".") || cstr_eq(my(new_f), ".."))
+				my(new_f) = path_cat(f, my(new_f))
+				vec_push(my(v), my(new_f))
+		Closedir(my(dir))
+		
+		while vec_get_size(my(v))
+			cstr my(new_f)
+			vec_pop(my(v), my(new_f))
+			deq_unshift(q, my(new_f))
 
 # I'm not happy with this temporary vec
 # -- is there a better way?  could use recursion...  :/
@@ -199,15 +215,21 @@ def find__its_a_dir(q, f)
 # TOO MUCH "my"  :)
 
 def find_main(f, s)
-	new(q, deq, cstr)
+	find_main(normal, f, s)
+
+def find_main(what, f, s)
+	new(my(q), deq, cstr)
+	find_main(what, my(q), f, s)
+
+def find_main(what, q, f, s)
 	eacharg(a)
-		let(b, Strdup(a))
-		deq_push(q, b)
-	if args == 0
-		cstr dot = Strdup(".")
-		deq_push(q, dot)
+		deq_push(q, path_tidy(Strdup(a)))
+	# I removed support for 0 args -> . ; it's inconsistent.
+#	if args == 0
+#		cstr dot = Strdup(".")
+#		deq_push(q, dot)
 	
-	find_deq(q, f, s)
+	find_deq_x(what, q, f, s)
 		.
 
 #def find(h)

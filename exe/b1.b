@@ -9,10 +9,21 @@ Main()
 		lang = "bb"
 		dotb = ".bb"
 
+	boolean keep = 1
+
+	if args && cstr_eq(arg[0], "-r")
+		keep = 0
+		shift()
+
 	new(b, buffer, 256)
-	int fd = Temp(b, "b1_", dotb)
-	cstr file = buffer_to_cstr(b)
-	FILE *f = Fdopen(fd, "w")
+	cstr file
+	FILE *f
+	file = cstr_cat("./b1-prog", dotb)
+	f = fopen(file, "w")
+	if !f
+		int fd = Temp(b, "b1-", dotb)
+		file = buffer_to_cstr(b)
+		f = Fdopen(fd, "w")
 	Fsayf(f, "#!/lang/%s", lang)
 	Fsayf(f, "use b")
 	if cplusplus
@@ -39,7 +50,7 @@ Main()
 	Fclose(f)
 	cx(file)
 	int status = Systema(file, arg)
-	if !*env("B1_KEEP")
+	if !keep
 		Remove(file)
 		dirbasename(file, dir, base)
 		Systemf("rm %s/.%s*", dir, base)

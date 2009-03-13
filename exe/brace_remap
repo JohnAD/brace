@@ -32,7 +32,7 @@ for my $file (@ARGV) {
 			die "cp failed\n";
 		print STDERR " $file~";
 		output_lines($file);
-		print STDERR " $file\n";
+#		print STDERR " $file\n";
 	} else {
 		print STDERR "=\n";
 	}

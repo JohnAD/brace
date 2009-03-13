@@ -1,6 +1,6 @@
 export proc shuttle sched net io alloc
 
-int block_size = 1024
+size_t block_size = 1024
 
 struct sock
 	int fd

@@ -97,8 +97,7 @@ def for_step(i, d)
 
 def map(out, in, func)
 	for(in)
-		*out = func
-		++ out
+		*out++ = func
 
 #def Map(out_ary, in, func)
 #	sametype(my(out), &*out_ary)
@@ -531,8 +530,8 @@ def use(v) v=v
 
 # warning, it's a macro, so don't call with an expression as arg
 def tween(a, low, high) a >= low && a <= high
-#def tweenx(a, low, high) a >= low && a < high
-#def tweenX(a, low, high) a > low && a < high
+def Tween(a, low, high) a >= low && a < high
+def TWEEN(a, low, high) a > low && a < high
 
 def among(a) 0
 def among(a, b0) a == b0
@@ -585,6 +584,10 @@ def sort_int_array(x)
 int int_cmp(const void *a, const void *b)
 	int diff = *(int*)a - *(int*)b
 	return diff
+
+int off_t_cmp(const void *a, const void *b)
+	off_t diff = *(off_t*)a - *(off_t*)b
+	return diff < 0 ? -1 : diff > 0 ? 1 : 0
 
 def sort_cstr_array(x)
 	qsort(x, array_size(x), sizeof(*x), cstrp_cmp)
@@ -641,31 +644,53 @@ int cstrp_cmp_null(const void *_a, const void *_b)
 		return 0
 	return strcmp(*a, *b)
 
-comm_vecs(vec *merge_v, vec *comm_v, cmp_t cmp, vec *va, vec *vb)
-	vec_null_terminate(va)
-	vec_null_terminate(vb)
-	void **a = vec_get_start(va)
-	void **b = vec_get_start(vb)
-	repeat
+comm(vec *merge_v, vec *comm_v, vec *va, vec *vb, cmp_t cmp, free_t freer)
+	size_t maxlen = veclen(va)+veclen(vb)
+	vec_set_space(merge_v, maxlen)
+	vec_set_space(comm_v, maxlen)
+	char *a = vec0(va)
+	char *b = vec0(vb)
+	char *a_end = vecend(va)
+	char *b_end = vecend(vb)
+	size_t e = vec_get_el_size(merge_v)
+	while a != a_end && b != b_end
 		int c = cmp(a, b)
-		void **m
+		# can't just use memcmp in general, because there might be
+		# unused padding space, or cmp function might not be simple
+
+		void *m
 		byte w
 		if c == 0
-			if !*a
-				break
-			m = *a
-			w = 3
-			++a ; ++b
+			w = 3 ; m = a
+			if freer
+				(*freer)(*(void **)b)
+			a += e ; b += e
 		 eif c < 0
-			m = *a
-			w = 1
-			++a
+			w = 1 ; m = a
+			a += e
 		 eif c > 0
-			m = *b
-			w = 2
-			++b
-		vec_push(merge_v, m)
+			w = 2 ; m = b
+			b += e
+		void *p = vec_push(merge_v)
+		memmove(p, m, e)
 		vec_push(comm_v, w)
+	size_t n = 0
+	byte comm_val
+	if a != a_end
+		n = (a_end - a) / e
+		vec_append(merge_v, a, n)
+		comm_val = 1
+	 eif b != b_end
+		n = (b_end - b) / e
+		vec_append(merge_v, b, n)
+		comm_val = 2
+	if n
+		vec_grow(comm_v, n)
+		byte *e = vecend(comm_v)
+		for(i, e-n, e)
+			*i = comm_val
+	vec_squeeze(merge_v)
+	vec_squeeze(comm_v)
 
 comm_dump_cstr(vec *merge_v, vec *comm_v)
 	assert(vec_get_size(comm_v) == vec_get_size(merge_v), "badcall: comm_dump_cstr %d %d", vec_get_size(comm_v), vec_get_size(merge_v))
@@ -978,3 +1003,66 @@ def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8)
 def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
 	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
 		let(e, *my(i))
+
+def local(var, val)
+	let(my(old), var)
+	var = val
+	post(x)
+		var = my(old)
+	pre(x)
+		.
+
+def implies(cond, then) cond ? then : 1
+
+# abba is an "occult macro" that needs a double-indent, so the user needs to
+# double indent the block! that looks ok with switch stuff though. It does
+# things either in one order or the reverse order. Reminds me of Duff's device.
+# I was going to use this in splice, but didn't.
+# How unlikely that I will ever use this..
+#
+# e.g.:
+#
+# abba(toss())
+# 	0	Say("hello")
+# 	1	Say("world")
+
+def abba(choice)
+	each(my(i), choice, !choice)  # assuming booleans are 0 or 1 here.
+		which(my(i))
+			.
+
+def memdup(src, n) memdup(src, n, 0)
+void *memdup(const void *src, size_t n, size_t extra)
+	void *dest = Malloc(n+extra)
+	memcpy(dest, src, n)
+	return dest
+
+# this is an inplace grep
+def grep(i, v, type, test, Free_or_void)
+	grep(i, v, type, test, Free_or_void, my(o))
+def grep(i, v, type, test, Free_or_void, o)
+	type *o = vec0(v)
+	for_vec(i, v, type)
+		if test
+			*o++ = *i
+		 else
+			Free_or_void(*i)
+	vec_set_size(v, o-(type *)vec0(v))
+	# does not call vec_squeeze, my dodgy uniq depends on that!
+
+# e.g.:
+#   uniq(i, v, cstr, strcmp(i[0], i[1]), Free)
+#   uniq(i, v, int, i[0] != i[1], void)
+def uniq(i, v, type, cmp, Free_or_void)
+	if vec_get_size(v)
+		vec_grow(v, -1)
+		type *last = (type*)vecend(v)
+		grep(i, v, type, cmp, Free_or_void)
+		vec_push(v, *last)
+
+# TODO grep and map that work with blocks instead of expressions:
+# def grep(i, v, type, keep)
+# problematic because of can't-multi-indent expansion issue
+
+# TODO make map work with vec too?  normal map shouldn't be inplace though,
+# because the types may be different.

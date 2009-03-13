@@ -97,7 +97,7 @@ slurp_2(int fd, buffer *b)
 # TODO fix slurp(fd, buffer) so that it does the fstat instead of this one
 
 buffer *slurp_1(int filedes)
-	decl(st, stats)
+	decl(st, Stats)
 	Fstat(filedes, st)
 	int size = st->st_size
 
@@ -142,7 +142,7 @@ fslurp_2(FILE *s, buffer *b)
 # TODO fix slurp(fd, buffer) so that it does the fstat instead of this one
 
 buffer *fslurp_1(FILE *s)
-	decl(st, stats)
+	decl(st, Stats)
 	Fstat(fileno(s), st)
 	int size = st->st_size
 
@@ -393,12 +393,16 @@ vec *Slurpdir(const char *name)
 
 # TODO use dir->d_type ?
 
-vec *slurpdir(const char *name)
+def slurpdir(name) slurpdir_0(name)
+vec *slurpdir_0(const char *name)
+	New(v, vec, cstr, 64)
+	return slurpdir(name, v)
+
+vec *slurpdir(const char *name, vec *v)
 	struct dirent *e
 	DIR *dir = opendir(name)
 	if dir == NULL
 		return NULL
-	New(v, vec, cstr, 64)
 	repeat
 		errno = 0
 		e = readdir(dir)
@@ -413,8 +417,12 @@ vec *slurpdir(const char *name)
 	closedir(dir)
 	return v
 
-vec *slurp_lines()
+def slurp_lines() slurp_lines_0()
+vec *slurp_lines_0()
 	New(lines, vec, cstr, 256)
+	return slurp_lines(lines)
+
+vec *slurp_lines(vec *lines)
 	eachline(s)
 		vec_push(lines, strdup(s))
 	return lines
@@ -474,7 +482,11 @@ char random_alphanum()
 
 int exists(const char *file_name)
 	struct stat buf
-	return Stat(file_name, &buf)
+	return !stat(file_name, &buf)
+
+int lexists(const char *file_name)
+	struct stat buf
+	return !lstat(file_name, &buf)
 
 off_t file_size(const char *file_name)
 	struct stat buf
@@ -491,7 +503,7 @@ int Stat(const char *file_name, struct stat *buf)
 		return 1
 	if errno == ENOENT || errno == ENOTDIR
 		return 0
-	failed("stat")
+	failed("stat", file_name)
 	# keep gcc happy
 	return 0
 
@@ -532,23 +544,33 @@ cnotx(const char *path)
 	chmod_sub(path, S_IXUSR | S_IXGRP | S_IXOTH)
 
 chmod_add(const char *path, mode_t add_mode)
-	new(s, stats, path)
+	new(s, Stats, path)
 	Chmod(path, s->st_mode | add_mode)
 
 chmod_sub(const char *path, mode_t sub_mode)
-	new(s, stats, path)
+	new(s, Stats, path)
 	Chmod(path, s->st_mode & ~sub_mode)
 
 typedef struct stat stats
 typedef struct stat lstats
+typedef struct stat Stats
+typedef struct stat Lstats
 
-stats_init(stats *s, const char *file_name)
+Stats_init(stats *s, const char *file_name)
 	if !Stat(file_name, s)
 		bzero(s)
 
-lstats_init(stats *s, const char *file_name)
+Lstats_init(stats *s, const char *file_name)
 	if !Lstat(file_name, s)
-		s->st_mode = 0
+		bzero(s)
+
+stats_init(stats *s, const char *file_name)
+	if stat(file_name, s)
+		bzero(s)
+
+lstats_init(stats *s, const char *file_name)
+	if lstat(file_name, s)
+		bzero(s)
 
 def S_EXISTS(m) m
 
@@ -559,7 +581,7 @@ int Lstat(const char *file_name, struct stat *buf)
 		return 1
 	if errno == ENOENT || errno == ENOTDIR
 		return 0
-	failed("lstat")
+	failed("lstat", file_name)
 	# keep gcc happy
 	return 0
 
@@ -710,7 +732,7 @@ cstr readlinks(cstr path, readlinks_if_dead if_dead)
 	let(warn_if_dead, (if_dead & if_dead_warn) != 0)
 	if_dead &= ~if_dead_warn
 
-	decl(stat_b, stats)
+	decl(stat_b, Stats)
 	repeat
 		if !Lstat(path, stat_b)
 			if warn_if_dead
@@ -827,7 +849,7 @@ say_range(char *start, char *end)
 fsay_range(FILE *stream, char *start, char *end)
 	fprint_range(stream, start, end)
 
-stats_dump(stats *s)
+stats_dump(Stats *s)
 	Sayf("dev\t%d", s->st_dev)
 	Sayf("ino\t%d", s->st_ino)
 	Sayf("mode\t%d", s->st_mode)
@@ -846,7 +868,7 @@ stats_dump(stats *s)
 	Sayf("ctime\t%d", s->st_ctime)
 
 mode_t mode(const char *file_name)
-	new(s, stats, file_name)
+	new(s, Stats, file_name)
 	return s->st_mode
 
 def cp(oldpath, newpath) cp(oldpath, newpath, 0666)
@@ -957,7 +979,11 @@ def dir1rest(path, d, b)
 		b = NULL
 
 Mkdirs(const char *pathname, mode_t mode)
-	cstr basedir = Getcwd()
+	cstr my(cwd) = Getcwd()
+	Mkdirs_cwd(pathname, mode, my(cwd))
+	Free(my(cwd))
+
+Mkdirs_cwd(const char *pathname, mode_t mode, cstr basedir)
 	cstr dir1 = strdup(pathname)
 	cstr dir = dir1
 	repeat
@@ -990,8 +1016,8 @@ Rmdirs(const char *pathname)
 	Free(dir)
 
 boolean newer(const char *file1, const char *file2)
-	new(s1, stats, file1)
-	new(s2, stats, file2)
+	new(s1, Stats, file1)
+	new(s2, Stats, file2)
 	return s1->st_mtime - s2->st_mtime > 0
 
 lnsa(cstr from, cstr to, cstr cwd)
@@ -1013,67 +1039,92 @@ lnsa(cstr from, cstr to, cstr cwd)
 buffer _Cp_symlink, *Cp_symlink = NULL
 
 def Cp(from, to)
-	new(my(sf), lstats, from)
+	new(my(sf), Lstats, from)
 	Cp(from, to, sf)
-Cp(cstr from, cstr to, lstats *sf)
+Cp(cstr from, cstr to, Lstats *sf)
 	if S_ISLNK(sf->st_mode)
 		if !Cp_symlink
 			Cp_symlink = &_Cp_symlink
 			init(Cp_symlink, buffer, 256)
 		buffer_clear(Cp_symlink)
 		Symlink(Readlink(from, Cp_symlink), to)
-	 else
+	 eif S_ISREG(sf->st_mode)
 		cp(from, to)
+	 else
+		warn("irregular file %s not copied", from)
 
-def CP(cstr from, cstr to)
-	new(my(sf), lstats, from)
-	CP(from, to, sf)
-CP(cstr from, cstr to, lstats *sf)
+def CP(from, to)
+	new(my(sf), Lstats, from)
+	CP(from, to, my(sf))
+CP(cstr from, cstr to, Lstats *sf)
 	Cp(from, to, sf)
 	cp_attrs_st(sf, to)
 
 cp_attrs(cstr from, cstr to)
-	new(sf, lstats, from)
+	new(sf, Lstats, from)
 	cp_attrs_st(sf, to)
 
-cp_attrs_st(lstats *sf, cstr to)
+cp_attrs_st(Lstats *sf, cstr to)
 	if !S_ISLNK(sf->st_mode)
 		cp_mode(sf, to)
 	if Getuid() == uid_root
 		cp_owner(sf, to)
 	cp_times(sf, to)
 
-cp_mode(stats *sf, cstr to)
-	warn("chmod %s %0d", to, sf->st_mode)
-	Chmod(to, sf->st_mode)
+cp_mode(Stats *sf, cstr to)
+	if chmod(to, sf->st_mode)
+		warn("chmod %s %0d failed", to, sf->st_mode)
 
-cp_owner(lstats *sf, cstr to)
-	Chown(to, sf->st_uid, sf->st_gid)
+cp_owner(Lstats *sf, cstr to)
+	if chown(to, sf->st_uid, sf->st_gid)
+		warn("chown %s %0d:%0d failed", to, sf->st_uid, sf->st_gid)
 
 Utime(const char *filename, const struct utimbuf *times)
 	if utime(filename, times)
 		failed("utime", filename)
 
-cp_times(lstats *sf, cstr to)
+cp_times(Lstats *sf, cstr to)
 	struct utimbuf times
 	times.actime = sf->st_atime
 	times.modtime = sf->st_mtime
-	Utime(to, &times)
+	if utime(to, &times)
+		warn("utime %s failed", to)
 
 def cp_atime(sf, to)
-	new(my(st), lstats, to)
+	new(my(st), Lstats, to)
 	cp_atime(sf, to, st)
-cp_atime(lstats *sf, cstr to, lstats *st)
+cp_atime(Lstats *sf, cstr to, Lstats *st)
 	struct utimbuf times
 	times.actime = sf->st_atime
 	times.modtime = st->st_mtime
 	Utime(to, &times)
 
 def cp_mtime(sf, to)
-	new(my(st), lstats, to)
+	new(my(st), Lstats, to)
 	cp_mtime(sf, to, st)
-cp_mtime(lstats *sf, cstr to, lstats *st)
+cp_mtime(Lstats *sf, cstr to, Lstats *st)
 	struct utimbuf times
 	times.actime = st->st_atime
 	times.modtime = sf->st_mtime
 	Utime(to, &times)
+
+def Sayd(d) Sayf("%d", d)
+def Sayn(f) Sayf("%f", f)
+def Sayx(d) Sayf("%08x", d)
+def Sayb(b) Sayf("%02x", d)
+
+def Sayd(s, d) Sayf("%s%d", s, d)
+def Sayn(s, f) Sayf("%s%f", s, f)
+def Sayx(s, d) Sayx("%s%02x", s, d)
+def Sayb(s, b) Sayb("%s%02x", s, b)
+
+def Printd(d) Printf("%d", d)
+def Printn(f) Printf("%f", f)
+def Printx(d) Printf("%08x", d)
+def Printb(b) Printf("%02x", b)
+
+def Printd(s, d) Printf("%s%d", s, d)
+def Printn(s, f) Printf("%s%f", s, f)
+def Printx(s, d) Printx("%s%02x", s, d)
+def Printb(s, b) Printb("%s%02x", s, b)
+

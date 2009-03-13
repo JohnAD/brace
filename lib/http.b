@@ -87,7 +87,7 @@ cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *
 
 	Shutdown(fd)
 
-	decl(rsp_headers_tmp, buffer) 
+	decl(rsp_headers_tmp, buffer)
 	buffer *rsp_headers_orig = rsp_headers
 	if !rsp_headers_orig
 		init(rsp_headers_tmp, buffer, 512)

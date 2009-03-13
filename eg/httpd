@@ -106,7 +106,7 @@ req	state cstr s
 	state cstr user_agent = NULL
 	state boolean keep_alive = 1
 	state boolean statable
-	decl(st, stats)
+	decl(st, Stats)
 	state float proto_f = 0
 	state cstr body = NULL
 	state time_t modified = -1
@@ -238,7 +238,7 @@ req	state cstr s
 	# TODO use try if it works?
 
 	Seteuidgid(u)
-	  # must reset this to root before yielding! a bit ugly
+	  # must reset this to root before switching! a bit ugly
 
 	statable = !stat(fullpath, st)
 
@@ -252,92 +252,12 @@ req	state cstr s
 			expire_already = 1
 
 	if S_ISREG(st->st_mode)
-		# TODO CGI, if authorized
-		file_fd = open(fullpath, O_RDONLY)
-		Seteuidgid_root()
-		if file_fd == -1
-			accerr
-		nonblock(file_fd)
-		add_fd(file_fd)
-
-		modified = st->st_mtime
-		headers(200, "OK", st->st_size)
-		bcrlf(out)
-
-		init(&fr, reader, file_fd)
-		sh(buffer, &fr, out, This, fin)
-		init(&fin, buffer, block_size)
-		start(&fr)
-
-		repeat
-			pull(fin)
-			if !buflen(&fin)
-				break
-			bwrite(out, buffer_range(&fin)) # FIXME don't copy data
-			bflush(out)
-			if buflen(&out) # error
-				keep_alive = 0
-				break
-			buffer_clear(&fin)
-			push(fin)
-
-		buffer_free(&fin)
-		if file_fd != -1
-			rm_fd(file_fd)
-			close(file_fd)
-		done
-
+		serve_file()
 	 eif S_ISDIR(st->st_mode)
-		if fullpath[strlen(fullpath)-1] != '/'
-			Seteuidgid_root()
-			location = format("%s/", url)
-			loc
-		 else
-			vec *v = slurpdir(fullpath)  # TODO use d_type
-			Seteuidgid_root()
-			if !v
-				accerr
-			# loaded directory ok, root can stat the nodes
-			sort_vec(v, cstrp_cmp)
-			new(dirs, buffer, 256)
-			new(files, buffer, 256)
-			for_vec(i, v, cstr)
-				if (*i)[0] == '.'
-					continue
-				cstr entpath = path_cat(fullpath, *i) # or chdir
-				int dir = is_dir(entpath)
-				cstr line
-				if dir
-					line = format("<a href=\"%s/\"><b>%s</b>/</a><br>\n", *i, *i)
-					buffer_cat_cstr(dirs, line)
-				 else
-					line = format("<a href=\"%s\">%s</a><br>\n", *i, *i)
-					buffer_cat_cstr(files, line)
-				Free(line) ; Free(entpath)
-			buffer_cat_cstr(dirs, "<br>")
-			buffer_cat_cstr(files, "<br>")
-
-			buffer_nul_terminate(dirs)
-			buffer_nul_terminate(files)
-
-			modified = st->st_mtime
-			headers(200, "OK", buflen(dirs)+buflen(files))
-			bsay(out, "Content-Type: text/html\r")
-			bcrlf(out)
-			bwrite(out, buffer_range(dirs))
-			bwrite(out, buffer_range(files))
-			buffer_free(dirs)
-			buffer_free(files)
-			bflush(out)
-			if buflen(&out) # error
-				keep_alive = 0
-			done
-
+		serve_dir()
 	 else
 		Seteuidgid_root()
 		notf
-
-	fault("this code should not be reached")
 
 done	Free(method) ; Free(url) ; Free(proto) ; Free(host)
 	Free(root) ; Free(fullpath) ; Free(body)
@@ -376,7 +296,7 @@ srv_er	code = 500 ; msg = "Internal Server Error"
 
 reqauth	if !cstr_eq(scheme, "https")
 		https
-	body = format("httpd: Unauthorized\r\n  %s %s\r\n", method, fullpath)
+	body = format("httpd: 401 Unauthorized\r\n", method)
 	headers(401, "Unauthorized", strlen(body))
 	bsayf(out, "WWW-Authenticate: Basic realm=\"%s\"", host)
 	bodymsg
@@ -410,3 +330,83 @@ def headers(code, msg, size)
 		bsay(out, "Expires: 0")
 	if num_lt(proto_f, 1.1)
 		bsayf(out, "Connection: %s", keep_alive ? "Keep-Alive" : "close")
+
+def serve_file()
+	# TODO CGI, if authorized
+	file_fd = open(fullpath, O_RDONLY)
+	Seteuidgid_root()
+	if file_fd == -1
+		accerr
+	nonblock(file_fd)
+	add_fd(file_fd)
+
+	modified = st->st_mtime
+	headers(200, "OK", st->st_size)
+	bcrlf(out)
+
+	init(&fr, reader, file_fd)
+	sh(buffer, &fr, out, This, fin)
+	init(&fin, buffer, block_size)
+	start(&fr)
+
+	repeat
+		pull(fin)
+		if !buflen(&fin)
+			break
+		bwrite(out, buffer_range(&fin)) # FIXME don't copy data
+		bflush(out)
+		if buflen(&out) # error
+			keep_alive = 0
+			break
+		buffer_clear(&fin)
+		push(fin)
+
+	buffer_free(&fin)
+	if file_fd != -1
+		rm_fd(file_fd)
+		close(file_fd)
+
+def serve_dir()
+	if fullpath[strlen(fullpath)-1] != '/'
+		Seteuidgid_root()
+		location = format("%s/", url)
+		loc
+
+	vec *v = slurpdir(fullpath)  # TODO use d_type
+	Seteuidgid_root()
+	if !v
+		accerr
+	# loaded directory ok, root can stat the nodes
+	sort_vec(v, cstrp_cmp)
+	new(dirs, buffer, 256)
+	new(files, buffer, 256)
+	for_vec(i, v, cstr)
+		if (*i)[0] == '.'
+			continue
+		cstr entpath = path_cat(fullpath, *i) # or chdir
+		int dir = is_dir(entpath)
+		cstr line
+		if dir
+			line = format("<a href=\"%s/\"><b>%s</b>/</a><br>\n", *i, *i)
+			buffer_cat_cstr(dirs, line)
+		 else
+			line = format("<a href=\"%s\">%s</a><br>\n", *i, *i)
+			buffer_cat_cstr(files, line)
+		Free(line) ; Free(entpath)
+	buffer_cat_cstr(dirs, "<br>")
+	buffer_cat_cstr(files, "<br>")
+
+	buffer_nul_terminate(dirs)
+	buffer_nul_terminate(files)
+
+	modified = st->st_mtime
+	headers(200, "OK", buflen(dirs)+buflen(files))
+	bsay(out, "Content-Type: text/html\r")
+	bcrlf(out)
+	bwrite(out, buffer_range(dirs))
+	bwrite(out, buffer_range(files))
+	buffer_free(dirs)
+	buffer_free(files)
+	bflush(out)
+	if buflen(&out) # error
+		keep_alive = 0

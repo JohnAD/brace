@@ -8,7 +8,7 @@ num *_qsin
 num *_qcos
 num *_qatan
 
-qtrig_init()
+qmath_init()
 	_qsin = Nalloc(num, qsincos_n)
 	_qcos = Nalloc(num, qsincos_n)
 	_qatan = Nalloc(num, qatan_n+1)

@@ -29,6 +29,11 @@ vec_clear(vec *v)
 vec_free(vec *v)
 	buffer_free(&v->b)
 
+vec_Free(vec *v)
+	for_vec(i, v, void*)
+		Free(*i)
+	vec_free(v)
+
 vec_space(vec *v, size_t space)
 	v->space = space ? space : 1
 	buffer_set_space(&v->b, v->space * v->element_size)
@@ -78,6 +83,9 @@ Def vec_pop(v, data)
 	data = *my(p)
 	vec_pop(v)
 
+vec_grow(vec *v, size_t delta_size)
+	vec_set_size(v, veclen(v) + delta_size)
+
 def vec_from_array(v, a)
 	new(v, vec, *a, array_size(a))
 	vec_set_size(v, array_size(a))
@@ -92,20 +100,25 @@ def vec_get_start(v) vec_element(v, 0)
 def vec_get_end(v) vec_element(v, v->size)
 def vec_set_size vec_size
 def vec_get_size(v) v->size
+def vec_is_empty(v) !v->size
 
 Def vec_range(v) vec_get_start(v), vec_get_end(v)
 Def vec_range(v, type) vec_get_start(v, type), vec_get_end(v, type)
 Def vec_get_start(v, type) (type *)vec_get_start(v)
 Def vec_get_end(v, type) (type *)vec_get_end(v)
 
-vec_dup(vec *to, vec *from)
+def vec_dup(from) vec_dup_0(from)
+vec *vec_dup_0(vec *from)
+	return vec_dup(Talloc(vec), from)
+vec *vec_dup(vec *to, vec *from)
  # 'to' should be uninitialized (or after free'd)
 	buffer_dup(&to->b, &from->b)
 	to->element_size = from->element_size
 	to->space = from->space
 	to->size = from->size
+	return to
 
-def for_vec(i, v, type)
+Def for_vec(i, v, type)
 	type *my(end) = vecend(v)
 	for type *i = vec0(v) ; i!=my(end) ; ++i
 		.
@@ -147,3 +160,38 @@ def veclen(v) vec_get_size(v)
 def vec0(v) vec_get_start(v)
 def vecend(v) vec_get_end(v)
 def vecclr(v) vec_clear(v)
+
+vec_splice(vec *v, size_t i, size_t cut, void *in, size_t ins)
+	size_t e = vec_get_el_size(v)
+	buf_splice(&v->b, i*e, cut*e, in, ins*e)
+	v->size += ins - cut
+	v->space = buffer_get_space(&v->b) / e
+
+def vec_append(v, in, n) vec_insert(v, veclen(v), in, n)
+
+def vec_cut(v, i, n) vec_splice(v, i, n, NULL, 0)
+
+def vec_grow_at(v, i, n) vec_splice(v, i, 0, NULL, n)
+
+def vec_insert(v, i, in, n) vec_splice(v, i, 0, in, n)
+
+def vec_unshift(v, in, n) vec_insert(v, 0, in, n)
+
+def Subvec(v, i, n) Subvec(v, i, n, 0)
+vec *Subvec(vec *v, size_t i, size_t n, size_t extra)
+	vec *sub = Talloc(vec)
+	subvec(sub, v, i, n)
+	buf_dup_guts(&sub->b, extra * vec_get_el_size(sub))
+	sub->space += extra
+	return sub
+
+vec *subvec(vec *sub, vec *v, size_t i, size_t n)
+	# warning: subvec takes an uninitialised vec and sets it to access
+	# an area that is actually inside the old vec.
+	# The subvec should not be grown or shrunk! unless you don't mind
+	# overwriting the old vec.  Also it should be Free'd not vec_free'd!
+	size_t e = vec_get_el_size(v)
+	subbuf(&sub->b, &v->b, i*e, n*e)
+	sub->element_size = e
+	sub->space = sub->size = n
+	return sub

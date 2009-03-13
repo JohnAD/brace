@@ -283,6 +283,7 @@ void procstmt(void)
 		writes(line+4);
 		line = ")";
 		len = 1;
+		is_kwdparens = 1;
 	}
 	else if(strcmp(line, "repeat") == 0)
 	{

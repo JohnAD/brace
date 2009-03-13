@@ -192,6 +192,10 @@ boolean path_hidden(cstr p)
 				++p
 	return 0
 
+boolean path_hidden_normal(cstr p)
+	return path_hidden(p) &&
+	 !(p[1] == '\0' || (p[1] == '.' && p[2] == '\0'))
+
 boolean path_has_component(cstr path, cstr component)
 	# XXX inefficient
 	# XXX if path uses / but component \ for example on win32, it won't work - fix it using path_tidy first

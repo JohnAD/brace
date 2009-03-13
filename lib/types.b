@@ -19,3 +19,5 @@ def false 0
 
 typedef struct timeval timeval
 typedef struct timespec timespec
+
+typedef void (*free_t)(void *)

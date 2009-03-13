@@ -193,12 +193,16 @@ buffer_dump(FILE *stream, buffer *b)
 def buffer_dump(b)
 	buffer_dump(stderr, b)
 
-buffer_dup(buffer *to, buffer *from)
+def buffer_dup(from) buffer_dup_0(from)
+buffer *buffer_dup_0(buffer *from)
+	return buffer_dup(Talloc(buffer), from)
+buffer *buffer_dup(buffer *to, buffer *from)
  # 'to' should be uninitialized (or after free'd)
 	buffer_init(to, buffer_get_space(from))
 	int size = buffer_get_size(from)
 	memcpy(to->start, from->start, size)
 	to->end = to->start + size
+	return to
 
 cstr buffer_to_cstr(buffer *b)
 	buffer_add_nul(b)
@@ -272,5 +276,76 @@ def b(buf, i) b->start+i
 
 def buflen(b) buffer_get_size(b)
 def buf0(b) buffer_get_start(b)
-def bufend(b) buffer_get_start(b)
+def bufend(b) buffer_get_end(b)
 def bufclr(b) buffer_clear(b)
+
+buf_splice(buffer *b, size_t i, size_t cut, char *in, size_t ins)
+	ssize_t in_i = -1
+	if in+ins < buf0(b) || in >= bufend(b)
+		# in is outside the buffer - good!
+	 eif Tween(in, buf0(b), bufend(b))
+		# in is fully inside the buffer - ok.
+		in_i = in - buf0(b)
+	 else
+		fault("buf_splice: input overlaps the start or end of the buffer")
+
+	size_t oldlen = buflen(b)
+
+	buffer_grow(b, ins-cut)
+
+	if in_i >= 0
+		in = buf0(b) + in_i
+
+	size_t endcut = i+cut
+	size_t endins = i+ins
+
+	if in && ins <= cut
+		# the buf will shrink - good!
+		memmove(b(b,i), in, ins)
+
+	size_t tail = oldlen-endcut
+	memmove(b(b,endins), b(b,endcut), tail)
+
+	if in && ins > cut
+		# the buf grows - ok.
+		size_t hard = 0
+		if in_i >= 0
+			hard = in+ins - b(b,endcut)
+			# the buf grows and 'in' is inside the buffer.
+			# the bit in both 'in' and 'tail' is 'hard'.
+			if hard > 0
+				memcpy(b(b,endins-hard), b(b,endins), hard)
+		memmove(b(b,i), in, ins-hard)
+
+def buf_append(b, in, n) buf_insert(b, buflen(b), in, n)
+
+def buf_cut(b, i, n) buf_splice(b, i, n, NULL, 0)
+
+def buf_grow_at(b, i, n) buf_splice(b, i, 0, NULL, n)
+
+def buf_insert(b, i, in, n) buf_splice(b, i, 0, in, n)
+
+def buf_unshift(b, in, n) buf_insert(b, 0, in, n)
+
+def Subbuf(b, i, n) Subbuf(b, i, n, 0)
+buffer *Subbuf(buffer *b, size_t i, size_t n, size_t extra)
+	buffer *sub = Talloc(buffer)
+	subbuf(sub, b, i, n)
+	buf_dup_guts(sub, extra)
+	return sub
+
+buffer *subbuf(buffer *sub, buffer *b, size_t i, size_t n)
+	# warning: subbuf takes an uninitialised buf and sets it to access
+	# an area that is actually inside the old buf.
+	# The subbuf should not be grown or shrunk! unless you don't mind
+	# overwriting the old buf.  Also it should be Free'd not buffer_free'd!
+	sub->start = b(b, i)
+	sub->space_end = sub->end = b(b, i+n)
+	return sub
+
+def buf_dup_guts(b) buf_dup_guts(b, 0)
+buf_dup_guts(buffer *b, size_t extra)
+	size_t n = buflen(b)
+	b->start = memdup(b->start, n, extra)
+	b->end = b->start + n
+	b->space_end = b->end + extra

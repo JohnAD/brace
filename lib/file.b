@@ -1,3 +1,5 @@
+# XXX this is not included in b.b yet
+
 use cstr io alloc error util path
 export cstr
 
@@ -5,8 +7,8 @@ struct file
 	cstr path
 	cstr dir
 	cstr base
-	stats *st
-	lstats *lst
+	Stats *st
+	Lstats *lst
 	FILE *stream
 	int fd
 	int o_flags
@@ -61,12 +63,12 @@ def file_dirbase(f, dir, base)
 	let(dir, f->dir)
 	let(base, f->base)
 
-stats *file_get_stats(file *f)
+Stats *file_get_stats(file *f)
 	if !f->st
 		file_stat(f)
 	return f->st
 
-lstats *file_get_lstats(file *f)
+Lstats *file_get_lstats(file *f)
 	if !f->lst
 		file_lstat(f)
 	return f->lst
@@ -74,16 +76,16 @@ lstats *file_get_lstats(file *f)
 boolean file_stat(file *f)
 	need_path()
 	if f->st == NULL
-		heap(f->st, stats)
-	init(f->st, stats, f->path)
+		heap(f->st, Stats)
+	init(f->st, Stats, f->path)
 	return S_EXISTS(f->st->st_mode)
  # this is dodgy, but should work
 
 boolean file_lstat(file *f)
 	need_path()
 	if f->lst == NULL
-		heap(f->lst, lstats)
-	init(f->lst, lstats, f->path)
+		heap(f->lst, Lstats)
+	init(f->lst, Lstats, f->path)
 	return S_EXISTS(f->lst->st_mode)
         # should return S_ISLNK() instead?
  # this is dodgy, but should work

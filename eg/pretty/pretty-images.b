@@ -6,7 +6,7 @@ Main()
 	gr_fast()
 	space()
 
-	qtrig_init()
+	qmath_init()
 
 	bm_enabled = 1
 	sleep_step_debug = 1
