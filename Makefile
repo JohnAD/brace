@@ -17,8 +17,8 @@ build:
 	cd exe ; $(MAKE)
 clean:
 	rm -rf .build
-#	cd exe ; $(MAKE) clean
-#	cd lib ; $(MAKE) clean
+	cd exe ; $(MAKE) clean
+	cd lib ; $(MAKE) clean
 	cd eg ; $(MAKE) clean
 install: .build
 	cd .build/exe ; $(MAKE) install
