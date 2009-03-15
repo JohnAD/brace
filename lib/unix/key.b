@@ -1,11 +1,11 @@
 use stdio.h
 use termios.h
 use unistd.h
-use signal.h
 use stdlib.h
 
 use error
 use util
+use process
 
 typedef struct termios termios
 termios term, term_orig
@@ -54,9 +54,9 @@ noecho()
 
 key_init()
 	raw()
-	signal(SIGCONT, cont_handler)
-	signal(SIGINT, int_handler)
-	signal(SIGPIPE, int_handler)
+	Sigact(SIGCONT, cont_handler)
+	Sigact(SIGINT, int_handler)
+	Sigact(SIGPIPE, int_handler)
 
 key_final()
 	cooked()

@@ -1,11 +1,16 @@
 #  scheduler
 
-use deq
 export proc
+export timeout
+
+use deq
 use io
 use util
 use error
-export timeout
+use process
+use hash
+
+int sched__children_n_buckets = 1009
 
 struct scheduler
 	int exit
@@ -18,7 +23,10 @@ struct scheduler
 	int io_wait_count
 	num now
 	timeouts tos
+	hashtable children
 	int step
+	int n_children
+	int got_sigchld
 
 scheduler struct__sched, *sched = &struct__sched
 
@@ -40,7 +48,11 @@ scheduler_init(scheduler *sched)
 	sched->io_wait_count = 0
 	sched->now = rtime()
 	init(&sched->tos, timeouts)
+	init(&sched->children, hashtable, int_hash, (eq_func)int_eq, sched__children_n_buckets)
 	sched->step = 0
+	sched->n_children = 0
+	sched->got_sigchld = 0
+	Sigact(SIGCHLD, sigchld_handler)
 
 def sched_free()
 	scheduler_free(sched)
@@ -73,12 +85,12 @@ int sched_busy = 16
              # = n       # check IO when no procs queued or every n steps
 
 # sched->now is set to the startup time, or the time after the last select
-# If you need more precise timing, call rtime() yourself.
+# If you need more precise timing, call rtime() again.
 
 def delay_forever -1
 
 step()
-	struct timeval struct__delay_tv, *delay_tv = &struct__delay_tv
+	struct timespec struct__delay_ts, *delay_ts = &struct__delay_ts
 	int need_select
 	num delay
 	int n_ready = 0
@@ -91,31 +103,62 @@ step()
 	 else
 		delay = delay_forever
 
-	if delay == delay_forever && sched->io_wait_count == 0
+	if delay == delay_forever && sched->io_wait_count == 0 && sched->n_children == 0
 		sched->exit = 1
 		return
 
 	need_select = delay ||
 	 (sched_busy && sched->io_wait_count && sched->step % sched_busy == 0)
 
+	sigset_t oldsigmask, *oldsigmaskp = &oldsigmask
+
+	int got_sigchld = 0
+
 	if need_select
-		if delay == delay_forever
-			delay_tv = NULL
+		if sched->n_children
+			oldsigmask = Sig_defer(SIGCHLD)
+			if sched->got_sigchld
+				delay = 0
 		 else
-			rtime_to_timeval(delay, delay_tv)
+			oldsigmaskp = NULL
+		if delay == delay_forever
+			delay_ts = NULL
+		 else
+			rtime_to_timespec(delay, delay_ts)
 		sched->readfds_ready = sched->readfds
 		sched->writefds_ready = sched->writefds
 		sched->exceptfds_ready = sched->exceptfds
 		proc_debug("calling select on %d waiters for %f secs", sched->io_wait_count, delay)
 		proc_debug_selectors()
-		n_ready = Select(sched->max_fd_plus_1, &sched->readfds_ready, &sched->writefds_ready, &sched->exceptfds_ready, delay_tv)
+		n_ready = Pselect(sched->max_fd_plus_1, &sched->readfds_ready, &sched->writefds_ready, &sched->exceptfds_ready, delay_ts, oldsigmaskp)
 		proc_debug("select done")
 		sched->now = rtime()
+		if sched->n_children
+			if sched->got_sigchld
+				got_sigchld = 1
+				sched->got_sigchld = 0
+			Sig_setmask(&oldsigmask)
 
+	if got_sigchld
+		while sched->n_children
+			pid_t pid = Child_done()
+			if !pid
+				break
+			proc *p = get(&sched->children, &pid)
+			if p
+				clr_waitchild(pid)
+				waitchild__pid = pid
+				waitchild__status = wait__status
+				proc_debug("child %d finished - resuming %08x", pid, p)
+				sched_resume(p)
+			 else
+				error("no waiter for child %d", pid)
+
+	# TODO test timeouts, modify to work with procs directly?
 	if !timeouts_empty(&sched->tos)
 		timeouts_call(&sched->tos, sched->now)
 
-	if n_ready
+	if n_ready > 0
 		int fd
 		for fd=0; fd < sched->max_fd_plus_1; ++fd
 			int can_read = fd_isset(fd, &sched->readfds_ready)
@@ -228,3 +271,31 @@ clr_writer(int fd)
 	--sched->io_wait_count
 
 def sched_io_full(fd) fd_full(fd, &sched->exceptfds)
+
+pid_t waitchild__pid
+int waitchild__status
+
+def waitchild(pid, status)
+		set_waitchild(pid, b__p)
+		wait
+		status = waitchild__status
+
+# waitchild(0) or waitchild(-1) do not work yet
+
+set_waitchild(pid_t pid, proc *p)
+	proc_debug("set_waitchild %d", pid, p)
+	assert(get(&sched->children, &pid) == NULL, "set_waitchild: waiter already set")
+	pid_t *pidp = Talloc(pid_t)
+	*pidp = pid
+	put(&sched->children, pidp, p)
+	++sched->n_children
+
+clr_waitchild(pid_t pid)
+	proc_debug("clr_waitchild %d", pid)
+	key_value kv = del(&sched->children, &pid)
+	Free(kv.key)
+	--sched->n_children
+
+void sigchld_handler(int signum)
+	use(signum)
+	sched->got_sigchld = 1

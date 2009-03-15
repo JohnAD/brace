@@ -21,9 +21,12 @@ Main()
 	if uid != 0
 		error("%s must be run as root", program)
 
+	Sigdfl_all()
+
 	block_size = 16*1024
 
 	date_rfc1123_init()
+	load_mimetypes()
 
 	ignore_pipe()
 
@@ -110,6 +113,8 @@ req	state cstr s
 	state float proto_f = 0
 	state cstr body = NULL
 	state time_t modified = -1
+	state cstr mtype = "text/plain"
+	state int status
 
 	repeat
 		breadln(in)
@@ -181,11 +186,6 @@ req	state cstr s
 		Free(words)
 		buffer_shift(&in, l)
 
-	# read data if any. at the moment, the data is simply discarded
-	if reqlen
-		verbose("  reading request of length %lld", (long long int)reqlen)
-		bread(in, reqlen)
-
 	if host == NULL
 		host = get_host_from_url(url)
 	if host == NULL
@@ -251,7 +251,12 @@ req	state cstr s
 		if !user_agent || strcasestr(user_agent, "MSIE") || !strcasestr(user_agent, "Mozilla/5.0")
 			expire_already = 1
 
-	if S_ISREG(st->st_mode)
+	if S_ISREG(st->st_mode) && st->st_mode & S_IXUSR
+		serve_cgi()
+	 eif reqlen
+		Seteuidgid_root()
+		bad
+	 eif S_ISREG(st->st_mode)
 		serve_file()
 	 eif S_ISDIR(st->st_mode)
 		serve_dir()
@@ -275,7 +280,8 @@ error	body = format("httpd: %d %s\r\n", code, msg)
 	headers(code, msg, strlen(body))
 	bodymsg
 
-bodymsg	bcrlf(out)
+bodymsg	discard_req()
+	bcrlf(out)
 	bprint(out, body)
 	bflush(out)
 	if buflen(&out) # error
@@ -291,7 +297,7 @@ forbid	code = 403 ; msg = "Forbidden"
 notf	code = 404 ; msg = "Not Found"
 	error
 
-srv_er	code = 500 ; msg = "Internal Server Error"
+srverr	code = 500 ; msg = "Internal Server Error"
 	error
 
 reqauth	if !cstr_eq(scheme, "https")
@@ -313,28 +319,39 @@ https	location = format("https://%s%s", host, path)
 
 accerr	which errno
 	EACCES	reqauth
+	EPERM	reqauth
 	ENOENT	notf
 	ENOTDIR	notf
 	ENAMETOOLONG	bad
-	else	srv_er
+	else	srverr
 
 def headers(code, msg, size)
 	bsayf(out, "HTTP/1.1 %d %s\r", code, msg)
 	bsayf(out, "Date: %s", date_rfc1123((time_t)sched->now))
-	bsayf(out, "Server: httpd")
 	if modified != -1
 		bsayf(out, "Last-Modified: %s", date_rfc1123(modified))
 	bsayf(out, "Content-Length: %lld\r", (long long int)size)
 	if code == 200 && expire_already
 		bsay(out, "Cache-Control: private, no-cache, no-store")
 		bsay(out, "Expires: 0")
+	bsayf(out, "Content-Type: %s\r", mtype)
+	bsayf(out, "Server: httpd")
 	if num_lt(proto_f, 1.1)
 		bsayf(out, "Connection: %s", keep_alive ? "Keep-Alive" : "close")
 
 def serve_file()
-	# TODO CGI, if authorized
+	cstr base = strrchr(fullpath, '/')
+	cstr ext = strrchr(base, '.')
+	if ext++
+		cstr _mtype = mimetype(ext)
+		if _mtype
+			mtype = _mtype
+
 	file_fd = open(fullpath, O_RDONLY)
+	Cloexec(fd)
+
 	Seteuidgid_root()
+
 	if file_fd == -1
 		accerr
 	nonblock(file_fd)
@@ -374,6 +391,7 @@ def serve_dir()
 
 	vec *v = slurpdir(fullpath)  # TODO use d_type
 	Seteuidgid_root()
+
 	if !v
 		accerr
 	# loaded directory ok, root can stat the nodes
@@ -392,7 +410,10 @@ def serve_dir()
 		 else
 			line = format("<a href=\"%s\">%s</a><br>\n", *i, *i)
 			buffer_cat_cstr(files, line)
-		Free(line) ; Free(entpath)
+		Free(line) ; Free(entpath) ; Free(*i)
+
+	vec_free(v)
+
 	buffer_cat_cstr(dirs, "<br>")
 	buffer_cat_cstr(files, "<br>")
 
@@ -401,7 +422,7 @@ def serve_dir()
 
 	modified = st->st_mtime
 	headers(200, "OK", buflen(dirs)+buflen(files))
-	bsay(out, "Content-Type: text/html\r")
+	mtype = "text/html"
 	bcrlf(out)
 	bwrite(out, buffer_range(dirs))
 	bwrite(out, buffer_range(files))
@@ -410,3 +431,57 @@ def serve_dir()
 	bflush(out)
 	if buflen(&out) # error
 		keep_alive = 0
+
+def serve_cgi()
+	pid_t child = Fork()
+	if child == 0
+		# I would like to be able to just Dup2() the file descriptors
+		# to the CGI script and then forget about it. But some data was
+		# buffered from the request already.
+
+		# I could pass the data that was already buffered in an
+		# argument or env variable, but that is non-standard.
+
+		# I'll put the first part of the body which was read already in
+		# REQUEST_BDDY_1
+		buffer_nul_terminate(&in)
+		Setenv("REQUEST_BDDY_1", buf0(&in))
+		bufclr(&in)
+
+		Dup2(fd, STDIN_FILENO)
+		Dup2(fd, STDOUT_FILENO)
+
+		# TODO set standard CGI environment
+
+		Sigdfl(SIGPIPE)
+		Execl(fullpath, fullpath, NULL)
+
+	Seteuidgid_root()
+
+	# dodgy apparently I need to indent this because in a macro
+	.
+		waitchild(child, status)
+
+	if status_execfailed(status)
+		accerr
+	 eif status != 0
+		# failed, or killed by signal
+		# There might have been some output already
+		# or the input might not be fully read.
+		keep_alive = 0
+		srverr
+	 else
+		# okay
+		# No keep_alive for CGI at the moment.
+		keep_alive = 0
+
+def discard_req()
+	# read request if any and discard it
+	# FIXME it should check if there is a POST / PUT method
+	# TODO what if we have POST or PUT but no Content-Length -
+	# read until EOF and no keep_alive?
+	if reqlen
+		verbose("  discarding request of length %lld", (long long int)reqlen)
+		bread(in, reqlen)
+		buffer_shift(&in, imin(reqlen, buflen(&in)))
+

@@ -3,7 +3,7 @@ use sys/wait.h string.h sched.h
 export buffer types
 use error cstr vec util
 
-use sys/wait.h
+use process
 
 typedef void (*sighandler_t)(int)
 
@@ -14,6 +14,7 @@ pid_t Fork()
 	return pid
 
 # TODO cope with interrupted system calls universally, aargh
+# This Waitpid restarts in the case of an interrupted system call.
 
 pid_t Waitpid(pid_t pid, int *status, int options)
 	pid_t r_pid
@@ -25,8 +26,47 @@ pid_t Waitpid(pid_t pid, int *status, int options)
 		else
 			return r_pid
 
-def Waitpid(pid) Waitpid(pid, NULL, 0)
+int wait__status
 
+def Child_wait() Child_wait(-1)
+
+int Child_wait(pid_t pid)
+	Waitpid(pid, &wait__status, 0)
+	wait__status = fix_exit_status(wait__status)
+	return wait__status
+
+pid_t Child_done()
+	pid_t pid = Waitpid(-1, &wait__status, WNOHANG)
+	if pid
+		wait__status = fix_exit_status(wait__status)
+	return pid
+
+int fix_exit_status(int status)
+	if WIFEXITED(status)
+		status = WEXITSTATUS(status)
+		if !sig_execfailed && status == exit__execfailed
+			status = status__execfailed
+	 eif WIFSIGNALED(status)
+		status = 256 + 128 + WTERMSIG(status)
+		if sig_execfailed && status == 256 + 128 + sig_execfailed
+			status = status__execfailed
+	 else
+		fault("unknown exit status %d - perhaps child stop/cont.\nSet your SIGCHLD handler with Sigact or Sigintr to avoid this.", status)
+	return status
+
+def status_normal(status) status >= 0 && status < 256 && (sig_execfailed || status != exit__execfailed)
+def status_signal(status) status >= 384 && status < 512 ? status - 384 : 0
+def status_execfailed(status) status == status__execfailed
+
+def Child_status() wait__status
+
+# This Waitpid can return -1 in case of an interrupted system call
+
+pid_t Waitpid_intr(pid_t pid, int *status, int options)
+	pid_t r_pid = waitpid(pid, status, options)
+	if r_pid == -1 && errno != EINTR
+		failed("waitpid")
+	return r_pid
 
 # TODO should block SIGCHLD? etc
 # Systemv is an _emulated_ system, doesn't call system(3),
@@ -61,9 +101,9 @@ cstr whoami()
 	return strdup(Getpwuid(geteuid())->pw_name)
 
 def ignore_pipe()
-	Signal(SIGPIPE, SIG_IGN)
+	Sigign(SIGPIPE)
 def ignore_hup()
-	Signal(SIGHUP, SIG_IGN)
+	Sigign(SIGHUP)
 
 def system_quote sh_quote
 
@@ -214,4 +254,63 @@ Setregid(gid_t rgid, gid_t egid)
 	if setregid(rgid, egid)
 		failed("setregid")
 
+sighandler_t sigact(int signum, sighandler_t handler, int sa_flags)
+	struct sigaction act, oldact
+	act.sa_handler = handler
+	sigemptyset(&act.sa_mask)
+	act.sa_flags = sa_flags
+	if sigaction(signum, &act, &oldact) < 0
+		return SIG_ERR
+	return oldact.sa_handler
+
+Sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
+	if sigprocmask(how, set, oldset)
+		failed("sigprocmask")
+
+sigset_t Sig_defer(int signum)
+	return Sig_mask(signum, 1)
+
+sigset_t Sig_pass(int signum)
+	return Sig_mask(signum, 0)
+
+sigset_t Sig_mask(int signum, int defer)
+	sigset_t set
+	sigset_t oldset
+	sigemptyset(&set)
+	sigaddset(&set, signum)
+	Sigprocmask(defer ? SIG_BLOCK : SIG_UNBLOCK, &set, &oldset)
+	return oldset
+
+sigset_t Sig_setmask(sigset_t *set)
+	sigset_t oldset
+	Sigprocmask(SIG_SETMASK, set, &oldset)
+	return oldset
+
+sigset_t Sig_getmask()
+	sigset_t oldset
+	Sigprocmask(SIG_SETMASK, NULL, &oldset)
+	return oldset
+
+# TODO define SA_INTERRUPT = 0 for unix systems that don't provide it.
+
+# TODO Sigsuspend, Sigwait
+
+Sigsuspend(const sigset_t *mask)
+	if sigsuspend(mask) < 0 && errno != EINTR
+		failed("sigsuspend")
+
+# This was some code using Sigsuspend, it's not needed, because raise doesn't
+# return until after the signal was handled / delivered.  It makes sense if the
+# call to "raise" is removed.
+#
+#	let(mask, Sig_defer(sig_execfailed))
+#	Sigdfl(sig_execfailed)
+#	Sigdelset(&mask, sig_execfailed)
+#	raise(sig_execfailed)
+#	Sigsuspend(&mask)
+
+int Sigwait(const sigset_t *mask)
+	int sig
+	sigwait(mask, &sig)
+	return sig
 

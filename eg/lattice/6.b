@@ -14,7 +14,7 @@ Main()
 		clear()
 		draw_lattice()
 		paint()
-#		sleep(100)
+#		Sleep(100)
 
 def draw_lattice()
 #	Printf("%f ", rtime())

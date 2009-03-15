@@ -210,6 +210,16 @@ int Freadline(buffer *b, FILE *stream)
 int Readline(buffer *b)
 	return Freadline(b, stdin)
 
+def Readline() Freadline(stdin)
+def Freadline(stream) Freadline_1(stream)
+
+cstr Freadline_1(FILE *stream)
+	new(b, buffer, 128)
+	if Freadline(b, stream)
+		buffer_free(b)
+		return NULL
+	return buffer_to_cstr(b)
+
 int Printf(const char *format, ...)
 	collect(Vprintf, format)
 int Vprintf(const char *format, va_list ap)
@@ -898,8 +908,7 @@ fcp(FILE *in, FILE *out)
 
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
 	int rv = select(nfds, readfds, writefds, exceptfds, timeout)
-	# TODO check for EINTR ?
-	if rv == -1
+	if rv == -1 && errno != EINTR
 		failed("select")
 	return rv
 

@@ -42,7 +42,7 @@ Main()
 		
 			da0 *= drag ; da1 *= drag
 
-		sleep(0.02)
+		Sleep(0.02)
 
 	done()
 

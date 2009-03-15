@@ -43,7 +43,7 @@ Main()
 				da = da*1.1
 				d = d * 0.9
 		paint()
-		sleep(0.01)
+		Sleep(0.01)
 
 def trig_unit deg
 

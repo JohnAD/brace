@@ -1,15 +1,17 @@
 export types
 use hash cstr util alloc
 
+size_t syms_n_buckets = 1021
+
 # interning symbols (cstr)
 hashtable syms__struct
-hashtable *syms
+hashtable *syms = NULL
 
 sym_init()
-	heap(syms, hashtable)
-	init(syms, hashtable, cstr_hash, (eq_func)cstr_eq, 1021)
-	# 1021 is number of buckets, an arbitrary prime.
-	# TODO rehash if the hashtable gets too full...?
+	if !syms
+		syms = &syms__struct
+		init(syms, hashtable, cstr_hash, (eq_func)cstr_eq, syms_n_buckets)
+		# TODO rehash if the hashtable gets too full...?
 
 # sym is called with a cstr.  this will be copied if it is put into the "syms" ht
 cstr sym(cstr s)
@@ -24,6 +26,8 @@ cstr sym(cstr s)
 	# should be a "hash_set"
 	# or maybe "value" wants to be an int for this, a usage count?
 	# or it could be a smallish "symbol ID" number?
+
+	# todo ref count so that can free them??
 
 # sym_this is called with a malloc'd cstr; will be freed if already interned
 cstr sym_this(cstr s)

@@ -16,6 +16,7 @@ export net process
 export cgi
 export place
 export qmath
+export mime
 
 # export tty
 #   curses has conflicting symbols with libb etc, see ../curses_syms_conflicts

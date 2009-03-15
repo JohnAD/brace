@@ -8,6 +8,9 @@ export error
 def debug warn
 #def debug void
 
+int exit__error = 125
+int exit__fault = 124
+
 # Generally, a function that outputs error messages etc should not generate new
 # errors (for fear of an infinite loop). That's also the case for warnings,
 # because many error printing functions call a warning function to print the
@@ -41,12 +44,12 @@ serror(const char *format, ...)
 	Throw(buffer_get_start(b), no, NULL)
 
 warn(const char *format, ...)
+	format_add_nl(format1, format)
 	va_list ap
 	va_start(ap, format)
 	fflush(stdout)
-	vfprintf(stderr, format, ap)
+	vfprintf(stderr, format1, ap)
 	va_end(ap)
-	fprintf(stderr, "\n")
 	fflush(stderr)  # mingw doesn't autoflush stderr
 
 failed(const char *funcname)
@@ -64,8 +67,11 @@ def failed(funcname, errmsg)
 def failed(funcname, msg1, msg2)
 	failed3(funcname, msg1, msg2)
 
-def failed0(const char *funcname)
+def failed0(funcname)
 	error("%s failed", funcname)
+
+warn_failed(const char *funcname)
+	swarning("%s failed", funcname)
 
 swarning(const char *format, ...)
 	va_list ap
@@ -185,7 +191,7 @@ Throw(cstr msg, int no, void *data)
 
 throw_(err *e)
 	if vec_is_empty(error_handlers)
-		die_errors()
+		die_errors(exit__error)
 	error_handler *h = vec_top(error_handlers)
 	if thunk_not_null(&h->handler)
 		if thunk_call(&h->handler, e)
@@ -194,11 +200,13 @@ throw_(err *e)
 		vec_pop(error_handlers)
 		siglongjmp(*h->jump, 1)
 
-die_errors()
+def die_errors() die_errors(1)
+
+die_errors(int status)
 	warn_errors()
 	if *env("DEBUG")
 		abort()
-	exit(1)
+	exit(status)
 
 clear_errors()
 	for_vec(e, errors, err)
@@ -283,7 +291,7 @@ fault_(char *file, int line, const char *format, ...)
 		Throw(buf0(b), 0, NULL)
 	 else
 		error_add(buf0(b), 0, NULL)
-		die_errors()
+		die_errors(exit__fault)
 
 hashtable *extra_error_messages
 

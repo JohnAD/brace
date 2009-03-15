@@ -34,7 +34,7 @@ Main()
 	int first = 1
 	wheel()
 	paint()
-	sleep(3)
+	Sleep(3)
 	first = 0
 
 	repeat

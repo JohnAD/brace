@@ -31,6 +31,7 @@ struct shuttle_sock_p
 
 listener_tcp_init(listener *p, cstr listen_addr, int listen_port)
 	int listen_fd = Server(listen_addr, listen_port)
+	Cloexec(listen_fd)
 	listener_init(p, listen_fd, sizeof(sockaddr_in))
 
 listener_unix_init(listener *p, cstr addr)
@@ -47,6 +48,7 @@ proc listener(int listen_fd, socklen_t socklen)
 		read(listen_fd)
 		NEW(s, sock, socklen)
 		s->fd = Accept(listen_fd, (struct sockaddr *)s->sa, &s->len)
+		Cloexec(s->fd)
 
 		if sched_io_full(s->fd)
 			warn("listener: maximum number of sockets exceeded, rejecting %d", s->fd)

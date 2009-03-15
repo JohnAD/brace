@@ -33,7 +33,7 @@ Main()
 		msg = "print rand rand rand 1, '\\n'; # interesting distribution"
 	draw_msg(msg)
 	paint()
-	sleep(2)
+	Sleep(2)
 	repeat
 		move(Randi(w), Randi(h))
 		hsv(Randi(360), 1, 0.7)

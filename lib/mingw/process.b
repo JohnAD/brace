@@ -29,3 +29,12 @@ def ignore_hup()
 def WIFEXITED(status) 1
 def WEXITSTATUS(status) status
 
+sighandler_t sigact(int signum, sighandler_t handler, int sa_flags)
+	use(sa_flags)
+	return signal(signum, handler)
+
+# these will be ignored in windows:
+
+def SA_NOCLDSTOP 1
+def SA_RESTART 0x10000000
+def SA_INTERRUPT 0x20000000

@@ -19,10 +19,14 @@ struct hashtable
 
 # hashtable abbrevs:
 
+def Get(ht, key) hashtable_value(ht, key)
 def get(ht, key) hashtable_value_or_null(ht, key)
+def get(ht, key, value) hashtable_value_or(ht, key, value)
 def put(ht, key, value) hashtable_add(ht, key, value)
 def kv(ht, key) hashtable_lookup(ht, key)
 def del(ht, key) hashtable_delete(ht, key)
+def KV(ht, key) hashtable_lookup_or_die(ht, key)
+def kv(ht, key) kv(ht, key, NULL)
 def kv(ht, key, init) hashtable_lookup_or_add_key(ht, key, init)
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.
@@ -99,9 +103,11 @@ void *hashtable_value(hashtable *ht, void *key)
 		return kv->value
 
 void *hashtable_value_or_null(hashtable *ht, void *key)
+	return hashtable_value_or(ht, key, NULL)
+void *hashtable_value_or(hashtable *ht, void *key, void *def)
 	key_value *kv = hashtable_lookup(ht, key)
 	if kv == NULL
-		return NULL
+		return def
 	 else
 		return kv->value
 
@@ -195,6 +201,11 @@ key_value *hashtable_lookup_or_add_key(hashtable *ht, void *key, void *value_ini
 		hashtable_ref_add(ref, key, value_init)
 	return hashtable_ref_lookup(ref)
 
+key_value *hashtable_lookup_or_die(hashtable *ht, void *key)
+	list *ref = hashtable_lookup_ref(ht, key)
+	if ref->next == NULL
+		failed0("hashtable_lookup_or_die")
+	return hashtable_ref_lookup(ref)
 
 #void *hashtable_ref_value(list *l)
 #	node_kv *node = hashtable_ref_node(l)

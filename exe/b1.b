@@ -9,10 +9,10 @@ Main()
 		lang = "bb"
 		dotb = ".bb"
 
-	boolean keep = 1
+	boolean keep = 0
 
-	if args && cstr_eq(arg[0], "-r")
-		keep = 0
+	if args && cstr_eq(arg[0], "-k")
+		keep = 1
 		shift()
 
 	new(b, buffer, 256)

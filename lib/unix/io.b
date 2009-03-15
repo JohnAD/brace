@@ -3,24 +3,27 @@ export sys/select.h poll.h
 export error types
 use util
 
+int Pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timespec *timeout, const sigset_t *sigmask)
+	int rv = pselect(nfds, readfds, writefds, exceptfds, timeout, sigmask)
+	if rv == -1 && errno != EINTR
+		failed("select")
+	return rv
+
 typedef struct pollfd pollfd
 
 int Poll(struct pollfd *fds, nfds_t nfds, int timeout)
 	int rv = poll(fds, nfds, timeout)
-	if rv == -1
+	if rv == -1 && errno != EINTR
 		failed("poll")
 	return rv
 
 def Poll(fds, nfds) Poll(fds, nfds, -1)
 
-#int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask)
-#	int rv = ppoll(fds, nfds, timeout, sigmask)
-#	if rv == -1
-#		failed("ppoll")
-#	return rv
-
-#def Ppoll(fds, nfds, timeout) Ppoll(fds, nfds, timeout, NULL)
-#def Ppoll(fds, nfds) Ppoll(fds, nfds, NULL, NULL)
+int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask)
+	int rv = ppoll(fds, nfds, timeout, sigmask)
+	if rv == -1 && errno != EINTR
+		failed("ppoll")
+	return rv
 
 nonblock(int fd)
 	if fcntl(fd, F_SETFL, O_NONBLOCK) == -1
@@ -62,3 +65,19 @@ def fd_full(new_fd, set) new_fd >= FD_SETSIZE
 
 #def windows_setmode_binary(f)
 #	void(f)
+
+int Fcntl_getfd(int fd)
+	int rv = fcntl(fd, F_GETFD)
+	if rv == -1
+		error("fcntl_getfd")
+	return rv
+
+Fcntl_setfd(int fd, long arg)
+	int rv = fcntl(fd, F_SETFD, arg)
+	if rv == -1
+		error("fcntl_se")
+
+Cloexec(int fd)
+	Fcntl_setfd(fd, Fcntl_getfd(fd) | FD_CLOEXEC)
+Cloexec_off(int fd)
+	Fcntl_setfd(fd, Fcntl_getfd(fd) & ~FD_CLOEXEC)

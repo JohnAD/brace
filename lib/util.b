@@ -347,7 +347,7 @@ def foraryp_null(i, a)
 		.
 
 def forary_null(e, a)
-	foraryp(my(i), a)
+	foraryp_null(my(i), a)
 		let(e, *my(i))
 		.
 
@@ -462,6 +462,13 @@ Def collect_void(vfunc, arg0, arg1, arg2, arg3)
 	va_start(ap, arg3)
 	vfunc(arg0, arg1, arg3, ap)
 	va_end(ap)
+
+def format_add_nl(format1, format)
+	size_t my(len) = strlen(format)
+	char format1[my(len)+2]
+	char *my(e) = format1 + my(len)
+	strcpy(format1, format)
+	*my(e) = '\n' ; my(e)[1] = '\0'
 
 def readtsv(v, stream)
 	new(v, vec, cstr)
