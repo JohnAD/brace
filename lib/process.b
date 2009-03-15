@@ -45,8 +45,6 @@ exit_exec_failed()
 
 	exit(exit__execfailed)
 
-#exit_exec_failed()
-
 # XXX TODO use local, not static?
 static vec exec_argv
 static int exec_argv_init = 0

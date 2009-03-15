@@ -450,10 +450,15 @@ def serve_cgi()
 
 		Dup2(fd, STDIN_FILENO)
 		Dup2(fd, STDOUT_FILENO)
+		Dup2(fd, STDERR_FILENO)
 
 		# TODO set standard CGI environment
 
 		Sigdfl(SIGPIPE)
+		exec__warn_fail = 0
+		dirbase d_b = dirbasename(strdup(fullpath))
+		if chdir(d_b.dir)
+			exit_exec_failed()
 		Execl(fullpath, fullpath, NULL)
 
 	Seteuidgid_root()
@@ -463,7 +468,7 @@ def serve_cgi()
 		waitchild(child, status)
 
 	if status_execfailed(status)
-		accerr
+		reqauth
 	 eif status != 0
 		# failed, or killed by signal
 		# There might have been some output already
