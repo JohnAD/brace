@@ -128,8 +128,8 @@ step()
 		sched->readfds_ready = sched->readfds
 		sched->writefds_ready = sched->writefds
 		sched->exceptfds_ready = sched->exceptfds
-		proc_debug("calling select on %d waiters for %f secs", sched->io_wait_count, delay)
-		proc_debug_selectors()
+		proc_debug("calling select on %d waiters for %f secs, max_fd_plus_1 is %d", sched->io_wait_count, delay, sched->max_fd_plus_1)
+#		proc_debug_selectors()
 		n_ready = Pselect(sched->max_fd_plus_1, &sched->readfds_ready, &sched->writefds_ready, &sched->exceptfds_ready, delay_ts, oldsigmaskp)
 		proc_debug("select done")
 		sched->now = rtime()
@@ -212,15 +212,17 @@ def sched_dump(&sched->q)
 		proc_dump(p)
 	nl(stderr)
 
-def add_fd(fd)
-	scheduler_add_fd(sched, fd)
+def add_fd(fd) scheduler_add_fd(sched, fd)
 
-scheduler_add_fd(scheduler *sched, int fd)
+int scheduler_add_fd(scheduler *sched, int fd)
+	if sched_io_full(fd)
+		return 1
 	fd_set(fd, &sched->exceptfds)
 	if fd >= sched->max_fd_plus_1
 		sched->max_fd_plus_1 = fd + 1
 	vec_ensure_size(&sched->readers, fd+1)
 	vec_ensure_size(&sched->writers, fd+1)
+	return 0
 
 def rm_fd(fd)
 	scheduler_rm_fd(sched, fd)

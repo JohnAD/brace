@@ -31,7 +31,6 @@ struct shuttle_sock_p
 
 listener_tcp_init(listener *p, cstr listen_addr, int listen_port)
 	int listen_fd = Server(listen_addr, listen_port)
-	Cloexec(listen_fd)
 	listener_init(p, listen_fd, sizeof(sockaddr_in))
 
 listener_unix_init(listener *p, cstr addr)
@@ -42,21 +41,23 @@ listener_unix_init(listener *p, cstr addr)
 proc listener(int listen_fd, socklen_t socklen)
 	port sock_p out
 	state sock_p s
+	if add_fd(listen_fd)
+		Close(listen_fd)
+		error("listener: can't create listener, too many sockets")
+	cloexec(listen_fd)
 	nonblock(listen_fd)
-	add_fd(listen_fd)
 	repeat
 		read(listen_fd)
 		NEW(s, sock, socklen)
 		s->fd = Accept(listen_fd, (struct sockaddr *)s->sa, &s->len)
-		Cloexec(s->fd)
 
-		if sched_io_full(s->fd)
+		if add_fd(s->fd)
 			warn("listener: maximum number of sockets exceeded, rejecting %d", s->fd)
 			sock_free(s)
 		 else
+			cloexec(s->fd)
 			nonblock(s->fd)
 			keepalive(s->fd)
-			add_fd(s->fd)
 			wr(out, s)
 	# XXX sa not freed
 
@@ -94,19 +95,22 @@ proc reader_sel(int fd, size_t block_size)
 	port buffer out
 	state boolean done = 0
 	while !done
+		proc_debug("reader %08x - before pull", b__p)
 		pull(out)
-		proc_debug("reader - after pull")
+		proc_debug("reader %08x - after pull", b__p)
 		buffer_ensure_free(&out, block_size)
+		proc_debug("reader %08x - calling read(%d)", b__p, fd)
 		read(fd)
 		ssize_t n = read(fd, bufend(&out), buffer_get_free(&out))
 		if n == -1
 			n = 0
-			swarning("reader: error")
+			swarning("reader %08x: error", b__p)
 			done = 1
 		 eif n
 			buffer_grow(&out, n)
 		 else
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
+			proc_debug("reader %08x fd %d at EOF", b__p, fd)
 			buffer_clear(&out)
 			done = 1
 		push(out)
@@ -115,18 +119,19 @@ proc writer_sel(int fd)
 	port buffer in
 	state boolean done = 0
 	while !done
-		proc_debug("writer - before pull")
+		proc_debug("writer %08x - before pull", b__p)
 		pull(in)
-		proc_debug("writer - after pull")
+		proc_debug("writer %08x - after pull", b__p)
 		if !buflen(&in)
 			shutdown(fd, SHUT_WR)
 			done = 1
 		while buflen(&in)
+			proc_debug("writer %08x - calling write(%d)", b__p, fd)
 			write(fd)
 			ssize_t n = write(fd, buf0(&in), buflen(&in))
 			if n == -1
 				n = 0
-				swarning("writer: error")
+				swarning("writer %08x: error", b__p)
 				# signals the caller that we have an error,
 				# by the fact that the buffer is not empty.
 				done = 1
@@ -138,6 +143,8 @@ proc writer_sel(int fd)
 def bread(in)
 	bread(in, 1)
 def bread(in, size)
+	if here(in) && !buflen(&in)
+		push(in)
 	repeat
 		pull(in)
 		if (size_t)buflen(&in) >= (size_t)size || !buflen(&in)
@@ -171,19 +178,20 @@ def breadln(in)
 def breaduntil(in, eol)
 	breaduntil(in, eol, my(c))
 def breaduntil(in, eol, c)
-	pull(in)
+	# this is getting ugly, need to do it better.
+	if here(in) && !buflen(&in)
+		push(in)
 	repeat
+		pull(in)
+		if !buflen(&in)
+			break
 		char *c = memchr(buf0(&in), eol, buflen(&in))
 		if c
 			*c = '\0'
 			break
-		 else
-			if max_line_length && buflen(&in) >= max_line_length
-				break
-			push(in)
-			pull(in)
-			if !buflen(&in)
-				break
+		if max_line_length && buflen(&in) >= max_line_length
+			break
+		push(in)
 #		warn("breadln: buflen %d\n[%s]\n", buflen(&in), buffer_nul_terminate(&in))
 #		buffer_dump(stderr, &in)
 #	warn("breadln: %s", !buflen(&in) ? NULL : buf0(&in))
@@ -280,35 +288,37 @@ def reader_try_init(r, fd)
 proc reader_try(int fd, size_t block_size)
 	port buffer out
 	state boolean done = 0
-	pull(out)
 	while !done
-		proc_debug("reader - after pull")
+		proc_debug("reader %08x - before pull", b__p)
+		pull(out)
+		proc_debug("reader %08x - after pull", b__p)
 		buffer_ensure_free(&out, block_size)
 		ssize_t n = read(fd, bufend(&out), buffer_get_free(&out))
 		if n == -1
 			if errno == EAGAIN
+				proc_debug("reader %08x - calling read(%d)", b__p, fd)
 				read(fd)
 				continue
 			 else
 				n = 0
-				swarning("reader: error")
+				swarning("reader %08x: error", b__p)
 				done = 1
 		 eif n
 			buffer_grow(&out, n)
 		 else  # n == 0
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
+			proc_debug("reader %08x fd %d at EOF", b__p, fd)
 			buffer_clear(&out)
 			done = 1
 		push(out)
-		pull(out)
 
 proc writer_try(int fd)
 	port buffer in
 	state boolean done = 0
 	while !done
-		proc_debug("writer - before pull")
+		proc_debug("writer %08x - before pull", b__p)
 		pull(in)
-		proc_debug("writer - after pull")
+		proc_debug("writer %08x - after pull", b__p)
 		if !buflen(&in)
 			shutdown(fd, SHUT_WR)
 			done = 1
@@ -317,10 +327,11 @@ proc writer_try(int fd)
 			if n == -1
 				n = 0
 				if errno == EAGAIN
+					proc_debug("writer %08x - calling write(%d)", b__p, fd)
 					write(fd)
 					continue
 				 else
-					swarning("writer: error")
+					swarning("writer %08x: error", b__p)
 					# signals the caller that we have an error,
 					# by the fact that the buffer is not empty.
 					done = 1

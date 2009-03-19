@@ -44,6 +44,6 @@ int clear_env(void)
 			buffer_cat_str(k, new_str(*environ, equals))
 		Say(buffer_get_start(k))
 #		unsetenv(k)
-	free(k)
+	buffer_free(k)
 	return 0
 

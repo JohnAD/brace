@@ -278,7 +278,7 @@ def fault(format, a0, a1, a2, a3, a4)
 int throw_faults = 0
 
 fault_(char *file, int line, const char *format, ...)
-	file = best_path_main(strdup(file))
+	file = best_path_main(Strdup(file))
 	New(b, buffer)
 	Sprintf(b, "%s:%d: ", file, line)
 	va_list ap

@@ -48,6 +48,7 @@ buffer_set_space(buffer *b, size_t space)
 	assert(size <= space, "cannot set buffer space less than buffer size")
 	if space == 0
 		space = 1
+#	if buffer_get_space(b) != b->space
 	Realloc(b->start, space)
 	b->end = b->start + size
 	b->space_end = b->start + space
@@ -272,7 +273,7 @@ buffer_ensure_free(buffer *b, size_t free)
 buffer_nl(buffer *b)
 	buffer_cat_char(b, '\n')
 
-def b(buf, i) b->start+i
+def b(b, i) b->start+i
 
 def buflen(b) buffer_get_size(b)
 def buf0(b) buffer_get_start(b)

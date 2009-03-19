@@ -185,7 +185,7 @@ int main()
 # finalisation -----------------------------------------------
 
 quit()
-	free(key_handlers)
+	Free(key_handlers)
 	XUnmapWindow(display, window)
 #	XFree(keyboard_map)
 	XFreeColors(display, colormap, (unsigned long *)&red, 1, 0)

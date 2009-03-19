@@ -73,7 +73,7 @@ hostent *Gethostbyname(const char *name)
 #              later.
 
 # Warning: name_to_ip returns either is argument (if already an IP address) or
-# a pointer to a static buffer from inet_ntoa.  So you might want to use strdup
+# a pointer to a static buffer from inet_ntoa.  So you might want to use Strdup
 # to duplicate the result before it is overwritten later.
 
 cstr name_to_ip(const char *name)
@@ -192,8 +192,12 @@ Closesocket(int fd)
 	if closesocket(fd_to_socket(fd)) != 0
 		failed("closesocket")
 
-keepalive(int fd)
-	int keepalive = 1
+def keepalive(fd) keepalive(fd, 1)
+keepalive(int fd, int keepalive)
 	Setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(keepalive))
+
+def nodelay(fd) nodelay(fd, 1)
+nodelay(int fd, int nodelay)
+	Setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay))
 
 # TODO add / use getaddrinfo

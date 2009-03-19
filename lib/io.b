@@ -1,6 +1,7 @@
 export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
 export str error buffer types net vec vio
+use sys/socket.h
 use m alloc util path env process
 
 use io
@@ -11,7 +12,7 @@ int Open(const char *pathname, int flags, mode_t mode)
 	int fd = open(pathname, flags, mode)
 	if fd == -1
 		char msg[8]
-		cstr how
+		cstr how = ""
 		strcpy(msg, "open ")
 		which flags & 3
 		O_RDONLY	how = "r"
@@ -422,7 +423,7 @@ vec *slurpdir(const char *name, vec *v)
 			break
 		if !e
 			break
-		*(cstr*)vec_push(v) = strdup(e->d_name)
+		*(cstr*)vec_push(v) = Strdup(e->d_name)
 		
 	closedir(dir)
 	return v
@@ -434,7 +435,7 @@ vec *slurp_lines_0()
 
 vec *slurp_lines(vec *lines)
 	eachline(s)
-		vec_push(lines, strdup(s))
+		vec_push(lines, Strdup(s))
 	return lines
 
 Remove(const char *path)
@@ -670,7 +671,7 @@ def Putchar(c)
 	eif putchar(c) == EOF
 		failed("putchar")
 
-Fseek(FILE *stream, long offset, int whence)	
+Fseek(FILE *stream, long offset, int whence)
 	if fseek(stream, offset, whence)
 		failed("fseek")
 
@@ -681,7 +682,7 @@ long Ftell(FILE *stream)
 	return ret
 
 # these don't seem to work:
-#Fseeko(FILE *stream, off_t offset, int whence)	
+#Fseeko(FILE *stream, off_t offset, int whence)
 #	if fseeko(stream, offset, whence)
 #		failed("fseeko")
 #
@@ -738,7 +739,7 @@ cstr Readlink(const char *path)
 typedef enum { if_dead_error, if_dead_null, if_dead_path, if_dead_warn=1<<31 } readlinks_if_dead
 
 cstr readlinks(cstr path, readlinks_if_dead if_dead)
-	path = strdup(path)
+	path = Strdup(path)
 	let(warn_if_dead, (if_dead & if_dead_warn) != 0)
 	if_dead &= ~if_dead_warn
 
@@ -787,7 +788,7 @@ Chdir(const char *path)
 	if chdir(path) != 0
 		failed("chdir")
 
-Mkdir(const char *pathname, mode_t mode)	
+Mkdir(const char *pathname, mode_t mode)
 	int rv = mkdir(pathname, mode)
 	if rv
 		failed("mkdir")
@@ -868,7 +869,7 @@ stats_dump(Stats *s)
 	Sayf("gid\t%d", s->st_gid)
 	Sayf("rdev\t%d", s->st_rdev)
 	Sayf("size\t%d", s->st_size)
- 	
+	
 	# not in mingw
 	#	Sayf("blksize\t%d", s->st_blksize)
 	#	Sayf("blocks\t%d", s->st_blocks)
@@ -929,7 +930,7 @@ fd_set_init(fd_set *o)
 # use local / static?
 
 cstr which(cstr file)
-	cstr PATH = strdup(Getenv("PATH"))
+	cstr PATH = Strdup(Getenv("PATH"))
 	new(v, vec, cstr, 32)
 	splitv(v, PATH, PATH_sep)
 	cstr path = NULL
@@ -993,7 +994,7 @@ Mkdirs(const char *pathname, mode_t mode)
 	Free(my(cwd))
 
 Mkdirs_cwd(const char *pathname, mode_t mode, cstr basedir)
-	cstr dir1 = strdup(pathname)
+	cstr dir1 = Strdup(pathname)
 	cstr dir = dir1
 	repeat
 		dir1rest(dir, d, b)
@@ -1013,7 +1014,7 @@ Rmdir(const char *pathname)
 		failed("rmdir")
 
 Rmdirs(const char *pathname)
-	cstr dir = strdup(pathname)
+	cstr dir = Strdup(pathname)
 	repeat
 		if rmdir(dir)
 			break
@@ -1031,9 +1032,9 @@ boolean newer(const char *file1, const char *file2)
 
 lnsa(cstr from, cstr to, cstr cwd)
 	cstr cwd1 = path_cat(cwd, "")
-	from = path_tidy(path_relative_to(strdup(from), cwd1))
+	from = path_tidy(path_relative_to(Strdup(from), cwd1))
 	if is_dir(to)
-		cstr from1 = strdup(from)  # this is ugly, write a base_name which does not modify the string
+		cstr from1 = Strdup(from)  # this is ugly, write a base_name which does not modify the string
 		cstr to1 = path_cat(to, base_name(from1))
 		Free(from1)
 		remove(to1)
@@ -1137,3 +1138,25 @@ def Printn(s, f) Printf("%s%f", s, f)
 def Printx(s, d) Printx("%s%02x", s, d)
 def Printb(s, b) Printb("%s%02x", s, b)
 
+def Setvbuf(stream, mode) Setvbuf(stream, NULL, mode, 0)
+Setvbuf(FILE *stream, char *buf, int mode, size_t size)
+	if setvbuf(stream, buf, mode, size)
+		failed("setvbuf")
+def Setlinebuf(stream) Setvbuf(stream, _IOLBF)
+
+ssize_t Readv(int fd, const struct iovec *iov, int iovcnt)
+	ssize_t rv = readv(fd, iov, iovcnt)
+	if rv < 0
+		failed("readv")
+	return rv
+
+ssize_t Writev(int fd, const struct iovec *iov, int iovcnt)
+	ssize_t rv = writev(fd, iov, iovcnt)
+	if rv < 0
+		failed("writev")
+	return rv
+
+def Socketpair(sv[2]) Socketpair(AF_UNIX, SOCK_STREAM, 0, sv)
+Socketpair(int d, int type, int protocol, int sv[2])
+	if socketpair(d, type, protocol, sv) != 0
+		failed("socketpair")

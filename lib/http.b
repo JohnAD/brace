@@ -64,7 +64,7 @@ cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *
 	if !*path
 		path = "/"
 	int port = 80
-	cstr host = strdup(host_port)
+	cstr host = Strdup(host_port)
 	cstr port_s = strchr(host, ':')
 	if port_s
 		*port_s++ = '\0'
@@ -171,5 +171,21 @@ base64_decode()
 			break
 
 # TODO base64_encode
+
+typedef enum { HTTP_GET, HTTP_PUT, HTTP_HEAD, HTTP_POST, HTTP_INVALID } http__method
+
+http__method http_which_method(cstr method)
+	http__method rv
+	if cstr_eq(method, "GET")
+		rv = HTTP_GET
+	 eif cstr_eq(method, "PUT")
+		rv = HTTP_PUT
+	 eif cstr_eq(method, "HEAD")
+		rv = HTTP_HEAD
+	 eif cstr_eq(method, "POST")
+		rv = HTTP_POST
+	 else
+		rv = HTTP_INVALID
+	return rv
 
 use cstr alloc util io vio

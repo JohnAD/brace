@@ -265,6 +265,8 @@ writestmt()
 			blocktype[tabs] = STRUCT
 		eif cstr_begins_with(c, "class ") && classy(c+6)
 			blocktype[tabs] = CLASS
+		eif *c == '^' || *c == '#'
+			# ignore directives and comments, not indented properly
 		else
 			blocktype[tabs] = OTHER
 		# to be continued?

@@ -25,8 +25,7 @@ def max_line_length 2048
 
 hashtable *users
 
-#def verbose warn
-def verbose void
+def verbose warn
 
 Main()
 	uid_t uid = geteuid()
@@ -325,10 +324,9 @@ mesg	body = format("httpd: %d %s\r\n", code, msg)
 
 bodymsg	discard_req()
 	bcrlf(out)
-	bflush(out)
 	if method != HTTP_HEAD
 		bprint(out, body)
-		bflush(out)
+	bflush(out)
 	if buflen(&out) # error
 		keep_alive = 0
 	done
@@ -404,13 +402,12 @@ def get_file()
 	if add_fd(file_fd)
 		Close(file_fd)
 		srverr
-	cloexec(fd)
+	Cloexec(fd)
 	nonblock(file_fd)
 
 	modified = st->st_mtime
 	headers(200, "OK", st->st_size)
 	bcrlf(out)
-	bflush(out)
 
 	if method == HTTP_GET  # not HTTP_HEAD
 		init(&fr, reader, file_fd)
@@ -431,6 +428,8 @@ def get_file()
 			push(fio)
 
 		buffer_free(&fio)
+
+	bflush(out)
 
 	if file_fd != -1
 		rm_fd(file_fd)
@@ -477,12 +476,12 @@ def get_dir()
 	mtype = "text/html"
 	headers(200, "OK", buflen(dirs)+buflen(files))
 	bcrlf(out)
-	bflush(out)
 
 	if method == HTTP_GET  # not HTTP_HEAD
 		bwrite(out, buffer_range(dirs))
 		bwrite(out, buffer_range(files))
-		bflush(out)
+
+	bflush(out)
 
 	buffer_free(dirs)
 	buffer_free(files)
@@ -539,9 +538,6 @@ def get_cgi()
 
 def put_file()
 	# PUT replaces a file, POST appends to it.
-	# FIXME it opens the file as the user, but writes as root,
-	# I think this means it would not respect any quota that might exist.
-
 	int open_opt = O_WRONLY|O_CREAT
 	if method == HTTP_PUT
 		open_opt |= O_TRUNC
@@ -557,7 +553,7 @@ def put_file()
 	if add_fd(file_fd)
 		Close(file_fd)
 		srverr
-	cloexec(fd)
+	Cloexec(fd)
 	nonblock(file_fd)
 
 	init(&fw, writer, file_fd)

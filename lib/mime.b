@@ -30,6 +30,7 @@ load_mimetypes_vio()
 #				cstr otype = kv(mimetypes, sym(e), type)->value
 #				if otype != type
 #					warn("duplicate mimetypes for ext %s: %s %s", e, otype, type)
+			Free(exts)
 
 cstr mimetype(cstr ext)
 	return get(mimetypes, ext, NULL)

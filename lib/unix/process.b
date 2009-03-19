@@ -98,7 +98,7 @@ set_priority(pid_t pid, int priority)
 	Sched_setscheduler(pid, SCHED_FIFO, param)
 
 cstr whoami()
-	return strdup(Getpwuid(geteuid())->pw_name)
+	return Strdup(Getpwuid(geteuid())->pw_name)
 
 def ignore_pipe()
 	Sigign(SIGPIPE)
@@ -157,8 +157,10 @@ def Seteuidgid_root()
 typedef struct passwd passwd
 typedef struct spwd spwd
 
+int passwd_n_buckets = 1009
+
 hashtable *load_passwd()
-	New(ht, hashtable, cstr_hash, (eq_func)cstr_eq, 10007)
+	New(ht, hashtable, cstr_hash, (eq_func)cstr_eq, passwd_n_buckets)
 	passwd *p
 	while (p = Getpwent())
 		p = passwd_dup(p)
@@ -168,7 +170,7 @@ hashtable *load_passwd()
 	while (s = Getspent())
 		passwd *p = get(ht, s->sp_namp)
 		Free(p->pw_passwd)
-		p->pw_passwd = strdup(s->sp_pwdp)
+		p->pw_passwd = Strdup(s->sp_pwdp)
 	endspent()
 	return ht
 

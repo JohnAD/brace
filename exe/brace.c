@@ -428,6 +428,7 @@ void writestmt(void)
 		{
 			blocktype[tabs] = CLASS;
 		}
+		else if(*c == '^' || *c == '#') {}
 		else
 		{
 			blocktype[tabs] = OTHER;

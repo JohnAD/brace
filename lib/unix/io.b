@@ -26,8 +26,9 @@ int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const
 	return rv
 
 nonblock(int fd)
-	if fcntl(fd, F_SETFL, O_NONBLOCK) == -1
-		failed("fcntl")
+	Fcntl_setfl(fd, Fcntl_getfl(fd) | O_NONBLOCK)
+nonblock_off(int fd)
+	Fcntl_setfl(fd, Fcntl_getfl(fd) & ~O_NONBLOCK)
 
 int Fcntl_flock(int fd, int cmd, short type, short whence, off_t start, off_t len)
 	struct flock fl
@@ -75,9 +76,20 @@ int Fcntl_getfd(int fd)
 Fcntl_setfd(int fd, long arg)
 	int rv = fcntl(fd, F_SETFD, arg)
 	if rv == -1
-		error("fcntl_se")
+		error("fcntl_setfd")
 
-Cloexec(int fd)
+int Fcntl_getfl(int fd)
+	int rv = fcntl(fd, F_GETFL)
+	if rv == -1
+		error("fcntl_getfl")
+	return rv
+
+Fcntl_setfl(int fd, long arg)
+	int rv = fcntl(fd, F_SETFL, arg)
+	if rv == -1
+		error("fcntl_setfl")
+
+cloexec(int fd)
 	Fcntl_setfd(fd, Fcntl_getfd(fd) | FD_CLOEXEC)
-Cloexec_off(int fd)
+cloexec_off(int fd)
 	Fcntl_setfd(fd, Fcntl_getfd(fd) & ~FD_CLOEXEC)

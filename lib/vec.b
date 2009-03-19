@@ -44,7 +44,7 @@ vec_size(vec *v, size_t size)
 		do
 			cap *= 2
 		while size > cap
-	vec_space(v, cap)
+		vec_space(v, cap)
 	v->size = size
 	buffer_set_size(&v->b, size * v->element_size)
 

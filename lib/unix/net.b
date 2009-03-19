@@ -2,6 +2,7 @@ use error io util types net
 
 export sys/socket.h
 export netinet/in.h
+export netinet/tcp.h
 export arpa/inet.h
 export netdb.h
 export sys/un.h

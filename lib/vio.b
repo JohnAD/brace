@@ -435,7 +435,7 @@ vec *read_nums(cstr file)
 	read_file_to_vec(file, num, l, (num)atof(l))
 
 vec *read_cstrs(cstr file)
-	read_file_to_vec(file, cstr, l, strdup(l))
+	read_file_to_vec(file, cstr, l, Strdup(l))
 
 def read_file_to_vec(file, type, l, map)
 	New(v, vec, type, 200)

@@ -31,7 +31,7 @@ hunk(cstr in_file, cstr out_dir, int avg_hunk_size, int max_hunk_size, int sum_w
 				FILE *out = Fopen(out_file_path, "w")
 				Fwrite(buffer_get_start(b), 1, buffer_get_size(b), out)
 				Fclose(out)
-				free(out_file_path)
+				Free(out_file_path)
 				++hunk_count
 				offset += buffer_get_size(b)
 				if c == EOF
