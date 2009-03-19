@@ -120,36 +120,36 @@ def memlog_close()
 void *memlog_Malloc(size_t size, char *file, int line)
 	memlog_open()
 	void *rv = _Malloc(size)
-	Fprintf(memlog, "A\tmalloc\t%08x\t%d\t%s:%d\n", (uint)rv, size, file, line)
+	Fprintf(memlog, "A\tmalloc\t%08x\t%d\t%s:%d\n", rv, size, file, line)
 	return rv
 
 memlog_Free(void *ptr, char *file, int line)
 	memlog_open()
 	_Free(ptr)
-	Fprintf(memlog, "F\tfree\t%08x\t\t%s:%d\n", (uint)ptr, file, line)
+	Fprintf(memlog, "F\tfree\t%08x\t\t%s:%d\n", ptr, file, line)
 
 void *memlog_Realloc(void *ptr, size_t size, char *file, int line)
 	memlog_open()
 	void *rv = _Realloc(ptr, size)
-	Fprintf(memlog, "F\trealloc\t%08x\t\t%s:%d\n", (uint)ptr, file, line)
-	Fprintf(memlog, "A\trealloc\t%08x\t%d\t%s:%d\n", (uint)rv, size, file, line)
+	Fprintf(memlog, "F\trealloc\t%08x\t\t%s:%d\n", ptr, file, line)
+	Fprintf(memlog, "A\trealloc\t%08x\t%d\t%s:%d\n", rv, size, file, line)
 	return rv
 
 void *memlog_Calloc(size_t nmemb, size_t size, char *file, int line)
 	memlog_open()
 	void *rv = _Calloc(nmemb, size)
-	Fprintf(memlog, "A\tcalloc\t%08x\t%d\t%s:%d\n", (uint)rv, nmemb*size, file, line)
+	Fprintf(memlog, "A\tcalloc\t%08x\t%d\t%s:%d\n", rv, nmemb*size, file, line)
 	return rv
 
 cstr memlog_Strdup(const char *s, char *file, int line)
 	memlog_open()
 	cstr rv = _Strdup(s)
-	Fprintf(memlog, "A\tstrdup\t%08x\t%d\t%s:%d\n", (uint)rv, strlen(rv), file, line)
+	Fprintf(memlog, "A\tstrdup\t%08x\t%d\t%s:%d\n", rv, strlen(rv), file, line)
 	return rv
 
 cstr memlog_Strndup(const char *s, size_t n, char *file, int line)
 	memlog_open()
 	cstr rv = _Strndup(s, n)
-	Fprintf(memlog, "A\tstrndup\t%08x\t%d\t%s:%d\n", (uint)rv, strlen(rv), file, line)
+	Fprintf(memlog, "A\tstrndup\t%08x\t%d\t%s:%d\n", rv, strlen(rv), file, line)
 	return rv
 
