@@ -198,7 +198,6 @@ req	state cstr s
 				buffer_from_cstr(base64, val+6)
 				new(o, buffer, 32)
 				base64_decode_buffers(base64, o)
-				buffer_free(base64)
 				user = buffer_to_cstr(o)
 				cstr *user_pass = split(user, ':', 2)
 				if arylen(user_pass) != 2
@@ -574,7 +573,7 @@ def put_file()
 		if !buflen(&in)
 			break
 		state size_t dcount = buflen(&in)
-		if count + dcount > reqlen
+		if (off_t)(count + dcount) > reqlen
 			dcount = reqlen - count
 		count += dcount
 		bwrite(fio, buf0(&in), b(&in, dcount)) # FIXME don't copy data
