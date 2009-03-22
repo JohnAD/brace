@@ -453,7 +453,7 @@ def get_file()
 			pull(fio)
 			if !buflen(&fio)
 				break
-			size_t dsize = buflen(&fio)
+			off_t dsize = buflen(&fio)
 			if dsize > size
 				dsize = size
 				buffer_set_size(&fio, dsize)
@@ -521,7 +521,7 @@ def get_dir()
 	if range_req
 		if byte0 != 0
 			buffer_shift(b0, byte0)
-		if size < buflen(b0)
+		if size < (off_t)buflen(b0)
 			buffer_set_size(b0, size)
 		headers(206, "Partial Content", size)
 	else
