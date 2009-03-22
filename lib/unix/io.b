@@ -6,7 +6,7 @@ use util
 int Pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timespec *timeout, const sigset_t *sigmask)
 	int rv = pselect(nfds, readfds, writefds, exceptfds, timeout, sigmask)
 	if rv == -1 && errno != EINTR
-		failed("select")
+		failed("pselect")
 	return rv
 
 typedef struct pollfd pollfd
