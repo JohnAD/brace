@@ -698,6 +698,8 @@ off_t Lseek(int fd, off_t offset, int whence)
 		failed("lseek")
 	return ret
 
+def Lseek(fd, offset) Lseek(fd, offset, SEEK_SET)
+
 Truncate(const char *path, off_t length)
 	int ret = truncate(path, length)
 	if ret

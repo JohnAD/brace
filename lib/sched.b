@@ -10,6 +10,15 @@ use error
 use process
 use hash
 
+num sched_delay = 0
+              # = 0      # don't sleep between steps
+              # = 0.01   # sleep for 0.01 secs at each IO check
+
+int sched_busy = 16
+             # = 0       # check IO only when no procs queued
+             # = 1       # check IO at every step
+             # = n       # check IO when no procs queued or every n steps
+
 int sched__children_n_buckets = 1009
 
 struct scheduler
@@ -75,15 +84,6 @@ run()
 	while !sched->exit
 		step()
 #		queue_dump(&sched->q)
-
-num sched_delay = 0
-              # = 0      # don't sleep between steps
-              # = 0.01   # sleep for 0.01 secs at each IO check
-
-int sched_busy = 16
-             # = 0       # check IO only when no procs queued
-             # = 1       # check IO at every step
-             # = n       # check IO when no procs queued or every n steps
 
 # sched->now is set to the startup time, or the time after the last select
 # If you need more precise timing, call rtime() again.

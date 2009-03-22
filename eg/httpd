@@ -21,14 +21,15 @@ cstr www_root = "/www"
 cstr default_user = "www-data"
 cstr default_host = "default"
 
-def max_line_length 2048
-
 hashtable *users
 
 #def verbose warn
 def verbose void
 
 Main()
+#	max_line_length = 2048
+	sched_busy = 128
+
 	uid_t uid = geteuid()
 	if uid != 0
 		error("%s must be run as root", program)
@@ -140,8 +141,10 @@ req	state cstr s
 	state cstr mtype = "text/plain"
 	state int status
 	state boolean range_req = 0
-	state long long int byte0 = 0
-	state long long int byte1 = -1
+	state long long int byte0
+	state long long int byte1
+	state off_t fullsize
+	state off_t size
 
 	repeat
 		breadln(in)
@@ -222,6 +225,9 @@ req	state cstr s
 			int n = sscanf(val, "bytes=%lld-%lld", &byte0, &byte1)
 			if n
 				range_req = 1
+				if n == 1
+					byte1 = -1
+		# TODO Content-Range for put
 
 		buffer_shift(&in, l)
 
@@ -353,6 +359,9 @@ notf	code = 404 ; msg = "Not Found"
 srverr	code = 500 ; msg = "Internal Server Error"
 	mesg
 
+badrng	code = 416 ; msg = "Requested Range Not Satisfiable"
+	mesg
+
 ok	code = 200 ; msg = "OK"
 	mesg
 
@@ -386,6 +395,8 @@ def headers(code, msg, size)
 	bsayf(out, "Date: %s\r", date_rfc1123((time_t)sched->now))
 	if modified != -1
 		bsayf(out, "Last-Modified: %s\r", date_rfc1123(modified))
+	if range_req
+		bsayf(out, "Content-Range: %lld-%lld/%lld\r", (long long int)byte0, (long long int)byte1, (long long int)fullsize)
 	bsayf(out, "Content-Length: %lld\r", (long long int)size)
 	if code == 200 && expire_already
 		bsay(out, "Cache-Control: private, no-cache, no-store\r")
@@ -416,9 +427,21 @@ def get_file()
 #	nonblock(file_fd)
 
 	modified = st->st_mtime
-	headers(200, "OK", st->st_size)
+	fullsize = st->st_size
+	do_range_size()
+	if range_req
+		if byte0
+			Lseek(file_fd, byte0)
+		headers(206, "Partial Content", size)
+	 else
+		headers(200, "OK", size)
+
 	bcrlf(out)
 	bflush(out)
+
+	# I use bwrite_direct to save copying the data again,
+	# so need to free the buffer first, and recreate it after.
+	buffer_free(&out)
 
 	if method == HTTP_GET  # not HTTP_HEAD
 		init(&fr, reader, file_fd)
@@ -430,15 +453,25 @@ def get_file()
 			pull(fio)
 			if !buflen(&fio)
 				break
-			bwrite(out, buffer_range(&fio)) # FIXME don't copy data
+			size_t dsize = buflen(&fio)
+			if dsize > size
+				dsize = size
+				buffer_set_size(&fio, dsize)
+			size -= dsize
+			bwrite_direct(out, buffer_range(&fio))
+			  # FIXME don't copy data
 			bflush(out)
 			if buflen(&out) # error
 				keep_alive = 0
 				break
 			buffer_clear(&fio)
+			if !size
+				break
 			push(fio)
 
 		buffer_free(&fio)
+
+	init(&out, buffer, block_size)
 
 	if file_fd != -1
 		rm_fd(file_fd)
@@ -457,8 +490,8 @@ def get_dir()
 		accerr
 	# loaded directory ok, root can stat the nodes
 	sort_vec(v, cstrp_cmp)
-	new(dirs, buffer, 256)
-	new(files, buffer, 256)
+	new(b0, buffer, 256)
+	new(b1, buffer, 256)
 	for_vec(i, v, cstr)
 		if (*i)[0] == '.'
 			continue
@@ -467,33 +500,40 @@ def get_dir()
 		cstr line
 		if dir
 			line = format("<a href=\"%s/\"><b>%s</b>/</a><br>\n", *i, *i)
-			buffer_cat_cstr(dirs, line)
+			buffer_cat_cstr(b0, line)
 		 else
 			line = format("<a href=\"%s\">%s</a><br>\n", *i, *i)
-			buffer_cat_cstr(files, line)
+			buffer_cat_cstr(b1, line)
 		Free(line) ; Free(entpath) ; Free(*i)
 
 	vec_free(v)
 
-	buffer_cat_cstr(dirs, "<br>")
-	buffer_cat_cstr(files, "<br>")
+	buffer_cat_cstr(b0, "<br>\n")
+	buffer_cat_cstr(b1, "<br>\n")
 
-	buffer_nul_terminate(dirs)
-	buffer_nul_terminate(files)
+	buffer_cat_range(b0, buffer_range(b1))
+	buffer_free(b1)
 
 	modified = st->st_mtime
 	mtype = "text/html"
-	headers(200, "OK", buflen(dirs)+buflen(files))
+	fullsize = buflen(b0)
+	do_range_size()
+	if range_req
+		if byte0 != 0
+			buffer_shift(b0, byte0)
+		if size < buflen(b0)
+			buffer_set_size(b0, size)
+		headers(206, "Partial Content", size)
+	else
+		headers(200, "OK", size)
 	bcrlf(out)
 	bflush(out)
 
 	if method == HTTP_GET  # not HTTP_HEAD
-		bwrite(out, buffer_range(dirs))
-		bwrite(out, buffer_range(files))
+		bwrite(out, buffer_range(b0))
 		bflush(out)
 
-	buffer_free(dirs)
-	buffer_free(files)
+	buffer_free(b0)
 	if buflen(&out) # error
 		keep_alive = 0
 
@@ -615,6 +655,8 @@ def discard_req()
 	# FIXME it should check if there is a POST / PUT method
 	# FIXME what if we have POST or PUT but no Content-Length -
 	# read until EOF and no keep_alive?
+	# FIXME if there is an unnecessary request body, we should give an error
+	# after discarding the message.
 	if reqlen
 		verbose("  discarding request of length %lld", (long long int)reqlen)
 		# TODO fix this to discard it in blocks, a request can be big!
@@ -623,3 +665,18 @@ def discard_req()
 		verbose("  got %lld bytes", (long long int)buflen(&in))
 		buffer_shift(&in, imin(reqlen, buflen(&in)))
 
+def do_range_size()
+	if range_req
+		fix_byte(byte0)
+		fix_byte(byte1)
+		size = byte1 - byte0 + 1
+		if byte1 <= byte0
+			badrng
+	 else
+		size = fullsize
+
+def fix_byte(b)
+	if b < 0
+		b += fullsize
+	 eif b >= fullsize
+		b = fullsize - 1

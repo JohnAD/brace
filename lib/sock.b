@@ -171,6 +171,12 @@ def bwrite(out, start, end)
 	pull(out)
 	buffer_cat_range(&out, start, end)
 
+def bwrite_direct(out, _start, _end)
+	pull(out)
+	out.start = _start
+	out.end = _end
+	out.space_end = _end
+
 unsigned int max_line_length = 0
 
 def breadln(in)
