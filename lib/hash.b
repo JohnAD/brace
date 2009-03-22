@@ -46,6 +46,10 @@ struct node_kv
 	list l
 	key_value kv
 
+key_value kv_null = { (void*)-1, (void*)-1 }
+
+def kv_is_null(kv) kv.key == (void*)-1
+
 # TODO use ^^ to join type to _hash and _eq instead of passing both
 # TODO like priq, use macros for hash_func and all hashtable funcs and pass type / hash_func / type_eq in to functions that need them..?
 
@@ -141,10 +145,14 @@ hashtable_delete_maybe(hashtable *ht, void *key)
 		hashtable_ref_delete(l)
 
 key_value hashtable_ref_delete(list *l)
-	node_kv *node = hashtable_ref_node(l)
-	list_delete(list_next_p(l))
-	key_value ret = node->kv
-	Free(node)
+	key_value ret
+	if hashtable_ref_exists(l)
+		node_kv *node = hashtable_ref_node(l)
+		list_delete(list_next_p(l))
+		ret = node->kv
+		Free(node)
+	 else
+		ret = kv_null
 	return ret
 
 node_kv *hashtable_ref_node(list *l)
@@ -188,7 +196,7 @@ hashtable_dump(hashtable *ht)
 		list *bucket = &ht->buckets[i]
 		list *l = bucket
 		repeat
-			Printf("%08x ", l)
+			Printf("%010p ", l)
 			l = l->next
 			if l == NULL
 				break

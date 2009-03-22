@@ -18,24 +18,23 @@ def closesocket(s) close(s)
 
 int Server_unix_stream(char *addr)
 	int ear = Socket(PF_UNIX, SOCK_STREAM, 0)
-	struct sockaddr sockaddr
-	Sockaddr_unix(&sockaddr, addr)
-	Bind(ear, &sockaddr, sizeof(sockaddr))
+	struct sockaddr_un sa
+	Sockaddr_unix(&sa, addr)
+	Bind(ear, (sockaddr *)&sa, sizeof(sockaddr_un))
 	Listen(ear, 20)
 	return ear
 
 int Client_unix_stream(char *addr)
 	int sock = Socket(PF_UNIX, SOCK_STREAM, 0)
-	struct sockaddr sockaddr
-	Sockaddr_unix(&sockaddr, addr)
-	Connect(sock, &sockaddr, sizeof(sockaddr))
+	struct sockaddr_un sa
+	Sockaddr_unix(&sa, addr)
+	Connect(sock, (sockaddr *)&sa, sizeof(sockaddr))
 	return sock
 
 def Server(addr) Server_unix_stream(addr)
 def Client(addr) Client_unix_stream(addr)
 
-Sockaddr_unix(struct sockaddr *sockaddr, char *addr)
-	struct sockaddr_un *sa = (struct sockaddr_un *)sockaddr
+Sockaddr_unix(struct sockaddr_un *sa, char *addr)
 	sa->sun_family = AF_UNIX
 	if strlen(addr) > UNIX_PATH_MAX-1
 		error("pathname to unix socket too long: %s", addr)

@@ -66,7 +66,7 @@ list_dump(list *l)
 			Say("NULL")
 			break
 		else
-			Sayf("%08x ", l)
+			Sayf("%010p ", l)
 			l = list_next(l)
 
 list *list_reverse(list *l)

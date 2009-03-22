@@ -394,7 +394,7 @@ def FreeObj(o, type)
 
 # this is a temp. hack, I could get new to output this instead (if debugging)
 def name(obj, name)
-	warn("%08x = %s", obj, name)
+	warn("%010p = %s", obj, name)
 
 def void()
 	.

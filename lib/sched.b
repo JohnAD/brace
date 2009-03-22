@@ -71,13 +71,14 @@ def start(coro)
 	start_f(&coro->p)
 
 run()
+	sched->exit = 0
 	while !sched->exit
 		step()
 #		queue_dump(&sched->q)
 
-int sched_delay = 0
+num sched_delay = 0
               # = 0      # don't sleep between steps
-              # = 0.01   # sleep for 0.01 secs between steps
+              # = 0.01   # sleep for 0.01 secs at each IO check
 
 int sched_busy = 16
              # = 0       # check IO only when no procs queued
@@ -95,11 +96,11 @@ step()
 	num delay
 	int n_ready = 0
 
-	if sched->q.size
-		delay = sched_delay
-	 eif !timeouts_empty(&sched->tos)
+	if !timeouts_empty(&sched->tos)
 		sched->now = rtime()
 		delay = timeouts_delay(&sched->tos, sched->now)
+	 eif sched->q.size
+		delay = sched->io_wait_count ? sched_delay : 0
 	 else
 		delay = delay_forever
 
@@ -149,7 +150,7 @@ step()
 				clr_waitchild(pid)
 				waitchild__pid = pid
 				waitchild__status = wait__status
-				proc_debug("child %d finished - resuming %08x", pid, p)
+				proc_debug("child %d finished - resuming %010p", pid, p)
 				sched_resume(p)
 			 else
 				error("no waiter for child %d", pid)
@@ -171,18 +172,18 @@ step()
 			if can_read && fd_alive(fd)
 				clr_reader(fd)
 				proc *p = *(proc **)vec_element(&sched->readers, fd)
-				proc_debug("fd %d ready to read - resuming %08x", fd, p)
+				proc_debug("fd %d ready to read - resuming %010p", fd, p)
 				sched_resume(p)
 			if can_write && fd_alive(fd)
 				clr_writer(fd)
 				proc *p = *(proc **)vec_element(&sched->writers, fd)
-				proc_debug("fd %d ready to write - resuming %08x", fd, p)
+				proc_debug("fd %d ready to write - resuming %010p", fd, p)
 				sched_resume(p)
 
 	if sched->q.size
 		proc *p = *(proc **)deq_element(&sched->q, 0)
 		deq_shift(&sched->q)
-		proc_debug("resuming %08x", p)
+		proc_debug("resuming %010p", p)
 		sched_resume(p)
 
 	++sched->step
@@ -200,10 +201,10 @@ def fd_alive(fd) fd_isset(fd, &sched->exceptfds)
 
 def sched_resume(p)
 	if resume(p)
-		proc_debug("  resume %08x returned %d, enqueuing again", p, p->pc)
+		proc_debug("  resume %010p returned %d, enqueuing again", p, p->pc)
 		start_f(p)
 	 else
-		proc_debug("  resume %08x returned 0, stopped", p)
+		proc_debug("  resume %010p returned 0, stopped", p)
 
 def sched_dump(&sched->q)
 	Fprintf(stderr, "queue dump: ")

@@ -77,16 +77,16 @@ def find_1(root, f, s)
 	find_x(1, root, f, s)
 		.
 
-def find_leaves(root, f, s)
-	find_x(leaves, root, f, s)
+def find_files(root, f, s)
+	find_x(files, root, f, s)
 		.
 
 def find_all(root, f, s)
 	find_x(all, root, f, s)
 		.
 
-def find_all_leaves(root, f, s)
-	find_x(all_leaves, root, f, s)
+def find_all_files(root, f, s)
+	find_x(all_files, root, f, s)
 		.
 
 def find_dirs(root, f, s)
@@ -153,12 +153,12 @@ def find_only_lnk(s)
 	if !S_ISLNK(s->st_mode)
 		continue
 
-def find_deq_leaves(q, f, s)
+def find_deq_files(q, f, s)
 	find_deq(q, f, s)
 		find_skip_dir(s)
 		.
 
-def find_deq_all_leaves(q, f, s)
+def find_deq_all_files(q, f, s)
 	find_deq_all(q, f, s)
 		find_skip_dir(s)
 		.
@@ -239,10 +239,14 @@ def find_main(what, q, f, s)
 #	find(my(q), h)
 
 find_vec(cstr root, vec *v)
-	find(root, f, s)
+	find_vec_x(normal, root, v)
+
+def find_vec_x(what, root, v)
+	find_x(what, root, f, s)
 		vec_push(v, f)
 
 find_vec_all(cstr root, vec *v)
-	find_all(root, f, s)
-		vec_push(v, f)
+	find_vec_x(all, root, v)
 
+find_vec_files(cstr root, vec *v)
+	find_vec_x(files, root, v)

@@ -4,36 +4,23 @@ export types
 
 use stdio.h
 
-def Malloc(size) _Malloc(size)
-def Free(ptr) _Free(ptr), ptr = NULL
-def Realloc(ptr, size) ptr = _Realloc(ptr, size)
-def Calloc(ptr, size) _Calloc(ptr, size)
-def Strdup(s) _Strdup(s)
-def Strndup(s, n) _Strndup(s, n)
+def alloc_type normal
+#def alloc_type memlog
 
-# these defs are used for debugging
-# TODO simplify so this can be switched on and off with a single def
-#def Malloc(size) memlog_Malloc(size, __FILE__, __LINE__)
-#def Free(ptr) memlog_Free(ptr, __FILE__, __LINE__), ptr = NULL
-#def Realloc(ptr, size) ptr = memlog_Realloc(ptr, size, __FILE__, __LINE__)
-#def Calloc(ptr, size) memlog_Calloc(ptr, size, __FILE__, __LINE__)
-#def Strdup(s) memlog_Strdup(s, __FILE__, __LINE__)
-#def Strndup(s, n) memlog_Strndup(s, n, __FILE__, __LINE__)
+def Malloc(size) alloc_type^^_Malloc(size)
+def Free(ptr) alloc_type^^_Free(ptr), ptr = NULL
+def Realloc(ptr, size) ptr = alloc_type^^_Realloc(ptr, size)
+def Calloc(ptr, size) alloc_type^^_Calloc(ptr, size)
+def Strdup(s) alloc_type^^_Strdup(s)
+def Strndup(s, n) alloc_type^^_Strndup(s, n)
 
-# #def memlog _memlog
-# def memlog void
-# 
-# def memlog_args memlog^^_args
-# Def _memlog_args __FILE__, __LINE__
-# Def void_args
-
-void *_Malloc(size_t size)
+void *normal_Malloc(size_t size)
 	void *ptr = malloc(size)
 	if ptr == NULL
 		failed("malloc")
 	return ptr
 
-void *_Realloc(void *ptr, size_t size)
+void *normal_Realloc(void *ptr, size_t size)
 	if size == 0
 		size = 1
 	ptr = realloc(ptr, size)
@@ -42,7 +29,7 @@ void *_Realloc(void *ptr, size_t size)
 	return ptr
 
 def Calloc(nmemb) Calloc(nmemb, 1)
-void *_Calloc(size_t nmemb, size_t size)
+void *normal_Calloc(size_t nmemb, size_t size)
 	void *ptr = calloc(nmemb, size)
 	if (ptr == NULL)
 		failed("calloc")
@@ -52,15 +39,15 @@ def Talloc(type) (type *)Malloc(sizeof(type))
 
 def Nalloc(type, nmemb) (type *)Malloc(nmemb * sizeof(type))
 
-def _Free(ptr) free(ptr)
+def normal_Free(ptr) free(ptr)
 
-cstr _Strdup(const char *s)
+cstr normal_Strdup(const char *s)
 	cstr rv = strdup(s)
 	if rv == NULL
 		failed("strdup")
 	return rv
 
-char *_Strndup(const char *s, size_t n)
+char *normal_Strndup(const char *s, size_t n)
 	char *rv = strndup(s, n)
 	if !rv
 		failed("strndup")
@@ -117,39 +104,46 @@ def memlog_close()
 #		memlog_open()
 #	collect(Vfprintf, memlog, format)
 
+def memlog_Malloc(size) memlog_Malloc(size, __FILE__, __LINE__)
+def memlog_Free(ptr) memlog_Free(ptr, __FILE__, __LINE__), ptr = NULL
+def memlog_Realloc(ptr, size) ptr = memlog_Realloc(ptr, size, __FILE__, __LINE__)
+def memlog_Calloc(ptr, size) memlog_Calloc(ptr, size, __FILE__, __LINE__)
+def memlog_Strdup(s) memlog_Strdup(s, __FILE__, __LINE__)
+def memlog_Strndup(s, n) memlog_Strndup(s, n, __FILE__, __LINE__)
+
 void *memlog_Malloc(size_t size, char *file, int line)
 	memlog_open()
-	void *rv = _Malloc(size)
-	Fprintf(memlog, "A\tmalloc\t%08x\t%d\t%s:%d\n", rv, size, file, line)
+	void *rv = normal_Malloc(size)
+	Fprintf(memlog, "A\tmalloc\t%010p\t%d\t%s:%d\n", rv, size, file, line)
 	return rv
 
 memlog_Free(void *ptr, char *file, int line)
 	memlog_open()
-	_Free(ptr)
-	Fprintf(memlog, "F\tfree\t%08x\t\t%s:%d\n", ptr, file, line)
+	normal_Free(ptr)
+	Fprintf(memlog, "F\tfree\t%010p\t\t%s:%d\n", ptr, file, line)
 
 void *memlog_Realloc(void *ptr, size_t size, char *file, int line)
 	memlog_open()
-	void *rv = _Realloc(ptr, size)
-	Fprintf(memlog, "F\trealloc\t%08x\t\t%s:%d\n", ptr, file, line)
-	Fprintf(memlog, "A\trealloc\t%08x\t%d\t%s:%d\n", rv, size, file, line)
+	void *rv = normal_Realloc(ptr, size)
+	Fprintf(memlog, "F\trealloc\t%010p\t\t%s:%d\n", ptr, file, line)
+	Fprintf(memlog, "A\trealloc\t%010p\t%d\t%s:%d\n", rv, size, file, line)
 	return rv
 
 void *memlog_Calloc(size_t nmemb, size_t size, char *file, int line)
 	memlog_open()
-	void *rv = _Calloc(nmemb, size)
-	Fprintf(memlog, "A\tcalloc\t%08x\t%d\t%s:%d\n", rv, nmemb*size, file, line)
+	void *rv = normal_Calloc(nmemb, size)
+	Fprintf(memlog, "A\tcalloc\t%010p\t%d\t%s:%d\n", rv, nmemb*size, file, line)
 	return rv
 
 cstr memlog_Strdup(const char *s, char *file, int line)
 	memlog_open()
-	cstr rv = _Strdup(s)
-	Fprintf(memlog, "A\tstrdup\t%08x\t%d\t%s:%d\n", rv, strlen(rv), file, line)
+	cstr rv = normal_Strdup(s)
+	Fprintf(memlog, "A\tstrdup\t%010p\t%d\t%s:%d\n", rv, strlen(rv), file, line)
 	return rv
 
 cstr memlog_Strndup(const char *s, size_t n, char *file, int line)
 	memlog_open()
-	cstr rv = _Strndup(s, n)
-	Fprintf(memlog, "A\tstrndup\t%08x\t%d\t%s:%d\n", rv, strlen(rv), file, line)
+	cstr rv = normal_Strndup(s, n)
+	Fprintf(memlog, "A\tstrndup\t%010p\t%d\t%s:%d\n", rv, strlen(rv), file, line)
 	return rv
 

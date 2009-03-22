@@ -95,22 +95,22 @@ proc reader_sel(int fd, size_t block_size)
 	port buffer out
 	state boolean done = 0
 	while !done
-		proc_debug("reader %08x - before pull", b__p)
+		proc_debug("reader %010p - before pull", b__p)
 		pull(out)
-		proc_debug("reader %08x - after pull", b__p)
+		proc_debug("reader %010p - after pull", b__p)
 		buffer_ensure_free(&out, block_size)
-		proc_debug("reader %08x - calling read(%d)", b__p, fd)
+		proc_debug("reader %010p - calling read(%d)", b__p, fd)
 		read(fd)
 		ssize_t n = read(fd, bufend(&out), buffer_get_free(&out))
 		if n == -1
 			n = 0
-			swarning("reader %08x: error", b__p)
+			swarning("reader %010p: error", b__p)
 			done = 1
 		 eif n
 			buffer_grow(&out, n)
 		 else
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
-			proc_debug("reader %08x fd %d at EOF", b__p, fd)
+			proc_debug("reader %010p fd %d at EOF", b__p, fd)
 			buffer_clear(&out)
 			done = 1
 		push(out)
@@ -119,19 +119,19 @@ proc writer_sel(int fd)
 	port buffer in
 	state boolean done = 0
 	while !done
-		proc_debug("writer %08x - before pull", b__p)
+		proc_debug("writer %010p - before pull", b__p)
 		pull(in)
-		proc_debug("writer %08x - after pull", b__p)
+		proc_debug("writer %010p - after pull", b__p)
 		if !buflen(&in)
 			shutdown(fd, SHUT_WR)
 			done = 1
 		while buflen(&in)
-			proc_debug("writer %08x - calling write(%d)", b__p, fd)
+			proc_debug("writer %010p - calling write(%d)", b__p, fd)
 			write(fd)
 			ssize_t n = write(fd, buf0(&in), buflen(&in))
 			if n == -1
 				n = 0
-				swarning("writer %08x: error", b__p)
+				swarning("writer %010p: error", b__p)
 				# signals the caller that we have an error,
 				# by the fact that the buffer is not empty.
 				done = 1
@@ -171,7 +171,7 @@ def bwrite(out, start, end)
 	pull(out)
 	buffer_cat_range(&out, start, end)
 
-def max_line_length 0
+unsigned int max_line_length = 0
 
 def breadln(in)
 	breaduntil(in, '\n')
@@ -190,6 +190,7 @@ def breaduntil(in, eol, c)
 			*c = '\0'
 			break
 		if max_line_length && buflen(&in) >= max_line_length
+			# XXX this does not nul terminate it
 			break
 		push(in)
 #		warn("breadln: buflen %d\n[%s]\n", buflen(&in), buffer_nul_terminate(&in))
@@ -289,25 +290,26 @@ proc reader_try(int fd, size_t block_size)
 	port buffer out
 	state boolean done = 0
 	while !done
-		proc_debug("reader %08x - before pull", b__p)
+		proc_debug("reader %010p - before pull", b__p)
 		pull(out)
-		proc_debug("reader %08x - after pull", b__p)
+		proc_debug("reader %010p - after pull", b__p)
 		buffer_ensure_free(&out, block_size)
 		ssize_t n = read(fd, bufend(&out), buffer_get_free(&out))
 		if n == -1
 			if errno == EAGAIN
-				proc_debug("reader %08x - calling read(%d)", b__p, fd)
+				proc_debug("reader %010p - calling read(%d)", b__p, fd)
 				read(fd)
 				continue
 			 else
 				n = 0
-				swarning("reader %08x: error", b__p)
+				if errno != ECONNRESET
+					swarning("reader %010p: error", b__p)
 				done = 1
 		 eif n
 			buffer_grow(&out, n)
 		 else  # n == 0
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
-			proc_debug("reader %08x fd %d at EOF", b__p, fd)
+			proc_debug("reader %010p fd %d at EOF", b__p, fd)
 			buffer_clear(&out)
 			done = 1
 		push(out)
@@ -316,9 +318,9 @@ proc writer_try(int fd)
 	port buffer in
 	state boolean done = 0
 	while !done
-		proc_debug("writer %08x - before pull", b__p)
+		proc_debug("writer %010p - before pull", b__p)
 		pull(in)
-		proc_debug("writer %08x - after pull", b__p)
+		proc_debug("writer %010p - after pull", b__p)
 		if !buflen(&in)
 			shutdown(fd, SHUT_WR)
 			done = 1
@@ -327,11 +329,11 @@ proc writer_try(int fd)
 			if n == -1
 				n = 0
 				if errno == EAGAIN
-					proc_debug("writer %08x - calling write(%d)", b__p, fd)
+					proc_debug("writer %010p - calling write(%d)", b__p, fd)
 					write(fd)
 					continue
 				 else
-					swarning("writer %08x: error", b__p)
+					swarning("writer %010p: error", b__p)
 					# signals the caller that we have an error,
 					# by the fact that the buffer is not empty.
 					done = 1
@@ -339,4 +341,29 @@ proc writer_try(int fd)
 			 else
 				buffer_shift(&in, n)
 		push(in)
+
+# FIXME this connect_nb_tcp is a bit long for a macro!
+# maybe it should be a proc?
+
+def connect_nb_tcp(sk, addr, port)
+	state sock_p sk
+	NEW(sk, sock, sizeof(sockaddr_in))
+	sk->fd = Socket(PF_INET, SOCK_STREAM, 0)
+	if add_fd(sk->fd)
+		Close(sk->fd)
+		error("can't connect, too many sockets")
+	cloexec(sk->fd)
+	nonblock(sk->fd)
+
+	Sockaddr_in((sockaddr_in *)sk->sa, name_to_ip(addr), port)
+	if connect(sk->fd, sk->sa, &sk->socklen)
+		if errno == EINPROGRESS
+			write(sk->fd)
+			int err
+			size_t size = sizeof(err)
+			if Getsockopt(s, SOL_SOCKET, SO_ERROR, &err, &size)
+				errno = err
+				failed("connect")
+		 else
+			failed("connect")
 

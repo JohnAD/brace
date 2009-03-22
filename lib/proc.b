@@ -18,9 +18,9 @@ proc_init(proc *p, proc_func f)
 	p->pc = 1
 
 int resume(proc *p)
-	proc_debug("resuming: %08x at %d", p, p->pc)
+	proc_debug("resuming: %010p at %d", p, p->pc)
 	int rv = (*p->f)(p)
-	proc_debug("resuming %08x returned: %d", p, rv)
+	proc_debug("resuming %010p returned: %d", p, rv)
 	if rv
 		p->pc = rv
 	return rv
@@ -72,4 +72,4 @@ Def proc(var_name, proc_name, a1, a2, a3)
 	proc_name^^_init(&var_name, a1, a2, a3)
 
 proc_dump(proc *p)
-	Fprintf(stderr, "%08x(%08x %d) ", p, p->f, p->pc)
+	Fprintf(stderr, "%010p(%010p %d) ", p, p->f, p->pc)
