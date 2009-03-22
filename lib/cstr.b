@@ -84,13 +84,7 @@ cstr cstr_of_size(size_t n)
 
 # TODO defs for libc string functions, e.g. cstr_dup -> strdup, cstr_copy -> strcpy ...; and remap
 
-cstr Strdup(cstr s)
-	cstr rv = strdup(s)
-	if rv == NULL
-		failed("strdup")
-	return rv
-# TODO use cstr_copy not strdup (which is unsafe on malloc error)
-#      maybe rename cstr_copy to cstr_dup
+# TODO maybe rename cstr_copy to cstr_dup
 def cstr_copy(s) Strdup(s)
 def cstr_cat(a, b) format("%s%s", a, b)
 def cstr_cat(a, b, c) format("%s%s%s", a, b, c)
@@ -133,11 +127,27 @@ splitv(vec *v, cstr s, char c)
 def splitv(v, s) splitv(v, s, '\t')
 
 cstr *split(cstr s, char c)
-	New(v, vec, 16)
+	new(v, vec, cstr, 16)
 	splitv(v, s, c)
 	return vec_to_array(v)
 
+cstr *splitn(cstr s, char c, int n)
+	new(v, vec, cstr, 16)
+	splitvn(v, s, c, n)
+	return vec_to_array(v)
+
+splitvn(vec *v, cstr s, char c, int n)
+	vec_push(v, s)
+	if --n
+		for_cstr(i, s)
+			if *i == c
+				*i = '\0'
+				vec_push(v, i+1)
+				if --n == 0
+					break
+
 def split(s) split(s, '\t')
+def split(s, c, n) splitn(s, c, n)
 
 def for_cstr(i, s)
 	char *i
@@ -154,12 +164,6 @@ cstr join(cstr sep, cstr *s)
 				break
 			buffer_cat_cstr(b, sep)
 	return buffer_to_cstr(b)
-
-char *Strndup(const char *s, size_t n)
-	char *rv = strndup(s, n)
-	if !rv
-		failed("strndup")
-	return rv
 
 char *Strstr(const char *haystack, const char *needle)
 	char *rv = strstr(haystack, needle)

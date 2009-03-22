@@ -125,7 +125,7 @@ Main()
 		
 		if delay < 0
 			break
-		rsleep(delay)
+		Rsleep(delay)
 		
 		latitude += delta_latitude
 		longitude += delta_longitude

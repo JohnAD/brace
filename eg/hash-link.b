@@ -3,13 +3,31 @@ use openssl/sha.h
 use openssl/md5.h
 use b
 #link ssl
-#export LDFLAGS="-lssl"
+#export LDLIBS="-lssl"
 
 def block_size 4096
 
-def hash_dir "/hash"
+enum {SYMLINK_NO, SYMLINK_PATH, SYMLINK_NAME} use_symlink = SYMLINK_NO
+
+Usage()
+	usage("[-s|-S] out-dir in-dir ...")
 
 Main()
+	if !args
+		Usage()
+	if cstr_eq(arg[0], "-s")
+		use_symlink = SYMLINK_PATH
+		++arg ; --args
+	 eif cstr_eq(arg[0], "-S")
+		use_symlink = SYMLINK_NAME
+		++arg ; --args
+	if !args
+		Usage()
+
+	cstr hash_dir = arg[0]
+	++arg ; --args
+	mkdir(hash_dir, 0777)
+
 	find_main(f, s)
 		if S_ISREG(s->st_mode)
 			uchar sha1sum[SHA_DIGEST_LENGTH]
@@ -44,10 +62,16 @@ Main()
 			cstr hash_path = path_cat(hash_dir, hash_file)
 
 			if exists(hash_path)
-				# Link(hash_path, f)
-				.
+				Remove(f)
 			 else
-				Link(f, hash_path)
+				Rename(f, hash_path)
+
+			if use_symlink == SYMLINK_NAME
+				Symlink(hash_file, f)
+			 eif use_symlink == SYMLINK_PATH
+				Symlink(hash_path, f)
+			 else
+				Link(hash_path, f)
 
 			Sayf("%s\t%s", hash_file, f)
 			Close(fd)

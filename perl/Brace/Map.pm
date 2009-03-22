@@ -10,7 +10,7 @@ our @lines;
 sub brace_map {
 	my ($map_fh) = @_;
 	my ($map, $globby) = read_map($map_fh);
-	brace_map_hash($map, $globby);
+	return brace_map_hash($map, $globby);
 }
 
 sub brace_map_hash {
@@ -30,11 +30,12 @@ sub brace_map_hash {
 				$changed = 1;
 			} elsif (my $other = $globby->{$_}) {
 				print STDERR "X\n\n";
-				die <<End;
+				warn <<End;
 can't map tokens - target of $other->$_ is in use
 If you wish to glob to a token foo, you must include
 foo->foo in the map.
 End
+				return 0;
 			}
 		}
 		if ($changed) {

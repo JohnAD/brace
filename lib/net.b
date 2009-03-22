@@ -3,6 +3,10 @@ use error io util
 
 use net
 
+typedef struct sockaddr sockaddr
+typedef struct sockaddr_in sockaddr_in
+typedef struct sockaddr_un sockaddr_un
+
 int Socket(int domain, int type, int protocol)
 	int fd = socket(domain, type, protocol)
 	if fd == -1
@@ -37,8 +41,7 @@ Connect(int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
 		get_winsock_errno()
 		failed("connect")
 
-Sockaddr_in(struct sockaddr *sockaddr, char *addr, int port)
-	struct sockaddr_in *sa = (struct sockaddr_in *)sockaddr
+Sockaddr_in(struct sockaddr_in *sa, char *addr, int port)
 	sa->sin_family = AF_INET
 	sa->sin_port = htons(port)
 	if inet_aton(addr, &sa->sin_addr) == 0
@@ -69,7 +72,7 @@ hostent *Gethostbyname(const char *name)
 #              later.
 
 # Warning: name_to_ip returns either is argument (if already an IP address) or
-# a pointer to a static buffer from inet_ntoa.  So you might want to use strdup
+# a pointer to a static buffer from inet_ntoa.  So you might want to use Strdup
 # to duplicate the result before it is overwritten later.
 
 cstr name_to_ip(const char *name)
@@ -86,9 +89,9 @@ int Server_tcp(char *addr, int port)
 	int ear = Socket(PF_INET, SOCK_STREAM, 0)
 	int reuseaddr = 1
 	Setsockopt(ear, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr))
-	struct sockaddr sockaddr
-	Sockaddr_in(&sockaddr, addr, port)
-	Bind(ear, &sockaddr, sizeof(sockaddr))
+	struct sockaddr_in sa
+	Sockaddr_in(&sa, addr, port)
+	Bind(ear, (sockaddr *)&sa, sizeof(sockaddr_in))
 	Listen(ear)
 	return ear
 
@@ -97,14 +100,12 @@ Setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen)
 		get_winsock_errno()
 		failed("setsockopt")
 
-# to getsockopt - why?
-
 int Client_tcp(char *addr, int port)
 	addr = name_to_ip(addr)
 	int sock = Socket(PF_INET, SOCK_STREAM, 0)
-	struct sockaddr sockaddr
-	Sockaddr_in(&sockaddr, addr, port)
-	Connect(sock, &sockaddr, sizeof(sockaddr))
+	struct sockaddr_in sa
+	Sockaddr_in(&sa, addr, port)
+	Connect(sock, (sockaddr *)&sa, sizeof(sockaddr))
 	return sock
 
 def Server(addr, port) Server_tcp(addr, port)
@@ -188,8 +189,21 @@ Closesocket(int fd)
 	if closesocket(fd_to_socket(fd)) != 0
 		failed("closesocket")
 
-keepalive(int fd)
-	int keepalive = 1
+def keepalive(fd) keepalive(fd, 1)
+keepalive(int fd, int keepalive)
 	Setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(keepalive))
+
+def nodelay(fd) nodelay(fd, 1)
+nodelay(int fd, int nodelay)
+	Setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay))
+
+def cork(fd) cork(fd, 1)
+cork(int fd, int cork)
+	Setsockopt(fd, IPPROTO_TCP, TCP_CORK, &cork, sizeof(cork))
+
+Getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
+	if getsockopt(s, level, optname, optval, optlen)
+		get_winsock_errno()
+		failed("getsockopt")
 
 # TODO add / use getaddrinfo

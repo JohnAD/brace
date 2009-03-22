@@ -1,18 +1,18 @@
 use stdio.h
 use termios.h
 use unistd.h
-use signal.h
 use stdlib.h
 
 use error
 use util
+use process
 
 typedef struct termios termios
 termios term, term_orig
 
 raw()
 	int rv
-	rv = tcgetattr (STDIN_FILENO, &term)
+	rv = tcgetattr(STDIN_FILENO, &term)
 	if rv < 0
 		error("tcgetattr failed")
 	term_orig = term
@@ -38,11 +38,25 @@ cooked()
 	if rv < 0
 		error("tcsetattr failed")
 
+noecho()
+	int rv
+	rv = tcgetattr(STDIN_FILENO, &term)
+	if rv < 0
+		error("tcgetattr failed")
+	term_orig = term
+
+	term.c_lflag &= ~(ECHO|ECHONL)
+	term.c_lflag |= ISIG
+
+	rv = tcsetattr(STDIN_FILENO, TCSANOW, &term)
+	if rv < 0
+		error("tcsetattr failed")
+
 key_init()
 	raw()
-	signal(SIGCONT, cont_handler)
-	signal(SIGINT, int_handler)
-	signal(SIGPIPE, int_handler)
+	Sigact(SIGCONT, cont_handler)
+	Sigact(SIGINT, int_handler)
+	Sigact(SIGPIPE, int_handler)
 
 key_final()
 	cooked()
@@ -63,3 +77,11 @@ int_handler(int signum)
 	use(signum)
 	cooked()
 	exit(1)
+
+def Input_passwd() Input_passwd("Password: ")
+cstr Input_passwd(cstr prompt)
+	noecho()
+	cstr pass = Input(prompt)
+	nl()
+	cooked()
+	return pass

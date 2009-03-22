@@ -49,12 +49,12 @@ circbuf_set_space(circbuf *b, size_t space)
 	size_t max_first_part = b->space - b->start
 	ssize_t second_part = b->size - max_first_part
 	if second_part <= 0
-#		fprintf(stderr, "a %08x %08x %08x\n", new_data, b->data+b->start, b->size)
+#		fprintf(stderr, "a %010p %010p %08x\n", new_data, b->data+b->start, b->size)
 		memcpy(new_data, b->data+b->start, b->size)
 	else
-#		fprintf(stderr, "b %08x %08x %08x\n", new_data, b->data+b->start, max_first_part)
+#		fprintf(stderr, "b %010p %010p %08x\n", new_data, b->data+b->start, max_first_part)
 		memcpy(new_data, b->data+b->start, max_first_part)
-#		fprintf(stderr, "c %08x %08x %08x\n", new_data+max_first_part, b->data, second_part)
+#		fprintf(stderr, "c %010p %010p %08x\n", new_data+max_first_part, b->data, second_part)
 		memcpy(new_data+max_first_part, b->data, second_part)
 	Free(b->data)
 	b->data = new_data

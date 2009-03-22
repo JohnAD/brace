@@ -7,7 +7,7 @@ enum { MAXLINE = 1024 };
 
 enum { MAXTABS = 256 };
 
-enum { SWITCH, WHICH, STRUCT, CLASS, INIT, VOID_MAIN, MACRO, DO, DOWHILE, OTHER };
+enum { SWITCH, WHICH, STRUCT, CLASS, INIT, VOID_MAIN, MACRO, DO, DOWHILE, ELSE, OTHER };
 
 char *cstr_begins_with(char *s, const char *substr);
 void exits(char *msg);
@@ -47,7 +47,7 @@ int casetabs;
 int blocktype[MAXTABS];
 int is_kwdparens;
 
-char *kwdparens[] = { "if", "else if", "while", "do", "for", "switch", 0 };
+char *kwdparens[] = { "if", "else if", "while", "do", "for", "switch", "else", 0 };
 char *lastlabel = 0;
 char *lastcase = 0;
 int in_macro = 0;
@@ -283,6 +283,7 @@ void procstmt(void)
 		writes(line+4);
 		line = ")";
 		len = 1;
+		is_kwdparens = 1;
 	}
 	else if(strcmp(line, "repeat") == 0)
 	{
@@ -294,12 +295,15 @@ void procstmt(void)
 		for(k=kwdparens; *k != 0; ++k)
 		{
 			int l = strlen(*k);
-			if(cstr_begins_with(line, *k) && line[l] == ' ')
+			if(cstr_begins_with(line, *k) && (line[l] == ' ' || line[l] == '\0'))
 			{
-				line[l] = '(';
-				writes(line);
-				line = ")";
-				len = 1;
+				if(line[l] == ' ')
+				{
+					line[l] = '(';
+					writes(line);
+					line = ")";
+					len = 1;
+				}
 				is_kwdparens = 1;
 				break;
 			}
@@ -363,6 +367,10 @@ void writestmt(void)
 	{
 		blocktype[tabs] = SWITCH;
 	}
+	else if(cstr_begins_with(line, "else") && (len == 4 || line[4] == ' '))
+	{
+		blocktype[tabs] = ELSE;
+	}
 	else if(cstr_begins_with(line, "which "))
 	{
 		blocktype[tabs] = WHICH;
@@ -420,6 +428,7 @@ void writestmt(void)
 		{
 			blocktype[tabs] = CLASS;
 		}
+		else if(*c == '^' || *c == '#') {}
 		else
 		{
 			blocktype[tabs] = OTHER;

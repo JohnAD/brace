@@ -4,7 +4,7 @@ package = brace
 
 destdir=$(CURDIR)/debian/$(package)
 
-DEBUG = 0
+DEBUG = 
 
 ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
   OPTIMISE = 1

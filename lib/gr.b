@@ -242,7 +242,7 @@ gr__change_hook()
 	if _autopaint
 		paint()
 	if _delay
-		sleep(_delay)
+		Sleep(_delay)
 
 def thin()
 	width(0)

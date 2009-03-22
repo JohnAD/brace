@@ -14,7 +14,7 @@ export util
 def shuttle(type)
 	struct sh(type)
 		shuttle sh
-		type data
+		type d
 
 # this sh(type) is a bit dodgy because doesn't work for complex C types,
 # need to use typedef, e.g. char * -> cstr
@@ -38,7 +38,7 @@ shuttle_init(shuttle *sh, proc *p1, proc *p2)
 # TODO push_pull_f ?
 
 boolean pull_f(shuttle *s, proc *p)
-	proc_debug("%08x %08x: pull_f", p, s)
+	proc_debug("%010p %010p %010p: pull_f", p, s, s->current)
 	boolean must_wait = s->current != p
 	if must_wait
 		s->other_state = WAITING
@@ -46,7 +46,7 @@ boolean pull_f(shuttle *s, proc *p)
 	return must_wait
 
 push_f(shuttle *s, proc *p)
-	proc_debug("%08x %08x: push_f", p, s)
+	proc_debug("%010p %010p: push_f", p, s)
 	if s->current == p
 		proc_debug("  pushing")
 		proc *other = s->other
@@ -56,31 +56,30 @@ push_f(shuttle *s, proc *p)
 		int other_state = s->other_state
 		s->other_state = ACTIVE
 		if other_state == WAITING
-			proc_debug("  starting other (%08x)", other)
+			proc_debug("  starting other (%010p)", other)
 			start_f(other)
 
 def pull(s)
-	if pull_f(&s->sh, b__p)
+	if pull_f(&This->s->sh, b__p)
 		wait
 
 def push(s)
-	push_f(&s->sh, b__p)
+	push_f(&This->s->sh, b__p)
 
-def here(s) s->sh.current == b__p
-
-def sh__d(s) s->data
-def d(s) sh__d(s)
- # an abbreviation
+def here(s) This->s->sh.current == b__p
 
 Def sh(type) shuttle_^^type
 
 # fancy macros to connect two procs' ports with a shuttle
 
+def sh_init(s, from_proc, to_proc)
+	sh_init(s, from_proc, out, to_proc, in)
+
 def sh_init(s, from_proc, from_port, to_proc, to_port)
 	shuttle_init(&s->sh, &from_proc->p, &to_proc->p)
 	from_proc->from_port = s
 	to_proc->to_port = s
-	proc_debug("sh_init: %08x = %08x -> %08x", s, from_proc, to_proc)
+	proc_debug("sh_init: %010p = %010p -> %010p", s, from_proc, to_proc)
 
 def sh(type, from_proc, to_proc)
 	sh(my(sh), type, from_proc, to_proc)
@@ -99,15 +98,15 @@ def shuttle(var_name, type, from_proc, from_port, to_proc, to_port)
 # these are the "passive" (non-controlling) rd/wr
 
 def wr(s, v)
-	proc_debug("%08x %08x: wr", b__p, s)
+	proc_debug("%010p %010p: wr", b__p, s)
 	pull(s)
-	sh__d(s) = v
+	s = v
 	push(s)
 
 def rd(s, v)
-	proc_debug("%08x %08x: rd", b__p, s)
+	proc_debug("%010p %010p: rd", b__p, s)
 	pull(s)
-	v = sh__d(s)
+	v = s
 	push(s)
 
 # next does a push,pull on a shuttle - this is different way to use the channel, where the function needs to be in control of the object at all times while it is active.
@@ -116,7 +115,7 @@ def rd(s, v)
 # shuttle if they need to write to it initially
 
 def next(s)
-	proc_debug("%08x %08x: next", b__p, s)
+	proc_debug("%010p %010p: next", b__p, s)
 	push(s)
 	pull(s)
 
@@ -137,7 +136,7 @@ def next(s)
 #
 #def cut(s)
 #	pull(s)
-#	sh__d(s) = 1
+#	s->d = 1
 #	push(s)
 #
 #	int must_wait

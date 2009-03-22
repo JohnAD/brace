@@ -10,6 +10,9 @@ def priq_c1(i) i*2+1
 def priq_init(q, element_type, space)
 	init(q, vec, element_type, space)
 
+def priq_free(q)
+	vec_free(q)
+
 def priq_get_size(q) vec_get_size(q)
 
 def priq_element(q, i) vec_element(q, i)

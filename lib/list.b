@@ -66,7 +66,7 @@ list_dump(list *l)
 			Say("NULL")
 			break
 		else
-			Sayf("%08x ", l)
+			Sayf("%010p ", l)
 			l = list_next(l)
 
 list *list_reverse(list *l)
@@ -176,7 +176,7 @@ def for_list(i, first_link)
 # can do allocators contextually too like graphics, IO, ...
 list_free(list **l)
 	for_list(i, l)
-		free(i)
+		Free(i)
 
 # FIXME we need a "link" type and a "node" type, not a "list" type (which would be same as link type)
 # can't use the name "link" though unless we rename the library function.  HOW to do that?

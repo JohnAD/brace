@@ -319,7 +319,7 @@ sub expand_macro {
 				strip_enclosing_parens($arg);
 			}
 		}
-		if ($type !~ /raw/ && @$arg > 1) {
+		if ($type !~ /raw/ && @$arg > 1 && $$arg[-1] !~ /^[*&]$/) {
 			unshift @$arg, "(";
 			push @$arg, ")";
 		}

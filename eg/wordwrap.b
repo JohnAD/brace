@@ -5,10 +5,10 @@ Main()
 		usage("width")
 	int width = atoi(arg[0])
 	sched_init()
-	new(r, reader)
-	new(s, splitter)
-	new(f, filler, width)
-	new(w, writer)
+	new(r, Reader)
+	new(s, Splitter)
+	new(f, Filler, width)
+	new(w, Writer)
 	sh(cstr, r, s)
 	sh(cstr, s, f)
 	sh(cstr, f, w)
@@ -19,7 +19,7 @@ Main()
 	start(w)
 	run()
 
-proc reader()
+proc Reader()
 	port cstr out
 	state cstr s
 	repeat
@@ -28,7 +28,7 @@ proc reader()
 		if s == NULL
 			break
 
-proc splitter()
+proc Splitter()
 	port cstr in
 	port cstr out
 	state cstr line
@@ -71,7 +71,7 @@ proc splitter()
 
 # TODO some sort of subroutines / states / functions-that-can-yield within coros
 
-proc filler(int width)
+proc Filler(int width)
 	port cstr in
 	port cstr out
 	state buffer struct__b
@@ -105,7 +105,7 @@ proc filler(int width)
 				buffer_cat_char(b, ' ')
 			buffer_cat_cstr(b, word)
 
-proc writer()
+proc Writer()
 	port cstr in
 	state cstr s
 	repeat

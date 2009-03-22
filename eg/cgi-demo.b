@@ -26,7 +26,7 @@ Main()
 	R *= 0.9
 	int step
 	do
-		step = Randint(1, 12)
+		step = Randi(1, 12)
 	 while step == 6
 	thin() ; white()
 	move(0, R)

@@ -1,9 +1,9 @@
 url_decode(cstr q)
 	cstr o = q
 	while *q
-		if *q == '+'
-			*o = ' '
-		 eif *q == '%' && q[1] && q[2]
+#		if *q == '+'
+#			*o = ' '
+		if *q == '%' && q[1] && q[2]
 			char c[3] = { q[1], q[2], '\0' }
 			*o = (char)strtol(c, NULL, 16)
 			q+=2
@@ -28,13 +28,28 @@ cstr url_encode(cstr q)
 			buffer_cat_char(b, c)
 	return buffer_to_cstr(b)
 
-cstr url_host(cstr url)
-	cstr host = Strstr(url, "//") + 2
-	cstr host_end = Strchr(host, '/')
-	if !host_end
-		host_end = host+strlen(host)
-	host = Strndup(host, host_end-host)
+# malloc'd
+cstr get_host_from_url(cstr url)
+	cstr host = strstr(url, "://")
+	if host
+		host += 3
+		char *e = strchr(host, '/')
+		if e
+			host = Strndup(host, e-host)
+		 else
+			host = NULL
 	return host
+
+# not malloc'd
+cstr get_path_from_url(cstr url)
+	cstr path = url
+	cstr host = strstr(url, "://")
+	if host
+		host += 3
+		path = strchr(host, '/')
+		if !path
+			path = "/"
+	return path
 
 int _http_fake_browser = 0
 def http_fake_browser() http_fake_browser(1)
@@ -42,12 +57,14 @@ http_fake_browser(int f)
 	_http_fake_browser = f
 
 cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *rsp_headers, buffer *rsp_data)
-	cstr host_port = url_host(url)
+	cstr host_port = get_host_from_url(url)
+	if !host_port
+		error("http: invalid url %s", url)
 	cstr path = Strchr(Strstr(url, "//") + 2, '/')
 	if !*path
 		path = "/"
 	int port = 80
-	cstr host = strdup(host_port)
+	cstr host = Strdup(host_port)
 	cstr port_s = strchr(host, ':')
 	if port_s
 		*port_s++ = '\0'
@@ -63,14 +80,14 @@ cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *
 
 	if req_headers
 		Fwrite_buffer(s, req_headers)
-	crnl(s)
+	crlf(s)
 	if req_data
 		Fwrite_buffer(s, req_data)
 	Fflush(s)
 
 	Shutdown(fd)
 
-	decl(rsp_headers_tmp, buffer) 
+	decl(rsp_headers_tmp, buffer)
 	buffer *rsp_headers_orig = rsp_headers
 	if !rsp_headers_orig
 		init(rsp_headers_tmp, buffer, 512)
@@ -126,4 +143,49 @@ cstr http_post(cstr url, cstr _req_data, buffer *rsp_data)
 	buffer_from_cstr(req_data, _req_data)
 	return http("POST", url, NULL, req_data, NULL, rsp_data)
 
-use cstr alloc util io
+const char *base64_encode_map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+char *base64_decode_map = NULL
+
+base64_decode_buffers(buffer *i, buffer *o)
+	b_io(i, o)
+		base64_decode()
+
+base64_decode()
+	if !base64_decode_map
+		base64_decode_map = Calloc(128)
+		for(i, 0, 64)
+			base64_decode_map[(unsigned int)base64_encode_map[i]] = i
+	int c
+	repeat
+		long o = 0
+		for_keep(i, 0, 4)
+			do
+				c = gc()
+			 while isspace(c)
+			if c == EOF || c == '='
+				break
+			o |= base64_decode_map[c & 0x7F] << (6*(3-i))
+		for(j, 0, i-1)
+			pc((char)(o>>((2-j)*8)))
+		if i < 4
+			break
+
+# TODO base64_encode
+
+typedef enum { HTTP_GET, HTTP_PUT, HTTP_HEAD, HTTP_POST, HTTP_INVALID } http__method
+
+http__method http_which_method(cstr method)
+	http__method rv
+	if cstr_eq(method, "GET")
+		rv = HTTP_GET
+	 eif cstr_eq(method, "PUT")
+		rv = HTTP_PUT
+	 eif cstr_eq(method, "HEAD")
+		rv = HTTP_HEAD
+	 eif cstr_eq(method, "POST")
+		rv = HTTP_POST
+	 else
+		rv = HTTP_INVALID
+	return rv
+
+use cstr alloc util io vio

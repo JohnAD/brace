@@ -39,6 +39,9 @@ deq_size(deq *q, size_t size)
 	q->size = size
 	q->b.size = size * q->element_size
 
+deq_clear(deq *q)
+	q->size = q->b.size = 0
+
 deq_double(deq *q)
 	deq_space(q, q->space * 2)
 
@@ -60,7 +63,7 @@ void *deq_push(deq *q)
 	q->b.size += q->element_size
 	return deq_element(q, q->size-1)
 def deq_push(q, data)
-	*(typeof(&data))deq_push(q) = data
+	*(typeof(data) *)deq_push(q) = data
 
 deq_pop(deq *q)
 	--q->size
@@ -127,3 +130,8 @@ my(st)		.
 
 def deq_set_space deq_space
 def deq_get_space(q) q->space
+
+def q(deq, i) deq_element(deq, i)
+
+def deqlen(q) deq_get_size(q)
+def deqclr(q) deq_clear(q)

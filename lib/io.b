@@ -1,7 +1,8 @@
-export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h
+export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
-export str error buffer types net
-use m alloc util path env
+export str error buffer types net vec vio
+use sys/socket.h
+use m alloc util path env process
 
 use io
 
@@ -11,7 +12,7 @@ int Open(const char *pathname, int flags, mode_t mode)
 	int fd = open(pathname, flags, mode)
 	if fd == -1
 		char msg[8]
-		cstr how
+		cstr how = ""
 		strcpy(msg, "open ")
 		which flags & 3
 		O_RDONLY	how = "r"
@@ -97,7 +98,7 @@ slurp_2(int fd, buffer *b)
 # TODO fix slurp(fd, buffer) so that it does the fstat instead of this one
 
 buffer *slurp_1(int filedes)
-	decl(st, stats)
+	decl(st, Stats)
 	Fstat(filedes, st)
 	int size = st->st_size
 
@@ -142,7 +143,7 @@ fslurp_2(FILE *s, buffer *b)
 # TODO fix slurp(fd, buffer) so that it does the fstat instead of this one
 
 buffer *fslurp_1(FILE *s)
-	decl(st, stats)
+	decl(st, Stats)
 	Fstat(fileno(s), st)
 	int size = st->st_size
 
@@ -209,6 +210,16 @@ int Freadline(buffer *b, FILE *stream)
 
 int Readline(buffer *b)
 	return Freadline(b, stdin)
+
+def Readline() Freadline(stdin)
+def Freadline(stream) Freadline_1(stream)
+
+cstr Freadline_1(FILE *stream)
+	new(b, buffer, 128)
+	if Freadline(b, stream)
+		buffer_free(b)
+		return NULL
+	return buffer_to_cstr(b)
 
 int Printf(const char *format, ...)
 	collect(Vprintf, format)
@@ -278,10 +289,10 @@ def spcs(stream, n)
 def spcs(n)
 	spcs(stdout, n)
 
-crnl(FILE *stream)
+crlf(FILE *stream)
 	Fprint(stream, "\r\n")
-def crnl()
-	crnl(stdout)
+def crlf()
+	crlf(stdout)
 
 # like perl, Say adds a newline, Print doesn't
 def Print(s)
@@ -385,6 +396,48 @@ Closedir(DIR *dir)
 	if closedir(dir) != 0
 		failed("closedir")
 
+vec *Slurpdir(const char *name)
+	vec *v = slurpdir(name)
+	if !v
+		failed("slurpdir", name)
+	return v
+
+# TODO use dir->d_type ?
+
+def slurpdir(name) slurpdir_0(name)
+vec *slurpdir_0(const char *name)
+	New(v, vec, cstr, 64)
+	return slurpdir(name, v)
+
+vec *slurpdir(const char *name, vec *v)
+	struct dirent *e
+	DIR *dir = opendir(name)
+	if dir == NULL
+		return NULL
+	repeat
+		errno = 0
+		e = readdir(dir)
+		if errno
+			Free(v)
+			v = NULL
+			break
+		if !e
+			break
+		*(cstr*)vec_push(v) = Strdup(e->d_name)
+		
+	closedir(dir)
+	return v
+
+def slurp_lines() slurp_lines_0()
+vec *slurp_lines_0()
+	New(lines, vec, cstr, 256)
+	return slurp_lines(lines)
+
+vec *slurp_lines(vec *lines)
+	eachline(s)
+		vec_push(lines, Strdup(s))
+	return lines
+
 Remove(const char *path)
 	if remove(path) != 0
 		failed("remove")
@@ -427,7 +480,7 @@ int Tempfile(buffer *b, char *prefix, char *suffix, char *tmpdir, int dir, int m
 	return -1
 
 char random_alphanum()
-	int r = Randint(10 + 26 * 2)
+	int r = Randi(10 + 26 * 2)
 	if r < 10
 		return '0' + r
 	if r < 10 + 26
@@ -440,9 +493,13 @@ char random_alphanum()
 
 int exists(const char *file_name)
 	struct stat buf
-	return Stat(file_name, &buf)
+	return !stat(file_name, &buf)
 
-int file_size(const char *file_name)
+int lexists(const char *file_name)
+	struct stat buf
+	return !lstat(file_name, &buf)
+
+off_t file_size(const char *file_name)
 	struct stat buf
 	Stat(file_name, &buf)
 	return buf.st_size
@@ -457,13 +514,21 @@ int Stat(const char *file_name, struct stat *buf)
 		return 1
 	if errno == ENOENT || errno == ENOTDIR
 		return 0
-	failed("stat")
+	failed("stat", file_name)
 	# keep gcc happy
 	return 0
+
+int is_file(const char *file_name)
+	struct stat buf
+	return Stat(file_name, &buf) && S_ISREG(buf.st_mode)
 
 int is_dir(const char *file_name)
 	struct stat buf
 	return Stat(file_name, &buf) && S_ISDIR(buf.st_mode)
+
+int is_symlink(const char *file_name)
+	struct stat buf
+	return Lstat(file_name, &buf) && S_ISLNK(buf.st_mode)
 
 int is_real_dir(const char *file_name)
 	struct stat buf
@@ -490,23 +555,33 @@ cnotx(const char *path)
 	chmod_sub(path, S_IXUSR | S_IXGRP | S_IXOTH)
 
 chmod_add(const char *path, mode_t add_mode)
-	new(s, stats, path)
+	new(s, Stats, path)
 	Chmod(path, s->st_mode | add_mode)
 
 chmod_sub(const char *path, mode_t sub_mode)
-	new(s, stats, path)
+	new(s, Stats, path)
 	Chmod(path, s->st_mode & ~sub_mode)
 
 typedef struct stat stats
 typedef struct stat lstats
+typedef struct stat Stats
+typedef struct stat Lstats
 
-stats_init(stats *s, const char *file_name)
+Stats_init(stats *s, const char *file_name)
 	if !Stat(file_name, s)
 		bzero(s)
 
-lstats_init(stats *s, const char *file_name)
+Lstats_init(stats *s, const char *file_name)
 	if !Lstat(file_name, s)
-		s->st_mode = 0
+		bzero(s)
+
+stats_init(stats *s, const char *file_name)
+	if stat(file_name, s)
+		bzero(s)
+
+lstats_init(stats *s, const char *file_name)
+	if lstat(file_name, s)
+		bzero(s)
 
 def S_EXISTS(m) m
 
@@ -517,7 +592,7 @@ int Lstat(const char *file_name, struct stat *buf)
 		return 1
 	if errno == ENOENT || errno == ENOTDIR
 		return 0
-	failed("lstat")
+	failed("lstat", file_name)
 	# keep gcc happy
 	return 0
 
@@ -596,7 +671,7 @@ def Putchar(c)
 	eif putchar(c) == EOF
 		failed("putchar")
 
-Fseek(FILE *stream, long offset, int whence)	
+Fseek(FILE *stream, long offset, int whence)
 	if fseek(stream, offset, whence)
 		failed("fseek")
 
@@ -607,7 +682,7 @@ long Ftell(FILE *stream)
 	return ret
 
 # these don't seem to work:
-#Fseeko(FILE *stream, off_t offset, int whence)	
+#Fseeko(FILE *stream, off_t offset, int whence)
 #	if fseeko(stream, offset, whence)
 #		failed("fseeko")
 #
@@ -664,11 +739,11 @@ cstr Readlink(const char *path)
 typedef enum { if_dead_error, if_dead_null, if_dead_path, if_dead_warn=1<<31 } readlinks_if_dead
 
 cstr readlinks(cstr path, readlinks_if_dead if_dead)
-	path = strdup(path)
+	path = Strdup(path)
 	let(warn_if_dead, (if_dead & if_dead_warn) != 0)
 	if_dead &= ~if_dead_warn
 
-	decl(stat_b, stats)
+	decl(stat_b, Stats)
 	repeat
 		if !Lstat(path, stat_b)
 			if warn_if_dead
@@ -713,11 +788,12 @@ Chdir(const char *path)
 	if chdir(path) != 0
 		failed("chdir")
 
-Mkdir(const char *pathname, mode_t mode)	
+Mkdir(const char *pathname, mode_t mode)
 	int rv = mkdir(pathname, mode)
 	if rv
 		failed("mkdir")
 
+def mkdir(pathname) mkdir(pathname, 0777)
 def Mkdir(pathname) Mkdir(pathname, 0777)
 
 Mkdir_if(const char *pathname, mode_t mode)
@@ -785,7 +861,7 @@ say_range(char *start, char *end)
 fsay_range(FILE *stream, char *start, char *end)
 	fprint_range(stream, start, end)
 
-stats_dump(stats *s)
+stats_dump(Stats *s)
 	Sayf("dev\t%d", s->st_dev)
 	Sayf("ino\t%d", s->st_ino)
 	Sayf("mode\t%d", s->st_mode)
@@ -794,7 +870,7 @@ stats_dump(stats *s)
 	Sayf("gid\t%d", s->st_gid)
 	Sayf("rdev\t%d", s->st_rdev)
 	Sayf("size\t%d", s->st_size)
- 	
+	
 	# not in mingw
 	#	Sayf("blksize\t%d", s->st_blksize)
 	#	Sayf("blocks\t%d", s->st_blocks)
@@ -804,7 +880,7 @@ stats_dump(stats *s)
 	Sayf("ctime\t%d", s->st_ctime)
 
 mode_t mode(const char *file_name)
-	new(s, stats, file_name)
+	new(s, Stats, file_name)
 	return s->st_mode
 
 def cp(oldpath, newpath) cp(oldpath, newpath, 0666)
@@ -834,8 +910,7 @@ fcp(FILE *in, FILE *out)
 
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
 	int rv = select(nfds, readfds, writefds, exceptfds, timeout)
-	# TODO check for EINTR ?
-	if rv == -1
+	if rv == -1 && errno != EINTR
 		failed("select")
 	return rv
 
@@ -856,7 +931,7 @@ fd_set_init(fd_set *o)
 # use local / static?
 
 cstr which(cstr file)
-	cstr PATH = strdup(Getenv("PATH"))
+	cstr PATH = Strdup(Getenv("PATH"))
 	new(v, vec, cstr, 32)
 	splitv(v, PATH, PATH_sep)
 	cstr path = NULL
@@ -915,14 +990,16 @@ def dir1rest(path, d, b)
 		b = NULL
 
 Mkdirs(const char *pathname, mode_t mode)
-	cstr basedir = Getcwd()
-	cstr dir1 = strdup(pathname)
+	cstr my(cwd) = Getcwd()
+	Mkdirs_cwd(pathname, mode, my(cwd))
+	Free(my(cwd))
+
+Mkdirs_cwd(const char *pathname, mode_t mode, cstr basedir)
+	cstr dir1 = Strdup(pathname)
 	cstr dir = dir1
 	repeat
 		dir1rest(dir, d, b)
-		warn("mkdir %s", d)
 		mkdir(d, mode)
-		warn("chdir %s", d)
 		Chdir(d)
 		if !b || !*b
 			break
@@ -933,31 +1010,32 @@ Mkdirs(const char *pathname, mode_t mode)
 
 def Mkdirs(pathname) Mkdirs(pathname, 0777)
 
+Rmdir(const char *pathname)
+	if rmdir(pathname)
+		failed("rmdir")
+
 Rmdirs(const char *pathname)
-	cstr dir = strdup(pathname)
+	cstr dir = Strdup(pathname)
 	repeat
-		warn("rmdir %s", dir)
 		if rmdir(dir)
-			warn("b1")
 			break
 		let(d, dir_name(dir))
 		if (*d == '.' || *d == '/') && d[1] == '\0'
-			warn("b2")
 			break
 		dir = d
 	
 	Free(dir)
 
 boolean newer(const char *file1, const char *file2)
-	new(s1, stats, file1)
-	new(s2, stats, file2)
+	new(s1, Stats, file1)
+	new(s2, Stats, file2)
 	return s1->st_mtime - s2->st_mtime > 0
 
 lnsa(cstr from, cstr to, cstr cwd)
 	cstr cwd1 = path_cat(cwd, "")
-	from = path_tidy(path_relative_to(strdup(from), cwd1))
+	from = path_tidy(path_relative_to(Strdup(from), cwd1))
 	if is_dir(to)
-		cstr from1 = strdup(from)  # this is ugly, write a base_name which does not modify the string
+		cstr from1 = Strdup(from)  # this is ugly, write a base_name which does not modify the string
 		cstr to1 = path_cat(to, base_name(from1))
 		Free(from1)
 		remove(to1)
@@ -968,3 +1046,122 @@ lnsa(cstr from, cstr to, cstr cwd)
 		Symlink(from, to)
 	Free(cwd1)
 	Free(from)
+
+buffer _Cp_symlink, *Cp_symlink = NULL
+
+def Cp(from, to)
+	new(my(sf), Lstats, from)
+	Cp(from, to, sf)
+Cp(cstr from, cstr to, Lstats *sf)
+	if S_ISLNK(sf->st_mode)
+		if !Cp_symlink
+			Cp_symlink = &_Cp_symlink
+			init(Cp_symlink, buffer, 256)
+		buffer_clear(Cp_symlink)
+		Symlink(Readlink(from, Cp_symlink), to)
+	 eif S_ISREG(sf->st_mode)
+		cp(from, to)
+	 else
+		warn("irregular file %s not copied", from)
+
+def CP(from, to)
+	new(my(sf), Lstats, from)
+	CP(from, to, my(sf))
+CP(cstr from, cstr to, Lstats *sf)
+	Cp(from, to, sf)
+	cp_attrs_st(sf, to)
+
+cp_attrs(cstr from, cstr to)
+	new(sf, Lstats, from)
+	cp_attrs_st(sf, to)
+
+cp_attrs_st(Lstats *sf, cstr to)
+	if !S_ISLNK(sf->st_mode)
+		cp_mode(sf, to)
+	if Getuid() == uid_root
+		cp_owner(sf, to)
+	cp_times(sf, to)
+
+cp_mode(Stats *sf, cstr to)
+	if chmod(to, sf->st_mode)
+		warn("chmod %s %0d failed", to, sf->st_mode)
+
+cp_owner(Lstats *sf, cstr to)
+	if chown(to, sf->st_uid, sf->st_gid)
+		warn("chown %s %0d:%0d failed", to, sf->st_uid, sf->st_gid)
+
+Utime(const char *filename, const struct utimbuf *times)
+	if utime(filename, times)
+		failed("utime", filename)
+
+cp_times(Lstats *sf, cstr to)
+	struct utimbuf times
+	times.actime = sf->st_atime
+	times.modtime = sf->st_mtime
+	if utime(to, &times)
+		warn("utime %s failed", to)
+
+def cp_atime(sf, to)
+	new(my(st), Lstats, to)
+	cp_atime(sf, to, st)
+cp_atime(Lstats *sf, cstr to, Lstats *st)
+	struct utimbuf times
+	times.actime = sf->st_atime
+	times.modtime = st->st_mtime
+	Utime(to, &times)
+
+def cp_mtime(sf, to)
+	new(my(st), Lstats, to)
+	cp_mtime(sf, to, st)
+cp_mtime(Lstats *sf, cstr to, Lstats *st)
+	struct utimbuf times
+	times.actime = st->st_atime
+	times.modtime = sf->st_mtime
+	Utime(to, &times)
+
+def Sayd(x) Sayf("%d", x)
+def Sayn(x) Sayf("%f", x)
+def Sayp(x) Sayf("%010p", x)
+def Sayx(x) Sayf("%08x", x)
+def Sayb(x) Sayf("%02x", x)
+
+def Sayd(s, x) Sayf("%s%d", s, x)
+def Sayn(s, x) Sayf("%s%f", s, x)
+def Sayp(s, x) Sayf("%s%010p", s, x)
+def Sayx(s, x) Sayf("%s%08x", s, x)
+def Sayb(s, x) Sayf("%s%02x", s, x)
+
+def Printd(x) Printf("%d", x)
+def Printn(x) Printf("%f", x)
+def Printp(x) Printf("%010p", x)
+def Printx(x) Printf("%08x", x)
+def Printb(x) Printf("%02x", x)
+
+def Printd(s, x) Printf("%s%d", s, x)
+def Printn(s, x) Printf("%s%f", s, x)
+def Printp(s, x) Printf("%s%010p", s, x)
+def Printx(s, x) Printf("%s%08x", s, x)
+def Printb(s, x) Printf("%s%02x", s, x)
+
+def Setvbuf(stream, mode) Setvbuf(stream, NULL, mode, 0)
+Setvbuf(FILE *stream, char *buf, int mode, size_t size)
+	if setvbuf(stream, buf, mode, size)
+		failed("setvbuf")
+def Setlinebuf(stream) Setvbuf(stream, _IOLBF)
+
+ssize_t Readv(int fd, const struct iovec *iov, int iovcnt)
+	ssize_t rv = readv(fd, iov, iovcnt)
+	if rv < 0
+		failed("readv")
+	return rv
+
+ssize_t Writev(int fd, const struct iovec *iov, int iovcnt)
+	ssize_t rv = writev(fd, iov, iovcnt)
+	if rv < 0
+		failed("writev")
+	return rv
+
+def Socketpair(sv[2]) Socketpair(AF_UNIX, SOCK_STREAM, 0, sv)
+Socketpair(int d, int type, int protocol, int sv[2])
+	if socketpair(d, type, protocol, sv) != 0
+		failed("socketpair")

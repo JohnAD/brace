@@ -14,20 +14,22 @@ all: $(SONAME) libb.a $(PLAIN_SONAME) libb_plain.a b.h b_plain.h
 $(SONAME): $(BOBJ)
 	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
 	chmod -x $@
+	if [ -z "$(DEBUG)" ]; then strip --strip-unneeded $(SONAME); fi
 
 $(PLAIN_SONAME): $(BOBJ_PLAIN)
 	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(PLAIN_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
 	chmod -x $@
+	if [ -z "$(DEBUG)" ]; then strip --strip-unneeded $(PLAIN_SONAME); fi
 
 libb.a: $(BOBJ)
 	rm -f libb.a
 	ar rcs libb.a $(BOBJ)
-	strip --strip-unneeded libb.a
+	if [ -z "$(DEBUG)" ]; then strip --strip-unneeded libb.a; fi
 
 libb_plain.a: $(BOBJ_PLAIN)
 	rm -f libb_plain.a
 	ar rcs libb_plain.a $(BOBJ_PLAIN)
-	strip --strip-unneeded libb_plain.a
+	if [ -z "$(DEBUG)" ]; then strip --strip-unneeded libb_plain.a; fi
 
 # TODO a program to export the headers like this..?
 

@@ -2,17 +2,48 @@ export types buffer
 use error cstr vec
 use process
 
+# magic exit code, semi-consistent with bash
+# bash distinguishes not found (127) and if the file was found but not
+# executable (126). We return 127 in case of any exec error.
+
+int exit__execfailed = 127
+int status__execfailed = 512 + 127
+#int sig_execfailed = 64
+int sig_execfailed = SIGUSR2
+# A process in brace should not otherwise be terminated by SIGUSR2.
+# If that is a problem, the program can set sig_execfailed to 64 or something.
+
+boolean exec__warn_fail = 1
+
+# TODO maybe I could raise() a signal to kill the process with thereby a
+# non-normal exit status in case of not being able to exec the child process?
+# I would like to be able to return the errno from exec to the parent, too.
+
 Execv(const char *path, char *const argv[])
 	execv(path, argv)
-	failed("execv")
+	if exec__warn_fail
+		warn_failed("execv")
+	exit_exec_failed()
 
 Execvp(const char *file, char *const argv[])
 	execvp(file, argv)
-	failed("execvp")
+	if exec__warn_fail
+		warn_failed("execvp")
+	exit_exec_failed()
 
 Execve(const char *filename, char *const argv[], char *const envp[])
 	execve(filename, argv, envp)
-	failed("execvp")
+	if exec__warn_fail
+		warn_failed("execve")
+	exit_exec_failed()
+
+exit_exec_failed()
+	if sig_execfailed
+		Sigdfl(sig_execfailed)
+		Sig_pass(sig_execfailed)
+		Raise(sig_execfailed)
+
+	exit(exit__execfailed)
 
 # XXX TODO use local, not static?
 static vec exec_argv
@@ -86,7 +117,13 @@ sh_quote(const char *from, buffer *to)
 			buffer_set_size(to, i+1)
 			to->start[i] = c
 			++i
-		else
+		 eif c == '\n'
+			buffer_set_size(to, i+3)
+			to->start[i] = '"'
+			to->start[i+1] = c
+			to->start[i+2] = '"'
+			i += 3
+		 else
 			buffer_set_size(to, i+2)
 			to->start[i] = '\\'
 			to->start[i+1] = c
@@ -115,12 +152,21 @@ int System(const char *s)
 	return -1
 
 int Systemf(const char *format, ...)
-	int rv
-	va_list ap
-	va_start(ap, format)
-	rv = Vsystemf(format, ap)
-	va_end(ap)
-	return rv
+	collect(Vsystemf, format)
+
+# SYSTEM, SYSTEMF - this one fails if the subprocess fails
+
+SYSTEM(const char *s)
+	if System(s)
+		failed("system", s)
+
+SYSTEMF(const char *format, ...)
+	collect_void(VSYSTEMF, format)
+
+VSYSTEMF(const char *format, va_list ap)
+	int rv = Vsystemf(format, ap)
+	if rv
+		failed("system")
 
 # TODO rename buffer to string??
 # but would conflict with C++ standard.  buffer is ok
@@ -142,10 +188,10 @@ sighandler_t Signal(int signum, sighandler_t handler)
 	return rv
 
 def ignore_ctrl_c()
-	Signal(2, SIG_IGN)
+	Sigign(SIGINT)
 
 def allow_ctrl_c()
-	Signal(2, SIG_DFL)
+	Sigdfl(SIGINT)
 
 int Systema(const char *filename, char *const argv[])
 	new(b, buffer, 256)
@@ -190,3 +236,41 @@ cstr cmd(cstr c)
 	cstr rv = buffer_to_cstr(fslurp(f))
 	Pclose(f)
 	return rv
+
+# This sigact / Sigact is equivalent to signal but uses the more stable
+# sigaction call. The signal will be blocked during the handler.
+# It is also implemented (just using signal) for non-unix systems i.e. mingw.
+
+sighandler_t Sigact(int signum, sighandler_t handler, int sa_flags)
+	sighandler_t rv = sigact(signum, handler, sa_flags)
+	if rv == SIG_ERR
+		failed("sigact")
+	return rv
+
+# Sigact with two args sets a signal handler, system calls will be restarted.
+# Sigintr sets a signal handler, system calls will be interrupted.
+# You probably want to use Sigintr for SIGALRM.
+
+def sigact(signum, handler) sigact(signum, handler, SA_RESTART|nochldwait(signum))
+def sigintr(signum, handler) sigact(signum, handler, SA_INTERRUPT|nochldwait(signum))
+def Sigact(signum, handler) Sigact(signum, handler, SA_RESTART|nochldwait(signum))
+def Sigintr(signum, handler) Sigact(signum, handler, SA_INTERRUPT|nochldwait(signum))
+def sigign(signum) sigact(signum, SIG_IGN, 0)
+def sigdfl(signum) sigact(signum, SIG_DFL, 0)
+def Sigign(signum) Sigact(signum, SIG_IGN, 0)
+def Sigdfl(signum) Sigact(signum, SIG_DFL, 0)
+
+def sigget(signum) sigact(signum, NULL, 0)
+def Sigget(signum) Sigact(signum, NULL, 0)
+
+Sigdfl_all()
+	for(i, 1, SIGRTMAX+1)
+		if among(i, SIGKILL, SIGSTOP) || (i>=32 && i<SIGRTMIN)
+			continue
+		sigdfl(i)
+
+def nochldwait(signum) signum == SIGCHLD ? SA_NOCLDSTOP : 0
+
+Raise(int sig)
+	if raise(sig)
+		failed("raise")

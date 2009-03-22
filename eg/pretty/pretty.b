@@ -9,7 +9,7 @@ Main()
 	if !vid
 		error("xshm pixmaps are not working")
 
-	qtrig_init()
+	qmath_init()
 
 	bm_enabled = 0
 

@@ -40,7 +40,7 @@ Main()
 
 		paint()
 		
-		sleep(0.2)
+		Sleep(0.2)
 
 #def rainbow(a) hsv(a, 0, 0)
 #def hsv(a, w, b) hsv_(a, w, b)

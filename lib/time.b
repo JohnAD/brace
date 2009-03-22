@@ -1,14 +1,13 @@
 export time.h
+export sys/time.h
+export locale.h
 use math.h
 use stdio.h
 use stdlib.h
-export sys/time.h
 use string.h
 
 export buffer
-use error
-use util
-use m
+use error util m env
 
 use time
 
@@ -26,19 +25,32 @@ use time
 
 export types
 
-def sleep(time) rsleep(time)
-rsleep(num time)
-	if time <= 0
-		return
-	struct timespec delay
-	rtime_to_timespec(time, &delay)
-	while nanosleep(&delay, &delay) == -1
-		if errno != EINTR
+def Sleep(time) Rsleep(time)
+  # to be consistent, this should really be like sleep(int time)
+  # - but rsleep(num time) behaves the same given an int arguement.
+
+Rsleep(num time)
+	repeat
+		time = rsleep(time)
+		if time == 0
+			break
+		if time == -1
 			failed("nanosleep")
 
-def sleep_forever()
+num rsleep(num time)
+	if time <= 0
+		return 0
+	struct timespec delay
+	rtime_to_timespec(time, &delay)
+	if nanosleep(&delay, &delay) == -1
+		if errno == EINTR
+			return timespec_to_rtime(&delay)
+		return -1
+	return 0
+
+def Sleep_forever()
 	repeat
-		sleep(1e6)
+		Sleep(1e6)
 
 # it would be good to have a "cached time" function that only
 # calls gettimeofday(2) if the process has blocked since the
@@ -162,7 +174,7 @@ long double asleep(long double dt, long double t)
 			#sched_yield()
 		return t1
 	 else
-		sleep(dt-asleep_small)
+		Sleep(dt-asleep_small)
 		long double t2 = rtime()
 		long double dt2 = t - t2
 		return asleep(dt2, t2)
@@ -200,3 +212,13 @@ num timeval_to_rtime(struct timeval *tv)
 
 num timespec_to_rtime(struct timespec *ts)
 	return (num)ts->tv_sec + ts->tv_nsec / 1e9
+
+date_rfc1123_init()
+	setlocale(LC_TIME, "POSIX")
+	Putenv("TZ=GMT")
+	tzset()
+
+char *date_rfc1123(time_t t)
+	static char date[32]
+	strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT", gmtime(&t))
+	return date

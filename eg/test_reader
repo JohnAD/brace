@@ -1,0 +1,28 @@
+#!/lang/b
+
+use b
+
+Main()
+	sched_init()
+
+	add_fd(STDIN_FILENO)
+
+	new(r, reader, STDIN_FILENO)
+	new(p, processor)
+
+	sh(buffer, r, p)
+	init(&p->in->d, buffer, block_size)
+
+	start(r) ; start(p)
+
+	run()
+
+proc processor()
+	port buffer in
+	repeat
+		pull(in)
+		if !buflen(&in)
+			break
+		Print(buffer_to_cstr(&in))
+		bufclr(&in)
+		push(in)

@@ -43,9 +43,11 @@ boolean printable(uchar c)
 	#return c >= 32 && c != 127
  # tab is excluded
 
-Def let(to, from) sametype(to, from) = from
+Def lett(to, from) sametypet(to, from) = from
+Def let(to, from) state lett(to, from)
 
-Def sametype(to, ref) typeof(ref) to
+Def sametypet(to, ref) typeof(ref) to
+Def sametype(to, ref) state sametypet(to, ref)
 
 #Def castto(from, type) (*(type *)&(from))
 Def castto(from, type) ((type)(from))
@@ -75,7 +77,7 @@ def for_keep(v, from, to, step)
 	let(v, from)
 	let(my(end), to)
 	let(my(st), step)
-	for let(v, from); v<my(end); v+=my(st)
+	for ; v<my(end); v+=my(st)
 
 def repeat(n)
 	for(my(i), 0, n)
@@ -95,8 +97,7 @@ def for_step(i, d)
 
 def map(out, in, func)
 	for(in)
-		*out = func
-		++ out
+		*out++ = func
 
 #def Map(out_ary, in, func)
 #	sametype(my(out), &*out_ary)
@@ -111,8 +112,11 @@ def natatime(v, n, sep)
 			my(i) = 0
 		++my(i)
 
-Def ptr(var, type)
+Def ptrt(var, type)
 	type *var
+
+Def ptr(var, type)
+	state type *var
 
 Def stack(var, type)
 	type struct__^^var
@@ -127,9 +131,14 @@ Def heap(var, type)
 
 # This decl can be used as a global too, not in a struct though.
 
-Def decl(var, type)
+Def declt(var, type)
 	type struct__^^var
 	type *var = &struct__^^var
+#	type *const var = &struct__^^var
+
+Def decl(var, type)
+	state type struct__^^var
+	state type *var = &struct__^^var
 #	type *const var = &struct__^^var
 
 # decl_member was for structs, but I think it is better to do it differently in
@@ -185,6 +194,25 @@ Def New(var, type, a1, a2, a3, a4)
 	init(var, type, a1, a2, a3, a4)
 Def New(var, type, a1, a2, a3, a4, a5)
 	Decl(var, type)
+	init(var, type, a1, a2, a3, a4, a5)
+
+Def NEW(var, type)
+	heap(var, type)
+	init(var, type)
+Def NEW(var, type, a1)
+	heap(var, type)
+	init(var, type, a1)
+Def NEW(var, type, a1, a2)
+	heap(var, type)
+	init(var, type, a1, a2)
+Def NEW(var, type, a1, a2, a3)
+	heap(var, type)
+	init(var, type, a1, a2, a3)
+Def NEW(var, type, a1, a2, a3, a4)
+	heap(var, type)
+	init(var, type, a1, a2, a3, a4)
+Def NEW(var, type, a1, a2, a3, a4, a5)
+	heap(var, type)
 	init(var, type, a1, a2, a3, a4, a5)
 
 Def init(var, type)
@@ -300,9 +328,11 @@ Def Max(a, b) a > b ? a : b
 Def Min(a, b) a < b ? a : b
 
 def swap(a, b)
-	let(my(tmp), b)
-	b = a
-	a = my(tmp)
+	swap(a, b, my(ap), my(bp), my(tmp))
+def swap(a, b, ap, bp, tmp)
+	let(ap, &a) ; let(bp, &b)
+	let(tmp, *bp)
+	*bp = *ap ; *ap = tmp
 
 # FIXME why v?
 
@@ -311,6 +341,25 @@ def eacharg(a)
 		let(a, *my(i))
 		if a == NULL
 			break
+
+def foraryp_null(i, a)
+	for let(i, &a[0]) ; *i ; ++i
+		.
+
+def forary_null(e, a)
+	foraryp_null(my(i), a)
+		let(e, *my(i))
+		.
+
+def foraryp(i, a)
+	let(my(end), &a[sizeof(a)/sizeof(a[0])])
+	for let(i, &a[0]) ; i<my(end) ; ++i
+		.
+
+def forary(e, a)
+	foraryp(my(i), a)
+		let(e, *my(i))
+		.
 
 def eachline(v)
 	new(my(b), buffer)
@@ -345,7 +394,7 @@ def FreeObj(o, type)
 
 # this is a temp. hack, I could get new to output this instead (if debugging)
 def name(obj, name)
-	warn("%08x = %s", obj, name)
+	warn("%010p = %s", obj, name)
 
 def void()
 	.
@@ -414,6 +463,13 @@ Def collect_void(vfunc, arg0, arg1, arg2, arg3)
 	vfunc(arg0, arg1, arg3, ap)
 	va_end(ap)
 
+def format_add_nl(format1, format)
+	size_t my(len) = strlen(format)
+	char format1[my(len)+2]
+	char *my(e) = format1 + my(len)
+	strcpy(format1, format)
+	*my(e) = '\n' ; my(e)[1] = '\0'
+
 def readtsv(v, stream)
 	new(v, vec, cstr)
 	char *my(null) = NULL
@@ -481,8 +537,8 @@ def use(v) v=v
 
 # warning, it's a macro, so don't call with an expression as arg
 def tween(a, low, high) a >= low && a <= high
-#def tweenx(a, low, high) a >= low && a < high
-#def tweenX(a, low, high) a > low && a < high
+def Tween(a, low, high) a >= low && a < high
+def TWEEN(a, low, high) a > low && a < high
 
 def among(a) 0
 def among(a, b0) a == b0
@@ -536,6 +592,13 @@ int int_cmp(const void *a, const void *b)
 	int diff = *(int*)a - *(int*)b
 	return diff
 
+int off_t_cmp(const void *a, const void *b)
+	off_t diff = *(off_t*)a - *(off_t*)b
+	return diff < 0 ? -1 : diff > 0 ? 1 : 0
+
+def sort_cstr_array(x)
+	qsort(x, array_size(x), sizeof(*x), cstrp_cmp)
+
 # post / pre usage:
 # post(x)
 # 	Say("done after")
@@ -567,3 +630,446 @@ size_t arylen(void *_p)
 		++count
 	return count
 
+typedef int (*cmp_t)(const void *, const void *)
+
+sort_vec(vec *v, cmp_t cmp)
+	qsort(vec_get_start(v), vec_get_size(v), vec_get_el_size(v), cmp)
+
+int cstrp_cmp(const void *_a, const void *_b)
+	char * const *a = _a
+	char * const *b = _b
+	return strcmp(*a, *b)
+
+int cstrp_cmp_null(const void *_a, const void *_b)
+	char * const *a = _a
+	char * const *b = _b
+	if !*a || !*b
+		if *a
+			return -1
+		eif *b
+			return 1
+		return 0
+	return strcmp(*a, *b)
+
+comm(vec *merge_v, vec *comm_v, vec *va, vec *vb, cmp_t cmp, free_t freer)
+	size_t maxlen = veclen(va)+veclen(vb)
+	vec_set_space(merge_v, maxlen)
+	vec_set_space(comm_v, maxlen)
+	char *a = vec0(va)
+	char *b = vec0(vb)
+	char *a_end = vecend(va)
+	char *b_end = vecend(vb)
+	size_t e = vec_get_el_size(merge_v)
+	while a != a_end && b != b_end
+		int c = cmp(a, b)
+		# can't just use memcmp in general, because there might be
+		# unused padding space, or cmp function might not be simple
+
+		void *m
+		byte w
+		if c == 0
+			w = 3 ; m = a
+			if freer
+				(*freer)(*(void **)b)
+			a += e ; b += e
+		 eif c < 0
+			w = 1 ; m = a
+			a += e
+		 eif c > 0
+			w = 2 ; m = b
+			b += e
+		void *p = vec_push(merge_v)
+		memmove(p, m, e)
+		vec_push(comm_v, w)
+	size_t n = 0
+	byte comm_val
+	if a != a_end
+		n = (a_end - a) / e
+		vec_append(merge_v, a, n)
+		comm_val = 1
+	 eif b != b_end
+		n = (b_end - b) / e
+		vec_append(merge_v, b, n)
+		comm_val = 2
+	if n
+		vec_grow(comm_v, n)
+		byte *e = vecend(comm_v)
+		for(i, e-n, e)
+			*i = comm_val
+	vec_squeeze(merge_v)
+	vec_squeeze(comm_v)
+
+comm_dump_cstr(vec *merge_v, vec *comm_v)
+	assert(vec_get_size(comm_v) == vec_get_size(merge_v), "badcall: comm_dump_cstr %d %d", vec_get_size(comm_v), vec_get_size(merge_v))
+	vec_null_terminate(merge_v)
+	cstr *m = vec_get_start(merge_v)
+	byte *c = vec_get_start(comm_v)
+	while *m
+		Sayf("%d\t%s", *c, *m)
+		++m ; ++c
+
+# is this "never" macro a good idea or just namespace pollution?
+# IDEA instead of calling macros macros, just call them defs.
+
+def never
+	if 0
+
+def ary_null(a)
+	void *a[1]
+	a[0] = NULL
+
+def ary_null(a, a0)
+	sametype(a, a0)[2]
+	a[0] = a0
+	a[1] = NULL
+
+def ary_null(a, a0, a1)
+	sametype(a, a0)[3]
+	a[0] = a0 ; a[1] = a1
+	a[2] = NULL
+
+def ary_null(a, a0, a1, a2)
+	sametype(a, a0)[4]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2
+	a[3] = NULL
+
+def ary_null(a, a0, a1, a2, a3)
+	sametype(a, a0)[5]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3
+	a[4] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4)
+	sametype(a, a0)[6]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4
+	a[5] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5)
+	sametype(a, a0)[7]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5
+	a[6] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5, a6)
+	sametype(a, a0)[8]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6
+	a[7] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5, a6, a7)
+	sametype(a, a0)[9]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7
+	a[8] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	sametype(a, a0)[10]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8
+	a[9] = NULL
+
+def ary_null(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	sametype(a, a0)[11]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8 ; a[9] = a9
+	a[10] = NULL
+
+def aryp_null(a)
+	void *a[1]
+	a[0] = NULL
+
+def aryp_null(a, a0)
+	sametype(*a, a0)[2]
+	a[0] = &a0
+	a[1] = NULL
+
+def aryp_null(a, a0, a1)
+	sametype(*a, a0)[3]
+	a[0] = &a0 ; a[1] = &a1
+	a[2] = NULL
+
+def aryp_null(a, a0, a1, a2)
+	sametype(*a, a0)[4]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2
+	a[3] = NULL
+
+def aryp_null(a, a0, a1, a2, a3)
+	sametype(*a, a0)[5]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3
+	a[4] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4)
+	sametype(*a, a0)[6]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4
+	a[5] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5)
+	sametype(*a, a0)[7]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5
+	a[6] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5, a6)
+	sametype(*a, a0)[8]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6
+	a[7] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5, a6, a7)
+	sametype(*a, a0)[9]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7
+	a[8] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	sametype(*a, a0)[10]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7 ; a[8] = &a8
+	a[9] = NULL
+
+def aryp_null(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	sametype(*a, a0)[11]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7 ; a[8] = &a8 ; a[9] = &a9
+	a[10] = NULL
+
+def ary(a)
+	void *a[0]
+
+def ary(a, a0)
+	sametype(a, a0)[1]
+	a[0] = a0
+
+def ary(a, a0, a1)
+	sametype(a, a0)[2]
+	a[0] = a0 ; a[1] = a1
+
+def ary(a, a0, a1, a2)
+	sametype(a, a0)[3]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2
+
+def ary(a, a0, a1, a2, a3)
+	sametype(a, a0)[4]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3
+
+def ary(a, a0, a1, a2, a3, a4)
+	sametype(a, a0)[5]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4
+
+def ary(a, a0, a1, a2, a3, a4, a5)
+	sametype(a, a0)[6]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6)
+	sametype(a, a0)[7]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6, a7)
+	sametype(a, a0)[8]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	sametype(a, a0)[9]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	sametype(a, a0)[10]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8 ; a[9] = a9
+
+def aryp(a)
+	void *a[0]
+
+def aryp(a, a0)
+	sametype(*a, a0)[1]
+	a[0] = &a0
+
+def aryp(a, a0, a1)
+	sametype(*a, a0)[2]
+	a[0] = &a0 ; a[1] = &a1
+
+def aryp(a, a0, a1, a2)
+	sametype(*a, a0)[3]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2
+
+def aryp(a, a0, a1, a2, a3)
+	sametype(*a, a0)[4]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3
+
+def aryp(a, a0, a1, a2, a3, a4)
+	sametype(*a, a0)[5]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4
+
+def aryp(a, a0, a1, a2, a3, a4, a5)
+	sametype(*a, a0)[6]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5
+
+def aryp(a, a0, a1, a2, a3, a4, a5, a6)
+	sametype(*a, a0)[7]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6
+
+def aryp(a, a0, a1, a2, a3, a4, a5, a6, a7)
+	sametype(*a, a0)[8]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7
+
+def aryp(a, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	sametype(*a, a0)[9]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7 ; a[8] = &a8
+
+def aryp(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	sametype(*a, a0)[10]
+	a[0] = &a0 ; a[1] = &a1 ; a[2] = &a2 ; a[3] = &a3 ; a[4] = &a4 ; a[5] = &a5 ; a[6] = &a6 ; a[7] = &a7 ; a[8] = &a8 ; a[9] = &a9
+
+
+
+def eachp(i)
+	never
+		.
+
+def eachp(i, a0)
+	.
+		let(i, &a0)
+		.
+
+def eachp(i, a0, a1)
+	aryp(my(ary), a0, a1)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2)
+	aryp(my(ary), a0, a1, a2)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3)
+	aryp(my(ary), a0, a1, a2, a3)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4)
+	aryp(my(ary), a0, a1, a2, a3, a4)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6, a7)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	forary(i, my(ary))
+		.
+
+def each(e)
+	never
+		.
+
+def each(e, a0)
+	.
+		let(e, a0)
+		.
+
+def each(e, a0, a1)
+	ary(my(ary), a0, a1)
+	forary(e, my(ary))
+		.
+
+def each(e, a0, a1, a2)
+	ary(my(ary), a0, a1, a2)
+	forary(e, my(ary))
+		.
+
+def each(e, a0, a1, a2, a3)
+	eachp(my(i), a0, a1, a2, a3)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4)
+	eachp(my(i), a0, a1, a2, a3, a4)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5)
+	eachp(my(i), a0, a1, a2, a3, a4, a5)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5, a6)
+	eachp(my(i), a0, a1, a2, a3, a4, a5, a6)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5, a6, a7)
+	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7, a8)
+		let(e, *my(i))
+
+def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+		let(e, *my(i))
+
+def local(var, val)
+	let(my(old), var)
+	var = val
+	post(x)
+		var = my(old)
+	pre(x)
+		.
+
+def implies(cond, then) cond ? then : 1
+
+# abba is an "occult macro" that needs a double-indent, so the user needs to
+# double indent the block! that looks ok with switch stuff though. It does
+# things either in one order or the reverse order. Reminds me of Duff's device.
+# I was going to use this in splice, but didn't.
+# How unlikely that I will ever use this..
+#
+# e.g.:
+#
+# abba(toss())
+# 	0	Say("hello")
+# 	1	Say("world")
+
+def abba(choice)
+	each(my(i), choice, !choice)  # assuming booleans are 0 or 1 here.
+		which(my(i))
+			.
+
+def memdup(src, n) memdup(src, n, 0)
+void *memdup(const void *src, size_t n, size_t extra)
+	void *dest = Malloc(n+extra)
+	memcpy(dest, src, n)
+	return dest
+
+# this is an inplace grep
+def grep(i, v, type, test, Free_or_void)
+	grep(i, v, type, test, Free_or_void, my(o))
+def grep(i, v, type, test, Free_or_void, o)
+	type *o = vec0(v)
+	for_vec(i, v, type)
+		if test
+			*o++ = *i
+		 else
+			Free_or_void(*i)
+	vec_set_size(v, o-(type *)vec0(v))
+	# does not call vec_squeeze, my dodgy uniq depends on that!
+
+# e.g.:
+#   uniq(i, v, cstr, strcmp(i[0], i[1]), Free)
+#   uniq(i, v, int, i[0] != i[1], void)
+def uniq(i, v, type, cmp, Free_or_void)
+	if vec_get_size(v)
+		vec_grow(v, -1)
+		type *last = (type*)vecend(v)
+		grep(i, v, type, cmp, Free_or_void)
+		vec_push(v, *last)
+
+# TODO grep and map that work with blocks instead of expressions:
+# def grep(i, v, type, keep)
+# problematic because of can't-multi-indent expansion issue
+
+# TODO make map work with vec too?  normal map shouldn't be inplace though,
+# because the types may be different.

@@ -1,12 +1,15 @@
 export errno.h setjmp.h
 use stdio.h stdarg.h stdlib.h
-use main buffer util path
+use main buffer util path env
 export vec hash thunk
 
 export error
 
 def debug warn
 #def debug void
+
+int exit__error = 125
+int exit__fault = 124
 
 # Generally, a function that outputs error messages etc should not generate new
 # errors (for fear of an infinite loop). That's also the case for warnings,
@@ -41,12 +44,12 @@ serror(const char *format, ...)
 	Throw(buffer_get_start(b), no, NULL)
 
 warn(const char *format, ...)
+	format_add_nl(format1, format)
 	va_list ap
 	va_start(ap, format)
 	fflush(stdout)
-	vfprintf(stderr, format, ap)
+	vfprintf(stderr, format1, ap)
 	va_end(ap)
-	fprintf(stderr, "\n")
 	fflush(stderr)  # mingw doesn't autoflush stderr
 
 failed(const char *funcname)
@@ -64,8 +67,11 @@ def failed(funcname, errmsg)
 def failed(funcname, msg1, msg2)
 	failed3(funcname, msg1, msg2)
 
-def failed0(const char *funcname)
+def failed0(funcname)
 	error("%s failed", funcname)
+
+warn_failed(const char *funcname)
+	swarning("%s failed", funcname)
 
 swarning(const char *format, ...)
 	va_list ap
@@ -142,7 +148,7 @@ def try(h)
 def try(h, thunk)
 	try(h, thunk, 0)
 def try(h, thunk, need_jump)
-	error_handler *h = vec_push(error_handlers)
+	state error_handler *h = vec_push(error_handlers)
 	h->handler = *thunk
 	if need_jump
 		h->jump = Talloc(sigjmp_buf)
@@ -150,7 +156,7 @@ def try(h, thunk, need_jump)
 	 else
 		h->jump = NULL
 		h->err = 0
-	int my(stage)
+	state int my(stage)
 	for my(stage) = 0 ; h->err == 0 ; ++my(stage)
 		if my(stage) == 1
 			if need_jump
@@ -184,11 +190,8 @@ Throw(cstr msg, int no, void *data)
 	throw_(error_add(msg, no, data))
 
 throw_(err *e)
-	if vec_get_size(error_handlers) == 0
-		fflush(stdout)
-		# TODO flush / close all open files?
-		warn_errors()
-		exit(1)
+	if vec_is_empty(error_handlers)
+		die_errors(exit__error)
 	error_handler *h = vec_top(error_handlers)
 	if thunk_not_null(&h->handler)
 		if thunk_call(&h->handler, e)
@@ -196,6 +199,14 @@ throw_(err *e)
 	if h->jump
 		vec_pop(error_handlers)
 		siglongjmp(*h->jump, 1)
+
+def die_errors() die_errors(1)
+
+die_errors(int status)
+	warn_errors()
+	if *env("DEBUG")
+		abort()
+	exit(status)
 
 clear_errors()
 	for_vec(e, errors, err)
@@ -264,8 +275,10 @@ def fault(format, a0, a1, a2, a3)
 def fault(format, a0, a1, a2, a3, a4)
 	fault_(__FILE__, __LINE__, format, a0, a1, a2, a3, a4)
 
+int throw_faults = 0
+
 fault_(char *file, int line, const char *format, ...)
-	file = best_path_main(strdup(file))
+	file = best_path_main(Strdup(file))
 	New(b, buffer)
 	Sprintf(b, "%s:%d: ", file, line)
 	va_list ap
@@ -274,7 +287,11 @@ fault_(char *file, int line, const char *format, ...)
 	va_end(ap)
 	buffer_add_nul(b)
 	buffer_squeeze(b)
-	Throw(buffer_get_start(b), 0, NULL)
+	if throw_faults
+		Throw(buf0(b), 0, NULL)
+	 else
+		error_add(buf0(b), 0, NULL)
+		die_errors(exit__fault)
 
 hashtable *extra_error_messages
 

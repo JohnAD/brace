@@ -72,7 +72,7 @@ def lock(lockfile, fd, x)
 			break
 		if errno != EEXIST
 			failed("lock/open")
-		rsleep(delay)
+		Rsleep(delay)
 		delay *= 2
 		if delay > maxdelay
 			delay = maxdelay

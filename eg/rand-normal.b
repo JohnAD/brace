@@ -1,0 +1,13 @@
+#!/lang/b
+use b
+Main()
+	Say("first data set")
+	gen_data(10, 20, 5)
+
+	Say("second data set")
+	gen_data(5, 25, 4)
+
+gen_data(int n, num av, num sd)
+	repeat(n)
+		Sayf("%f", rand_normal(av, sd))
+	nl()

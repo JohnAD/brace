@@ -2,6 +2,11 @@ include .Make.conf
 
 export BRACE_STANDALONE=
 
+all: tgz
+
+tgz: dotbuild
+	tgz `readlink -f .`
+
 dotbuild:
 	mkdir -p .build
 	cp -alf .Make.conf * .build/
@@ -12,8 +17,8 @@ build:
 	cd exe ; $(MAKE)
 clean:
 	rm -rf .build
-#	cd exe ; $(MAKE) clean
-#	cd lib ; $(MAKE) clean
+	cd exe ; $(MAKE) clean
+	cd lib ; $(MAKE) clean
 	cd eg ; $(MAKE) clean
 install: .build
 	cd .build/exe ; $(MAKE) install

@@ -8,6 +8,8 @@ require "brace_parser.pl";
 
 #use Brace::SplitUse;
 #use Brace::SplitVars;
+use Brace::Process;
+use Brace::Wrap;
 use Brace::Proto;
 use Brace::Header;
 use Brace::Uniq;
@@ -19,6 +21,8 @@ if ($ENV{BH_NO_MACROS}) {
 }
 #brace_split_use();
 #brace_split_vars();
+brace_process();
+brace_wrap();
 brace_proto();
 brace_header();
 brace_uniq();

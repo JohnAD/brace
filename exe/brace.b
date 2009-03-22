@@ -7,9 +7,9 @@ enum { MAXLINE = 1024 }
 char buf[MAXLINE]
 
 enum { MAXTABS = 256 }
-enum { SWITCH, WHICH, STRUCT, CLASS, INIT, VOID_MAIN, MACRO, DO, DOWHILE, OTHER }
+enum { SWITCH, WHICH, STRUCT, CLASS, INIT, VOID_MAIN, MACRO, DO, DOWHILE, ELSE, OTHER }
 
-char *kwdparens[] = { "if", "else if", "while", "do", "for", "switch", 0 }
+char *kwdparens[] = { "if", "else if", "while", "do", "for", "switch", "else", 0 }
 
 char *line
 int len
@@ -174,6 +174,7 @@ procstmt()
 		writes("else if(")
 		writes(line+4)
 		line = ")" ; len = 1
+		is_kwdparens = 1
 	eif strcmp(line, "repeat") == 0
 		line = "while(1)" ; len = 8
 	#eif strcmp(line, "stop") == 0
@@ -181,10 +182,11 @@ procstmt()
 	else
 		for k=kwdparens; *k != 0; ++k
 			int l = strlen(*k)
-			if cstr_begins_with(line, *k) && line[l] == ' '
-				line[l] = '('
-				writes(line)
-				line = ")" ; len = 1
+			if cstr_begins_with(line, *k) && (line[l] == ' ' || line[l] == '\0')
+				if line[l] == ' '
+					line[l] = '('
+					writes(line)
+					line = ")" ; len = 1
 				is_kwdparens = 1
 				break
 
@@ -227,6 +229,8 @@ writestmt()
 		blocktype[tabs] = DOWHILE
 	eif cstr_begins_with(line, "switch ")
 		blocktype[tabs] = SWITCH
+	eif cstr_begins_with(line, "else") && (len == 4 || line[4] == ' ')
+		blocktype[tabs] = ELSE
 	eif cstr_begins_with(line, "which ")
 		blocktype[tabs] = WHICH
 	eif (cstr_begins_with(line, "enum") && (len == 4 || line[4] == ' ')) || \
@@ -261,6 +265,8 @@ writestmt()
 			blocktype[tabs] = STRUCT
 		eif cstr_begins_with(c, "class ") && classy(c+6)
 			blocktype[tabs] = CLASS
+		eif *c == '^' || *c == '#'
+			# ignore directives and comments, not indented properly
 		else
 			blocktype[tabs] = OTHER
 		# to be continued?

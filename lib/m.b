@@ -94,16 +94,17 @@ def sqr(x) x*x
 num notpot(num hypotenuse, num x)
 	return sqrt(sqr(hypotenuse) - sqr(x))
 
-def Randint(max) (int)(max*(double)Rand())
-#int Randint(int max)
-#	return (int)max*(double)Rand()
-def Randint(min, max) Randint(max-min)+min
+def Randi() random()
+def Randi(max) (int)(max*Rand())
+def Randi(min, max) Randi(max-min)+min
 
-def Rand() (num)random()/RAND_MAX
-# FIXME is this enough precision for a double?  I guess not?
-#num Rand()
-#	# FIXME is this enough precision for a double?  I guess not?
-#	return ((num)random())/RAND_MAX
+def RAND_TOP (unsigned int)RAND_MAX+1
+def RANDL_TOP (unsigned long long int)RAND_TOP*RAND_TOP
+def RANDL_MAX (unsigned int)RANDL_TOP-1
+
+def Randl() (long long int)random()*RAND_TOP+random()
+
+def Rand() (double)((long double)Randl()/RANDL_TOP)
 def Rand(max) Rand()*max
 def Rand(min, max) Rand(max-min)+min
 def toss() Rand()>0.5
@@ -227,7 +228,13 @@ int iclamp(int x, int min, int max)
 	return x < min ? min : x > max ? max : x
 
 def Floor(x) (int)(x+tinynum)
+
 def num_eq(a, b) fabs(b-a)<tinynum
+def num_lt(a, b) a<b-tinynum
+def num_le(a, b) a<b+tinynum
+def num_gt(a, b) a>b+tinynum
+def num_ge(a, b) a>b-tinynum
+def num_ne(a, b) !num_eq(a, b)
 
 num spow(num b, num e)
 	if b >= 0
@@ -248,3 +255,18 @@ def max(a0, a1, a2, a3, a4, a5, a6) max(max(a0, a1, a2, a3, a4, a5), a6)
 def max(a0, a1, a2, a3, a4, a5, a6, a7) max(max(a0, a1, a2, a3, a4, a5, a6), a7)
 def max(a0, a1, a2, a3, a4, a5, a6, a7, a8) max(max(a0, a1, a2, a3, a4, a5, a6, a7), a8)
 def max(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) max(max(a0, a1, a2, a3, a4, a5, a6, a7, a8), a9)
+
+def rand_normal(av, sd) rand_normal()*sd+av
+
+num rand_normal()
+	num U = Rand()
+	num V = Rand()
+	num X = sqrt(-2 * log(U)) * cos(2*pi*V)
+#	num Y = sqrt(-2 * log(V)) * sin(2*pi*U)
+	return X
+
+def ln(x) log(x)
+
+# uses the box-mueller method, from:
+# http://en.wikipedia.org/wiki/Normal_distribution#Generating_values_for_normal_random_variables
+# The Ziggurat method is faster, I could try that later.

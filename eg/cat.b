@@ -2,15 +2,15 @@
 
 Main()
 	sched_init()
-	new(r, reader)
-	new(w, writer)
+	new(r, Reader)
+	new(w, Writer)
 #	name(r, "reader")
 #	name(w, "writer")
 	shuttle(sh, cstr, r, out, w, in)
 
 	start(r) ; start(w) ; run()
 
-proc reader()
+proc Reader()
 	port cstr out
 	repeat
 		cstr c = Input()
@@ -19,7 +19,7 @@ proc reader()
 			break
 		yield
 
-proc writer()
+proc Writer()
 	port cstr in
 	repeat
 		cstr s

@@ -159,7 +159,7 @@ gr_free()
 	if shmseginfo
 		shmdt(shmseginfo->shmaddr)
 		shmctl(shmseginfo->shmid, IPC_RMID, NULL)
-		free(shmseginfo)
+		Free(shmseginfo)
 	XFreeGC(display, gc)
 	XDestroyWindow(display, window)
 	XCloseDisplay(display)
@@ -442,4 +442,5 @@ quad(num x2, num y2, num x3, num y3)
 	XFillPolygon(display, buf, gc, p, 4, Convex, CoordModeOrigin)
 	move2(x2, y2, x3, y3)
 
-def pixel(vid, X, Y) ((long *)vid) + Y*w + X
+def pixel(X, Y) pixel(vid, X, Y)
+def pixel(vid, X, Y) ((long *)vid) + (int)Y*w + (int)X

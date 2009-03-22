@@ -17,6 +17,20 @@ struct hashtable
 	hash_func hash
 	eq_func eq
 
+# hashtable abbrevs:
+
+def Get(ht, key) hashtable_value(ht, key)
+def get(ht, key) hashtable_value_or_null(ht, key)
+def get(ht, key, value) hashtable_value_or(ht, key, value)
+def put(ht, key, value) hashtable_add(ht, key, value)
+def kv(ht, key) hashtable_lookup(ht, key)
+def del(ht, key) hashtable_delete(ht, key)
+def KV(ht, key) hashtable_lookup_or_die(ht, key)
+def kv(ht, key) kv(ht, key, NULL)
+def kv(ht, key, init) hashtable_lookup_or_add_key(ht, key, init)
+# TODO, simplify hashtable so that it always returns a ref, and use key() and
+# val() to get the key and value parts.
+
 typedef unsigned int (*hash_func)(void *key)
 typedef boolean (*eq_func)(void *k1, void *k2)
 
@@ -31,6 +45,10 @@ struct key_value
 struct node_kv
 	list l
 	key_value kv
+
+key_value kv_null = { (void*)-1, (void*)-1 }
+
+def kv_is_null(kv) kv.key == (void*)-1
 
 # TODO use ^^ to join type to _hash and _eq instead of passing both
 # TODO like priq, use macros for hash_func and all hashtable funcs and pass type / hash_func / type_eq in to functions that need them..?
@@ -88,6 +106,15 @@ void *hashtable_value(hashtable *ht, void *key)
 	 else
 		return kv->value
 
+void *hashtable_value_or_null(hashtable *ht, void *key)
+	return hashtable_value_or(ht, key, NULL)
+void *hashtable_value_or(hashtable *ht, void *key, void *def)
+	key_value *kv = hashtable_lookup(ht, key)
+	if kv == NULL
+		return def
+	 else
+		return kv->value
+
 key_value *hashtable_add(hashtable *ht, void *key, void *value)
 	list *l = hashtable_lookup_ref(ht, key)
 	hashtable_ref_add(l, key, value)
@@ -118,10 +145,14 @@ hashtable_delete_maybe(hashtable *ht, void *key)
 		hashtable_ref_delete(l)
 
 key_value hashtable_ref_delete(list *l)
-	node_kv *node = hashtable_ref_node(l)
-	list_delete(list_next_p(l))
-	key_value ret = node->kv
-	Free(node)
+	key_value ret
+	if hashtable_ref_exists(l)
+		node_kv *node = hashtable_ref_node(l)
+		list_delete(list_next_p(l))
+		ret = node->kv
+		Free(node)
+	 else
+		ret = kv_null
 	return ret
 
 node_kv *hashtable_ref_node(list *l)
@@ -165,7 +196,7 @@ hashtable_dump(hashtable *ht)
 		list *bucket = &ht->buckets[i]
 		list *l = bucket
 		repeat
-			Printf("%08x ", l)
+			Printf("%010p ", l)
 			l = l->next
 			if l == NULL
 				break
@@ -178,6 +209,11 @@ key_value *hashtable_lookup_or_add_key(hashtable *ht, void *key, void *value_ini
 		hashtable_ref_add(ref, key, value_init)
 	return hashtable_ref_lookup(ref)
 
+key_value *hashtable_lookup_or_die(hashtable *ht, void *key)
+	list *ref = hashtable_lookup_ref(ht, key)
+	if ref->next == NULL
+		failed0("hashtable_lookup_or_die")
+	return hashtable_ref_lookup(ref)
 
 #void *hashtable_ref_value(list *l)
 #	node_kv *node = hashtable_ref_node(l)

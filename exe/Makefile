@@ -3,7 +3,7 @@ include ../.Make.conf
 # - for win32; can assume there was nothing needful in PERL5LIB  :)
 
 CFLAGS:=-Wall -I'$(srcdir)/lib' $(CFLAGS)
-LDFLAGS:=-L'$(srcdir)/lib' $(LDFLAGS)
+LDFLAGS:=-L'$(srcdir)/lib' $(LDFLAGS) -s
 
 build: boot bx$(EXE) bbx$(EXE) b1$(EXE) bb1$(EXE)
 boot: brace$(EXE) .mk_foo_stamp .mk_bar_stamp .mk_baz_stamp
@@ -11,7 +11,7 @@ boot: brace$(EXE) .mk_foo_stamp .mk_bar_stamp .mk_baz_stamp
 brace.c: brace.b
 	<brace.b PERL5LIB="$(PERL5LIB)" b2b0 | BRACE_LIB="$(BRACE_LIB)" PERL5LIB="$(PERL5LIB)" b02b1 | brace >brace.c
 brace$(EXE): brace.o
-	$(CC) $(LDFLAGS) $(CFLAGS) -o brace brace.o
+	$(CC) $(LDFLAGS) $(CFLAGS) -o brace brace.o $(LDLIBS)
 	@<brace.b PERL5LIB="$(PERL5LIB)" b2b0 | BRACE_LIB="$(BRACE_LIB)" PERL5LIB="$(PERL5LIB)" b02b1 | brace >.brace.test.c
 	@../util/vd brace.c .brace.test.c || . ../util/fail "TEST FAILED! brace is broken!"
 	@echo "brace works ok"
