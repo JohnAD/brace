@@ -358,6 +358,13 @@ bodymsg	discard_req()
 		keep_alive = 0
 	done
 
+ok	code = 200 ; msg = "OK"
+	mesg
+
+created	code = 201 ; msg = "Created"
+	# FIXME should return Location header and URL in body too.
+	mesg
+
 bad	code = 400 ; msg = "Bad Request"
 	mesg
 
@@ -367,13 +374,10 @@ forbid	code = 403 ; msg = "Forbidden"
 notf	code = 404 ; msg = "Not Found"
 	mesg
 
-srverr	code = 500 ; msg = "Internal Server Error"
-	mesg
-
 badrng	code = 416 ; msg = "Requested Range Not Satisfiable"
 	mesg
 
-ok	code = 200 ; msg = "OK"
+srverr	code = 500 ; msg = "Internal Server Error"
 	mesg
 
 reqauth	if !cstr_eq(scheme, "https")
@@ -598,13 +602,17 @@ def get_cgi()
 
 def put_file()
 	# PUT replaces a file, POST appends to it.
-	# PUT with the Content-Range header truncates after the data written
-	# POST with the Content-Range does not truncate
+	# PUT with the Content-Range header truncates after the data written,
+	# if cr_byte1 >= size-1. POST with the Content-Range does not truncate
 	# FIXME it opens the file as the user, but writes as root,
 	# I think this means it would not respect any quota that might exist.
 
 	int open_opt = O_WRONLY|O_CREAT|O_NONBLOCK
-	if !content_range_req
+
+	fullsize = st->st_size
+	if content_range_req
+		put_do_range()
+	 else
 		if method == HTTP_PUT
 			open_opt |= O_TRUNC
 		 else  # method == HTTP_POST
@@ -654,7 +662,8 @@ def put_file()
 
 	buffer_free(&fio)
 
-	if content_range_req && method == HTTP_PUT
+	# TODO put with content-range to be like splice, so can insert data?
+	if content_range_req && method == HTTP_PUT && cr_byte1 >= fullsize-1
 		Ftruncate(file_fd, cr_byte0 + count)
 
 	if file_fd != -1
@@ -668,7 +677,10 @@ def put_file()
 		bad
 
 	reqlen = 0
-	ok
+	if statable
+		ok
+	 else
+		created
 
 def delete_file()
 	int failed = remove(fullpath)
@@ -704,6 +716,13 @@ def do_range_size()
 			badrng
 	 else
 		size = fullsize
+
+def put_do_range()
+	if range_req
+		fix_byte_range(cr_byte0)
+		fix_byte_range(cr_byte1)
+		if cr_byte1 <= cr_byte0
+			bad
 
 def fix_byte_range(b)
 	if b < 0
