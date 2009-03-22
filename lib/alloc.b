@@ -4,8 +4,8 @@ export types
 
 use stdio.h
 
-def alloc_type normal
-#def alloc_type memlog
+#def alloc_type normal
+def alloc_type memlog
 
 def Malloc(size) alloc_type^^_Malloc(size)
 def Free(ptr) alloc_type^^_Free(ptr), ptr = NULL
@@ -105,8 +105,8 @@ def memlog_close()
 #	collect(Vfprintf, memlog, format)
 
 def memlog_Malloc(size) memlog_Malloc(size, __FILE__, __LINE__)
-def memlog_Free(ptr) memlog_Free(ptr, __FILE__, __LINE__), ptr = NULL
-def memlog_Realloc(ptr, size) ptr = memlog_Realloc(ptr, size, __FILE__, __LINE__)
+def memlog_Free(ptr) memlog_Free(ptr, __FILE__, __LINE__)
+def memlog_Realloc(ptr, size) memlog_Realloc(ptr, size, __FILE__, __LINE__)
 def memlog_Calloc(ptr, size) memlog_Calloc(ptr, size, __FILE__, __LINE__)
 def memlog_Strdup(s) memlog_Strdup(s, __FILE__, __LINE__)
 def memlog_Strndup(s, n) memlog_Strndup(s, n, __FILE__, __LINE__)

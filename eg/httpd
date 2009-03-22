@@ -143,6 +143,9 @@ req	state cstr s
 	state boolean range_req = 0
 	state long long int byte0
 	state long long int byte1
+	state boolean content_range_req = 0
+	state long long int cr_byte0
+	state long long int cr_byte1
 	state off_t fullsize
 	state off_t size
 
@@ -227,6 +230,12 @@ req	state cstr s
 				range_req = 1
 				if n == 1
 					byte1 = -1
+		 eif !strcasecmp(key, "Content-Range")
+			int n = sscanf(val, "bytes=%lld-%lld", &cr_byte0, &cr_byte1)
+			if n
+				content_range_req = 1
+				if n == 1
+					cr_byte1 = -1
 		# TODO Content-Range for put
 
 		buffer_shift(&in, l)
@@ -290,7 +299,7 @@ req	state cstr s
 
 	statable = !stat(fullpath, st)
 
-	if !statable && method == HTTP_GET
+	if !statable && among(method, HTTP_GET, HTTP_HEAD, HTTP_DELETE)
 		Seteuidgid_root()
 		accerr
 
@@ -305,6 +314,8 @@ req	state cstr s
 		get_cgi()
 	 eif among(method, HTTP_PUT, HTTP_POST)
 		put_file()
+	 eif method == HTTP_DELETE
+		delete_file()
 	 eif !among(method, HTTP_GET, HTTP_HEAD) || reqlen
 		Seteuidgid_root()
 		bad
@@ -587,18 +598,24 @@ def get_cgi()
 
 def put_file()
 	# PUT replaces a file, POST appends to it.
+	# PUT with the Content-Range header truncates after the data written
+	# POST with the Content-Range does not truncate
 	# FIXME it opens the file as the user, but writes as root,
 	# I think this means it would not respect any quota that might exist.
 
 	int open_opt = O_WRONLY|O_CREAT|O_NONBLOCK
-	if method == HTTP_PUT
-		open_opt |= O_TRUNC
-	 else  # method == HTTP_POST
-		open_opt |= O_APPEND
+	if !content_range_req
+		if method == HTTP_PUT
+			open_opt |= O_TRUNC
+		 else  # method == HTTP_POST
+			open_opt |= O_APPEND
 
 	file_fd = open(fullpath, open_opt, 0666)
 
 	Seteuidgid_root()
+
+	if content_range_req
+		Lseek(file_fd, cr_byte0)
 
 	if file_fd == -1
 		accerr
@@ -637,6 +654,9 @@ def put_file()
 
 	buffer_free(&fio)
 
+	if content_range_req && method == HTTP_PUT
+		Ftruncate(file_fd, cr_byte0 + count)
+
 	if file_fd != -1
 		rm_fd(file_fd)
 		close(file_fd)
@@ -648,6 +668,14 @@ def put_file()
 		bad
 
 	reqlen = 0
+	ok
+
+def delete_file()
+	int failed = remove(fullpath)
+	Seteuidgid_root()
+	if failed
+		accerr
+
 	ok
 
 def discard_req()
@@ -667,16 +695,18 @@ def discard_req()
 
 def do_range_size()
 	if range_req
-		fix_byte(byte0)
-		fix_byte(byte1)
+		fix_byte_range(byte0)
+		fix_byte_range(byte1)
+		if byte1 >= fullsize
+			byte1 = fullsize - 1
 		size = byte1 - byte0 + 1
 		if byte1 <= byte0
 			badrng
 	 else
 		size = fullsize
 
-def fix_byte(b)
+def fix_byte_range(b)
 	if b < 0
 		b += fullsize
-	 eif b >= fullsize
-		b = fullsize - 1
+		if b < 0
+			b = 0
