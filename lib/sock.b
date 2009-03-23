@@ -196,8 +196,7 @@ def breaduntil(in, eol, c)
 			*c = '\0'
 			break
 		if max_line_length && buflen(&in) >= max_line_length
-			# a too-long line is an error condition
-			bufclr(&in)
+			# XXX this does not nul terminate it
 			break
 		push(in)
 #		warn("breadln: buflen %d\n[%s]\n", buflen(&in), buffer_nul_terminate(&in))

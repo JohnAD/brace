@@ -1,1 +1,731 @@
-/home/sam/code/httpd/httpd
+#!/lang/b
+
+# export BRACE_PLAIN=1
+# export DEBUG=
+# export OPTIMISE=1
+
+# ab -c 500 -n 4000 http://sam.test/
+
+# Concurrency Level:      500
+# Time taken for tests:   0.581 seconds
+# Complete requests:      4000
+# Requests per second:    6883.56 [#/sec] (mean)
+
+use b_plain
+
+cstr listen_addr = "0.0.0.0"
+int listen_port = 80
+cstr listen_addr_stunnel = "127.0.0.1"
+int listen_port_stunnel = 81
+cstr www_root = "/www"
+cstr default_user = "www-data"
+cstr default_host = "default"
+
+hashtable *users
+
+#def verbose warn
+def verbose void
+
+Main()
+#	max_line_length = 2048
+	sched_busy = 128
+
+	uid_t uid = geteuid()
+	if uid != 0
+		error("%s must be run as root", program)
+
+	Sigdfl_all()
+
+	block_size = 16*1024
+
+	date_rfc1123_init()
+	load_mimetypes()
+
+	ignore_pipe()
+
+	users = load_passwd()
+
+	sched_init()
+
+	new(l, listener_tcp, listen_addr, listen_port)
+	new(w, httpd_launcher)
+	sh(sock_p, l, w)
+	start(l) ; start(w)
+
+	if listen_addr_stunnel && listen_port_stunnel
+		new(l_https, listener_tcp, listen_addr_stunnel, listen_port_stunnel)
+		new(w_https, httpd_launcher)
+		sh(sock_p, l_https, w_https)
+		start(l_https) ; start(w_https)
+
+	run()
+
+proc httpd_launcher()
+	port sock_p in
+	state sock_p sk
+	repeat
+		rd(in, sk)
+		New(s, httpd, sk)
+		start(s)
+
+proc httpd(sock *sk)
+	port buffer in
+	port buffer out
+	port buffer fio
+
+	state int fd = sk->fd
+	state reader r
+	state writer w
+	state reader fr
+	state writer fw
+	state sockaddr_in sockname
+	state socklen_t namelen = sizeof(sockaddr_in)
+	state cstr scheme = "http"
+
+	if getsockname(fd, &sockname, &namelen) == 0
+		if sockname.sin_family == AF_INET
+			int port = ntohs(sockname.sin_port)
+			if listen_addr_stunnel && port == listen_port_stunnel
+				scheme = "https"
+
+	nodelay(fd)
+
+	# My version of http prefers headers to be in a separate packet from
+	# the request / response body. This is so that the server can read the
+	# headers, but a CGI script can receive the body.  (and possible
+	# similar separation on the client).  Otherwise the server needs to
+	# pipe data to the CGI script or something like that.
+	# FIXME use recv instead of read to support this.
+	# FIXME server should send 200 HTTP OK for CGI scripts?
+
+	init(&r, reader, fd)
+	init(&w, writer, fd)
+
+	sh(buffer, &r, This)
+	sh(buffer, This, &w)
+
+	init(&in, buffer, block_size)
+	init(&out, buffer, block_size)
+
+	start(&r) ; start(&w)
+
+	# read_method_url_proto
+
+req	state cstr s
+	state size_t l
+	state http__method method
+	state cstr url = NULL
+	state cstr proto = NULL
+	state cstr host = NULL
+	state cstr path = NULL
+	state cstr root = NULL
+	state cstr fullpath = NULL
+	state cstr query
+	state cstr user = default_user
+	state cstr pass = NULL
+	state off_t reqlen = 0
+	state int file_fd = -1
+	state passwd *u
+	state int code
+	state cstr msg
+	state cstr location
+	state int private = 0
+	state int expire_already = 0
+	state cstr user_agent = NULL
+	state boolean keep_alive = 1
+	state boolean statable
+	decl(st, Stats)
+	state float proto_f = 0
+	state cstr body = NULL
+	state time_t modified = -1
+	state cstr mtype = "text/plain"
+	state int status
+	state boolean range_req = 0
+	state long long int byte0
+	state long long int byte1
+	state boolean content_range_req = 0
+	state long long int cr_byte0
+	state long long int cr_byte1
+	state off_t fullsize
+	state off_t size
+
+	repeat
+		breadln(in)
+		if !buflen(&in)
+			quit
+		s = buf0(&in)
+		l = strlen(s)+1
+		cstr_dos_to_unix(s)
+		if *s
+			break
+		buffer_shift(&in, l)
+
+	cstr *words = split(s, ' ')
+	if arylen(words) != 3
+		buffer_shift(&in, l)
+		Free(words)
+		bad
+	method = http_which_method(words[0])
+	url = Strdup(words[1]) ; proto = Strdup(words[2])
+	url_decode(url)
+	verbose("%s %s %s", words[0], url, scheme)
+	Free(words)
+	buffer_shift(&in, l)
+
+	# check proto
+	if !strncmp(proto, "HTTP/", 5)
+		proto_f = atof(proto+5)
+		if num_lt(proto_f, 1.1)
+			keep_alive = 0
+
+	# read_headers
+	# TODO hash the headers first? or use some better dispatch
+
+	repeat
+		breadln(in)
+		if !buflen(&in)
+			quit
+		s = buf0(&in)
+		l = strlen(s)+1
+		cstr_dos_to_unix(s)
+		if !*s
+			buffer_shift(&in, l)
+			break
+		#verbose(s)
+		cstr *words = split(s, ':', 2)
+		if arylen(words) != 2
+			Free(words)
+			bad
+		cstr key = words[0], val = words[1]
+		Free(words)
+		while isspace(val[0])
+			++val
+		if !strcasecmp(key, "Host")
+			host = Strdup(val)
+		 eif !strcasecmp(key, "Authorization")
+			if !strncasecmp(val, "Basic ", 6)
+				decl(base64, buffer)
+				buffer_from_cstr(base64, val+6)
+				new(o, buffer, 32)
+				base64_decode_buffers(base64, o)
+				user = buffer_to_cstr(o)
+				cstr *user_pass = split(user, ':', 2)
+				if arylen(user_pass) != 2
+					Free(user_pass)
+					bad
+				pass = user_pass[1]
+				Free(user_pass)
+		 eif !strcasecmp(key, "User-Agent")
+			user_agent = Strdup(val)
+		 eif !strcasecmp(key, "Content-Length")
+			reqlen = atoll(val)
+		 eif !strcasecmp(key, "Connection")
+			if !strcasecmp(val, "close")
+				keep_alive = 0
+			 eif !strcasecmp(val, "Keep-Alive")
+				keep_alive = 1
+		 eif !strcasecmp(key, "Range")
+			int n = sscanf(val, "bytes=%lld-%lld", &byte0, &byte1)
+			if n
+				range_req = 1
+				if n == 1
+					byte1 = -1
+		 eif !strcasecmp(key, "Content-Range")
+			int n = sscanf(val, "bytes=%lld-%lld", &cr_byte0, &cr_byte1)
+			if n
+				content_range_req = 1
+				if n == 1
+					cr_byte1 = -1
+		# TODO Content-Range for put
+
+		buffer_shift(&in, l)
+
+	if host == NULL
+		host = get_host_from_url(url)
+	if host == NULL
+		host = Strdup(default_host)
+
+	path = get_path_from_url(url)
+
+	root = path_cat(www_root, host)
+
+	if is_symlink(root)
+		cstr realhost = readlinks(root, if_dead_path)
+		location = format("%s://%s%s", scheme, base_name(realhost), path)
+		Free(realhost)
+		loc
+
+	fullpath = path_cat(root, path)
+
+	query = strchr(fullpath, '?')
+	if query
+		*query++ = '\0'
+
+	fullpath = path_tidy(fullpath)
+	unless(cstr_begins_with(fullpath, root) && fullpath[strlen(root)] == '/')
+		bad
+
+	if strstr(fullpath, "/.")
+		forbid
+
+	# redirect /index.html -> /  so each file has a single url
+	if cstr_ends_with(url, "/index.html")
+		location = Strdup(url)
+		strrchr(location, '/')[1] = '\0'
+		loc
+
+	if fullpath[strlen(fullpath)-1] == '/'
+		cstr fullpath_index = path_cat(fullpath, "index.html")
+		if is_file(fullpath_index)
+			Free(fullpath)
+			fullpath = fullpath_index
+
+	#verbose("  %s", fullpath)
+
+	# set user and respond
+
+	u = get(users, user)
+
+	if user != default_user && !(u && pass && auth(u, pass))
+		reqauth
+
+	if pass
+		bzero(pass, strlen(pass))
+
+	# TODO use try if it works?
+
+	Seteuidgid(u)
+	  # must reset this to root before switching! a bit ugly
+
+	statable = !stat(fullpath, st)
+
+	if !statable && among(method, HTTP_GET, HTTP_HEAD, HTTP_DELETE)
+		Seteuidgid_root()
+		accerr
+
+	if !(st->st_mode & S_IROTH)
+		private = 1
+		if !user_agent || strcasestr(user_agent, "MSIE") || !strcasestr(user_agent, "Mozilla/5.0")
+			expire_already = 1
+
+	if S_ISREG(st->st_mode) && st->st_mode & S_IXUSR && (method == HTTP_POST || (method == HTTP_GET && query))
+		# httpd GET only executes a cgi program if there is a ? in
+		# the URL. Otherwise, GET retrieves the program.
+		get_cgi()
+	 eif among(method, HTTP_PUT, HTTP_POST)
+		put_file()
+	 eif method == HTTP_DELETE
+		delete_file()
+	 eif !among(method, HTTP_GET, HTTP_HEAD) || reqlen
+		Seteuidgid_root()
+		bad
+	 eif S_ISREG(st->st_mode)
+		get_file()
+	 eif S_ISDIR(st->st_mode)
+		get_dir()
+	 else
+		Seteuidgid_root()
+		notf
+
+done	Free(url) ; Free(proto) ; Free(host)
+	Free(root) ; Free(fullpath) ; Free(body)
+	if user != default_user
+		Free(user)
+	if keep_alive
+		req
+	quit
+
+quit	verbose("")
+	rm_fd(fd)
+	sock_free(sk)
+	Free(sk)
+	buffer_free(&in)
+	buffer_free(&out)
+	Free(This)
+	stop
+
+mesg	body = format("httpd: %d %s\r\n", code, msg)
+	headers(code, msg, strlen(body))
+	bodymsg
+
+bodymsg	discard_req()
+	bcrlf(out)
+	bflush(out)
+	if method != HTTP_HEAD
+		bprint(out, body)
+		bflush(out)
+	if buflen(&out) # error
+		keep_alive = 0
+	done
+
+ok	code = 200 ; msg = "OK"
+	mesg
+
+created	code = 201 ; msg = "Created"
+	# FIXME should return Location header and URL in body too.
+	mesg
+
+bad	code = 400 ; msg = "Bad Request"
+	mesg
+
+forbid	code = 403 ; msg = "Forbidden"
+	mesg
+
+notf	code = 404 ; msg = "Not Found"
+	mesg
+
+badrng	code = 416 ; msg = "Requested Range Not Satisfiable"
+	mesg
+
+srverr	code = 500 ; msg = "Internal Server Error"
+	mesg
+
+reqauth	if !cstr_eq(scheme, "https")
+		https
+	body = Strdup("httpd: 401 Unauthorized\r\n")
+	headers(401, "Unauthorized", strlen(body))
+	bsayf(out, "WWW-Authenticate: Basic realm=\"%s\"\r", host)
+	bodymsg
+
+loc	body = format("httpd: redirected to %s\r\n", location)
+	headers(301, "Moved Permanently", strlen(body))
+	bsayf(out, "Location: %s\r", location)
+	verbose("  %s", location)
+	Free(location)
+	bodymsg
+
+https	location = format("https://%s%s", host, path)
+	loc
+
+accerr	which errno
+	EACCES	reqauth
+	EPERM	reqauth
+	ENOENT	notf
+	ENOTDIR	notf
+	ENAMETOOLONG	bad
+	else	srverr
+
+def headers(code, msg, size)
+	bsayf(out, "HTTP/1.1 %d %s\r", code, msg)
+	bsayf(out, "Date: %s\r", date_rfc1123((time_t)sched->now))
+	if modified != -1
+		bsayf(out, "Last-Modified: %s\r", date_rfc1123(modified))
+	if range_req
+		bsayf(out, "Content-Range: %lld-%lld/%lld\r", (long long int)byte0, (long long int)byte1, (long long int)fullsize)
+	bsayf(out, "Content-Length: %lld\r", (long long int)size)
+	if code == 200 && expire_already
+		bsay(out, "Cache-Control: private, no-cache, no-store\r")
+		bsay(out, "Expires: 0\r")
+	bsayf(out, "Content-Type: %s\r", mtype)
+	bsayf(out, "Server: httpd\r")
+	if num_lt(proto_f, 1.1)
+		bsayf(out, "Connection: %s\r", keep_alive ? "Keep-Alive" : "close")
+
+def get_file()
+	cstr base = strrchr(fullpath, '/')
+	cstr ext = strrchr(base, '.')
+	if ext++
+		cstr _mtype = mimetype(ext)
+		if _mtype
+			mtype = _mtype
+
+	file_fd = open(fullpath, O_RDONLY|O_NONBLOCK)
+
+	Seteuidgid_root()
+
+	if file_fd == -1
+		accerr
+	if add_fd(file_fd)
+		Close(file_fd)
+		srverr
+	cloexec(fd)
+#	nonblock(file_fd)
+
+	modified = st->st_mtime
+	fullsize = st->st_size
+	do_range_size()
+	if range_req
+		if byte0
+			Lseek(file_fd, byte0)
+		headers(206, "Partial Content", size)
+	 else
+		headers(200, "OK", size)
+
+	bcrlf(out)
+	bflush(out)
+
+	# I use bwrite_direct to save copying the data again,
+	# so need to free the buffer first, and recreate it after.
+	buffer_free(&out)
+
+	if method == HTTP_GET  # not HTTP_HEAD
+		init(&fr, reader, file_fd)
+		sh(buffer, &fr, out, This, fio)
+		init(&fio, buffer, block_size)
+		start(&fr)
+
+		repeat
+			pull(fio)
+			if !buflen(&fio)
+				break
+			off_t dsize = buflen(&fio)
+			if dsize > size
+				dsize = size
+				buffer_set_size(&fio, dsize)
+			size -= dsize
+			bwrite_direct(out, buffer_range(&fio))
+			  # FIXME don't copy data
+			bflush(out)
+			if buflen(&out) # error
+				keep_alive = 0
+				break
+			buffer_clear(&fio)
+			if !size
+				break
+			push(fio)
+
+		buffer_free(&fio)
+
+	init(&out, buffer, block_size)
+
+	if file_fd != -1
+		rm_fd(file_fd)
+		close(file_fd)
+
+def get_dir()
+	if fullpath[strlen(fullpath)-1] != '/'
+		Seteuidgid_root()
+		location = format("%s/", url)
+		loc
+
+	vec *v = slurpdir(fullpath)  # TODO use d_type
+	Seteuidgid_root()
+
+	if !v
+		accerr
+	# loaded directory ok, root can stat the nodes
+	sort_vec(v, cstrp_cmp)
+	new(b0, buffer, 256)
+	new(b1, buffer, 256)
+	for_vec(i, v, cstr)
+		if (*i)[0] == '.'
+			continue
+		cstr entpath = path_cat(fullpath, *i) # or chdir
+		int dir = is_dir(entpath)
+		cstr line
+		if dir
+			line = format("<a href=\"%s/\"><b>%s</b>/</a><br>\n", *i, *i)
+			buffer_cat_cstr(b0, line)
+		 else
+			line = format("<a href=\"%s\">%s</a><br>\n", *i, *i)
+			buffer_cat_cstr(b1, line)
+		Free(line) ; Free(entpath) ; Free(*i)
+
+	vec_free(v)
+
+	buffer_cat_cstr(b0, "<br>\n")
+	buffer_cat_cstr(b1, "<br>\n")
+
+	buffer_cat_range(b0, buffer_range(b1))
+	buffer_free(b1)
+
+	modified = st->st_mtime
+	mtype = "text/html"
+	fullsize = buflen(b0)
+	do_range_size()
+	if range_req
+		if byte0 != 0
+			buffer_shift(b0, byte0)
+		if size < (off_t)buflen(b0)
+			buffer_set_size(b0, size)
+		headers(206, "Partial Content", size)
+	else
+		headers(200, "OK", size)
+	bcrlf(out)
+	bflush(out)
+
+	if method == HTTP_GET  # not HTTP_HEAD
+		bwrite(out, buffer_range(b0))
+		bflush(out)
+
+	buffer_free(b0)
+	if buflen(&out) # error
+		keep_alive = 0
+
+def get_cgi()
+	pid_t child = Fork()
+	if child == 0
+		# I would like to be able to just Dup2() the file descriptors
+		# to the CGI script and then forget about it. But some data was
+		# buffered from the request already.
+
+		# I could pass the data that was already buffered in an
+		# argument or env variable, but that is non-standard.
+
+		# I'll put the first part of the body which was read already in
+		# REQUEST_BDDY_1.  This is dodgy as cannot handle a nul in it.
+		buffer_nul_terminate(&in)
+		Setenv("REQUEST_BDDY_1", buf0(&in))
+		bufclr(&in)
+
+		Dup2(fd, STDIN_FILENO)
+		Dup2(fd, STDOUT_FILENO)
+		Dup2(fd, STDERR_FILENO)
+
+		# TODO set standard CGI environment
+
+		Sigdfl(SIGPIPE)
+		exec__warn_fail = 0
+		dirbase d_b = dirbasename(Strdup(fullpath))
+		if chdir(d_b.dir)
+			exit_exec_failed()
+		Execl(fullpath, fullpath, NULL)
+
+	Seteuidgid_root()
+
+	# dodgy apparently I need to indent this because in a macro
+	.
+		waitchild(child, status)
+
+	if status_execfailed(status)
+		reqauth
+	 eif status != 0
+		# failed, or killed by signal
+		# There might have been some output already
+		# or the input might not be fully read.
+		keep_alive = 0
+		srverr
+	 else
+		# okay
+		# No keep_alive for CGI at the moment.
+		keep_alive = 0
+
+def put_file()
+	# PUT replaces a file, POST appends to it.
+	# PUT with the Content-Range header truncates after the data written,
+	# if cr_byte1 >= size-1. POST with the Content-Range does not truncate
+	# FIXME it opens the file as the user, but writes as root,
+	# I think this means it would not respect any quota that might exist.
+
+	int open_opt = O_WRONLY|O_CREAT|O_NONBLOCK
+
+	fullsize = st->st_size
+	if content_range_req
+		put_do_range()
+	 else
+		if method == HTTP_PUT
+			open_opt |= O_TRUNC
+		 else  # method == HTTP_POST
+			open_opt |= O_APPEND
+
+	file_fd = open(fullpath, open_opt, 0666)
+
+	Seteuidgid_root()
+
+	if content_range_req
+		Lseek(file_fd, cr_byte0)
+
+	if file_fd == -1
+		accerr
+	if add_fd(file_fd)
+		Close(file_fd)
+		srverr
+	cloexec(fd)
+#	nonblock(file_fd)
+
+	init(&fw, writer, file_fd)
+	sh(buffer, This, fio, &fw, in)
+	init(&fio, buffer, block_size)
+	start(&fw)
+
+	# this copy routine seems overly complex
+	state off_t count = 0
+	if !buflen(&in)
+		push(in)
+	repeat
+		pull(in)
+		if !buflen(&in)
+			break
+		state size_t dcount = buflen(&in)
+		if (off_t)(count + dcount) > reqlen
+			dcount = reqlen - count
+		count += dcount
+		bwrite(fio, buf0(&in), b(&in, dcount)) # FIXME don't copy data
+		bflush(fio)
+		if buflen(&fio) # error
+			break
+		if count == reqlen
+			buffer_shift(&in, dcount)
+			break
+		buffer_clear(&in)
+		push(in)
+
+	buffer_free(&fio)
+
+	# TODO put with content-range to be like splice, so can insert data?
+	if content_range_req && method == HTTP_PUT && cr_byte1 >= fullsize-1
+		Ftruncate(file_fd, cr_byte0 + count)
+
+	if file_fd != -1
+		rm_fd(file_fd)
+		close(file_fd)
+
+	if count < reqlen
+		# we don't unlink the partial file
+		# FIXME it's not really a bad req, prolly a broken connection
+		reqlen = 0
+		bad
+
+	reqlen = 0
+	if statable
+		ok
+	 else
+		created
+
+def delete_file()
+	int failed = remove(fullpath)
+	Seteuidgid_root()
+	if failed
+		accerr
+
+	ok
+
+def discard_req()
+	# read request if any and discard it
+	# FIXME it should check if there is a POST / PUT method
+	# FIXME what if we have POST or PUT but no Content-Length -
+	# read until EOF and no keep_alive?
+	# FIXME if there is an unnecessary request body, we should give an error
+	# after discarding the message.
+	if reqlen
+		verbose("  discarding request of length %lld", (long long int)reqlen)
+		# TODO fix this to discard it in blocks, a request can be big!
+		# TODO limit request size, line size
+		bread(in, reqlen)
+		verbose("  got %lld bytes", (long long int)buflen(&in))
+		buffer_shift(&in, imin(reqlen, buflen(&in)))
+
+def do_range_size()
+	if range_req
+		fix_byte_range(byte0)
+		fix_byte_range(byte1)
+		if byte1 >= fullsize
+			byte1 = fullsize - 1
+		size = byte1 - byte0 + 1
+		if byte1 <= byte0
+			badrng
+	 else
+		size = fullsize
+
+def put_do_range()
+	if range_req
+		fix_byte_range(cr_byte0)
+		fix_byte_range(cr_byte1)
+		if cr_byte1 <= cr_byte0
+			bad
+
+def fix_byte_range(b)
+	if b < 0
+		b += fullsize
+		if b < 0
+			b = 0

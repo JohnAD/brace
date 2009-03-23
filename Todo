@@ -207,6 +207,3 @@ or
 
 
 typed macros should behave like functions w.r.t. types, e.g. convert types using "soft casting", e.g. isdigit((char)'a') on netbsd should not give warning
-
-
-TODO use ht_t vec_t buf_t etc instead of hashtable vec buffer?

@@ -1,72 +1,34 @@
-#!/lang/b
-use b
+#!/usr/bin/perl
+use strict; use warnings;
+use Tie::IxHash;
 
-size_t n_buckets = 10007
+my %alloced;
 
-struct order_value
-	hash_order *order
-	void *value
+tie %alloced, "Tie::IxHash";
 
-struct hash_order
-	list *next
-	list *prev
-	key_value *kv
+my $n = 1;
 
-hash_order_init(hash_order *ho, key_value *kv)
-	ho->kv = kv
+while (defined($_ = <STDIN>)) {
+	chomp;
+	if ($_ !~ /^[AF]\t/) {
+		next;
+	}
+	my ($type, $func, $addr, $size, $location) = split /\t/, $_;
+	if ($type eq "A") {
+		if ($alloced{$addr}) {
+			print "bad\t$_\n";
+		} else {
+			$alloced{$addr} = $_;
+		}
+	} else {  # $type eq "free"
+		if ($addr =~ /[^0]/ && !$alloced{$addr}) {
+			print "bad\t$_\n";
+		} else {
+			delete $alloced{$addr};
+		}
+	}
+}
 
-order_value_init(order_value *ov, hash_order *order, void *value)
-	ov->order = order
-	ov->value = value
-
-Main()
-	new(alloced, hashtable, cstr_hash, (eq_func)cstr_eq, n_buckets)
-	new(order, dlist)
-	eachline(l)
-		if !(among(*l, 'A', 'F') || l[1] == '\t')
-			continue
-		let(line, strdup(l))
-		let(words, split(l, '\t'))
-		cstr type = words[0]
-#		cstr func = words[1]
-		cstr addr = words[2]
-#		cstr size = words[3]
-#		cstr location = words[4]
-		if *type == 'A'
-			key_value* i = kv(alloced, addr)
-			if i->value == NULL
-				i->key = strdup(addr)
-				New(ho, hash_order, i)
-				dlist_push(order, (dlist*)ho)
-				NEW(i->value, order_value, ho, line)
-			 else
-				Sayf("bad\t%s", line)
-				Free(line)
-		 else  # type == 'F'
-			int addr_not_null = 0
-			if !strstr(addr, "nil")
-				for_cstr(i, addr)
-					if *i != '0'
-						addr_not_null = 1
-						break
-			if addr_not_null
-				key_value kv = del(alloced, addr)
-				if kv_is_null(kv)
-					Sayf("bad\t%s", line)
-				hash_order *ho = ((order_value *)kv.value)->order
-				dlist_delete((dlist *)ho)
-				Free(ho)
-			Free(line)
-
-	  # This makes this method unideal because I don't want to have to
-	  # reverse the list all the time to enumerate the order.
-	  # Should remember the last element of the list so can do a real push/append.
-	  # Pop wouldn't work, but I don't need it.
-
-	dump_dlist()
-
-	# TODO free?
-
-def dump_dlist()
-	for_dlist(i, order, hash_order)
-		Sayf("unfreed\t%s", ((order_value *)i->kv->value)->value)
+for (keys %alloced) {
+	print "unfreed\t$alloced{$_}\n";
+}

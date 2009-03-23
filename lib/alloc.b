@@ -4,7 +4,7 @@ export types
 
 use stdio.h
 
-def alloc_type normal
+#def alloc_type normal
 def alloc_type memlog
 
 def Malloc(size) alloc_type^^_Malloc(size)
