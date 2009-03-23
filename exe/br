@@ -180,6 +180,7 @@ C="$dirname/.$basename.$c"
 BBAK="$dirname/.$basename.bak"
 BBAK2="$dirname/.$basename.bak2"
 LOG="$dirname/.$basename.log"
+rm -f "$B1" "$C" "$LOG"
 if [ -n "$BR_DEBUG" ]; then echo \< "$B" brace_number_lines \| b2b1 \> "$B1"; fi
 <"$B" brace_number_lines "$B" | b2b1 2>"$LOG" >"$B1" || log_fix_exit
 if [ -n "$BR_DEBUG" ]; then echo \< "$B1" brace \> "$C"; fi
@@ -233,6 +234,7 @@ fi
 if [ -n "$BR_CLEAN" ]; then
 	rm "$C" "$B1"
 else
+	rm -f "$XBAK" "$BBAK"
 	cp -a "$X" "$XBAK"
 	if [ -e "$BBAK" ]; then
 		mv "$BBAK" "$BBAK2"

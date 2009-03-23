@@ -1,6 +1,5 @@
 export math.h stdlib.h limits.h
 export types util time
-use process
 use m
 
 Def trig_unit rad

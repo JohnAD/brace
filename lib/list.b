@@ -191,3 +191,53 @@ struct list_x
 list_x_init(list_x *n, void *o)
 	n->o = o
 
+
+# the dlist is represented by a dlist where next points to the first node, and prev points to the last node
+# to check if at the start / end of the list, need to test if next/prev == list
+# the "list" node does not have a body, and the list is empty if list.next (== list.prev) == list
+
+struct dlist
+	dlist *next
+	dlist *prev
+
+dlist_init(dlist *dl)
+	dl->prev = dl->next = dl
+
+dlist_append(dlist *point, dlist *new)
+	new->next = point->next
+	new->prev = point
+	point->next = new
+	new->next->prev = new
+
+dlist_insert(dlist *point, dlist *new)
+	#def dlist_insert(point, new) dlist_append(point->prev, new)
+	new->prev = point->prev
+	new->next = point
+	point->prev = new
+	new->prev->next = new
+
+# This does NOT free memory, you need to free the node after (NOT before!) doing this.
+dlist *dlist_delete(dlist *node)
+	node->prev->next = node->next
+	node->next->prev = node->prev
+	return node
+
+def dlist_empty(list) list->next == list
+
+def dlist_push(list, new) dlist_insert(list, new)
+
+def dlist_unshift(list, new) dlist_append(list, new)
+
+def dlist_pop(list) dlist_delete(list->prev)
+
+def dlist_shift(list) dlist_delete(list->next)
+
+def for_dlist(i, list)
+	for_dlist(i, list, dlist)
+
+def for_dlist(i, listp, type)
+	let(i, (type *)(listp->next))
+	for ; (dlist *)i != (dlist *)listp ; i = (type *)i->next
+		.
+
+# TODO back_dlist ?
