@@ -894,13 +894,16 @@ cp(const char *from, const char *to, int mode)
 	Close(out)
 	Close(in)
 
-cp_fd(int in, int out)
+off_t cp_fd(int in, int out)
 	char buf[4096]
+	off_t count = 0
 	repeat
 		size_t len = Read(in, buf, sizeof(buf))
 		if len == 0
 			break
 		Write(out, buf, len)
+		count += len
+	return count
 
 fcp(FILE *in, FILE *out)
 	char buf[4096]

@@ -19,11 +19,11 @@ int Poll(struct pollfd *fds, nfds_t nfds, int timeout)
 
 def Poll(fds, nfds) Poll(fds, nfds, -1)
 
-int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask)
-	int rv = ppoll(fds, nfds, timeout, sigmask)
-	if rv == -1 && errno != EINTR
-		failed("ppoll")
-	return rv
+#int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const sigset_t *sigmask)
+#	int rv = ppoll(fds, nfds, timeout, sigmask)
+#	if rv == -1 && errno != EINTR
+#		failed("ppoll")
+#	return rv
 
 nonblock(int fd, int nb)
 	if ioctl(fd, FIONBIO, &nb) == -1
