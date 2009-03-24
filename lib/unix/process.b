@@ -316,3 +316,7 @@ int Sigwait(const sigset_t *mask)
 	sigwait(mask, &sig)
 	return sig
 
+Nice(int inc)
+	errno = 0
+	if nice(inc) == -1 && errno
+		failed("nice")

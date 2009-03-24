@@ -1167,3 +1167,5 @@ def Socketpair(sv[2]) Socketpair(AF_UNIX, SOCK_STREAM, 0, sv)
 Socketpair(int d, int type, int protocol, int sv[2])
 	if socketpair(d, type, protocol, sv) != 0
 		failed("socketpair")
+
+def nonblock(fd) nonblock(fd, 1)

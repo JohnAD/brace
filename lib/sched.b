@@ -19,6 +19,10 @@ int sched_busy = 16
              # = 1       # check IO at every step
              # = n       # check IO when no procs queued or every n steps
 
+boolean sched_need_time = 1
+	     # = 0       # don't need time at all
+	     # = 1       # check the time after every IO
+
 int sched__children_n_buckets = 1009
 
 struct scheduler
@@ -55,7 +59,7 @@ scheduler_init(scheduler *sched)
 	init(&sched->readers, vec, proc_p, 8)
 	init(&sched->writers, vec, proc_p, 8)
 	sched->io_wait_count = 0
-	sched->now = rtime()
+	sched_set_time()
 	init(&sched->tos, timeouts)
 	init(&sched->children, hashtable, int_hash, (eq_func)int_eq, sched__children_n_buckets)
 	sched->step = 0
@@ -86,7 +90,7 @@ run()
 #		queue_dump(&sched->q)
 
 # sched->now is set to the startup time, or the time after the last select
-# If you need more precise timing, call rtime() again.
+# If you need more precise timing, call sched_set_time() again.
 
 def delay_forever -1
 
@@ -97,7 +101,7 @@ step()
 	int n_ready = 0
 
 	if !timeouts_empty(&sched->tos)
-		sched->now = rtime()
+		sched_set_time()    # do this every time?
 		delay = timeouts_delay(&sched->tos, sched->now)
 	 eif sched->q.size
 		delay = sched->io_wait_count ? sched_delay : 0
@@ -133,7 +137,8 @@ step()
 #		proc_debug_selectors()
 		n_ready = Pselect(sched->max_fd_plus_1, &sched->readfds_ready, &sched->writefds_ready, &sched->exceptfds_ready, delay_ts, oldsigmaskp)
 		proc_debug("select done")
-		sched->now = rtime()
+		if sched_need_time
+			sched_set_time()
 		if sched->n_children
 			if sched->got_sigchld
 				got_sigchld = 1
@@ -167,7 +172,9 @@ step()
 			int has_error = fd_isset(fd, &sched->exceptfds_ready)
 			if has_error
 				# XXX how to handle errors properly?
-				warn("sched: fd %d has an error - closing", fd)
+				# I think it is better if I just ignore errors
+				errno = Getsockerr(fd)
+				swarning("sched: fd %d has an error - closing", fd)
 				fd_has_error(fd)
 			if can_read && fd_alive(fd)
 				clr_reader(fd)
@@ -299,6 +306,9 @@ clr_waitchild(pid_t pid)
 	Free(kv.key)
 	--sched->n_children
 
-void sigchld_handler(int signum)
+sigchld_handler(int signum)
 	use(signum)
 	sched->got_sigchld = 1
+
+sched_set_time()
+	sched->now = rtime()

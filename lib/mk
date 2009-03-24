@@ -7,9 +7,12 @@ CFLAGS:=-Wall -Wextra -Werror $(CFLAGS)
 ifndef BRACE_STANDALONE
 ifndef LIBB_BUILD
 ifeq ($(BRACE_LANGUAGE),C++)
-LDLIBS:=$(LDLIBS) -lb -lstdc++
-else
+LDLIBS:=$(LDLIBS) -lstdc++
+endif
+ifndef BRACE_PLAIN
 LDLIBS:=$(LDLIBS) -lb
+else
+LDLIBS:=$(LDLIBS) -lb_plain
 endif
 endif
 endif

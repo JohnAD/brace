@@ -14,7 +14,7 @@ Main()
 		cstr size = words[3]
 		cstr location = words[4]
 		if *type == 'A'
-			key_value = kv(alloced, addr)
+			key_value = kv(alloced, addr, NULL)
 			if key_value->value == NULL
 				key_value->key = strdup(addr)
 				key_value->value = strdup(l)

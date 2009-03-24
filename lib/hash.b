@@ -26,7 +26,6 @@ def put(ht, key, value) hashtable_add(ht, key, value)
 def kv(ht, key) hashtable_lookup(ht, key)
 def del(ht, key) hashtable_delete(ht, key)
 def KV(ht, key) hashtable_lookup_or_die(ht, key)
-def kv(ht, key) kv(ht, key, NULL)
 def kv(ht, key, init) hashtable_lookup_or_add_key(ht, key, init)
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.

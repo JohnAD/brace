@@ -29,7 +29,7 @@ Main()
 	if cplusplus
 		Fsayf(f, "using namespace std")
 		Fsayf(f, "use iostream")
-	Fsayf(f, "Main()")
+	int first = 1
 	if args > 0
 		cstr start = arg[0]
 		int cont = 1
@@ -41,12 +41,12 @@ Main()
 					end[-1] = '\0'
 			 else
 			 	cont = 0
-			Fsayf(f, "\t%s", start)
+			putline(start)
 			start = end+1
 		++arg ; --args
 	 else
 		eachline(l)
-			Fsayf(f, "\t%s", l)
+			putline(l)
 	Fclose(f)
 	cx(file)
 	int status = Systema(file, arg)
@@ -55,3 +55,13 @@ Main()
 		dirbasename(file, dir, base)
 		Systemf("rm %s/.%s*", dir, base)
 	return status
+
+def putline(l)
+	if first
+		if cstr_begins_with(l, "use ") || cstr_begins_with(l, "export ")
+			Fsay(f, l)
+		 else
+			Fsayf(f, "Main()")
+			first = 0
+	if !first
+		Fsayf(f, "\t%s", l)

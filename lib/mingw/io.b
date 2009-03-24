@@ -82,8 +82,7 @@ def lock(lockfile, fd, x)
 	pre(x)
 		.
 
-nonblock(int fd)
-	u_long nb = 1
+nonblock(int fd, u_long nb)
 	if ioctlsocket(fd_to_socket(fd), FIONBIO, &nb) == -1
 		failed("ioctlsocket")
 

@@ -30,6 +30,7 @@ for my $function (@function) {
 	if ($function =~ s/^(?:proc|coro) (.*)/$1/) {
 		my %port_type;
 		my %state_type;
+		my %struct_already;
 #		$uses_process = 1;
 		my ($proc_name, $args, $body) = $function =~ /^([^\s\*\&]+?)\(([^\n]*)\)\n(.*)\z/s;
 		next unless $proc_name;
@@ -71,11 +72,16 @@ End
 				$body = "$start$rest";
 			}
 			# get rid of any typeof(...) in the struct!
+			$decl1 =~ s{^typeof\(\d+\)}{int};
+			  # could add others for long, float etc :/
 			$decl1 =~ s{^typeof\(\&(\w+)->d\)}{($port_type{$1}||die "unknown port $1")." *"}e;
 			$decl1 =~ s{^typeof\((\w+)\)}{$state_type{$1}||$port_type{$1}||die "unknown state $1"}e;
 			$decl1 =~ s{^typeof\(&(\w+)\)}{($state_type{$1}||$port_type{$1}||die "unknown state $1")." *"}e;
 			if ($decl1 =~ /typeof\(/) { die "a typeof remains in a state/port variable declaration which needs to go in a struct:\n $decl1"; }
-			$struct .= "\t$decl1$var_name$ary\n";
+			my $struct_line = "$decl1$var_name$ary";
+			if (!$struct_already{$struct_line}++) {
+				$struct .= "\t$struct_line\n";
+			}
 		}
 		# replace references to state var foo with This->foo in body (data)
 		# replace references to port var foo with This->foo->d

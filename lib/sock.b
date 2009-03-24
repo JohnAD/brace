@@ -49,7 +49,12 @@ proc listener(int listen_fd, socklen_t socklen)
 	repeat
 		read(listen_fd)
 		NEW(s, sock, socklen)
-		s->fd = Accept(listen_fd, (struct sockaddr *)s->sa, &s->len)
+		s->fd = accept(listen_fd, (struct sockaddr *)s->sa, &s->len)
+		if s->fd == -1
+			sock_free(s)
+			if errno == EAGAIN
+				continue
+			failed("accept")
 
 		if add_fd(s->fd)
 			warn("listener: maximum number of sockets exceeded, rejecting %d", s->fd)
@@ -88,6 +93,9 @@ def writer writer_try
 def reader_sel_init(r, fd)
 	reader_sel_init(r, fd, block_size)
 
+def reader_sel_init(r, fd, block_size, sel_first)
+	reader_sel_init(r, fd, block_size)
+
 # Here are the reader and writer that call select first,
 # to check if it's ready to read or write.
 
@@ -104,16 +112,19 @@ proc reader_sel(int fd, size_t block_size)
 		ssize_t n = read(fd, bufend(&out), buffer_get_free(&out))
 		if n == -1
 			n = 0
-			swarning("reader %010p: error", b__p)
-			done = 1
+			if errno != ECONNRESET
+				swarning("reader %010p: error", b__p)
 		 eif n
 			buffer_grow(&out, n)
-		 else
+		if n == 0
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
 			proc_debug("reader %010p fd %d at EOF", b__p, fd)
 			buffer_clear(&out)
 			done = 1
 		push(out)
+
+def writer_sel_init(w, fd, sel_first)
+	writer_sel_init(w, fd)
 
 proc writer_sel(int fd)
 	port buffer in
@@ -144,12 +155,13 @@ def bread(in)
 	bread(in, 1)
 def bread(in, size)
 	if here(in) && !buflen(&in)
+		buffer_ensure_space(&in, size)
 		push(in)
 	repeat
 		pull(in)
 		if (size_t)buflen(&in) >= (size_t)size || !buflen(&in)
 			break
-		buffer_ensure_space(&in, size)
+		buffer_ensure_space(&in, size-buflen(&in))
 		push(in)
 	# can return an empty buffer at EOF
 
@@ -172,12 +184,15 @@ def bwrite(out, start, end)
 	buffer_cat_range(&out, start, end)
 
 def bwrite_direct(out, _start, _end)
+	state buffer bwrite_direct__saved_buffer = out
 	pull(out)
 	out.start = _start
 	out.end = _end
 	out.space_end = _end
+	bflush(out)
+	out = bwrite_direct__saved_buffer
 
-unsigned int max_line_length = 0
+int max_line_length = 0
 
 def breadln(in)
 	breaduntil(in, '\n')
@@ -194,9 +209,13 @@ def breaduntil(in, eol, c)
 		char *c = memchr(buf0(&in), eol, buflen(&in))
 		if c
 			*c = '\0'
+		if max_line_length &&
+		 ((c && c-buf0(&in) >= max_line_length) ||
+		  (!c && (int)buflen(&in) >= max_line_length))
+			warn("received line longer than max_line_length %d - closing", max_line_length)
+			bufclr(&in)
 			break
-		if max_line_length && buflen(&in) >= max_line_length
-			# XXX this does not nul terminate it
+		if c
 			break
 		push(in)
 #		warn("breadln: buflen %d\n[%s]\n", buflen(&in), buffer_nul_terminate(&in))
@@ -292,9 +311,14 @@ def bsayf(out, fmt, a0, a1, a2, a3, a4, a5)
 def reader_try_init(r, fd)
 	reader_try_init(r, fd, block_size)
 
-proc reader_try(int fd, size_t block_size)
+def reader_try_init(r, fd, block_size)
+	reader_try_init(r, fd, block_size, 1)
+
+proc reader_try(int fd, size_t block_size, boolean sel_first)
 	port buffer out
 	state boolean done = 0
+	if sel_first
+		read(fd)
 	while !done
 		proc_debug("reader %010p - before pull", b__p)
 		pull(out)
@@ -310,19 +334,23 @@ proc reader_try(int fd, size_t block_size)
 				n = 0
 				if errno != ECONNRESET
 					swarning("reader %010p: error", b__p)
-				done = 1
 		 eif n
 			buffer_grow(&out, n)
-		 else  # n == 0
+		if n == 0
 			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
 			proc_debug("reader %010p fd %d at EOF", b__p, fd)
 			buffer_clear(&out)
 			done = 1
 		push(out)
 
-proc writer_try(int fd)
+def writer_try_init(w, fd)
+	writer_try_init(w, fd, 0)
+
+proc writer_try(int fd, boolean sel_first)
 	port buffer in
 	state boolean done = 0
+	if sel_first
+		write(fd)
 	while !done
 		proc_debug("writer %010p - before pull", b__p)
 		pull(in)
@@ -362,14 +390,24 @@ def connect_nb_tcp(sk, addr, port)
 	nonblock(sk->fd)
 
 	Sockaddr_in((sockaddr_in *)sk->sa, name_to_ip(addr), port)
-	if connect(sk->fd, sk->sa, &sk->socklen)
+	if connect(sk->fd, sk->sa, sk->len)
 		if errno == EINPROGRESS
 			write(sk->fd)
-			int err
-			size_t size = sizeof(err)
-			if Getsockopt(s, SOL_SOCKET, SO_ERROR, &err, &size)
-				errno = err
-				failed("connect")
-		 else
+			errno = Getsockerr(sk->fd)
+		if errno
 			failed("connect")
+
+def bshut(out)
+	bufclr(&out)
+	pull(out)
+	push(out)
+
+def bclose(out)
+	bshut(out)
+	repeat
+		bread(in, block_size)
+		if !buflen(&in)
+			break
+	# Now, we have shut writing, and they have shut writing.
+	# The socket has not been closed as such yet, sock_free does that.
 

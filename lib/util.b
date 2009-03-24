@@ -984,32 +984,39 @@ def each(e, a0, a1, a2)
 		.
 
 def each(e, a0, a1, a2, a3)
-	eachp(my(i), a0, a1, a2, a3)
-		let(e, *my(i))
+	ary(my(ary), a0, a1, a2, a3)
+	forary(e, my(ary))
+		.
 
 def each(e, a0, a1, a2, a3, a4)
-	eachp(my(i), a0, a1, a2, a3, a4)
-		let(e, *my(i))
+	ary(my(ary), a0, a1, a2, a3, a4)
+	forary(e, my(ary))
+		.
 
 def each(e, a0, a1, a2, a3, a4, a5)
-	eachp(my(i), a0, a1, a2, a3, a4, a5)
-		let(e, *my(i))
+	ary(my(ary), a0, a1, a2, a3, a4, a5)
+	forary(e, my(ary))
+		.
 
 def each(e, a0, a1, a2, a3, a4, a5, a6)
-	eachp(my(i), a0, a1, a2, a3, a4, a5, a6)
-		let(e, *my(i))
+	ary(my(ary), a0, a1, a2, a3, a4, a5, a6)
+	forary(e, my(ary))
+		.
 
 def each(e, a0, a1, a2, a3, a4, a5, a6, a7)
-	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7)
-		let(e, *my(i))
+	ary(my(ary), a0, a1, a2, a3, a4, a5, a6, a7)
+	forary(e, my(ary))
+		.
 
 def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8)
-	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7, a8)
-		let(e, *my(i))
+	ary(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	forary(e, my(ary))
+		.
 
 def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
-	eachp(my(i), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
-		let(e, *my(i))
+	ary(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	forary(e, my(ary))
+		.
 
 def local(var, val)
 	let(my(old), var)

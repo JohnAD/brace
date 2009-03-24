@@ -1,4 +1,4 @@
-export sys/select.h poll.h
+export sys/select.h poll.h sys/ioctl.h
 
 export error types
 use util
@@ -25,10 +25,14 @@ int Ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout, const
 		failed("ppoll")
 	return rv
 
-nonblock(int fd)
-	Fcntl_setfl(fd, Fcntl_getfl(fd) | O_NONBLOCK)
-nonblock_off(int fd)
-	Fcntl_setfl(fd, Fcntl_getfl(fd) & ~O_NONBLOCK)
+nonblock(int fd, int nb)
+	if ioctl(fd, FIONBIO, &nb) == -1
+		failed("ioctl")
+
+#nonblock(int fd)
+#	Fcntl_setfl(fd, Fcntl_getfl(fd) | O_NONBLOCK)
+#nonblock_off(int fd)
+#	Fcntl_setfl(fd, Fcntl_getfl(fd) & ~O_NONBLOCK)
 
 int Fcntl_flock(int fd, int cmd, short type, short whence, off_t start, off_t len)
 	struct flock fl
@@ -89,7 +93,13 @@ Fcntl_setfl(int fd, long arg)
 	if rv == -1
 		error("fcntl_setfl")
 
+#cloexec(int fd)
+#	Fcntl_setfd(fd, Fcntl_getfd(fd) | FD_CLOEXEC)
+#cloexec_off(int fd)
+#	Fcntl_setfd(fd, Fcntl_getfd(fd) & ~FD_CLOEXEC)
+
+# the following assumes no other flag exists / is set except FD_CLOEXEC
 cloexec(int fd)
-	Fcntl_setfd(fd, Fcntl_getfd(fd) | FD_CLOEXEC)
+	Fcntl_setfd(fd, FD_CLOEXEC)
 cloexec_off(int fd)
-	Fcntl_setfd(fd, Fcntl_getfd(fd) & ~FD_CLOEXEC)
+	Fcntl_setfd(fd, 0)

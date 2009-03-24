@@ -206,4 +206,10 @@ Getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
 		get_winsock_errno()
 		failed("getsockopt")
 
+int Getsockerr(int fd)
+	int err
+	size_t size = sizeof(err)
+	Getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &size)
+	return err
+
 # TODO add / use getaddrinfo
