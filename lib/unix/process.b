@@ -153,6 +153,9 @@ def Seteuidgid(uid, gid)
 	Setegid(gid) ; Seteuid(uid)
 def Seteuidgid_root()
 	Seteuid(0) ; Setegid(0)
+def Seteuidgid_via_root(pw)
+	Seteuidgid_root()
+	Seteuidgid(pw)
 
 typedef struct passwd passwd
 typedef struct spwd spwd
