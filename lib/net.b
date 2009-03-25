@@ -208,7 +208,7 @@ Getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
 
 int Getsockerr(int fd)
 	int err
-	size_t size = sizeof(err)
+	socklen_t size = sizeof(err)
 	Getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &size)
 	return err
 
