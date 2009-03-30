@@ -26,12 +26,6 @@ struct buffer
 	char *end
 	char *space_end
 
-#size_t buffer_get_size(buffer *b)
-#	return b->end - b->start
-
-size_t buffer_get_space(buffer *b)
-	return b->space_end - b->start
-
 buffer_init(buffer *b, size_t space)
 	if space == 0
 		space = 1
@@ -88,9 +82,6 @@ buffer_grow(buffer *b, size_t delta_size)
 buffer_clear(buffer *b)
 	b->end = b->start
 
-size_t buffer_get_free(buffer *b)
-	return b->space_end - b->end
-
 # this should use a reference or pointer?
 char buffer_last_char(buffer *b)
 	return b->start[buffer_get_size(b)-1]
@@ -99,7 +90,7 @@ boolean buffer_ends_with_char(buffer *b, char c)
 	return buffer_get_size(b) && buffer_last_char(b) == c
 
 boolean buffer_ends_with(buffer *b, cstr s)
-	size_t len = strlen(s)
+	ssize_t len = strlen(s)
 	return buffer_get_size(b) >= len && !strncmp(b->end-len, s, len)
 
 char buffer_first_char(buffer *b)
@@ -115,7 +106,9 @@ Def buffer_range(b) buffer_get_start(b), buffer_get_end(b)
 
 def buffer_get_start(b) b->start
 def buffer_get_end(b) b->end
-def buffer_get_size(b) (size_t)(buffer_get_end(b)-buffer_get_start(b))
+def buffer_get_size(b) (ssize_t)(buffer_get_end(b)-buffer_get_start(b))
+def buffer_get_space(b) (ssize_t)(b->space_end - b->start)
+def buffer_get_free(b) (ssize_t)(b->space_end - b->end)
 
 # NOTE: you should use buffer_clear() before calling Sprintf,
 # otherwise the output will be appended to the buffer.
@@ -151,14 +144,14 @@ int Vsnprintf(char *buf, size_t size, const char *format, va_list ap)
 int Vsprintf(buffer *b, const char *format, va_list ap)
 	va_list ap1
 	va_copy(ap1, ap)
-	size_t old_size = buffer_get_size(b)
+	ssize_t old_size = buffer_get_size(b)
 	char *start = b->start + old_size
-	size_t space = buffer_get_space(b) - old_size
+	ssize_t space = buffer_get_space(b) - old_size
 	if space == 0
 		buffer_ensure_space(b, old_size+1)
 		start = b->start + old_size
 		space = buffer_get_space(b) - old_size
-	size_t len = Vsnprintf(start, space, format, ap)
+	ssize_t len = Vsnprintf(start, space, format, ap)
 	if len < space
 		buffer_grow(b, len)
 	 else
@@ -262,11 +255,11 @@ buffer_ensure_space(buffer *b, size_t space)
 		while space > ospace
 		buffer_set_space(b, ospace)
 
-buffer_ensure_size(buffer *b, size_t size)
+buffer_ensure_size(buffer *b, ssize_t size)
 	if buffer_get_size(b) < size
 		buffer_set_size(b, size)
 
-buffer_ensure_free(buffer *b, size_t free)
+buffer_ensure_free(buffer *b, ssize_t free)
 	while buffer_get_free(b) < free
 		buffer_double(b)
 

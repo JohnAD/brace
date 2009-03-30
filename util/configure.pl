@@ -37,13 +37,13 @@ print "\n";
 print <<End;
 BRACE_SO=\$(srcdir)${sep}lib
 BRACE_LIB=\$(srcdir)${sep}lib
-EXE=.exe
 End
 if ($mingw) {
 	print <<End;
 LIBB_SONAME=libb.dll
 LIBB_PLAIN_SONAME=libb_plain.dll
 PERL5LIB:=\$(srcdir)${sep}perl$pathsep\$(srcdir)${sep}cpan
+EXE=.exe
 PATH:=\$(srcdir)${sep}exe$pathsep\$(srcdir)${sep}util$pathsep$path
 libdir2:=$libdir2
 End

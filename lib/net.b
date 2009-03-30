@@ -87,8 +87,7 @@ cstr name_to_ip(const char *name)
 int Server_tcp(char *addr, int port)
 	addr = name_to_ip(addr)
 	int ear = Socket(PF_INET, SOCK_STREAM, 0)
-	int reuseaddr = 1
-	Setsockopt(ear, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr))
+	reuseaddr(ear)
 	struct sockaddr_in sa
 	Sockaddr_in(&sa, addr, port)
 	Bind(ear, (sockaddr *)&sa, sizeof(sockaddr_in))
@@ -200,6 +199,10 @@ nodelay(int fd, int nodelay)
 def cork(fd) cork(fd, 1)
 cork(int fd, int cork)
 	Setsockopt(fd, IPPROTO_TCP, TCP_CORK, &cork, sizeof(cork))
+
+def reuseaddr(fd) reuseaddr(fd, 1)
+reuseaddr(int fd, int reuseaddr)
+	Setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr))
 
 Getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
 	if getsockopt(s, level, optname, optval, optlen)

@@ -11,6 +11,10 @@ use error util m env
 
 use time
 
+def time_forever -1
+
+# datetime:
+#
 #    struct tm {
 #            int     tm_sec;         /* seconds */
 #            int     tm_min;         /* minutes */
@@ -72,7 +76,6 @@ def time() time(NULL)
 # it would be good to have an "automatically declare a temporary
 # struct for something to be returned in" feature in NIPL.
 
-typedef struct tm datetime
 def datetime_init(dt)
 	.
 
@@ -213,6 +216,12 @@ num timeval_to_rtime(struct timeval *tv)
 num timespec_to_rtime(struct timespec *ts)
 	return (num)ts->tv_sec + ts->tv_nsec / 1e9
 
+int rtime_to_ms(num rtime)
+	return (int)(rtime * 1000)
+
+num ms_to_rtime(int ms)
+	return ms / 1000.0
+
 date_rfc1123_init()
 	setlocale(LC_TIME, "POSIX")
 	Putenv("TZ=GMT")
@@ -220,5 +229,13 @@ date_rfc1123_init()
 
 char *date_rfc1123(time_t t)
 	static char date[32]
-	strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT", gmtime(&t))
-	return date
+	static char maxdate[32]
+	static time_t maxtime = -1
+	if t == maxtime
+		return maxdate
+	char *d = date
+	if t > maxtime
+		maxtime = t
+		d = maxdate
+	strftime(d, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT", gmtime(&t))
+	return d

@@ -3,9 +3,11 @@ export sys/select.h poll.h sys/ioctl.h
 export error types
 use util
 
+# this can return -1 on EINTR
+
 int Pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timespec *timeout, const sigset_t *sigmask)
 	int rv = pselect(nfds, readfds, writefds, exceptfds, timeout, sigmask)
-	if rv == -1 && errno != EINTR
+	if rv < 0 && errno != EINTR
 		failed("pselect")
 	return rv
 

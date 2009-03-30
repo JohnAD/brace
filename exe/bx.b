@@ -5,8 +5,8 @@ Main()
 	cstr br = "br"
 	cstr langopt = "-b"
 	if strncmp(program, "bb", 2) == 0
-		langopt = "-bb"
 		br = "bbr"
+		langopt = "-bb"
 	cstr libb
 
 	int add_to_PATH = 0

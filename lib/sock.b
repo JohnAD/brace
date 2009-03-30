@@ -31,32 +31,32 @@ struct shuttle_sock_p
 
 listener_tcp_init(listener *p, cstr listen_addr, int listen_port)
 	int listen_fd = Server(listen_addr, listen_port)
-	listener_init(p, listen_fd, sizeof(sockaddr_in))
+	init(p, listener, listen_fd, sizeof(sockaddr_in))
 
 listener_unix_init(listener *p, cstr addr)
 	int listen_fd = Server(addr)
-	listener_init(p, listen_fd, sizeof(sockaddr_un))
+	init(p, listener, listen_fd, sizeof(sockaddr_un))
 
-# FIXME handle Accept errors
-proc listener(int listen_fd, socklen_t socklen)
+def listener listener_sel
+#def listener listener_try
+
+proc listener_sel(int listen_fd, socklen_t socklen)
 	port sock_p out
 	state sock_p s
-	if add_fd(listen_fd)
+	if add_fd(listen_fd, 0)
 		Close(listen_fd)
 		error("listener: can't create listener, too many sockets")
 	cloexec(listen_fd)
 	nonblock(listen_fd)
 	repeat
-		read(listen_fd)
 		NEW(s, sock, socklen)
+		read(listen_fd)
 		s->fd = accept(listen_fd, (struct sockaddr *)s->sa, &s->len)
-		if s->fd == -1
+		if s->fd < 0
 			sock_free(s)
-			if errno == EAGAIN
-				continue
-			failed("accept")
-
-		if add_fd(s->fd)
+			if errno != EAGAIN  # can happen if forked
+				failed("accept")
+		 eif add_fd(s->fd)
 			warn("listener: maximum number of sockets exceeded, rejecting %d", s->fd)
 			sock_free(s)
 		 else
@@ -64,7 +64,31 @@ proc listener(int listen_fd, socklen_t socklen)
 			nonblock(s->fd)
 			keepalive(s->fd)
 			wr(out, s)
-	# XXX sa not freed
+
+proc listener_try(int listen_fd, socklen_t socklen)
+	port sock_p out
+	state sock_p s
+	if add_fd(listen_fd, 1)
+		Close(listen_fd)
+		error("listener: can't create listener, too many sockets")
+	cloexec(listen_fd)
+	nonblock(listen_fd)
+	repeat
+		NEW(s, sock, socklen)
+		s->fd = accept(listen_fd, (struct sockaddr *)s->sa, &s->len)
+		if s->fd < 0
+			sock_free(s)
+			if errno != EAGAIN
+				failed("accept")
+			read(listen_fd)
+		 eif add_fd(s->fd)
+			warn("listener: maximum number of sockets exceeded, rejecting %d", s->fd)
+			sock_free(s)
+		 else
+			cloexec(s->fd)
+			nonblock(s->fd)
+			keepalive(s->fd)
+			wr(out, s)
 
 typedef listener listener_tcp
 typedef listener listener_unix
@@ -195,23 +219,25 @@ def bwrite_direct(out, _start, _end)
 int max_line_length = 0
 
 def breadln(in)
-	breaduntil(in, '\n')
-def breaduntil(in, eol)
-	breaduntil(in, eol, my(c))
-def breaduntil(in, eol, c)
+	breadln(in, 0)
+def breadln(in, start)
+	breaduntil(in, start, '\n')
+def breaduntil(in, start, eol)
+	breaduntil(in, start, eol, my(c))
+def breaduntil(in, start, eol, c)
 	# this is getting ugly, need to do it better.
-	if here(in) && !buflen(&in)
+	if here(in) && buflen(&in) <= start
 		push(in)
 	repeat
 		pull(in)
-		if !buflen(&in)
+		if buflen(&in) <= start
 			break
-		char *c = memchr(buf0(&in), eol, buflen(&in))
+		char *c = memchr(b(&in, start), eol, buflen(&in)-start)
 		if c
 			*c = '\0'
 		if max_line_length &&
-		 ((c && c-buf0(&in) >= max_line_length) ||
-		  (!c && (int)buflen(&in) >= max_line_length))
+		 ((c && c-b(&in, start) >= max_line_length) ||
+		  (!c && buflen(&in)-start >= max_line_length))
 			warn("received line longer than max_line_length %d - closing", max_line_length)
 			bufclr(&in)
 			break
@@ -243,63 +269,56 @@ def bcrlf(out)
 
 
 def bprintf(out, fmt)
-	state cstr my(s) = format(fmt)
-	bprint(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt)
 def bprintf(out, fmt, a0)
-	state cstr my(s) = format(fmt, a0)
-	bprint(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0)
 def bprintf(out, fmt, a0, a1)
-	state cstr my(s) = format(fmt, a0, a1)
-	bprint(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1)
 def bprintf(out, fmt, a0, a1, a2)
-	state cstr my(s) = format(fmt, a0, a1, a2)
-	bprint(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1, a2)
 def bprintf(out, fmt, a0, a1, a2, a3)
-	state cstr my(s) = format(fmt, a0, a1, a2, a3)
-	bprint(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1, a2, a3)
 def bprintf(out, fmt, a0, a1, a2, a3, a4)
-	state cstr my(s) = format(fmt, a0, a1, a2, a3, a4)
-	bprint(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1, a2, a3, a4)
 def bprintf(out, fmt, a0, a1, a2, a3, a4, a5)
-	state cstr my(s) = format(fmt, a0, a1, a2, a3, a4, a5)
-	bprint(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1, a2, a3, a4, a5)
 
 
 def bsayf(out, fmt)
-	state cstr my(s) = format(fmt)
-	bsay(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt)
+	buffer_cat_char(&out, '\n')
 def bsayf(out, fmt, a0)
-	state cstr my(s) = format(fmt, a0)
-	bsay(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0)
+	buffer_cat_char(&out, '\n')
 def bsayf(out, fmt, a0, a1)
-	state cstr my(s) = format(fmt, a0, a1)
-	bsay(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1)
+	buffer_cat_char(&out, '\n')
 def bsayf(out, fmt, a0, a1, a2)
-	state cstr my(s) = format(fmt, a0, a1, a2)
-	bsay(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1, a2)
+	buffer_cat_char(&out, '\n')
 def bsayf(out, fmt, a0, a1, a2, a3)
-	state cstr my(s) = format(fmt, a0, a1, a2, a3)
-	bsay(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1, a2, a3)
+	buffer_cat_char(&out, '\n')
 def bsayf(out, fmt, a0, a1, a2, a3, a4)
-	state cstr my(s) = format(fmt, a0, a1, a2, a3, a4)
-	bsay(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1, a2, a3, a4)
+	buffer_cat_char(&out, '\n')
 def bsayf(out, fmt, a0, a1, a2, a3, a4, a5)
-	state cstr my(s) = format(fmt, a0, a1, a2, a3, a4, a5)
-	bsay(out, my(s))
-	Free(my(s))
+	pull(out)
+	Sprintf(&out, fmt, a0, a1, a2, a3, a4, a5)
+	buffer_cat_char(&out, '\n')
 
 # I remember Paul / Dancer recommending to try writing before selecting.
 # (they didn't say anything about anticipating reading).
@@ -312,7 +331,8 @@ def reader_try_init(r, fd)
 	reader_try_init(r, fd, block_size)
 
 def reader_try_init(r, fd, block_size)
-	reader_try_init(r, fd, block_size, 1)
+#	reader_try_init(r, fd, block_size, 1)
+	reader_try_init(r, fd, block_size, 0)
 
 proc reader_try(int fd, size_t block_size, boolean sel_first)
 	port buffer out
@@ -324,24 +344,24 @@ proc reader_try(int fd, size_t block_size, boolean sel_first)
 		pull(out)
 		proc_debug("reader %010p - after pull", b__p)
 		buffer_ensure_free(&out, block_size)
-		ssize_t n = read(fd, bufend(&out), buffer_get_free(&out))
-		if n == -1
-			if errno == EAGAIN
-				proc_debug("reader %010p - calling read(%d)", b__p, fd)
-				read(fd)
-				continue
+		ssize_t want = buffer_get_free(&out)
+		ssize_t n = read(fd, bufend(&out), want)
+		if n < 0 && errno != EAGAIN
+			n = 0
+			if errno != ECONNRESET
+				swarning("reader %010p: error", b__p)
+		if n >= 0
+			if n == 0
+				# XXX not sure if a good idea to clear buffer on EOF!
+				proc_debug("reader %010p fd %d at EOF", b__p, fd)
+				buffer_clear(&out)
+				done = 1
 			 else
-				n = 0
-				if errno != ECONNRESET
-					swarning("reader %010p: error", b__p)
-		 eif n
-			buffer_grow(&out, n)
-		if n == 0
-			# XXXXXX not sure if this is a good idea to clear the buffer on EOF!
-			proc_debug("reader %010p fd %d at EOF", b__p, fd)
-			buffer_clear(&out)
-			done = 1
-		push(out)
+				buffer_grow(&out, n)
+			push(out)
+		if n < want
+			proc_debug("reader %010p - calling read(%d)", b__p, fd)
+			read(fd)
 
 def writer_try_init(w, fd)
 	writer_try_init(w, fd, 0)
@@ -359,21 +379,20 @@ proc writer_try(int fd, boolean sel_first)
 			shutdown(fd, SHUT_WR)
 			done = 1
 		while buflen(&in)
-			ssize_t n = write(fd, buf0(&in), buflen(&in))
-			if n == -1
-				n = 0
-				if errno == EAGAIN
-					proc_debug("writer %010p - calling write(%d)", b__p, fd)
-					write(fd)
-					continue
-				 else
-					swarning("writer %010p: error", b__p)
-					# signals the caller that we have an error,
-					# by the fact that the buffer is not empty.
-					done = 1
-					break
-			 else
+			ssize_t want = buflen(&in)
+			ssize_t n = write(fd, buf0(&in), want)
+			if n < 0 && errno != EAGAIN
+#				if errno != EPIPE
+				swarning("writer %010p: error", b__p)
+				# signal the caller that we have an error,
+				# by the fact that the buffer is not empty.
+				done = 1
+				break
+			if n >= 0
 				buffer_shift(&in, n)
+			if n < want
+				proc_debug("writer %010p - calling write(%d)", b__p, fd)
+				write(fd)
 		push(in)
 
 # FIXME this connect_nb_tcp is a bit long for a macro!

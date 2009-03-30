@@ -194,7 +194,7 @@ LDLIBS="$LDLIBS -lm"
 LDLIBS_PLAIN="$LDLIBS"
 LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
 #CFLAGS="-Wall -Werror -I. -I$BRACE_LIB $CFLAGS"
-CFLAGS="-Wall -Wextra -Werror -I. $CFLAGS"
+CFLAGS="-Wall -Wextra -I. $CFLAGS"
 CINCLUDE="-I\"$BRACE_LIB\""
 if [ -n "$DEBUG" ]; then
 #	CFLAGS="$CFLAGS -ggdb"
@@ -202,6 +202,10 @@ if [ -n "$DEBUG" ]; then
 fi
 if [ -n "$OPTIMISE" ]; then
 	CFLAGS="$CFLAGS -O2"
+fi
+if [ -n "$PROFILE" ]; then
+	CFLAGS="$CFLAGS -pg"
+	LDFLAGS="$LDFLAGS -pg"
 fi
 CFLAGS="${CFLAGS## }"
 LDFLAGS="${LDFLAGS## }"

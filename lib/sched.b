@@ -1,39 +1,28 @@
 #  scheduler
 
-export proc
-export timeout
+export proc time timeout selector
+use deq io error process hash
 
-use deq
-use io
-use util
-use error
-use process
-use hash
+def io_selector io_epoll
+#def io_selector io_select
 
 num sched_delay = 0
-              # = 0      # don't sleep between steps
-              # = 0.01   # sleep for 0.01 secs at each IO check
+    # = 0      # don't sleep between steps
+    # = 0.01   # sleep for 0.01 secs at each IO check / wait
 
 int sched_busy = 16
-             # = 0       # check IO only when no procs queued
-             # = 1       # check IO at every step
-             # = n       # check IO when no procs queued or every n steps
-
-boolean sched_need_time = 1
-	     # = 0       # don't need time at all
-	     # = 1       # check the time after every IO
+    # = 0       # check IO / wait only when no procs queued
+    # = 1       # check IO / wait at every step
+    # = n       # check IO / wait when no queue or every n steps
 
 int sched__children_n_buckets = 1009
 
 struct scheduler
 	int exit
 	deq q
-	fd_set readfds, writefds, exceptfds
-	fd_set readfds_ready, writefds_ready, exceptfds_ready
-	int max_fd_plus_1
+	io_selector io
 	vec readers
 	vec writers
-	int io_wait_count
 	num now
 	timeouts tos
 	hashtable children
@@ -48,18 +37,11 @@ def sched_init()
 
 scheduler_init(scheduler *sched)
 	sched->exit = 0
-	deq_init(&sched->q, proc_p, 8)
-	init(&sched->readfds, fd_set)
-	init(&sched->writefds, fd_set)
-	init(&sched->exceptfds, fd_set)
-	init(&sched->readfds_ready, fd_set)
-	init(&sched->writefds_ready, fd_set)
-	init(&sched->exceptfds_ready, fd_set)
-	sched->max_fd_plus_1 = 0
+	init(&sched->q, deq, proc_p, 8)
+	init(&sched->io, io_selector)
 	init(&sched->readers, vec, proc_p, 8)
 	init(&sched->writers, vec, proc_p, 8)
-	sched->io_wait_count = 0
-	sched_set_time()
+	sched->now = -1
 	init(&sched->tos, timeouts)
 	init(&sched->children, hashtable, int_hash, (eq_func)int_eq, sched__children_n_buckets)
 	sched->step = 0
@@ -89,33 +71,28 @@ run()
 		step()
 #		queue_dump(&sched->q)
 
-# sched->now is set to the startup time, or the time after the last select
-# If you need more precise timing, call sched_set_time() again.
-
-def delay_forever -1
-
 step()
-	struct timespec struct__delay_ts, *delay_ts = &struct__delay_ts
 	int need_select
 	num delay
 	int n_ready = 0
+	io_selector *io = &sched->io
+	timeouts *tos = &sched->tos
 
-	if !timeouts_empty(&sched->tos)
-		sched_set_time()    # do this every time?
-		delay = timeouts_delay(&sched->tos, sched->now)
+	if !timeouts_empty(tos)
+		delay = timeouts_delay(tos, sched_get_time())
 	 eif sched->q.size
-		delay = sched->io_wait_count ? sched_delay : 0
+		delay = io_count(io) ? sched_delay : 0
 	 else
-		delay = delay_forever
+		delay = time_forever
 
-	if delay == delay_forever && sched->io_wait_count == 0 && sched->n_children == 0
+	if delay == time_forever && io_count(io) == 0 && sched->n_children == 0
 		sched->exit = 1
 		return
 
 	need_select = delay ||
-	 (sched_busy && sched->io_wait_count && sched->step % sched_busy == 0)
+	 (sched_busy && io_count(io) && sched->step % sched_busy == 0)
 
-	sigset_t oldsigmask, *oldsigmaskp = &oldsigmask
+	sigset_t oldsigmask, *oldsigmaskp = NULL
 
 	int got_sigchld = 0
 
@@ -124,21 +101,16 @@ step()
 			oldsigmask = Sig_defer(SIGCHLD)
 			if sched->got_sigchld
 				delay = 0
-		 else
-			oldsigmaskp = NULL
-		if delay == delay_forever
-			delay_ts = NULL
-		 else
-			rtime_to_timespec(delay, delay_ts)
-		sched->readfds_ready = sched->readfds
-		sched->writefds_ready = sched->writefds
-		sched->exceptfds_ready = sched->exceptfds
-		proc_debug("calling select on %d waiters for %f secs, max_fd_plus_1 is %d", sched->io_wait_count, delay, sched->max_fd_plus_1)
+			oldsigmaskp = &oldsigmask
+
+		proc_debug("polling %d waiters for %f secs", io_count(io), delay)
 #		proc_debug_selectors()
-		n_ready = Pselect(sched->max_fd_plus_1, &sched->readfds_ready, &sched->writefds_ready, &sched->exceptfds_ready, delay_ts, oldsigmaskp)
-		proc_debug("select done")
-		if sched_need_time
-			sched_set_time()
+
+		n_ready = io_wait(io, delay, oldsigmaskp)
+		sched_forget_time()
+
+		proc_debug("polling done")
+
 		if sched->n_children
 			if sched->got_sigchld
 				got_sigchld = 1
@@ -146,46 +118,43 @@ step()
 			Sig_setmask(&oldsigmask)
 
 	if got_sigchld
-		while sched->n_children
-			pid_t pid = Child_done()
-			if !pid
-				break
+		pid_t pid
+		while sched->n_children && (pid = Child_done())
 			proc *p = get(&sched->children, &pid)
-			if p
-				clr_waitchild(pid)
-				waitchild__pid = pid
-				waitchild__status = wait__status
-				proc_debug("child %d finished - resuming %010p", pid, p)
-				sched_resume(p)
-			 else
+			if !p
 				error("no waiter for child %d", pid)
+			clr_waitchild(pid)
+			waitchild__pid = pid
+			waitchild__status = wait__status
+			proc_debug("child %d finished - resuming %010p", pid, p)
+			sched_resume(p)
 
 	# TODO test timeouts, modify to work with procs directly?
-	if !timeouts_empty(&sched->tos)
-		timeouts_call(&sched->tos, sched->now)
+	if !timeouts_empty(tos)
+		timeouts_call(tos, sched_get_time())
 
 	if n_ready > 0
-		int fd
-		for fd=0; fd < sched->max_fd_plus_1; ++fd
-			int can_read = fd_isset(fd, &sched->readfds_ready)
-			int can_write = fd_isset(fd, &sched->writefds_ready)
-			int has_error = fd_isset(fd, &sched->exceptfds_ready)
+		io_events(io, fd, can_read, can_write, has_error)
 			if has_error
 				# XXX how to handle errors properly?
-				# I think it is better if I just ignore errors
+				# I think it might be better if I just ignore errors,
+				# and let them fall through to read / write / whatever
 				errno = Getsockerr(fd)
-				swarning("sched: fd %d has an error - closing", fd)
-				fd_has_error(fd)
-			if can_read && fd_alive(fd)
-				clr_reader(fd)
+				swarning("sched: fd %d has an error", fd)
+#				fd_has_error(fd)
+#				continue
+			if can_read
 				proc *p = *(proc **)vec_element(&sched->readers, fd)
+				clr_reader(fd)
 				proc_debug("fd %d ready to read - resuming %010p", fd, p)
-				sched_resume(p)
-			if can_write && fd_alive(fd)
-				clr_writer(fd)
+				if p
+					sched_resume(p)
+			if can_write
 				proc *p = *(proc **)vec_element(&sched->writers, fd)
+				clr_writer(fd)
 				proc_debug("fd %d ready to write - resuming %010p", fd, p)
-				sched_resume(p)
+				if p
+					sched_resume(p)
 
 	if sched->q.size
 		proc *p = *(proc **)deq_element(&sched->q, 0)
@@ -195,16 +164,16 @@ step()
 
 	++sched->step
 
-def proc_debug_selectors()
-	for(fd, 0, sched->max_fd_plus_1)
-		if fd_isset(fd, &sched->readfds)
-			proc_debug("wantread %d", fd)
-		if fd_isset(fd, &sched->writefds)
-			proc_debug("wantwrite %d", fd)
-		if fd_isset(fd, &sched->exceptfds)
-			proc_debug("wantexcept %d", fd)
+#def proc_debug_selectors()
+#	for(fd, 0, io_fd_top(io))
+#		if fd_isset(fd, &sched->readfds)
+#			proc_debug("wantread %d", fd)
+#		if fd_isset(fd, &sched->writefds)
+#			proc_debug("wantwrite %d", fd)
+#		if fd_isset(fd, &sched->exceptfds)
+#			proc_debug("wantexcept %d", fd)
 
-def fd_alive(fd) fd_isset(fd, &sched->exceptfds)
+#def fd_alive(fd) io_exists(&sched->io, fd)   # FIXME
 
 def sched_resume(p)
 	if resume(p)
@@ -220,31 +189,33 @@ def sched_dump(&sched->q)
 		proc_dump(p)
 	nl(stderr)
 
-def add_fd(fd) scheduler_add_fd(sched, fd)
+def add_fd(fd) add_fd(fd, 1)
+def add_fd(fd, et) scheduler_add_fd(sched, fd, et)
 
-int scheduler_add_fd(scheduler *sched, int fd)
-	if sched_io_full(fd)
-		return 1
-	fd_set(fd, &sched->exceptfds)
-	if fd >= sched->max_fd_plus_1
-		sched->max_fd_plus_1 = fd + 1
-	vec_ensure_size(&sched->readers, fd+1)
-	vec_ensure_size(&sched->writers, fd+1)
-	return 0
+int scheduler_add_fd(scheduler *sched, int fd, int et)
+	int rv = io_add(&sched->io, fd, et)
+	if rv == 1
+		vec_ensure_size(&sched->readers, fd+1)
+		vec_ensure_size(&sched->writers, fd+1)
+		rv = 0
+	if rv == 0
+		scheduler_clr(sched, fd)
+	return rv
 
 def rm_fd(fd)
 	scheduler_rm_fd(sched, fd)
 
-scheduler_rm_fd(scheduler *sched, int fd)
-	if fd_isset(fd, &sched->readfds)
-		clr_reader(fd)
-	if fd_isset(fd, &sched->writefds)
-		clr_writer(fd)
-	fd_clr(fd, &sched->exceptfds)
+def scheduler_rm_fd(sched, fd)
+	io_rm(&sched->io, fd)
+	scheduler_clr(sched, fd)
+
+def scheduler_clr(sched, fd)
+	*(proc **)vec_element(&sched->readers, fd) = NULL
+	*(proc **)vec_element(&sched->writers, fd) = NULL
 
 fd_has_error(int fd)
-	close(fd)
 	rm_fd(fd)
+	close(fd)
 
 def read(fd)
 		set_reader(fd, b__p)
@@ -256,31 +227,25 @@ def write(fd)
 
 set_reader(int fd, proc *p)
 	proc_debug("set_reader %d", fd)
-	assert(!fd_isset(fd, &sched->readfds), "set_reader: reader already set")
+#	assert(!fd_isset(fd, &sched->readfds), "set_reader: reader already set")
 	*(proc**)vec_element(&sched->readers, fd) = p
-	fd_set(fd, &sched->readfds)
-	++sched->io_wait_count
+	io_read(&sched->io, fd)
 
 set_writer(int fd, proc *p)
 	proc_debug("set_writer %d", fd)
-	assert(!fd_isset(fd, &sched->writefds), "set_writer: writer already set")
+#	assert(!fd_isset(fd, &sched->writefds), "set_writer: writer already set")
 	*(proc**)vec_element(&sched->writers, fd) = p
-	fd_set(fd, &sched->writefds)
-	++sched->io_wait_count
+	io_write(&sched->io, fd)
 
 clr_reader(int fd)
-	proc_debug("clr_reader %d", fd)
-	assert(fd_isset(fd, &sched->readfds), "clr_reader: reader not set")
-	fd_clr(fd, &sched->readfds)
-	--sched->io_wait_count
+#	assert(fd_isset(fd, &sched->readfds), "clr_reader: reader not set")
+	*(proc**)vec_element(&sched->readers, fd) = NULL
+	io_clr_read(&sched->io, fd)
 
 clr_writer(int fd)
-	proc_debug("clr_writer %d", fd)
-	assert(fd_isset(fd, &sched->writefds), "clr_writer: writer not set")
-	fd_clr(fd, &sched->writefds)
-	--sched->io_wait_count
-
-def sched_io_full(fd) fd_full(fd, &sched->exceptfds)
+#	assert(fd_isset(fd, &sched->writefds), "clr_writer: writer not set")
+	*(proc**)vec_element(&sched->writers, fd) = NULL
+	io_clr_write(&sched->io, fd)
 
 pid_t waitchild__pid
 int waitchild__status
@@ -310,5 +275,19 @@ sigchld_handler(int signum)
 	use(signum)
 	sched->got_sigchld = 1
 
+num sched_get_time()
+	if sched->now < 0
+		sched_set_time()
+	return sched->now
+
+# You should call sched_forget_time after anything that is likely to be slow.
+# sched calls it after pselect returns
+
+sched_forget_time()
+	sched->now = -1
+
 sched_set_time()
 	sched->now = rtime()
+
+def sched_exit()
+	sched->exit = 1

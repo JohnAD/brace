@@ -2,7 +2,7 @@ CC=gcc -pedantic -std=gnu99
 
 DIR=$(PWD)
 #CFLAGS:=-Wall -Werror -I. $(CFLAGS)
-CFLAGS:=-Wall -Wextra -Werror $(CFLAGS)
+CFLAGS:=-Wall -Wextra $(CFLAGS)
 
 ifndef BRACE_STANDALONE
 ifndef LIBB_BUILD
@@ -33,6 +33,11 @@ endif
 
 ifdef OPTIMISE
 CFLAGS += -O2
+endif
+
+ifdef PROFILE
+CFLAGS += -pg
+LDFLAGS += -pg
 endif
 
 CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)

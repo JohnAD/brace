@@ -6,6 +6,7 @@ CC=gcc -pedantic -std=gnu99
 
 OPTIMISE=1
 DEBUG=1
+PROFILE=
 
 destdir=
 realprefix=/usr/local

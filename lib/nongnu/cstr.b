@@ -1,4 +1,4 @@
-# not sure how this is done is glibc
+# not sure how this is done in glibc
 
 size_t strnlen(const char *s, size_t n)
 	size_t len = 0

@@ -191,7 +191,7 @@ char *Fgets(char *s, int size, FILE *stream)
 # NOTE you should reset the size of the buffer to 0
 # before calling Freadline, else it will append the line to the buffer.
 int Freadline(buffer *b, FILE *stream)
-	size_t len = buffer_get_size(b)
+	ssize_t len = buffer_get_size(b)
 	repeat
 		char *rv = Fgets(b->start+len, buffer_get_space(b)-len, stream)
 		if rv == NULL
@@ -457,7 +457,7 @@ int Tempfile(buffer *b, char *prefix, char *suffix, char *tmpdir, int dir, int m
 	if tmpdir == NULL
 		tmpdir = "/tmp"
 		# FIXME is this okay on mingw?
-	uint len = strlen(tmpdir) + 1 + strlen(prefix) + strlen(suffix) + n_random_chars + 1
+	ssize_t len = strlen(tmpdir) + 1 + strlen(prefix) + strlen(suffix) + n_random_chars + 1
 	if buffer_get_space(b) < len
 		buffer_set_space(b, len)
 	random[n_random_chars] = '\0'
@@ -913,9 +913,11 @@ fcp(FILE *in, FILE *out)
 			break
 		Fwrite(buf, 1, len, out)
 
+# this can return -1 on EINTR
+
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
 	int rv = select(nfds, readfds, writefds, exceptfds, timeout)
-	if rv == -1 && errno != EINTR
+	if rv < 0 && errno != EINTR
 		failed("select")
 	return rv
 

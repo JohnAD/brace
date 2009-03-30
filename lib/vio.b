@@ -137,7 +137,7 @@ vs_write_buffer(const void *ptr, size_t size, size_t nmemb, vstream *vs)
 
 size_t vs_read_buffer(void *ptr, size_t size, size_t nmemb, vstream *vs)
 	buffer *b = vs->data
-	size_t len = size * nmemb
+	ssize_t len = size * nmemb
 	if len > buffer_get_size(b)
 		len = buffer_get_size(b)
 	memmove(ptr, buffer_get_start(b), len)
@@ -281,7 +281,7 @@ def sf() sf("")
 def say() sf()
 
 int rl(buffer *b)
-	size_t len = buffer_get_size(b)
+	ssize_t len = buffer_get_size(b)
 	repeat
 		char *rv = vs_gets(b->start+len, buffer_get_space(b)-len)
 		if rv == NULL
