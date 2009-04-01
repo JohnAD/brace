@@ -95,6 +95,9 @@ memlog_stderr()
 	memlog_on = 1
 	memlog = stderr
 
+def memlog_file()
+	memlog_file("mem.log")
+
 memlog_file(cstr file)
 	memlog_on = 1
 	memlog = Fopen(file, "w")
