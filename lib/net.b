@@ -7,6 +7,8 @@ typedef struct sockaddr sockaddr
 typedef struct sockaddr_in sockaddr_in
 typedef struct sockaddr_un sockaddr_un
 
+int listen_backlog = SOMAXCONN
+
 int Socket(int domain, int type, int protocol)
 	int fd = socket(domain, type, protocol)
 	if fd == -1
@@ -24,7 +26,7 @@ Listen(int sockfd, int backlog)
 	if listen(fd_to_socket(sockfd), backlog) != 0
 		get_winsock_errno()
 		failed("listen")
-def Listen(sockfd) Listen(sockfd, SOMAXCONN)
+def Listen(sockfd) Listen(sockfd, listen_backlog)
 
 int Accept(int earfd, struct sockaddr *addr, socklen_t *addrlen)
 	int sockfd = accept(fd_to_socket(earfd), addr, addrlen)

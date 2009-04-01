@@ -37,8 +37,8 @@ listener_unix_init(listener *p, cstr addr)
 	int listen_fd = Server(addr)
 	init(p, listener, listen_fd, sizeof(sockaddr_un))
 
-def listener listener_sel
-#def listener listener_try
+#def listener listener_sel
+def listener listener_try
 
 proc listener_sel(int listen_fd, socklen_t socklen)
 	port sock_p out
@@ -221,9 +221,10 @@ int max_line_length = 0
 def breadln(in)
 	breadln(in, 0)
 def breadln(in, start)
-	breaduntil(in, start, '\n')
-def breaduntil(in, start, eol)
-	breaduntil(in, start, eol, my(c))
+	char *my(c)
+	breadln(in, start, my(c))
+def breadln(in, start, c)
+	breaduntil(in, start, '\n', c)
 def breaduntil(in, start, eol, c)
 	# this is getting ugly, need to do it better.
 	if here(in) && buflen(&in) <= start
@@ -232,7 +233,7 @@ def breaduntil(in, start, eol, c)
 		pull(in)
 		if buflen(&in) <= start
 			break
-		char *c = memchr(b(&in, start), eol, buflen(&in)-start)
+		c = memchr(b(&in, start), eol, buflen(&in)-start)
 		if c
 			*c = '\0'
 		if max_line_length &&

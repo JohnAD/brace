@@ -4,8 +4,8 @@ export types
 
 use stdio.h
 
-#def alloc_type normal
-def alloc_type memlog
+def alloc_type normal
+#def alloc_type memlog
 
 int memlog_on = 0
 
@@ -89,27 +89,16 @@ def rc_nalloc(nmemb, type) (type *)rc_malloc(nmemb * sizeof(type))
 # TODO memlog might not cope well with fork,
 # would need a separate one for each process
 
-local char *memlog_file = "mem.log"
 local FILE *memlog = NULL
 
-def memlog_stderr()
+memlog_stderr()
 	memlog_on = 1
 	memlog = stderr
 
-def memlog_open()
-	if !memlog && memlog_on
-		memlog = Fopen(memlog_file, "w")
-		Setlinebuf(memlog)
-
-# I doubt I will need this:
-def memlog_close()
-	if memlog
-		Fclose(memlog)
-
-#memlog(const char *format, ...)
-#	if !memlog
-#		memlog_open()
-#	collect(Vfprintf, memlog, format)
+memlog_file(cstr file)
+	memlog_on = 1
+	memlog = Fopen(file, "w")
+	Setlinebuf(memlog)
 
 def memlog_Malloc(size) memlog_Malloc(size, __FILE__, __LINE__)
 def memlog_Free(ptr) memlog_Free(ptr, __FILE__, __LINE__)
@@ -119,20 +108,17 @@ def memlog_Strdup(s) memlog_Strdup(s, __FILE__, __LINE__)
 def memlog_Strndup(s, n) memlog_Strndup(s, n, __FILE__, __LINE__)
 
 void *memlog_Malloc(size_t size, char *file, int line)
-	memlog_open()
 	void *rv = normal_Malloc(size)
 	if memlog_on
 		Fprintf(memlog, "A\tmalloc\t%010p\t%d\t%s:%d\n", rv, size, file, line)
 	return rv
 
 memlog_Free(void *ptr, char *file, int line)
-	memlog_open()
 	normal_Free(ptr)
 	if memlog_on
 		Fprintf(memlog, "F\tfree\t%010p\t\t%s:%d\n", ptr, file, line)
 
 void *memlog_Realloc(void *ptr, size_t size, char *file, int line)
-	memlog_open()
 	void *rv = normal_Realloc(ptr, size)
 	if memlog_on
 		Fprintf(memlog, "F\trealloc\t%010p\t\t%s:%d\n", ptr, file, line)
@@ -140,21 +126,18 @@ void *memlog_Realloc(void *ptr, size_t size, char *file, int line)
 	return rv
 
 void *memlog_Calloc(size_t nmemb, size_t size, char *file, int line)
-	memlog_open()
 	void *rv = normal_Calloc(nmemb, size)
 	if memlog_on
 		Fprintf(memlog, "A\tcalloc\t%010p\t%d\t%s:%d\n", rv, nmemb*size, file, line)
 	return rv
 
 cstr memlog_Strdup(const char *s, char *file, int line)
-	memlog_open()
 	cstr rv = normal_Strdup(s)
 	if memlog_on
 		Fprintf(memlog, "A\tstrdup\t%010p\t%d\t%s:%d\n", rv, strlen(rv), file, line)
 	return rv
 
 cstr memlog_Strndup(const char *s, size_t n, char *file, int line)
-	memlog_open()
 	cstr rv = normal_Strndup(s, n)
 	if memlog_on
 		Fprintf(memlog, "A\tstrndup\t%010p\t%d\t%s:%d\n", rv, strlen(rv), file, line)

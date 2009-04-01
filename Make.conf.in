@@ -14,6 +14,7 @@ prefix=$(destdir)$(realprefix)
 bindir=$(prefix)/bin
 sbindir=$(prefix)/sbin
 libdir=$(prefix)/lib
+debugdir=debug/usr/lib
 cgibindir=$(libdir)/cgi-bin
 perldir=$(prefix)/lib/perl5/site_perl
 includedir=$(prefix)/include

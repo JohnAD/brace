@@ -9,7 +9,8 @@ MAKE:=make
 endif
 
 build:
-	PATH="$(PATH)" PERL5LIB="$(PERL5LIB)" BRACE_LIB="$(BRACE_LIB)" BRACE_USE="$(BRACE_USE)" LIBB_BUILD="$(LIBB_BUILD)" CFLAGS="$(LIBB_CFLAGS)" LDFLAGS="$(LIBB_LDFLAGS)" LDLIBS="$(LIBB_LDLIBS)" SONAME="$(LIBB_SONAME)" PLAIN_SONAME="$(LIBB_PLAIN_SONAME)" MK_HEADERS=1 DEBUG=1 MAKE="$(MAKE)" mk
+	mkdir -p $(debugdir)
+	PATH="$(PATH)" PERL5LIB="$(PERL5LIB)" BRACE_LIB="$(BRACE_LIB)" BRACE_USE="$(BRACE_USE)" LIBB_BUILD="$(LIBB_BUILD)" CFLAGS="$(LIBB_CFLAGS)" LDFLAGS="$(LIBB_LDFLAGS)" LDLIBS="$(LIBB_LDLIBS)" SONAME="$(LIBB_SONAME)" PLAIN_SONAME="$(LIBB_PLAIN_SONAME)" DEBUG_SONAME="$(LIBB_DEBUG_SONAME)" PLAIN_DEBUG_SONAME="$(LIBB_PLAIN_DEBUG_SONAME)" MK_HEADERS=1 DEBUG=1 MAKE="$(MAKE)" mk
 
 clean:
 	PATH="$(PATH)" PERL5LIB="$(PERL5LIB)" mk-clean
@@ -17,7 +18,7 @@ clean:
 	echo done
 
 install:
-	install -d '$(libdir)'
+	install -d '$(libdir)' '$(libdir)/$(debugdir)'
 	for D in `find . -path '*/.*' -prune -or -type d -print`; do \
 		install -d '$(includedir)'/"$$D"; \
 		install -m 644 `find "$$D" -maxdepth 1 -type f \
@@ -26,10 +27,14 @@ install:
 #	install -m 644 *.b *.bb *.bh *.bbh $(includedir)
 	install -m 644 $(LIBB_SONAME) '$(libdir)'
 	install -m 644 $(LIBB_PLAIN_SONAME) '$(libdir)'
-	if [ -n '$(libdir2)' ]; then install -m 644 $(LIBB_SONAME) '$(libdir2)'; fi
-	if [ -n '$(libdir2)' ]; then install -m 644 $(LIBB_PLAIN_SONAME) '$(libdir2)'; fi
 	install -m 644 libb.a '$(libdir)'
 	install -m 644 libb_plain.a '$(libdir)'
+	install -m 644 $(debugdir)/$(LIBB_SONAME) '$(libdir)/$(debugdir)'
+	install -m 644 $(debugdir)/$(LIBB_PLAIN_SONAME) '$(libdir)/$(debugdir)'
+	install -m 644 $(debugdir)/libb.a '$(libdir)/$(debugdir)'
+	install -m 644 $(debugdir)/libb_plain.a '$(libdir)/$(debugdir)'
+	if [ -n '$(libdir2)' ]; then install -m 644 $(LIBB_SONAME) '$(libdir2)'; fi
+	if [ -n '$(libdir2)' ]; then install -m 644 $(LIBB_PLAIN_SONAME) '$(libdir2)'; fi
 #	install -m 644 libb.so.$(VERSION) '$(libdir)'
 ##	install -m 644 libbb.so.$(VERSION) '$(libdir)'
 #	ln -sf libb.so.$(VERSION) '$(libdir)'/libb.so.$(MAJOR)
@@ -55,9 +60,14 @@ uninstall:
 	rm -v -f '$(libdir)/$(LIBB_PLAIN_SONAME)'
 	rm -v -f '$(libdir)/libb.a'
 	rm -v -f '$(libdir)/libb_plain.a'
+	rm -v -f '$(libdir)/$(debugdir)/$(LIBB_SONAME)'
+	rm -v -f '$(libdir)/$(debugdir)/$(LIBB_PLAIN_SONAME)'
+	rm -v -f '$(libdir)/$(debugdir)/libb.a'
+	rm -v -f '$(libdir)/$(debugdir)/libb_plain.a'
 	if [ -n '$(libdir2)' ]; then rm -v -f '$(libdir2)/$(LIBB_SONAME)'; fi
 	if [ -n '$(libdir2)' ]; then rm -v -f '$(libdir2)/$(LIBB_PLAIN_SONAME)'; fi
 	
+	rmdir -v '$(libdir)/$(debugdir)' || true
 	rmdir -v '$(libdir)' || true
 
 .PHONY: build clean install

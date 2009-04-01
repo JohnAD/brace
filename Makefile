@@ -10,6 +10,7 @@ tgz: dotbuild
 dotbuild:
 	mkdir -p .build
 	cp -alf .Make.conf * .build/
+	mkdir -p .build/lib/debug
 	cd .build ; $(MAKE) build
 build:
 	cd exe ; $(MAKE) boot

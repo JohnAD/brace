@@ -189,7 +189,7 @@ if [ -n "$BR_DEBUG" ]; then echo \< "$B" brace_number_lines \| b2b1 \> "$B1"; fi
 <"$B" brace_number_lines "$B" | b2b1 2>"$LOG" >"$B1" || log_fix_exit
 if [ -n "$BR_DEBUG" ]; then echo \< "$B1" brace \> "$C"; fi
 <"$B1" brace 2>>"$LOG" >"$C" || log_fix_exit
-LDFLAGS="$LDFLAGS $BRACE_L_SO"
+LDLIBS="$BRACE_L_SO $LDLIBS"
 LDLIBS="$LDLIBS -lm"
 LDLIBS_PLAIN="$LDLIBS"
 LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
