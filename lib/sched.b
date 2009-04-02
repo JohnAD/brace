@@ -140,7 +140,7 @@ step()
 				# I think it might be better if I just ignore errors,
 				# and let them fall through to read / write / whatever
 				errno = Getsockerr(fd)
-				if errno != ECONNRESET
+				if !among(errno, ECONNRESET, EPIPE)
 					swarning("sched: fd %d has an error", fd)
 #				fd_has_error(fd)
 #				continue
