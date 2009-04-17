@@ -1203,7 +1203,7 @@ int file_cmp(cstr fa, cstr fb)
 		if na != nb
 			cmp = 1
 			break
-		if memcmp(a, b, na)
+		if memcmp(buf0(a), buf0(b), na)
 			cmp = 1
 			break
 		if na < buffer_get_space(a)
