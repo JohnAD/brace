@@ -1,3 +1,5 @@
+#!/usr/bin/make -f
+
 include .Make.conf
 
 export BRACE_STANDALONE=
