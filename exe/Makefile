@@ -16,12 +16,12 @@ brace$(EXE): brace.o
 	@../util/vd brace.c .brace.test.c || . ../util/fail "TEST FAILED! brace is broken!"
 	@echo "brace works ok"
 
-bx$(EXE): bx.b '$(BRACE_SO)'
+bx$(EXE): bx.b '$(BRACE_SO)/$(LIBB_SONAME)'
 	PATH="$(PATH)" PERL5LIB='$(PERL5LIB)' BRACE_SO='$(BRACE_SO)' BRACE_LIB='$(BRACE_LIB)' BRACE_USE='$(BRACE_USE)' CC='$(CC)' br bx.b bx
 bbx$(EXE): bx$(EXE)
 	ln -sf bx$(EXE) bbx$(EXE) || cp bx$(EXE) bbx$(EXE)
 
-b1$(EXE): b1.b '$(BRACE_SO)'
+b1$(EXE): b1.b '$(BRACE_SO)/$(LIBB_SONAME)'
 	PATH="$(PATH)" PERL5LIB='$(PERL5LIB)' BRACE_SO='$(BRACE_SO)' BRACE_LIB='$(BRACE_LIB)' BRACE_USE='$(BRACE_USE)' CC='$(CC)' br b1.b b1
 bb1$(EXE): b1$(EXE)
 	ln -sf b1$(EXE) bb1$(EXE) || cp b1$(EXE) bb1$(EXE)
