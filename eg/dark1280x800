@@ -1,0 +1,6 @@
+#!/lang/b
+
+Main()
+	space(1280, 800)
+
+use b

@@ -1,0 +1,253 @@
+#!/bin/sh -e
+#  brace compiler
+
+# some useful env variables you can set to 1:
+#  BX_DEBUG
+#  DEBUG
+#  BRACE_STANDALONE
+#  BR_FIX
+#  BRACE_LINE_NUMBERS
+#  BR_CLEAN
+#  BRACE_PLAIN
+
+fail() {
+	echo fatal: "$@" >&2
+	exit 1
+}
+
+log_fix_exit() {
+	cat "$LOG" >&2
+	if [ -n "$BR_FIX" -a -t 0 -a -t 1 ]; then
+		fix "$B"
+		echo '^C to stop, enter to continue compiling'
+		read line
+		exit 123
+	fi
+	exit 1
+}
+
+# basename is broken in unxutils
+basename() {
+	local d="`dirname "$1"`"
+	echo "${1#$d?}"
+}
+
+export LDFLAGS LDLIBS CFLAGS CC BRACE_LANGUAGE
+
+MINGW=
+EXE=
+if [ -n "$WINDIR" -o -n "$windir" ]; then
+	MINGW=1
+	EXE=.exe
+fi
+
+CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
+
+# msys which is a shell script which for some reason won't run from here :/
+# this should be a bit faster anyway
+which() {
+	# this unfortunately depends on the shell
+	local A
+	A=`type "$@" 2>/dev/null || true`
+	B="${A%: not found}"
+	if [ "$A" != "$B" ]; then
+		A=""
+	fi
+	if [ -n "$A" ]; then
+		A="/${A#*/}"
+		echo "$A"
+	else
+		return 1
+	fi
+}
+
+BRACE_DIR=`which brace$EXE`
+BRACE_DIR=`dirname "$BRACE_DIR"`
+BRACE_DIR=`dirname "$BRACE_DIR"`
+if [ -z "$BRACE_SO" ]; then
+	BRACE_SO="$BRACE_DIR/lib"
+fi
+BRACE_L_SO="-L\"$BRACE_SO\""
+if [ -z "$BRACE_LIB" ]; then
+	BRACE_LIB="$BRACE_DIR/include"
+	if [ \! -d "$BRACE_LIB" ]; then
+		BRACE_LIB="$BRACE_SO"
+	fi
+fi
+if [ -z "$BRACE_STANDALONE" ]; then
+	if [ -n "$BRACE_PLAIN" ]; then
+		LDLIBS="$LDLIBS -lb_plain"
+	else
+		LDLIBS="$LDLIBS -lb"
+	fi
+else
+	BRACE_L_SO=
+fi
+if [ -z "$BRACE_USE" ]; then
+	if [ -n "$MINGW" ]; then
+		BRACE_USE="mingw"
+		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
+		LDLIBS="$LDLIBS -lws2_32"
+		LDLIBS_FANCY="$LDLIBS_FANCY -lopengl32 -lglu32 -lgdi32"
+	else
+		BRACE_USE="unix"
+		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h ]; then
+			BRACE_USE="$BRACE_USE x"
+			LDLIBS_FANCY="$LDLIBS_FANCY -L/usr/X11R6/lib -lX11 -lXext"
+			CFLAGS="$CFLAGS -I/usr/X11R6/include"
+		else
+			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
+		fi
+		LDLIBS="$LDLIBS -lcrypt"
+		uname > .uname.$$
+		<.uname.$$ tr 'A-Z' 'a-z' >.uname.$$.1
+#		UNAME=`uname | tr 'A-Z' 'a-z'`
+		if grep -i bsd <.uname.$$.1 >/dev/null; then
+			BRACE_USE="$BRACE_USE bsd"
+		fi
+		<.uname.$$.1 read UNAME
+		rm .uname.$$ .uname.$$.1  # coping with borken pipes in unxutils
+		BRACE_USE="$BRACE_USE $UNAME"
+#		elif echo $UNAME | grep -i linux >/dev/null; then
+#			BRACE_USE="$BRACE_USE linux"
+#		fi
+		BU=""
+		for A in $BRACE_USE; do
+			[ -e "$BRACE_LIB/$A" ] && BU="$BU $A"
+		done
+		BRACE_USE="${BU# }"
+	fi
+fi
+export BRACE_LIB BRACE_USE
+
+BRACE_LANGUAGE=C
+if [ "-bb" = "$1" -o "bbr" = "`basename "$0"`" ]; then
+	BRACE_LANGUAGE=C++
+fi
+if [ "-bb" = "$1" -o "-b" = "$1" ]; then
+	shift
+fi
+
+[ -n "$1" ] || fail "syntax: ${b}r [-b|-bb] foo.$b [foo [cc/ld flags]]"
+
+B="$1"
+shift
+X="$1"
+
+if perl -ne 'exit !m{^#!/lang/bb$}' "$B"; then
+	BRACE_LANGUAGE=C++
+fi
+
+if [ "$BRACE_LANGUAGE" = C++ ]; then
+	b=bb
+	c=cc
+	if [ -z "$CXX" ]; then
+		for CC in g++ c++ gcc tcc cc; do
+			if [ -n "`which $CC$EXE`" ]; then
+				break
+			fi
+		done
+	else
+		CC="$CXX"
+	fi
+	CFLAGS="$CFLAGS $CXXFLAGS"
+	CFLAGS="$CFLAGS -Weffc++"
+else
+	b=b
+	c=c
+	if [ -z "$CC" ]; then
+		for CC in gcc tcc cc; do
+			if [ -n "`which $CC$EXE`" ]; then
+				break
+			fi
+		done
+		if [ "$CC" = gcc ]; then
+			CC="$CC -pedantic -std=gnu99"
+		fi
+	fi
+fi
+
+dirname="`dirname "$B"`"
+basename="`basename "$B"`"
+if [ -n "$X" -a "$X" = "${X#-}" ]; then
+	shift
+	X="${X%$EXE}$EXE"
+	XBAK="$dirname/.${basename}.xbak$EXE"
+else
+	X="$B$EXE"
+	[ "$X" = "$B" ] &&
+		fail "please specify a name for the executable"
+fi
+#C=`tempfile -s .c`
+B1="$dirname/.$basename.${b}1"
+C="$dirname/.$basename.$c"
+BBAK="$dirname/.$basename.bak"
+BBAK2="$dirname/.$basename.bak2"
+LOG="$dirname/.$basename.log"
+rm -f "$B1" "$C" "$LOG"
+if [ -n "$BR_DEBUG" ]; then echo \< "$B" brace_number_lines \| b2b1 \> "$B1"; fi
+<"$B" brace_number_lines "$B" | b2b1 2>"$LOG" >"$B1" || log_fix_exit
+if [ -n "$BR_DEBUG" ]; then echo \< "$B1" brace \> "$C"; fi
+<"$B1" brace 2>>"$LOG" >"$C" || log_fix_exit
+LDLIBS="$BRACE_L_SO $LDLIBS"
+LDLIBS="$LDLIBS -lm"
+LDLIBS_PLAIN="$LDLIBS"
+LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
+#CFLAGS="-Wall -Werror -I. -I$BRACE_LIB $CFLAGS"
+CFLAGS="-Wall -Wextra -I. $CFLAGS"
+CINCLUDE="-I\"$BRACE_LIB\""
+if [ -n "$DEBUG" ]; then
+#	CFLAGS="$CFLAGS -ggdb"
+	CFLAGS="$CFLAGS -g"
+fi
+if [ -n "$OPTIMISE" ]; then
+	CFLAGS="$CFLAGS -O2"
+fi
+if [ -n "$PROFILE" ]; then
+	CFLAGS="$CFLAGS -pg"
+	LDFLAGS="$LDFLAGS -pg"
+fi
+CFLAGS="${CFLAGS## }"
+LDFLAGS="${LDFLAGS## }"
+LDLIBS="${LDLIBS## }"
+LDLIBS_PLAIN="${LDLIBS_PLAIN## }"
+if [ -n "$BRACE_PLAIN" ]; then
+	LDLIBS="$LDLIBS_PLAIN"
+fi
+if [ -z "$BRACE_STANDALONE" ]; then
+	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CINCLUDE $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
+	PID=$$
+	( eval $CC $CINCLUDE $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $BRACE_L_SO $LDLIBS || touch .cc_failed.$PID ) 2>&1 |
+	perl -ne '
+		BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
+	' >>"$LOG"
+else
+	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
+	PID=$$
+	( eval $CC $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $LDLIBS || touch .cc_failed.$PID ) 2>&1 |
+	perl -ne '
+		BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
+	' >>"$LOG"
+fi
+if [ -e .cc_failed.$PID ]; then
+	rm .cc_failed.$PID
+	log_fix_exit
+elif [ -s "$LOG" ]; then
+	cat "$LOG"
+fi
+if [ \! -s "$LOG" ]; then rm "$LOG"; fi
+if [ -z "$DEBUG" ]; then
+	strip -s "$X"
+fi
+if [ -n "$BR_CLEAN" ]; then
+	rm "$C" "$B1"
+else
+	rm -f "$XBAK" "$BBAK2"
+	cp -a "$X" "$XBAK"
+	if [ -e "$BBAK" ]; then
+		mv "$BBAK" "$BBAK2"
+	fi
+	cp -a "$B" "$BBAK"
+fi
+#rm "$C"
+exit 0

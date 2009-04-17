@@ -1,0 +1,26 @@
+#!/bin/sh
+exec perl -e '
+# brace_tokens_uniq
+
+use strict;
+use warnings;
+
+require "brace_parser.pl";
+my $text = join "", <STDIN>;
+my $tokens = tokenize($text);
+
+my %count;
+my @uniq;
+
+for (@$tokens) {
+	# ignore whitespace
+	next if /^\s*$/;
+	if ($count{$_}++ == 0) {
+		push @uniq, $_;
+	}
+}
+
+for (@uniq) {
+	print "$_\t$count{$_}\n";
+}
+' "$@"

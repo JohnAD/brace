@@ -1,0 +1,138 @@
+#!/lang/b
+use b
+def trig_unit deg
+Main()
+#	space(midnightblue)
+	space(1280, 800, midnightblue)
+	gr_fast()
+#	gr_delay(0.5)
+
+	num max = 400
+	num min = 30
+
+	num a
+	num da = 0.2
+	for a = 0; ; a+=da
+		zoom((Cos(a*5)+1)/2*(max-min)+min)
+		move(0, 0)
+		east()
+		rt(a)
+		clear()
+		draw_lattice()
+		paint()
+		da *= 1.0005
+
+num rt3
+num r1, r2
+
+def draw_lattice()
+#	Printf("%f ", rtime())
+
+	rt3 = sqrt(3.0)
+
+	r1 = 1
+	r2 = rt3
+
+#	int xc = Floor(w_2/(sc*rt3/2)+1)
+#	int yc = Floor(h_2/sc+1)
+	int xc = Floor(hypot(w_2, h_2)/(sc*rt3/2)+2)
+	int yc = xc
+
+	move()
+	let(o, get_pos())
+	fd(1)
+	let(x1, get_pos())
+	set_pos(o)
+	lt(60)
+	fd(1)
+	let(y1, get_pos())
+	set_pos(o)
+	draw()
+
+	num A = pow((a-360/5*2.4), 1.1)
+
+	for(x, -xc, xc)
+		for(y, -yc, yc)
+			int X = x - Div(y, 2)
+			int Y = y
+			lx = x1.lx*X + y1.lx*Y
+			ly = x1.ly*X + y1.ly*Y
+			
+			turtle_branch()
+#				move()
+#				fd(X)
+#				lt(60)
+#				fd(Y)
+#				rt(60)
+#				draw()
+				if fabs(lx) > w_2+sc*3 || fabs(ly) > h_2+sc*3
+					continue
+				if mod(X-Y, 3) == 0
+					int Y1 = (Y-X) / 3
+					int X1 = (2*X + Y) / 3
+					int xm = mod(X1, 2)
+					int ym = mod(Y1, 2)
+					int n = 2*xm+ym
+					if a < 360/5*1.4
+						draw_star()
+					 else
+						if n == 0
+							if a >= 360/5*2.4
+								rt(ssqrt(5-hypot(x, y))*A)
+							fill_star(n)
+#					move() ; north(font_height()/2)
+#					gprintf("%d,%d", X, Y)
+#					gnl()
+#					gprintf("%d,%d", X1, Y1)
+
+#	Sayf("%f", rtime())
+
+	if a >= 360/5*3.4
+		min = 30 - (a-360/5*5.4)/(360/5) * 2
+		max = 400 - (a-360/5*5.4)/(360/5) * 30
+		if min < 15
+			min = 15
+		if max < 20
+			max = 20
+
+int star_colors[][12] =
+	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
+	{ 7, 6, 9, 8, 11, 10, 1, 0, 3, 2, 5, 4 },
+	{ 7, 6, 9, 8, 4, 5, 1, 0, 3, 2, 10, 11 },
+	{ 0, 1, 2, 3, 11, 10, 6, 7, 8, 9, 5, 4 },
+
+def draw_star()
+	repeat(6)
+		turtle_branch()
+			fd(1)
+		lt(60)
+	lt(30)
+	repeat(6)
+		turtle_branch()
+			fd(rt3/2+a_pixel)
+		lt(60)
+	rt(30)
+
+fill_star(int n)
+	move()
+	let(o, get_pos())
+	fd(r1)
+	let(a, get_pos())
+	for(i, 0, 6)
+		int c = star_colors[n][i*2]
+		col(rb[c*30])
+		set_pos(o)
+		lt(60*i+30)
+		fd(r2)
+		let(b, get_pos())
+		triangle(a, o, b)
+		c = star_colors[n][i*2+1]
+		col(rb[c*30])
+		set_pos(o)
+		lt(60*i+60)
+		fd(r1)
+		a = get_pos()
+		triangle(b, o, a)
+	set_pos(o)
+	draw()
+

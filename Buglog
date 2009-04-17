@@ -1,0 +1,17 @@
+tries to include files from cwd instead of directory where src is:
+  
+  $ cd brace/lib
+  $ ../eg/nl.b
+  could not find include file: ./b.bh
+  br compile failed...
+  $
+  
+  (fixed I think - it stills prefers files from currect directory compared to libraries, but that is ok I think)
+
+
+can't return a struct from a function, because it adds ';' on the end of the
+function!
+
+
+there is some bug when compiling brace, where a half-written bh header file can
+be left there to confuse subsequent makes

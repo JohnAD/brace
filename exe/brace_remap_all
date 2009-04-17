@@ -1,0 +1,2 @@
+#!/bin/sh
+brace_remap `{ brace_files "$@"; echo >&2; } | tee /dev/stderr`

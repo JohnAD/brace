@@ -1,0 +1,45 @@
+#!/lang/b
+
+use b
+Main()
+	v3  pos[]   = { {{-1, 0, 0}}, {{1, 0, 0}},   {{0, 0.2, 0}} }
+	v3  vel[]   = { {{0, 0, .1}}, {{0, 0, -.1}}, {{0, 0, 0.1}} }
+#	num mass[]  = { 1, 1, 0.5 }
+
+	int n = 3
+
+	space(400, 400)
+	zoom(190)
+
+	gr_fast()
+	
+	repeat
+		plot()
+		paint()
+		motion()
+
+def plot()
+	.
+		int i
+		for i=0 ; i<n ; ++i
+			point(pos[i].x[0]+pos[i].x[2]*0.05, pos[i].x[1]+pos[i].x[2]*0.1)  # ignore Z for now
+
+def motion()
+	.
+		# update position based on velocity
+		int i
+		for i=0 ; i<n ; ++i
+			int j
+			for j=0 ; j<3 ; ++j
+				pos[i].x[j] += vel[i].x[j]
+		# now, restore lengths, and modify velocity accordingly
+		# .......
+		# TODO look up rigid-body simulation on the internet
+
+# TODO distinguish a number (unsigned) from a vector (signed) ?
+
+struct v3
+	num x[3]
+
+struct arc
+	int n[2]

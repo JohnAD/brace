@@ -1,0 +1,1 @@
+exec tightvncserver -localhost -geometry 400x400 -depth 16 :1

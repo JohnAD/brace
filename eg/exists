@@ -1,0 +1,9 @@
+#!/lang/b
+
+Main()
+	let(not, *Getenv("not", ""))
+	eachline(l)
+		if xor(exists(l), not)
+			Say(l)
+
+use b

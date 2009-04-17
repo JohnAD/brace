@@ -1,0 +1,4 @@
+TARGET = geon
+C = c++
+LDFLAGS += -lgr
+EXCLUDE = split_regions_among_sectors.bb

@@ -1,0 +1,9 @@
+#!/lang/b
+
+Main()
+	let(hidden, cstr_eq(program, "hidden"))
+	eachline(l)
+		if xor(path_hidden(l), !hidden)
+			Say(l)
+
+use b

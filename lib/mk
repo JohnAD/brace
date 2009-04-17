@@ -1,0 +1,72 @@
+CC=gcc -pedantic -std=gnu99
+
+DIR=$(PWD)
+#CFLAGS:=-Wall -Werror -I. $(CFLAGS)
+CFLAGS:=-Wall -Wextra $(CFLAGS)
+
+ifndef BRACE_STANDALONE
+ifndef LIBB_BUILD
+ifeq ($(BRACE_LANGUAGE),C++)
+LDLIBS:=$(LDLIBS) -lstdc++
+endif
+ifndef BRACE_PLAIN
+LDLIBS:=$(LDLIBS) -lb
+else
+LDLIBS:=$(LDLIBS) -lb_plain
+endif
+endif
+endif
+LDLIBS:=$(LDLIBS) -lm
+
+ifeq ($(BRACE_LANGUAGE),C++)
+LDLIBS:=$(LDLIBS) -lstdc++
+CFLAGS:=$(CFLAGS) -Weffc++
+else
+CFLAGS:=$(CFLAGS)
+endif
+
+ifdef DEBUG
+CFLAGS += -ggdb
+else
+LDFLAGS += -s
+endif
+
+ifdef OPTIMISE
+CFLAGS += -O2
+endif
+
+ifdef PROFILE
+CFLAGS += -pg
+LDFLAGS += -pg
+endif
+
+CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
+
+# TODO redefine the %.o: %.c and %.o: %.cc patterns?
+
+%.b1: %.b
+	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C b2b1 >'$@'
+%.bb1: %.bb
+	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C++ b2b1 >'$@'
+%.bh1: %.bh
+	<'$<' BRACE_LANGUAGE=C brace_header_export "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
+%.bbh1: %.bbh
+	<'$<' BRACE_LANGUAGE=C++ brace_header_export "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
+
+%.c: %.b1
+	<'$<' BRACE_LANGUAGE=C brace >'$@'
+%.cc: %.bb1
+	<'$<' BRACE_LANGUAGE=C++ brace >'$@'
+
+%.h: %.bh1
+	<'$<' BRACE_LANGUAGE=C brace >'$@'
+%.h: %.bbh1
+	<'$<' BRACE_LANGUAGE=C++ brace >'$@'
+
+# These are also handled by brace_update_headers:
+%.bh: %.b
+	<'$<' brace_number_lines '$<' | b2bh >'$@'
+%.bbh: %.bb
+	<'$<' brace_number_lines '$<' | b2bh >'$@'
+
+.PRECIOUS: %.b1 %.bb1 %.bh %.bbh %.bh1 %.bbh1 %.c %.cc %.h

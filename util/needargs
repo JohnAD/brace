@@ -1,0 +1,25 @@
+#!/bin/bash
+
+O=""
+if [ "$1" = "-o" ]; then
+	shift
+	O=1
+fi
+
+if [ "$#" -lt 2 ]; then
+	echo >&2 usage: ${0#*/} [-o] n prog args
+	exit 1
+fi
+
+n="$1"; prog="$2"; shift 2
+
+OPTS=()
+if [ -n "$O" ]; then
+	. opts
+fi
+
+if [ "$#" -lt "$n" ]; then
+	exit 0
+fi
+
+exec "$prog" "${OPTS[@]}" "$@"

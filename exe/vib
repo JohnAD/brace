@@ -1,0 +1,12 @@
+#!/bin/bash
+file="${1:-test.b}"
+if [ ! -e "$file" ]; then
+	cat <<'End' >"$file"
+#!/lang/b
+use b
+Main()
+	
+End
+fi
+chmod +x "$file"
+exec vi + "$file"

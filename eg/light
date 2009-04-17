@@ -1,0 +1,6 @@
+#!/lang/b
+
+Main()
+	paper()
+
+use b

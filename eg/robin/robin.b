@@ -1,0 +1,15 @@
+#!/lang/b
+
+Main()
+	new(j, jabber, "talk.google.com", "swatkins", "mypass", "robin", jabber_h_dump)
+
+	for_vec(contact_jid, j->present, cstr)
+		Say(*contact_jid)
+#		jabber_send(j, contact_jid, "Good-morning from Sam's new half-baked Jabber-bot, which will not in future be used to broadcast annoying messages like this one. :)  Only 3 people should receive this, including me, so I don't think it should rate too high on the spam-o-meter.  Please let me know if you get this message.  Peace!")
+
+	jabber_loop()
+
+	jabber_free(j)
+
+use b
+use jabber

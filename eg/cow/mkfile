@@ -1,0 +1,2 @@
+cow.so: cow.o
+	$(CC) -o$@ -s -shared -fpic -ldl $^

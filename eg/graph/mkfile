@@ -1,0 +1,3 @@
+BOBJ=$(shell ls *.b | perl -pe 's/\.b$$/.o/')
+
+graph: $(BOBJ)

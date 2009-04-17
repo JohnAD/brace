@@ -1,0 +1,142 @@
+#!/bin/sh
+exec perl -e '
+
+# brace_split
+# this splits a brace source code file into a separate file for each element
+#   1. type
+#   2. function
+#   3. global variable
+
+# XXX NOTE this program has not been updated lately, probably broken
+warn "NOTE this program has not been updated lately, probably broken\n";
+
+use strict;
+use warnings;
+
+our (	@define,
+	@include, @extern_lang, @using_namespace,
+	@enum, @struct_union_class_template_proto, @struct_union_typedef,
+	@typedef, @struct_union_class_template, @function_proto, @var_proto,
+	@local_and_global_var, @var_assignment, @function,
+	
+	@lines, @local_var, @global_var,
+	);
+
+our ($sym, $bracketed, $in_brackets);
+
+mkdir "type.if";
+mkdir "func";
+mkdir "var";
+mkdir "type.if_ptr";
+mkdir "func.if";
+mkdir "var.if";
+
+require "brace_parser.pl";
+parse(\*STDIN);
+
+use IO::File;
+sub belch {
+	my $f = IO::File->new($_[0], "w") or
+		die "cannot open file \"$_[0]\" to write: $!";
+	print $f $_[1] or
+		die "cannot write to \"$_[0]\": $!";
+}
+
+sub slurp {
+	my $f = IO::File->new($_[0], "r") or
+		die "cannot open file \"$_[0]\" to read: $!";
+	return join "", <$f>;
+}
+
+sub prod {
+	if (! -e $_[0] || slurp($_[0]) ne $_[1]) {
+		belch($_[0], $_[1]);
+	}
+}
+
+for (@define, @using_namespace, @include, @extern_lang) {
+	chomp;
+	warn("ignoring: $_\n");
+}
+
+for (@enum) {
+	my $name = $_;
+	$name =~ s/\n.*//s;
+	$name =~ s/\s*{.*//;
+	$name =~ s/^enum //;
+	prod("type.if/$name", $_);
+	prod("type.if_ptr/$name", $_);
+}
+
+for (@struct_union_class_template, @typedef) {
+	my $line1 = $_;
+	$line1 =~ s/\n.*//s;
+	my $name = $line1;
+	$name =~ s/^.*\s//;
+	prod("type.if/$name", $_);
+	prod("type.if_ptr/$name", "$line1\n");
+}
+
+for (@function) {
+	my $proto = $_;
+	$proto =~ s/\n.*//s;
+	my $name = $proto;
+	$name =~ s/\(.*//;
+	$name =~ s/^.*\s//;
+	$name =~ s/^[\*\&]*//;
+	prod("func/$name", $_);
+	prod("func.if/$name", "$proto\n");
+}
+
+# var decls
+
+for (@var_proto) {
+	chomp;
+	warn("ignoring: $_\n");
+	#my $name = $_;
+	#$name =~ s/\n.*//s;
+	#$name =~ s/^.*\s//;
+	#prod("var/$name", $_);
+}
+
+for (@global_var) {
+	my $decl = $_;
+	if ($decl =~ /\n./s) {
+		# has a multi-line assignment; assume does not have multiple variables
+		if ($decl =~ /,/) {
+			warn("multi-line assignment and multiple variables detected: $_\n");
+		}
+		$decl =~ s/\n$//;
+		$decl =~ s/\s*=.*//s;
+		my $name = $decl;
+		$name =~ s/^.*\s//;
+		prod("var/$name", $_);
+		prod("var.if/$name", "$decl\n");
+	} else {
+		# we may have multiple variables
+		my @var_assign;
+		$decl =~ s/\n$//;
+		do {
+			$decl =~ s/(\s*=[^=]*)$//;
+			my $assign = $1;
+			$assign = "" if !defined $assign;
+			$decl =~ s/\s+(\w+)$//;
+			my $name = $1;
+			unshift @var_assign, "$name$assign";
+		} while ($decl =~ s/\s*,$//);
+		my $type = $decl;
+		for (@var_assign) {
+			my $name = $_;
+			$name =~ s/\s*=.*//;
+			prod("var/$name", "$type $_\n");
+			prod("var.if/$name", "$type $name\n");
+		}
+	}
+}
+
+# we do not allow local vars with this scheme!
+for (@local_var) {
+	chomp;
+	warn("ignoring local var: $_\n");
+}
+' "$@"

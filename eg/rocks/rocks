@@ -1,0 +1,965 @@
+#!/lang/bb
+
+use stdlib.h
+use stdio.h
+use stdarg.h
+use math.h
+use complex
+use vector
+use map
+use sys/time.h
+use time.h
+use X11/Xlib.h
+
+using namespace std
+
+error(const char *format, ...)
+	va_list ap
+	va_start(ap, format)
+	vfprintf(stderr, format, ap)
+	va_end(ap)
+	exit(1)
+
+warn(const char *format, ...)
+	va_list ap
+	va_start(ap, format)
+	vfprintf(stderr, format, ap)
+	va_end(ap)
+
+void *Calloc(size_t nmemb, size_t size)
+	void *ptr = calloc(nmemb, size)
+	if (ptr == NULL)
+		error("cannot allocate memory\n")
+	return ptr
+
+# XXX what are these called in the std?
+const double pi = 2*acos(0.0)
+const double e = exp(1.0)
+# I think e is not used (yet)
+
+typedef complex<double> cmplx
+cmplx j = cmplx(0,1)
+
+random_init()
+	srandom(time(NULL))
+
+double randomd()
+	return random()/(double)RAND_MAX
+
+int print(const char *s)
+	return printf("%s\n", s)
+	# Mm libbrace.b
+
+int nl()
+	return printf("\n")
+
+# handlers ---------------------------------------------------------
+
+typedef void (*Thunk)(void)
+typedef void (*OnOffHandler)(bool)
+
+# time scheduling code ---------------------------------------------
+
+typedef struct timeval timeval
+
+bool operator<(const timeval &t1, const timeval &t2)
+	return t1.tv_sec < t2.tv_sec || (t1.tv_sec == t2.tv_sec && t1.tv_usec < t2.tv_usec)
+
+timeval current_time
+typedef multimap<timeval, Thunk> schedule_t
+schedule_t schedule
+
+schedule_dump()
+	schedule_t::iterator i = schedule.begin()
+	schedule_t::const_iterator end = schedule.end()
+	warn("%s\n", "- schedule -")
+	for ; i != end; ++i
+		warn("time: %ld : %ld\n", i->first.tv_sec, i->first.tv_usec)
+	warn("%s\n", "------------")
+
+scheduler_gettime()
+	gettimeofday(&current_time, NULL)
+	#warning("crnt: %ld : %ld\n", current_time.tv_sec, current_time.tv_usec)
+
+scheduler()
+	#warning("%s\n", "start scheduler")
+	repeat
+		#warning("%s\n", "scheduler loop")
+		scheduler_gettime()
+		#schedule_dump()
+		# start at begin of map, check each if key less than current_time,
+		# execute the thunks and delete the pairs
+		schedule_t::iterator i = schedule.begin()
+		for ; i != schedule.end(); ++i
+			if i->first < current_time
+				#warning("%s\n", "invoking callback")
+				(i->second)()
+			else
+				break
+		schedule.erase(schedule.begin(), i)
+		#timespec delta
+		#delta.tv_sec = 0
+		#delta.tv_nsec = 2000000
+		#warning("%s\n", "about to nanosleep for 2ms")
+		#nanosleep(&delta, NULL)
+		#it was too clunky with these dodgy nanosleeps
+
+at(long at_sec, long at_usec, Thunk handler)
+	timeval tv
+	tv.tv_sec = at_sec ; tv.tv_usec = at_usec
+	schedule.insert(make_pair(tv,handler))
+	#warning("schd: %ld : %ld\n", tv.tv_sec, tv.tv_usec)
+
+after(long sleep_sec, long sleep_usec, Thunk handler)
+	long at_sec = current_time.tv_sec + sleep_sec
+	long at_usec = current_time.tv_usec + sleep_usec
+	if at_usec > 1000000
+		at_usec -= 1000000
+		++at_sec
+	at(at_sec, at_usec, handler)
+
+after_ms(long sleep_ms, Thunk handler)
+	#warning("after_ms: %ld\n", sleep_ms)
+	after(sleep_ms / 1000, (sleep_ms % 1000) * 1000, handler)
+
+# global X11 data -----------------------------------------------------
+
+Display *display
+Window window
+Pixmap doublebuffer
+Colormap colormap
+GC gc
+XGCValues gcvalues
+XFontStruct *_font
+const char *font_name = "-adobe-helvetica-medium-r-normal--11-80-100-100-p-56-iso8859-1"
+long black, white, red, blue, dred, dblue, green, grey
+
+XEvent event
+
+# key handlers -----------------------------------------------
+
+#int first_keycode, last_keycode
+#OnOffHandler *key_press_release_handlers
+#Thunk *key_press_handlers
+
+map<KeySym, OnOffHandler> key_press_release_handlers
+map<KeySym, Thunk> key_press_handlers
+
+#alloc_key_handlers()
+#  XDisplayKeycodes(display, &first_keycode, &last_keycode)
+#  key_press_release_handlers = (OnOffHandler *)Calloc(last_keycode-first_keycode+1, sizeof(OnOffHandler))
+#  key_press_handlers = (Thunk *)Calloc(last_keycode-first_keycode+1, sizeof(Thunk))
+
+bind(const char *keyname, Thunk handler)
+	KeySym keysym = XStringToKeysym(keyname)
+	key_press_handlers[keysym] = handler
+
+bind2(const char *keyname, OnOffHandler handler)
+	KeySym keysym = XStringToKeysym(keyname)
+	key_press_release_handlers[keysym] = handler
+
+unbind(const char *keyname)
+	KeySym keysym = XStringToKeysym(keyname)
+	key_press_handlers.erase(keysym)
+	key_press_release_handlers.erase(keysym)
+
+command_keyboard(int keycode, int state, int press_release)
+	int shift = state & ShiftMask ? 1 : 0
+	KeySym keysym = XKeycodeToKeysym(display, keycode, shift)
+	if press_release == 1
+		Thunk handler = key_press_handlers[keysym]
+		if handler != NULL
+			(*handler)()
+			return
+	OnOffHandler handler = key_press_release_handlers[keysym]
+	if handler != NULL
+		(*handler)(press_release)
+	else
+		#warning("unhandled keypress: %s %d\n", XKeysymToString(XKeycodeToKeysym(display, keycode, shift)), press_release)
+
+# text ------------------------------------------------------
+
+intro()
+	print("rocks 1.02")
+	nl()
+	print("Copyright 2003, 2004 Sam Watkins")
+	print("This is free software with ABSOLUTELY NO WARRANTY.")
+	print("For details, type `i' during gameplay.")
+	print("Type `h' if you don't know how to play.")
+	# FIXME brace multi-line quoting, newline escaping, implement a clean `print' command too - & polymorphic functions?
+
+info()
+	nl()
+	print("Happy Birthday, Ana!")
+	nl()
+	print("Copyright 2003, 2004 Sam Watkins")
+	nl()
+	print("    This program is free software; you can redistribute it and/or modify")
+	print("    it under the terms of the GNU General Public License as published by")
+	print("    the Free Software Foundation; either version 2 of the License , or")
+	print("    (at your option) any later version.")
+	nl()
+	print("    This program is distributed in the hope that it will be useful,")
+	print("    but WITHOUT ANY WARRANTY; without even the implied warranty of")
+	print("    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the")
+	print("    GNU General Public License for more details.")
+	nl()
+	print("    You should have received a copy of the GNU General Public License")
+	print("    along with this program. If not, write to")
+	nl()
+	print("       The Free Software Foundation, Inc.")
+	print("       59 Temple Place, Suite 330")
+	print("       Boston, MA 02111, USA.")
+	nl()
+	print("    You can also obtain a copy of the GPL from the Internet:")
+	nl()
+	print("       http://www.gnu.org/licenses/gpl.txt")
+	nl()
+	nl()
+	print("Rocks is a peaceful game.")
+	nl()
+	nl()
+	print("If you enjoy this game, please send me a card!")
+	print("Cards are an alternative to currency - for more information,")
+	print("point your browser at:")
+	nl()
+	print("  http://cards.sourceforge.net/")
+	print("  http://cards.sourceforge.net/cgi-bin/view?Sam.Watkins")
+	nl()
+	nl()
+	print("    Sam Watkins <sam@shallow.net>")
+	nl()
+
+help()
+	nl()
+	print("Your Mission - Pop the Rocks!")
+	nl()
+	print("    z       left")
+	print("    x       right")
+	print("    enter   thrust")
+	print("    /       retro")
+	nl()
+	print("    space   hide")
+	print("    q       bang!")
+	nl()
+	print("    -       previous level")
+	print("    =       restart level")
+	print("    +       next level")
+	nl()
+	print("    i       info")
+	print("    h       help")
+	print("    p       pause")
+	print("    Escape  quit")
+	nl()
+	print("Each rock has a gender and sexual preference!")
+	nl()
+	print("    Dark red: straight male")
+	print("    Dark blue: straight female")
+	print("    Bright red: gay male")
+	print("    Bright blue: gay female")
+	nl()
+	print("This determines how they interact,")
+	print("for example dark blue and dark red attract eachother,")
+	print("and a dark blue will chase a bright red, which will run away!")
+	nl()
+	print("Your ship also has gender and sexuality, but initially you don't know what.")
+	print("You can guess what gender you are based on whether rocks are attracted to")
+	print("or repelled from you and whether you are attracted to or repelled from them.")
+	print("Your gender and sexuality change from time to time.  A little message")
+	print("alerts you to this.")
+	nl()
+	print("Have fun!")
+	nl()
+
+# configuration ---------------------------------------------
+
+#w = 1280 ; h = 1024
+int w = 640 , h = 480
+int frame_sleep = 10
+double resistance = 0.008
+double G = 1.5
+double max_init_vel = 1.0
+double dt = 0.25
+int new_level_sleep = 3000
+int sleep_of_death = 2000
+int start_space = 70
+double light = 25.0
+double heavy = 900.0
+double ship_mass = 150.0
+double turn_rate = 0.01
+double thrust_rate = 0.03
+double retro_rate = 0.01
+bool rocks_warp = 0
+bool ship_warps = 0
+double max_orbit_vel = 3.0
+#double prob_coed = 0.7
+double prob_coed = 1
+double prob_bent = 0.2
+int min_queerity_sleep = 20000
+int max_queerity_sleep = 30000
+
+# globals ------------------------------------------------
+
+cmplx center = cmplx(w/2, h/2)
+
+# level data ---------------------------------------------
+
+int level = 1
+double g
+bool coed
+int gob
+int sg
+double level_orbit
+
+# state --------------------------------------------------
+
+bool paused = 0
+int after_cancel = 0
+bool scheduled = 0
+
+class Rock
+	public:  # XXX
+	bool is_bouncy
+	double m
+	double r
+	cmplx x
+	cmplx v
+	cmplx a
+	int gender
+	bool to_be_removed
+	bool bent
+
+class Ship: public Rock
+	public: # XXX
+	bool is_here
+	double t
+	double tv
+	bool thrusting, retroing, lefting, righting, hidden
+	int sg
+	cmplx forwards, right, p0, p1, p2
+
+vector<Rock *> rocks(1)
+Ship ship
+
+warp(Rock &s)
+	if s.x.real() < 0
+		s.x = cmplx(s.x.real()+w, s.x.imag())
+	if s.x.real() > w
+		s.x = cmplx(s.x.real()-w, s.x.imag())
+	if s.x.imag() < 0
+		s.x = cmplx(s.x.real(), s.x.imag()+h)
+	if s.x.imag() > h
+		s.x = cmplx(s.x.real(), s.x.imag()-h)
+
+bounce(Rock &r)
+	if r.x.real() < r.r
+		r.x = cmplx(2*r.r-r.x.real(), r.x.imag()) ; r.v = cmplx(-r.v.real(), r.v.imag())
+	else if r.x.real() > w - r.r
+		r.x = cmplx(2*(w-r.r)-r.x.real(), r.x.imag()) ; r.v = cmplx(-r.v.real(), r.v.imag())
+	if r.x.imag() < r.r
+		r.x = cmplx(r.x.real(), 2*r.r-r.x.imag()) ; r.v = cmplx(r.v.real(), -r.v.imag())
+	else if r.x.imag() > h - r.r
+		r.x = cmplx(r.x.real(), 2*(h-r.r)-r.x.imag()) ; r.v = cmplx(r.v.real(), -r.v.imag())
+
+Rock_init(Rock &self)
+	self.is_bouncy = 1
+	double q = -0.5
+	self.m = pow(randomd()*(pow(heavy,q)-pow(light,q))+pow(light,q), 1/q)
+	self.r = sqrt(self.m)
+	repeat
+		#warning("choosing a point for the rock\n")
+		self.x = cmplx(randomd() * (w-self.r*2) + self.r, randomd() * (h-self.r*2) + self.r)
+		if ship.is_here && abs(self.x - ship.x) < start_space
+			continue
+		#warning("not near ship - good!")
+		bool overlapping = 0
+		# XXX this is hideous
+		vector<Rock *>::iterator r = rocks.begin()+1
+		vector<Rock *>::const_iterator r1 = rocks.end()
+		for ; r != r1; ++r
+			#warning("comparing for overlap\n")
+			if abs(self.x - (*r)->x) < self.r + (*r)->r
+				overlapping = 1 ; break
+		if ! overlapping
+			break
+	#warning("okay")
+	self.v = randomd()*max_init_vel * exp(j*randomd()*2.0*pi)
+	cmplx d, u
+	d = self.x - center ; u = d/abs(d)
+	self.v += u*j * level_orbit / abs(d) * double(h) * max_orbit_vel
+	if coed
+		self.gender = int(randomd()*2)*2 - 1
+	else
+		self.gender = gob
+	self.a = 0.0
+	self.to_be_removed = 0
+	self.bent = randomd()<prob_bent
+# XXX X11  self.ci = Oval(canvas, self.x.real()-self.r, h-self.x.imag()-self.r, self.x.real()+self.r, h-self.x.imag()+self.r, fill=colour(self), outline='white')
+
+move(Rock &r)
+	if r.bent
+		r.a = -r.a
+	# cmplx o = r.x
+	r.v += r.a * dt
+	r.v *= pow(1-resistance, dt)
+	r.a = 0.0
+	r.x += r.v * dt
+	if rocks_warp
+		warp(r)
+	else
+		bounce(r)
+	# cmplx d = r.x - o
+	# XXX X11  r.ci.move(d.real(), -d.imag())
+
+pop(Rock &r)
+	print("pop!")
+	r.to_be_removed = 1
+
+delete_rock(Rock &r)
+	# XXX X11  r.ci.delete()
+
+bool gay(Rock &r)
+	if r.bent
+		return sg < 0
+	return sg > 0
+
+long colour(Rock &r)
+	long c
+	if r.gender < 0
+		if gay(r)
+			c = blue
+		else
+			c = dblue
+	else if r.gender > 0
+		if gay(r)
+			c = red
+		else
+			c = dred
+	else
+		c = grey
+	return c
+
+change_dress(Ship &self)
+	if paused
+		return
+	self.gender = -self.gender
+	self.sg = - self.sg
+	print("I'm a sweet transvestite...")
+
+change_attraction(Ship &self)
+	if paused
+		return
+	self.sg = - self.sg
+	print("A shiver runs down your spine...")
+
+change_gender(Ship &self)
+	if paused
+		return
+	self.gender = -self.gender
+	print("Ouch! that hurt")
+
+change_sexuality(Ship &self)
+	int i = int(randomd()*3)
+	if i == 0
+		change_dress(self)
+	else if i == 1
+		change_attraction(self)
+	else
+		change_gender(self)
+
+calc(Ship &s)
+	s.forwards = cmplx(sin(s.t), cos(s.t)) * s.r
+	s.right = s.forwards / j
+	s.p0 = 2.0*s.forwards + s.x
+	s.p1 = s.right-s.forwards + s.x
+	s.p2 = -s.right-s.forwards + s.x
+	#warning("%s\n", "calc:")
+	#warning("s.forwards: %f %f\n", s.forwards.real(), s.forwards.imag())
+	#warning("s.right: %f %f\n", s.right.real(), s.right.imag())
+	#warning("s.p0: %f %f\n", s.p0.real(), s.p0.imag())
+	#warning("s.p1: %f %f\n", s.p1.real(), s.p1.imag())
+	#warning("s.p2: %f %f\n", s.p2.real(), s.p2.imag())
+
+bool bent(Ship &s)
+	return s.sg == sg
+
+bang()
+	if paused
+		return
+	print("bang!\n")
+	unbind("Return")
+	unbind("slash")
+	unbind("z")
+	unbind("x")
+	unbind("q")
+	unbind("space")
+	unbind("p")
+	unbind("plus")
+	unbind("equal")
+	unbind("minus")
+	rocks[0] = NULL
+	ship.is_here = 0
+	# XXX X11  self.ci.delete()
+	after_ms(sleep_of_death, start)
+
+dump_rocks()
+	warn("rocks:\n")
+	if rocks[0] != NULL
+		printf("ship ")
+	else
+		printf("dead ")
+	int i,l
+	l = rocks.size()
+	for i=1; i<l; ++i
+		if rocks[i]->to_be_removed
+			printf("X ")
+		else
+			printf("O ")
+	printf("\n");
+
+bool check_side(Rock &r, Ship &s, cmplx p, cmplx q)
+	cmplx pq, pqu, pr, d
+	double dpq, dpr, dx, dy
+	pq = q-p ; dpq = abs(pq) ; pqu = pq/dpq
+	pr = r.x-p ; dpr = abs(pr)
+	d = pr / pqu
+	dx = d.real()
+	dy = d.imag()
+	if (dy < r.r && dy >= 0.0 && dx > 0.0 && dx < dpq) || (abs(pr) < r.r)
+		if abs(pr) < r.r && p == s.p0
+			pop(r)
+			return 1
+		else
+			bang()
+			return 1
+	return 0
+
+move(Ship &s)
+	if bent(s)
+		s.a = -s.a
+	if s.thrusting
+		s.a += s.forwards * thrust_rate
+	if s.retroing
+		s.a -= s.forwards * retro_rate
+	if s.lefting
+		s.tv -= turn_rate * dt
+	if s.righting
+		s.tv += turn_rate * dt
+	s.v += s.a * dt
+	s.v *= pow(1-resistance, dt)
+	s.tv *= pow(1-resistance, dt)
+	s.a = 0
+	s.x += s.v * dt
+	s.t += s.tv * dt
+	if ship_warps
+		warp(s)
+	else
+		bounce(s)
+	calc(s)
+	if ! s.is_bouncy
+		vector<Rock *>::iterator r = rocks.begin()
+		vector<Rock *>::const_iterator r1 = rocks.end()
+		for ; r != r1; ++r
+			check_side(**r, s, s.p0,s.p1) || check_side(**r, s, s.p1,s.p2) || check_side(**r, s, s.p2,s.p0)
+			if rocks[0] == NULL
+				return
+		# XXX X11 s.ci.coords(((s.p0.real(), h-s.p0.imag()), (s.p1.real(), h-s.p1.imag()), (s.p2.real(), h-s.p2.imag())))
+
+thrust(bool p)
+	#warning("THRUST %d\n", p)
+	ship.thrusting = p
+
+retro(bool p)
+	#warning("RETRO %d\n", p)
+	ship.retroing = p
+	
+left(bool p)
+	#warning("LEFT %d\n", p)
+	ship.lefting = p
+
+right(bool p)
+	#warning("RIGHT %d\n", p)
+	ship.righting = p
+
+hide()
+	if paused
+		return
+	ship.hidden = ! ship.hidden
+	ship.is_bouncy = ship.hidden
+	if ship.hidden
+		# XXX X11    ship.ci.coords(((-1,-1),(-1,-1),(-1,-1)))
+		print("where'd he go?")
+	else
+		print("thar she blows!")
+
+sched_update()
+	#warning("%s\n", "sched_update")
+	if ! scheduled
+		scheduled = 1
+		after_ms(frame_sleep, update)
+
+pause_game()
+	paused = ! paused
+	if ! paused
+		sched_update()
+
+delete_all_rocks()
+	vector<Rock *>::iterator r = rocks.begin()+1
+	vector<Rock *>::const_iterator r1 = rocks.end()
+	for ; r != r1; ++r
+		delete(*r)
+	rocks.resize(1)
+
+random_level()
+	coed = randomd() < prob_coed
+	if ! coed
+		gob = int(randomd()*2)*2-1
+	sg = int(randomd()*2)*2-1
+	level_orbit = randomd()-0.5
+
+plant_rocks()
+	after_cancel -= 1
+	if after_cancel == 0
+		#warning("%s\n", "planting rocks!")
+		if rocks[0] == NULL
+			return
+		int i
+		for i=0; i<level; ++i
+			#warning("planting rock %d!\n", i)
+			Rock *new_rock = new Rock()
+			Rock_init(*new_rock)
+			rocks.push_back(new_rock)
+
+new_level()
+	delete_all_rocks()
+	printf("Welcome to level %d\n", level)
+	random_level()
+	g = G * sg
+	after_cancel += 1
+	after_ms(new_level_sleep, plant_rocks)
+
+next_level()
+	level += 1
+	new_level()
+
+prev_level()
+	if level > 0
+		level -= 1
+	new_level()
+
+do_exit()
+	exit(0)
+
+const char *compliments[] =
+	"Right on, commander!",
+	"Great flying!",
+	"Awesome effort!",
+	"Are you addicted yet?",
+	"Let's see you pass the NEXT level!",
+	"You had me worried for a minute there!",
+	"Fantasic!",
+	"Go for the record!",
+	"This is just too easy for you, isn't it?",
+	"No one got past that rock before!",
+	NULL
+
+int ncompliments = 10
+
+level_complete()
+	if ncompliments>0
+		int i = int(randomd()*ncompliments)
+		print(compliments[i])
+		for ; i<ncompliments; ++i
+			compliments[i] = compliments[i+1]
+		--ncompliments
+	else
+		print("Hey, take a break, you've been playing too long!")
+	nl()
+	next_level()
+
+double quad1(double a, double b, double c)
+	return (-b-sqrt(b*b-4*a*c))/2/a
+double quad2(double a, double b, double c)
+	return (-b+sqrt(b*b-4*a*c))/2/a
+
+motion(Rock &r0, Rock &r1)
+	cmplx dx, q
+	double d
+	dx = r1.x - r0.x ; d = abs(dx)
+	q = dx * g * double(r0.gender * r1.gender) / pow(d,3)
+	r0.a += q * r1.m ; r1.a -= q * r0.m
+	if r0.is_bouncy && r1.is_bouncy && d <= r0.r + r1.r
+		cmplx v0, v1
+		double v0i, v1i, v0r, v1r, a, b, c, d
+		v0 = r0.v / dx ; v1 = r1.v / dx
+		v0i = v0.imag() ; v1i = v1.imag()
+		v0r = v0.real() ; v1r = v1.real()
+		a = r0.m ; b = r1.m
+		c = v0r*r0.m + v1r*r1.m
+		d = v0r*v0r*r0.m + v1r*v1r*r1.m
+		v0r = quad1(a*a / b + a, -2*a*c/b, c*c/b-d)
+		v1r = quad2(b*b / a + b, -2*b*c/a, c*c/a-d)
+		r0.v = cmplx(v0r, v0i) * dx ; r1.v = cmplx(v1r, v1i) * dx
+		r0.a = 0.0 ; r1.a = 0.0
+		# dodgy?
+
+update()
+	#warning("%s\n", "update----")
+	int low, high, a, b
+	Rock *r, *r0, *r1
+	#dump_rocks()
+	if ship.is_here
+		move(ship)
+	if ship.is_here
+		low = 0
+	else
+		low = 1
+	high = rocks.size()-1
+	for a=high; a>=1; --a
+		r = rocks[a]
+		if r->to_be_removed
+			delete r
+			for b=a+1; b<=high; ++b
+				rocks[b-1] = rocks[b]
+			--high
+			rocks.resize(high+1)
+			if high == 0
+				level_complete()
+				complete
+		else
+			move(*r)
+	#dump_rocks()
+	for a=low+1; a<=high; ++a
+		for b=low; b<a; ++b
+			r0 = rocks[a] ; r1 = rocks[b]
+			if r0 == NULL || r1 == NULL
+				error("fatal error, this should never happen!")
+			motion(*r0, *r1)
+complete	.
+	scheduled = 0
+	if ! paused
+		sched_update()
+	redraw()
+
+sched_queerity()
+	after_ms(min_queerity_sleep + int(randomd()*(max_queerity_sleep-min_queerity_sleep)), queerity)
+
+queerity()
+	if ship.is_here && ! paused
+		change_sexuality(ship)
+	sched_queerity()
+
+# XXX X cursor
+#if os_name == 'posix':
+#  def exiting()
+#  system("xset r on")
+#  atexit.register(exiting)
+#  system("xset r off")
+#  cursor="dot #111111"
+#else:
+#  cursor=None
+
+# X11 event handlers --------------------------------------------------
+
+XPoint points[4]
+
+redraw()
+	#warning("%s\n", "redraw")
+	gcvalues.foreground = black
+	XChangeGC(display, gc, GCForeground, &gcvalues)
+	XFillRectangle(display, doublebuffer, gc, 0, 0, w, h)
+	vector<Rock *>::iterator r = rocks.begin()+1
+	vector<Rock *>::const_iterator r1 = rocks.end()
+	# draw rocks
+	for ; r != r1; ++r
+		cmplx x = (*r)->x
+		double rad = (*r)->r
+		gcvalues.foreground = colour(**r)
+		XChangeGC(display, gc, GCForeground, &gcvalues)
+		XFillArc(display, doublebuffer, gc, int(x.real() - rad), h-int(x.imag() + rad), int(rad*2), int(rad*2), 0, 64*360)
+		gcvalues.foreground = white
+		XChangeGC(display, gc, GCForeground, &gcvalues)
+		XDrawArc(display, doublebuffer, gc, int(x.real() - rad), h-int(x.imag() + rad), int(rad*2), int(rad*2), 0, 64*360)
+	# draw ship
+	if ship.is_here && ! ship.hidden
+		points[0].x = int(ship.p0.real())
+		points[0].y = h-int(ship.p0.imag())
+		points[1].x = int(ship.p1.real())
+		points[1].y = h-int(ship.p1.imag())
+		points[2].x = int(ship.p2.real())
+		points[2].y = h-int(ship.p2.imag())
+		points[3].x = int(ship.p0.real())
+		points[3].y = h-int(ship.p0.imag())
+		# self.ci = Polygon(canvas, 0, 0, 0, 0, 0, 0, fill='#005500', outline='white')
+		#warning("ship: %f %f %f %f %f %f\n", ship.p0.real(), ship.p0.imag(), ship.p1.real(), ship.p1.imag(), ship.p2.real(), ship.p2.imag())
+		gcvalues.foreground = green
+		XChangeGC(display, gc, GCForeground, &gcvalues)
+		XFillPolygon(display, doublebuffer, gc, points, 4, Convex, CoordModeOrigin)
+		gcvalues.foreground = white
+		XChangeGC(display, gc, GCForeground, &gcvalues)
+		XDrawLines(display, doublebuffer, gc, points, 4, CoordModeOrigin)
+	gcvalues.tile = doublebuffer
+	gcvalues.fill_style = FillTiled
+	XChangeGC(display, gc, GCTile|GCFillStyle, &gcvalues)
+	XFillRectangle(display, window, gc, 0, 0, w, h)
+	gcvalues.fill_style = FillSolid
+	XChangeGC(display, gc, GCTile|GCFillStyle, &gcvalues)
+
+configure_notify()
+	#warning("%s\n", "config not")
+	.
+
+button_event(int button, int type, int x, int y)
+	if button >= 1 && button <= 3
+		#warning("button %d type %d\n", button, type)
+		# ButtonController *bc = controller->button[button-1]
+		# ((*bc)[type])(x, y)
+	else
+		#warning("unknown button %d\n", button)
+
+# the X11 event loop --------------------------------------------------
+
+Bool true_pred(Display *f, XEvent *e, XPointer p)
+	return True
+
+sched_check_events()
+
+check_events()
+	unsigned int button = 0
+	#warning("%s\n", "try to get event")
+	while XCheckIfEvent(display, &event, true_pred, NULL)
+		#warning("%s\n", "got an event")
+		which event.type
+		Expose	.
+			#warning("expose event - count: %d\n", event.xexpose.count)
+			if (event.xexpose.count == 0)
+				redraw()
+		ConfigureNotify	configure_notify()
+		ButtonPress	if button != 0
+				#warning("press %d then press %d - latter ignored\n", button, event.xbutton.button)
+			else
+				button = event.xbutton.button
+				button_event(button, 0, event.xbutton.x, event.xbutton.y)
+		MotionNotify	.
+			# We skip all but the most recent motion event.
+			# This might be a bit dodgy, we could skip past a
+			# release/press pair...
+			while XCheckTypedEvent(display, MotionNotify, &event)
+				.
+			button_event(button, 1, event.xmotion.x, event.xmotion.y)
+		ButtonRelease	if button == 0
+				#warning("no press then release b%d - release ignored", event.xbutton.button)
+			else if event.xbutton.button != button
+				#warning("press b%d then release b%d - release ignored", event.xbutton.button)
+			else
+				button_event(button, 2, event.xbutton.x, event.xbutton.y)
+				button = 0
+		KeyPress	command_keyboard(event.xkey.keycode, event.xkey.state, 1)
+		KeyRelease	command_keyboard(event.xkey.keycode, event.xkey.state, 0)
+		MapNotify	
+		UnmapNotify	
+		ReparentNotify	break
+		else	warn("unhandled event, type: 0x%04x\n", event.type)
+	#warning("%s\n", "no more events for the moment")
+	sched_check_events()
+	
+# Ship init -----------------------------------------------------------
+
+Ship_init(Ship &self)
+	self.is_here = 1
+	self.is_bouncy = 0
+	self.x = center
+	self.v = 0
+	self.a = 0
+	self.t = 0
+	self.tv = 0
+	self.r = 10
+	self.thrusting = 0
+	self.retroing = 0
+	self.lefting = 0
+	self.righting = 0
+	self.hidden = 0
+	self.m = ship_mass
+	self.gender = int(randomd()*2)*2 - 1
+	self.sg = int(randomd()*2)*2 - 1
+	bind2("Return", thrust)
+	bind2("slash", retro)
+	bind2("z", left)
+	bind2("x", right)
+	bind("q", bang)
+	bind("space", hide)
+	bind("p", pause_game)
+	bind("plus", next_level)
+	bind("equal", new_level)
+	bind("minus", prev_level)
+
+# the main program ----------------------------------------------------
+
+start()
+	Ship_init(ship)
+	rocks[0] = &ship
+	new_level()
+	sched_update()
+
+sched_check_events()
+	after_ms(frame_sleep, check_events)
+
+int main()
+	intro()
+	
+	if (display = XOpenDisplay(NULL)) == NULL
+		error("cannot open display\n")
+	#alloc_key_handlers()
+	bind("h", help)
+	bind("i", info)
+	bind("Escape", do_exit)
+	
+	Window root
+	XColor color
+	int screen_number
+	
+	screen_number = DefaultScreen(display)
+	white = WhitePixel(display, screen_number)
+	black = BlackPixel(display, screen_number)
+	colormap = DefaultColormap(display, screen_number)
+	red = blue = dred = dblue = green = grey = white
+	if XAllocNamedColor(display, colormap, "red", &color, &color)
+		red = color.pixel
+	if XAllocNamedColor(display, colormap, "blue", &color, &color)
+		blue = color.pixel
+	if XAllocNamedColor(display, colormap, "#550000", &color, &color)
+		dred = color.pixel
+	if XAllocNamedColor(display, colormap, "#000055", &color, &color)
+		dblue = color.pixel
+	if XAllocNamedColor(display, colormap, "#005500", &color, &color)
+		green = color.pixel
+	if XAllocNamedColor(display, colormap, "#333333", &color, &color)
+		grey = color.pixel
+	
+	if (_font = XLoadQueryFont(display, font_name)) == NULL
+		error("cannot load font\n")
+	
+	gc = DefaultGC(display, screen_number)
+	gcvalues.function = GXcopy
+	gcvalues.foreground = white
+	gcvalues.cap_style = CapNotLast
+	gcvalues.line_width = 0
+	gcvalues.font = _font->fid
+	XChangeGC(display, gc, GCFunction|GCForeground|GCCapStyle|GCLineWidth|GCFont, &gcvalues)
+	
+	root = DefaultRootWindow(display)
+	window = XCreateSimpleWindow(display, root, 0, 0, w, h, 0, white, black)
+	doublebuffer = XCreatePixmap(display, window, w, h, XDefaultDepth(display, screen_number))
+	XSelectInput(display, window, ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask|KeyReleaseMask|StructureNotifyMask)
+	XMapWindow(display, window)
+	
+	scheduler_gettime()
+	
+	random_init()
+	
+	start()
+	
+	sched_queerity()
+	sched_check_events()
+	
+	scheduler()

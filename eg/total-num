@@ -1,0 +1,7 @@
+#!/lang/b
+use b
+Main()
+	long double total = 0
+	eachline(l)
+		total += strtold(l, NULL)
+	Sayf("%Lf", total)

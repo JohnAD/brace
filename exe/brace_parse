@@ -1,0 +1,11 @@
+#!/bin/sh
+exec perl -e '
+
+use strict; use warnings; use L;
+
+require "brace_parser.pl";
+
+parse(\*STDIN);
+
+output_all_with_section_comments();
+' "$@"

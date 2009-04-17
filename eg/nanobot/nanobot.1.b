@@ -1,0 +1,26 @@
+#!/lang/b
+
+Main()
+	let(listen_addr, "127.0.0.1")
+	# use 0.0.0.0 for any
+	int listen_port = 7777
+
+#	let(server, Fdopen(Client("213.92.8.4", 6667)))  # TODO impl Gethostbyaddr, etc
+
+	let(ear, Server(listen_addr, listen_port))
+	repeat
+		handle_client(Fdopen(Accept(ear)))
+
+
+def handle_client(client)
+	.
+		new(b, buffer, 1024)
+		repeat
+			warn("X1")
+			if Freadline(b, client) == EOF
+				break
+			warn("X2")
+#			let(message, buffer_to_cstr(b))
+#			warn("%s", message)
+
+use b

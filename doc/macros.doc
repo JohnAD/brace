@@ -1,0 +1,88 @@
+How shall I implement macros for brace?
+
+top-level choice:
+
+1. Translate brace macros into cpp macros.
+2. Implement a separate macro processor for brace.
+
+if I do 1. Translate brace macros into cpp macros,
+  then I will probably have to do it in brace.b,
+  and it will be messy.  brace.b is too complex already
+
+if I do 2. Implement a separate macro processor for brace,
+  this is quite a task!  Actually I guess it's not too bad.
+  I've just got to get brace_parser.pl to slurp up the macro definitions,
+  then go through all the code and substitute them.
+
+  This would have the advantage that I would be able to implement macro
+  features that cpp can't.
+
+  ok, let's try that.
+
+  Another problem, if I do this then I will also have to do including of files
+  that contain macros separate from the cpp.  I will still need a cpp step for
+  C includes and macros, which must happen after the translation to C.
+
+  This means I will have header files in brace, not just in C.
+
+  It also means that normal C programs will not be able to use my brace header
+  files and macros.
+
+  Hmmm.  Maybe I should use cpp to implement macros after all!  I could do this
+  before the line-joining stage, then by the time brace sees the macro
+  definitions, they could be on a single line.
+
+  I would have to actually invoke brace to translate the macros themselves.
+  Maybe I _should_ just hack it into brace.b.
+
+  ok let's try _that_!
+
+  Ok I did that, but it isn't going to work, because macro substitution needs
+  to happen _before_ all the other fancy features of the language (such as
+  automatic program counters!)
+
+  So, I'll have to try implementing a complete macro / include preprocessor.
+  I'll leave the "define" command generating C-style macros as it does now,
+  and I'll implement a separate "macro" command that generates brace macros,
+  which are evaluated sooner.
+
+  I guess I should make the .bh files clean, without all the ^ crap,
+  and when they are converted into .h files add that crap in.  Then the brace
+  macro processor can load .bh files directly, and not more than once, but we
+  can still generate equivalent cpp compatible header files, but some macros
+  may not work from C if they rely on being substitued before brace_pc goes to
+  work.
+
+  So, first step is to clean up the .bh files...
+    ok, I've done that, now to test libb still works!
+	 it compiles ok, will it run nipl/coro/test14?  yep!
+
+	Ok, next step is to design and write the macro preprocessor!
+
+	How will the macro preprocessor decide whether to include a file?
+	It must be in brace, not C, obviously.
+
+	For starters, it must work recursively, and never include a file more than
+	once.  brace_shuffle will happen _after_ all the files are included, so
+	things should happen in the right order.
+
+	Should we keep separate "preprocessed source" files?  I was thinking "no",
+	as they'll be big, but actually Yes, because all the intermediate files I've
+	been keeping will be this size now, as the header inclusion and macro
+	expansion will take place before the other filters.
+
+	Let's write two separate programs to do it: brace_include and brace_expand.
+	Good!
+
+	1st, brace_include...
+
+	ok that is working
+	  even recursion and prevention of multiple includes
+
+	now, brace_expand...
+	  hmm, will have to write a tokenizer!  and it has to be able to cope with C
+	  and C++
+
+	  I can put this tokenization function into brace_parser.pl I guess.
+
+	  TODO complete...

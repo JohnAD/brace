@@ -1,0 +1,241 @@
+A = B + 2.0*C
+
+  A = add_f(B, mul_f(2.0, C)))
+
+  t1 = mul_f(2,0, C)
+  A = add_f(B, t1)
+
+  mul(t1, 2.0, C)
+  add(A, B, t1)
+
+  scale_ary(t1, 2.0, C)
+  add_ary(A, B, t1)
+
+  parallel(t1, C)
+  	t1 = 2.0 * C
+  parallel(A, B, t1)
+  	A = B + t1
+
+	parallel(l*)
+  		block
+->
+  	each(v, lr)
+		eq(length(first(l*)), length(v))
+	parallel(l*)
+  		block
+
+	eq(a, b)
+->
+	some(c)
+		eq1(a, c)
+		eq1(c, b)
+or
+	eq1(a, b)
+
+	eq(length(a), length(b))
+	parallel(a, r1*)
+		b1
+	parallel(b, r2*)
+		b2
+->
+	parallel(a, r1*, b, r2*)
+		b1
+		b2
+
+	parallel(l*)
+  		block
+->
+	my l0 lr e
+	def l0 first(l*)
+	def lr rest(l*)
+	let(e, end(l0))
+
+  	each(v, l*)
+		let(v^^_it, start(v))
+		def v v^^_it
+	repeat
+		block
+		++l0
+		if l0 == end
+			break
+		each(v, rest(l*))
+			++v
+
+  getting rid of the temporary would be harder, but possible with
+  a macro like this:
+
+
+  eq(length(A), length(B))
+  parallel(A, ...a)
+  	foo
+  parallel(B, ...b)
+  	bar
+->
+  parallel(A, B, ...a, ...b)
+  	foo
+	bar
+
+
+let_array(A, add_array(B, mul_scalar_array(2.0, C)))
+
+  ->
+
+decl(A, array, array_length(add_array(...)))
+assign(A, add_array(...))
+
+  ->
+
+decl(A, array, array_length(B))
+decl(tmp, array, array_length(C))
+mul_scalar_array_into(tmp, 2.0, C)
+add_array_into(A, B, tmp)
+
+  ->
+
+decl(A, array, array_length(B))
+decl(tmp, array, array_length(C))
+for_parallel(tmp, C)
+	*tmp = 2.0 * C
+for_parallel(A, B, tmp)
+	*tmp = *A * 2.0
+
+mul_scalar_array_into(tmp, 2.0, C)
+add_array_into(A, B, tmp)
+
+assign(A, add_array(...))
+
+assign(A, add_array(...))
+
+let_array(A, add_array(B, mul_scalar_array(2.0, C)))
+
+brace does not do symbol mangling, so there is no direct function
+overloading.  Overloading is achieved by using macro wrappers, you can
+have many macros with the same name.  Currently macros are matched based
+on the number of arguments, i.e.
+
+  foo()  foo(1)  foo(1, 2)
+
+Can all expand with different macros, and call different functions if
+necessary.  The macros can be hygenic, so that local variables in macro
+expansions have unique names and don't collide with other variables.
+
+I intend to make it so macros can match based on the types of their
+arguments, so they can take a variable number of arguments, match
+arbitrary syntax (to overload operators such as your * above, take
+blocks as arguments), cascade (wrap functions or macros of the same
+name), and be defined locally.
+
+I also intend to extend the idea of macro matching so that a macro does
+not match if symbols in its expansion would be unbound.
+
+All this about macros sounds complex, but it isn't really;
+simple and powerful is the plan!
+
+As for object-orientation, libb (the brace library) already has some
+object-oriented units (vector, deque, buffer, circbuf, str, rope, sound,
+etc.).  The syntax isn't great yet.  There is no run-time polymorphism
+(vtables) yet.  Inheritance is done manually at the moment.
+
+C++ templates are just another syntax for macros, in brace you can
+implement generics using ordinary macros.
+
+
+Here is a little brace program, "fortune", which selects a random line
+from stdin.  I intend to further simplify the syntax soon, by getting
+rid of the parens and , in function / macro invocations, and grouping
+expressions based on spacing, e.g. 1+2 * 3  ->  9
+
+
+#!/lang/b
+
+Main()
+	let(n, 1)
+	cstr choice = NULL
+	eachline(line)
+		if Random(n) == 0
+			Free(choice)
+			choice = strdup(line)
+		++n
+	unless(choice == NULL)
+		Say(choice)
+
+use b
+
+
+and a bit of explanation:
+
+The "let" macro declares a variable of the right type.  I'm cheating by
+using gcc's typeof() extension at the moment.  I intend to implement
+type inference.
+
+cstr is a typedef for char *
+(brace has STL-like str and rope classes which are intended to replace
+cstr for most uses, they are not '\0' terminated, and multiple
+strings/substrings can share a single buffer)
+
+eachline() loops over each line of stdin, it is a macro defined like this:
+
+def eachline(v)
+	eachline(v, stdin)
+
+def eachline(v, stream)
+	new(my(b), buffer)
+	repeat
+		buffer_clear(my(b))
+		if Freadline(my(b), stream)
+			break
+		char *v = buffer_get_start(my(b))
+
+
+new() declares, allocates and initialises an object, a buffer in this
+case.
+
+my(foo) is used for "hygiene" at the moment, this could be done better.
+
+repeat is an alias for while(1).
+
+Freadline reads lines.  There are wrappers for  the C library functions
+so that they die on error rather than returning an error value.
+Exception handling isn't done yet, at the moment all errors are fatal
+(or you can use the unwrapped libc functions).
+
+unless is a macro which exapands to if !, like perl's unless
+
+Say is like perl 6's say, or python's print, it prints a line and adds a
+newline.
+
+
+here is the main C code produced from this program.  It's a little
+messy, I intend to get it to produce clean, readable C.
+
+
+int main(int main__argc, char *main__argv[], char *main__envp[])
+{
+	main__init(main__argc, main__argv, main__envp);
+	typeof(1) n = 1;
+	cstr choice = NULL;
+	buffer *my__328_b;
+	buffer struct__my__328_b;
+	my__328_b = &struct__my__328_b;
+	(buffer_init(my__328_b, 8));
+	while(1)
+	{
+		buffer_clear(my__328_b);
+		if(Freadline(my__328_b, stdin))
+		{
+			break;
+		}
+		char *line = (my__328_b->start);
+		if(Random(n) == 0)
+		{
+			(free(choice));
+			choice = strdup(line);
+		}
+		++n;
+	}
+	if(!(choice == NULL))
+	{
+		(Puts(choice));
+	}
+	return 0;
+}

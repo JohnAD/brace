@@ -1,0 +1,20 @@
+convert_coasts_angle_to_vec(coastlines_poly_a &coastlines_a, coastlines_poly_v &coastlines_v)
+	mapp(coastlines_a, coastlines_v, poly_angle3_to_poly_vec3)
+
+dump_poly_angle3(const poly_angle3 &poly_a)
+	for_each(poly_a, dump_angle3)
+	#debug("\n")
+
+# ----- sectors -----
+
+struct clipped_region
+	region &r
+	vector<clip_to_sector_arc> arcs
+
+struct sector_regions
+	map<int,clipped_region> regions_clipped
+	map<int,region*> regions_inside
+	map<int,region*> regions_containing
+
+# XXX do we need to worry about floating-point precision issues? rememeber the i386/?? `FP regs have extra precision' issue in gcc doc
+#   maybe I could round everything to a certain fixed precision (e.g. 32 bits) before comparing?

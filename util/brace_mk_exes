@@ -1,0 +1,7 @@
+#!/bin/sh
+[ -d exe ] && cd exe
+# brace_mk_exe $1 `< exe_types grep "^$1" | cut -f2`
+< exe_types grep "^$1" >.tmp.1.$$
+<.tmp.1.$$ cut -f2 >.tmp.2.$$
+<.tmp.2.$$ xargs brace_mk_exe $1
+rm .tmp.1.$$ .tmp.2.$$
