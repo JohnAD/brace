@@ -60,10 +60,10 @@ int truncate(const char *path, off_t length)
 # bogus lock implementation for mingw
 # FIXME it probably does have a lock implementation of its own
 
-def lock(lockfile)
-	lock(lockfile, my(fd), my(x))
+def Lock(lockfile)
+	Lock(lockfile, my(fd), my(x))
 
-def lock(lockfile, fd, x)
+def Lock(lockfile, fd, x)
 	int fd
 	num delay = 0.01, maxdelay = 1
 	repeat
@@ -81,6 +81,12 @@ def lock(lockfile, fd, x)
 		Remove(lockfile)
 	pre(x)
 		.
+
+def lock(lockfile)
+	Lock(lockfile)
+
+def lock(lockfile, fd, x)
+	Lock(lockfile, fd, x)
 
 nonblock(int fd, u_long nb)
 	if ioctlsocket(fd_to_socket(fd), FIONBIO, &nb) == -1

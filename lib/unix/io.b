@@ -36,35 +36,62 @@ nonblock(int fd, int nb)
 #nonblock_off(int fd)
 #	Fcntl_setfl(fd, Fcntl_getfl(fd) & ~O_NONBLOCK)
 
-int Fcntl_flock(int fd, int cmd, short type, short whence, off_t start, off_t len)
+int fcntl_flock(int fd, int cmd, short type, short whence, off_t start, off_t len)
 	struct flock fl
 	fl.l_type = type
 	fl.l_whence = whence
 	fl.l_start = start
 	fl.l_len = len
 	int rv = fcntl(fd, cmd, &fl)
+	return rv
+
+int Fcntl_flock(int fd, int cmd, short type, short whence, off_t start, off_t len)
+	int rv = fcntl_flock(fd, cmd, type, whence, start, len)
 	if rv == -1
 		failed("fcntl flock")
 	return rv
 
-def wrlck(fd) Fcntl_flock(fd, F_SETLKW, F_WRLCK, SEEK_SET, 0, 0)
-def rdlck(fd) Fcntl_flock(fd, F_SETLKW, F_RDLCK, SEEK_SET, 0, 0)
-def unlck(fd) Fcntl_flock(fd, F_SETLKW, F_UNLCK, SEEK_SET, 0, 0)
+def wrlck(fd) fcntl_flock(fd, F_SETLKW, F_WRLCK, SEEK_SET, 0, 0)
+def rdlck(fd) fcntl_flock(fd, F_SETLKW, F_RDLCK, SEEK_SET, 0, 0)
+def unlck(fd) fcntl_flock(fd, F_SETLKW, F_UNLCK, SEEK_SET, 0, 0)
 
-def wrlck_nb(fd) Fcntl_flock(fd, F_SETLK, F_WRLCK, SEEK_SET, 0, 0)
-def rdlck_nb(fd) Fcntl_flock(fd, F_SETLK, F_RDLCK, SEEK_SET, 0, 0)
-def unlck_nb(fd) Fcntl_flock(fd, F_SETLK, F_UNLCK, SEEK_SET, 0, 0)
+def wrlck_nb(fd) fcntl_flock(fd, F_SETLK, F_WRLCK, SEEK_SET, 0, 0)
+def rdlck_nb(fd) fcntl_flock(fd, F_SETLK, F_RDLCK, SEEK_SET, 0, 0)
+def unlck_nb(fd) fcntl_flock(fd, F_SETLK, F_UNLCK, SEEK_SET, 0, 0)
+
+def Wrlck(fd) Fcntl_flock(fd, F_SETLKW, F_WRLCK, SEEK_SET, 0, 0)
+def Rdlck(fd) Fcntl_flock(fd, F_SETLKW, F_RDLCK, SEEK_SET, 0, 0)
+def Unlck(fd) Fcntl_flock(fd, F_SETLKW, F_UNLCK, SEEK_SET, 0, 0)
+
+def Wrlck_nb(fd) Fcntl_flock(fd, F_SETLK, F_WRLCK, SEEK_SET, 0, 0)
+def Rdlck_nb(fd) Fcntl_flock(fd, F_SETLK, F_RDLCK, SEEK_SET, 0, 0)
+def Unlck_nb(fd) Fcntl_flock(fd, F_SETLK, F_UNLCK, SEEK_SET, 0, 0)
+
+def Lock(lockfile)
+	Lock(lockfile, my(fd), my(x))
+
+def Lock(lockfile, fd, x)
+	int fd = Open(lockfile, O_RDWR|O_CREAT, 0777)
+	Wrlck(fd)
+	post(x)
+		Remove(lockfile)
+		Unlck(fd)
+		Close(fd)
+	pre(x)
+		.
 
 def lock(lockfile)
 	lock(lockfile, my(fd), my(x))
 
 def lock(lockfile, fd, x)
-	int fd = Open(lockfile, O_RDWR|O_CREAT, 0777)
-	wrlck(fd)
+	int fd = open(lockfile, O_RDWR|O_CREAT, 0777)
+	if fd >= 0
+		Wrlck(fd)
 	post(x)
-		remove(lockfile)
-		unlck(fd)
-		Close(fd)
+		if fd >= 0
+			remove(lockfile)
+			unlck(fd)
+			close(fd)
 	pre(x)
 		.
 

@@ -132,7 +132,7 @@ def html_decode(b, v) _html_decode(b, v)
 
 cstr html2text(cstr html)
 	decl(b_html, circbuf)
-	buffer_from_cstr(b_html, html)
+	circbuf_from_cstr(b_html, html)
 
 	new(b_split, circbuf, 1024)
 	cb_io(b_html, b_split)

@@ -187,7 +187,7 @@ circbuf_add_nul(circbuf *b)
 	if circbuf_get_size(b) == 0 || circbuf_last_char(b) != '\0'
 		circbuf_cat_char(b, '\0')
 
-cstr circbuf_to_buffer(buffer *b, circbuf *cb)
+circbuf_to_buffer(buffer *b, circbuf *cb)
 	circbuf_tidy(cb)
 	b->start = cb->data
 	b->end = b->start + cb->size
@@ -247,3 +247,6 @@ circbuf_from_cstr(circbuf *b, cstr s, size_t len)
 	b->size = len
 	b->space = len + 1
 	b->start = 0
+
+def circbuf_from_cstr(b, s)
+	circbuf_from_cstr(b, s, strlen(s))
