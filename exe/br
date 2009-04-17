@@ -76,9 +76,17 @@ if [ -z "$BRACE_LIB" ]; then
 fi
 if [ -z "$BRACE_STANDALONE" ]; then
 	if [ -n "$BRACE_PLAIN" ]; then
-		LDLIBS="$LDLIBS -lb_plain"
+		if [ -n "$DEBUG" ]; then
+			LDLIBS="$LDLIBS -lb_plain_debug"
+		else
+			LDLIBS="$LDLIBS -lb_plain"
+		fi
 	else
-		LDLIBS="$LDLIBS -lb"
+		if [ -n "$DEBUG" ]; then
+			LDLIBS="$LDLIBS -lb_debug"
+		else
+			LDLIBS="$LDLIBS -lb"
+		fi
 	fi
 else
 	BRACE_L_SO=

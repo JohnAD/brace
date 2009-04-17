@@ -42,6 +42,8 @@ if ($mingw) {
 	print <<End;
 LIBB_SONAME=libb.dll
 LIBB_PLAIN_SONAME=libb_plain.dll
+LIBB_DEBUG_SONAME=libb_debug.dll
+LIBB_PLAIN_DEBUG_SONAME=libb_plain_debug.dll
 PERL5LIB:=\$(srcdir)${sep}perl$pathsep\$(srcdir)${sep}cpan
 EXE=.exe
 PATH:=\$(srcdir)${sep}exe$pathsep\$(srcdir)${sep}util$pathsep$path
@@ -61,6 +63,8 @@ LIBB_LDFLAGS=
 LIBB_CFLAGS=-fpic
 LIBB_SONAME=libb.so
 LIBB_PLAIN_SONAME=libb_plain.so
+LIBB_DEBUG_SONAME=libb_debug.so
+LIBB_PLAIN_DEBUG_SONAME=libb_plain_debug.so
 PERL5LIB:=\$(srcdir)${sep}perl:\$(srcdir)${sep}cpan
 EXE=
 PATH:=\$(srcdir)${sep}exe:\$(srcdir)${sep}util:$path

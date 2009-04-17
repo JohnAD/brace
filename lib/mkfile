@@ -12,35 +12,37 @@ BHEADERS_PLAIN=$(shell $(finder) "*.b" | perl -pe 's/\.b$$/.bh/' | $(grep_plain)
 all: $(SONAME) libb.a $(PLAIN_SONAME) libb_plain.a b.h b_plain.h $(debugdir)/$(SONAME) $(debugdir)/$(PLAIN_SONAME) $(debugdir)/libb.a $(debugdir)/libb_plain.a
  # libb.so.$(MAJOR) libb.so.$(MINOR)
 
-$(SONAME): $(debugdir)/$(SONAME)
-	cp -a $< $@
-	strip --strip-unneeded $@
-
-$(PLAIN_SONAME): $(debugdir)/$(PLAIN_SONAME)
-	cp -a $< $@
-	strip --strip-unneeded $@
-
-libb.a: $(debugdir)/libb.a
-	cp -a $< $@
-	strip --strip-unneeded $@
-
-libb_plain.a: $(debugdir)/libb_plain.a
-	cp -a $< $@
-	strip --strip-unneeded $@
-
-$(debugdir)/$(SONAME): $(BOBJ)
+$(SONAME): $(BOBJ)
 	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
+	strip --strip-unneeded $@
 	chmod -x $@
 
-$(debugdir)/$(PLAIN_SONAME): $(BOBJ_PLAIN)
+$(PLAIN_SONAME): $(BOBJ_PLAIN)
 	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(PLAIN_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
+	strip --strip-unneeded $@
 	chmod -x $@
 
-$(debugdir)/libb.a: $(BOBJ)
+$(DEBUG_SONAME): $(BOBJ)
+	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(DEBUG_SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
+	chmod -x $@
+
+$(PLAIN_DEBUG_SONAME): $(BOBJ_PLAIN)
+	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(PLAIN_DEBUG_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
+	chmod -x $@
+
+libb.a: libb_debug.a
+	cp -a $< $@
+	strip --strip-unneeded $@
+
+libb_plain.a: libb_plain_debug.a
+	cp -a $< $@
+	strip --strip-unneeded $@
+
+libb_debug.a: $(BOBJ)
 	rm -f $@
 	ar rcs $@ $(BOBJ)
 
-$(debugdir)/libb_plain.a: $(BOBJ_PLAIN)
+libb_plain_debug.a: $(BOBJ_PLAIN)
 	rm -f $@
 	ar rcs $@ $(BOBJ_PLAIN)
 

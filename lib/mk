@@ -10,9 +10,17 @@ ifeq ($(BRACE_LANGUAGE),C++)
 LDLIBS:=$(LDLIBS) -lstdc++
 endif
 ifndef BRACE_PLAIN
+ifndef DEBUG
 LDLIBS:=$(LDLIBS) -lb
 else
+LDLIBS:=$(LDLIBS) -lb_debug
+endif
+else
+ifndef DEBUG
 LDLIBS:=$(LDLIBS) -lb_plain
+else
+LDLIBS:=$(LDLIBS) -lb_plain_debug
+endif
 endif
 endif
 endif
