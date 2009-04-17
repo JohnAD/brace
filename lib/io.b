@@ -801,12 +801,12 @@ cstr Getcwd()
 
 Chdir(const char *path)
 	if chdir(path) != 0
-		failed("chdir")
+		failed("chdir", path)
 
 Mkdir(const char *pathname, mode_t mode)
 	int rv = mkdir(pathname, mode)
 	if rv
-		failed("mkdir")
+		failed("mkdir", pathname)
 
 def mkdir(pathname) mkdir(pathname, 0777)
 def Mkdir(pathname) Mkdir(pathname, 0777)
