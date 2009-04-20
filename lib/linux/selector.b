@@ -1,4 +1,5 @@
 export io time selector
+use m
 
 #def io_selector io_epoll
 

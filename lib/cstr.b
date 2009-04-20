@@ -129,6 +129,16 @@ splitv(vec *v, cstr s, char c)
 
 def splitv(v, s) splitv(v, s, '\t')
 
+splitv_dup(vec *v, const char *_s, char c)
+	char *s = (char *)_s
+	for_cstr(i, s)
+		if *i == c
+			cstr x = Strndup(s, i-s)
+			vec_push(v, x)
+			s = i+1
+	if i >= s
+		vec_push(v, Strdup(s))
+
 cstr *split(cstr s, char c)
 	new(v, vec, cstr, 16)
 	splitv(v, s, c)
@@ -151,6 +161,11 @@ splitvn(vec *v, cstr s, char c, int n)
 
 def split(s) split(s, '\t')
 def split(s, c, n) splitn(s, c, n)
+
+cstr *split_dup(const char *s, char c)
+	new(v, vec, cstr, 16)
+	splitv_dup(v, s, c)
+	return vec_to_array(v)
 
 def for_cstr(i, s)
 	char *i

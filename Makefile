@@ -7,7 +7,7 @@ export BRACE_STANDALONE=
 all: tgz
 
 tgz: dotbuild
-	tgz .
+	tgz+ .
 
 dotbuild:
 	mkdir -p .build

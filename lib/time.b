@@ -7,7 +7,7 @@ use stdlib.h
 use string.h
 
 export buffer
-use error util m env
+use error util m env process
 
 use time
 
@@ -136,35 +136,62 @@ datetime_init(datetime *dt, int year, int month, int day,  int hour, int min, in
 
 # FIXME I doubt this stuff needs to use long double
 
-# sleep_step: the first time you call it, it does not sleep, just records sleep_step_last
-long double sleep_step_last = 0
-boolean sleep_step_debug = 0
-sleep_step(long double step)
+boolean sleep_debug = 0
+
+# csleep: cumulative sleep.
+# You should call it once first outside the loop to initialize it.
+# The first time you call it, it records csleep_last, and optionally syncs the
+# current time to match the step so printing the time will make more sense.  If
+# one sleep is to short, the next will probably be longer.  If too long, the
+# next should be shorter.
+# TODO do this as an object, and make it proc compatible.
+
+long double csleep_last = 0
+def csleep(step) csleep(step, 0, 1, 0)
+csleep(long double step, boolean sync, boolean use_asleep, boolean rush)
 	long double t = rtime()
-	if !sleep_step_last
+	long double to_sleep
+	if !csleep_last
 		# first step
-		# try to sync time to the step
-		long double t1 = rdiv(t, step)*step+step
-		asleep(t1-t)
-		sleep_step_last = t1
+		if sync
+			long double t1 = rdiv(t, step)*step+step
+			to_sleep = t1 - t
+			xsleep(to_sleep, t, use_asleep)
+			csleep_last = t1
+		 else
+			xsleep(step, t, use_asleep)
+			csleep_last = t + step
 	 else
-		long double dt = t - sleep_step_last
+		long double dt = t - csleep_last
 		long double to_sleep = step - dt
 		if to_sleep > 0
-			asleep(to_sleep)
-			sleep_step_last += step
+			xsleep(to_sleep, t, use_asleep)
+			csleep_last += step
 		 else
 			# adjust for possible stoppage, etc
-			if sleep_step_debug
+			if sleep_debug
 				warn("sleep_step running late")
-			sleep_step_last += rdiv(dt, step)*step
-	if sleep_step_debug
-		warn("%f %Lf", rtime(), sleep_step_last)
+			if sync
+				csleep_last += (rdiv(dt, step)+1)*step
+				to_sleep = csleep_last - t
+				xsleep(to_sleep, t, use_asleep)
+			 eif !rush
+				csleep_last = t
+	if sleep_debug
+		warn("%f %Lf", rtime(), csleep_last)
 
-# this asleep (accurate sleep) is still a bit dodgy, e.g. asleep_small probably should vary by machine
-# TODO maybe start asleep_small very small, and double it every time asleep fails to be accurate?
+def xsleep(dt, t, use_asleep)
+	if use_asleep
+		asleep(dt, t)
+	 else
+		Sleep(dt)
 
-long double asleep_small = 0.3
+# this asleep (accurate sleep) is still a bit dodgy,
+# e.g. asleep_small probably should vary by machine
+# TODO maybe start asleep_small very small, and double it every time asleep
+# fails to be accurate?
+
+long double asleep_small = 0.0001
 def asleep(dt) asleep(dt, rtime())
 long double asleep(long double dt, long double t)
 	if dt <= 0.0
@@ -175,18 +202,80 @@ long double asleep(long double dt, long double t)
 		while (t1=rtime()) < t
 			.
 			# sched_yield might makes this busy loop a little less busy if other processes need to run?
-			# any other way to do it?
+			# any other way to do it?  a real-time alarm?
 			#sched_yield()
 		return t1
 	 else
-		Sleep(dt-asleep_small)
+		lsleep(dt-asleep_small)
 		long double t2 = rtime()
 		long double dt2 = t - t2
-		return asleep(dt2, t2)
+		if dt2 > 0
+			return asleep(dt2, t2)
+		 eif dt < 0
+			asleep_small *= 2
+			if sleep_debug
+				warn("asleep: slept too long, doubling asleep_small to %f", asleep_small)
+		return t2
 
-# todo make a version of asleep that skips the first rtime and takes it as a
-# parameter (slightly more efficient), and also returns the time after the
-# sleep
+boolean lsleep_inited = 0
+lsleep_init()
+	Sigact(SIGALRM, catch_signal_null)
+	lsleep_inited = 1
+
+lsleep(num dt)
+	if !lsleep_inited
+		lsleep_init()
+#	itimerval v
+#	rtime_to_timeval(dt, &v.it_value)
+#	v.it_interval.tv_sec = v.it_interval.tv_usec = 0
+#	Setitimer(ITIMER_REAL, &v, NULL)
+	Ualarm(dt)
+	rsleep(dt+1)
+
+typedef struct itimerval itimerval
+
+Getitimer(int which, struct itimerval *value);
+	if getitimer(which, value)
+		failed("getitimer")
+
+Setitimer(int which, const struct itimerval *value, struct itimerval *ovalue);
+	if setitimer(which, value, ovalue)
+		failed("setitimer")
+
+Ualarm(num dt)
+	itimerval v
+	rtime_to_timeval(dt, &v.it_value)
+	v.it_interval.tv_sec = v.it_interval.tv_usec = 0
+	Setitimer(ITIMER_REAL, &v, NULL)
+
+
+# old asleep, used normal Sleep instead of lsleep (with an alarm), so
+# asleep_small is much bigger
+#long double asleep_small = 0.3
+#def asleep(dt) asleep(dt, rtime())
+#long double asleep(long double dt, long double t)
+#	if dt <= 0.0
+#		return t
+#	t += dt
+#	if dt <= asleep_small
+#		long double t1
+#		while (t1=rtime()) < t
+#			.
+#			# sched_yield might makes this busy loop a little less busy if other processes need to run?
+#			# any other way to do it?  a real-time alarm?
+#			#sched_yield()
+#		return t1
+#	 else
+#		Sleep(dt-asleep_small)
+#		long double t2 = rtime()
+#		long double dt2 = t - t2
+#		if dt2 > 0
+#			return asleep(dt2, t2)
+#		 eif dt < 0
+#			asleep_small *= 2
+#			if sleep_debug
+#				warn("asleep: slept too long, doubling asleep_small to %f", asleep_small)
+#		return t2
 
 # sort of benchmarking stuff
 
@@ -212,10 +301,10 @@ rtime_to_timespec(num rtime, struct timespec *ts)
 	ts->tv_sec = (long)rtime
 	ts->tv_nsec = (long)((rtime - ts->tv_sec) * 1e9)
 
-num timeval_to_rtime(struct timeval *tv)
+num timeval_to_rtime(const struct timeval *tv)
 	return (num)tv->tv_sec + tv->tv_usec / 1e6
 
-num timespec_to_rtime(struct timespec *ts)
+num timespec_to_rtime(const struct timespec *ts)
 	return (num)ts->tv_sec + ts->tv_nsec / 1e9
 
 int rtime_to_ms(num rtime)
@@ -241,3 +330,48 @@ char *date_rfc1123(time_t t)
 		d = maxdate
 	strftime(d, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT", gmtime(&t))
 	return d
+
+# NOTE can use timeradd etc when necessary.  BSD.
+
+## this delay loop shite might work in the kernel, it doesn't work here!
+#
+#num loops_per_sec
+#
+#unsigned long delay_loop_init_count = 0
+#
+#num delay_loop_init(num secs)
+##	set_priority(getpid(), sched_get_priority_max(SCHED_FIFO))
+##	Sleep(0.1)
+#	sighandler_t sigh_old = Sigact(SIGALRM, catch_signal_delay_loop_init)
+#	num t0 = rtime()
+#	Ualarm(secs)
+##	unsigned long loops = ((unsigned long)-1)
+##	unsigned long loops = 300000000
+#	unsigned long loops = 1000000000
+#	delay_loop(loops)
+#	num t1 = rtime()
+#	loops -= delay_loop_init_count
+#	loops_per_sec = loops / (t1-t0)
+#	Sigact(SIGALRM, sigh_old)
+#	warn("delay_loop_init: %d loops, %f secs, %f loops_per_sec", loops, t1-t0, loops_per_sec)
+#	return loops_per_sec
+#
+#void catch_signal_delay_loop_init(int sig)
+#	use(sig)
+#	delay_loop_init_count = delay_loop_d0
+#	delay_loop_stop()
+#
+#volatile unsigned long delay_loop_d0
+#
+#__attribute__((__noinline__)) delay_loop(unsigned long loops)
+#	if loops
+#		register volatile unsigned long delay_loop_d0 = loops
+#		do
+#			--delay_loop_d0
+#		 while delay_loop_d0 != 0
+#
+#delay_loop_stop()
+#	delay_loop_d0 = 1
+#
+#delay_loop_sleep(num secs)
+#	delay_loop(secs * loops_per_sec)

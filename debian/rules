@@ -7,7 +7,7 @@ destdir=$(CURDIR)/debian/$(package)
 DEBUG = 
 
 ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-  OPTIMISE = 1
+  OPTIMIZE = 1
 endif
 
 #export DH_VERBOSE=1
@@ -26,7 +26,7 @@ install: build
 
 build:
 	./configure --prefix=/usr
-	$(MAKE) DEBUG="$(DEBUG)" OPTIMISE="$(OPTIMISE)"
+	$(MAKE) DEBUG="$(DEBUG)" OPTIMIZE="$(OPTIMIZE)"
 	touch build
 
 binary-indep: install

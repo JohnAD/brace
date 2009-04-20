@@ -119,8 +119,8 @@ vec *vec_dup(vec *to, vec *from)
 	return to
 
 Def for_vec(i, v, type)
-	state type *my(end) = vecend(v)
-	for state type *i = vec0(v) ; i!=my(end) ; ++i
+	state type *my(end) = (type *)vecend(v)
+	for state type *i = (type *)vec0(v) ; i!=my(end) ; ++i
 		.
 
 def vec_set_space vec_space

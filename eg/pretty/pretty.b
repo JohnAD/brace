@@ -1,6 +1,6 @@
 #!/lang/b
 
-# export OPTIMISE=1
+# export OPTIMIZE=1
 
 Main()
 	gr_fast()

@@ -201,14 +201,14 @@ LDLIBS="$BRACE_L_SO $LDLIBS"
 LDLIBS="$LDLIBS -lm"
 LDLIBS_PLAIN="$LDLIBS"
 LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
-#CFLAGS="-Wall -Werror -I. -I$BRACE_LIB $CFLAGS"
-CFLAGS="-Wall -Wextra -I. $CFLAGS"
+#CFLAGS="-Wall -Wextra -Werror -I. -I$BRACE_LIB $CFLAGS"
+CFLAGS="-Wall -Wextra -I. -I$BRACE_LIB $CFLAGS"
 CINCLUDE="-I\"$BRACE_LIB\""
 if [ -n "$DEBUG" ]; then
 #	CFLAGS="$CFLAGS -ggdb"
 	CFLAGS="$CFLAGS -g"
 fi
-if [ -n "$OPTIMISE" ]; then
+if [ -n "$OPTIMIZE" ]; then
 	CFLAGS="$CFLAGS -O2"
 fi
 if [ -n "$PROFILE" ]; then

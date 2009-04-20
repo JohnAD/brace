@@ -274,3 +274,6 @@ def nochldwait(signum) signum == SIGCHLD ? SA_NOCLDSTOP : 0
 Raise(int sig)
 	if raise(sig)
 		failed("raise")
+
+void catch_signal_null(int sig)
+	use(sig)

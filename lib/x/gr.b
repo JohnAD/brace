@@ -347,7 +347,7 @@ gprint(char *p)
 	int len = strlen(p)
 	int text_width = XTextWidth(_font, p, len)
 
-	gprint_debug()
+#	gprint_debug()
 
 #	XDrawString(display, buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+(_font->ascent+_font->descent)*(_yanc-1)/2.0+1)+_font->ascent, p, len)
 # the anchoring uses the ascent portion of the box only, this looks better
@@ -460,6 +460,7 @@ dump_img(cstr type, cstr file, num scale)
 		tool = "pnmtojpeg"
 	 else
 		error("dump_img: unsupported image type: %s", type)
+		return  # keep gcc happy
 	if file
 		new(b, buffer, 256)
 		system_quote(file, b)

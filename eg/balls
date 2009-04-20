@@ -23,7 +23,7 @@ ball_init(ball *b)
 	b->vy = Rand(-12, 12)
 
 Main()
-	space()
+	space(800, 600)
 	gr_fast()
 
 	int n = 5

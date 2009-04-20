@@ -1,8 +1,8 @@
 CC=gcc -pedantic -std=gnu99
 
 DIR=$(PWD)
-#CFLAGS:=-Wall -Werror -I. $(CFLAGS)
-CFLAGS:=-Wall -Wextra $(CFLAGS)
+#CFLAGS:=-Wall -Wextra -Werror -I. $(CFLAGS)
+CFLAGS:=-Wall -Wextra -I. $(CFLAGS)
 
 ifndef BRACE_STANDALONE
 ifndef LIBB_BUILD
@@ -39,7 +39,7 @@ else
 LDFLAGS += -s
 endif
 
-ifdef OPTIMISE
+ifdef OPTIMIZE
 CFLAGS += -O2
 endif
 

@@ -1,0 +1,6 @@
+tgz "$@"
+for D; do
+	D1=`readlink -f "$D"`
+	N=`basename "$D1"`
+	mv "$N.tgz" "+$N.tgz"
+done
