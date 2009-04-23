@@ -118,6 +118,10 @@ def cstr_dump(s)
 # you need to clear the vec if necessary before calling split
 
 splitv(vec *v, cstr s, char c)
+	if *s
+		splitv1(v, s, c)
+
+splitv1(vec *v, cstr s, char c)
 	vec_push(v, s)
 	for_cstr(i, s)
 		if *i == c
@@ -137,6 +141,10 @@ cstr *splitn(cstr s, char c, int n)
 	return vec_to_array(v)
 
 splitvn(vec *v, cstr s, char c, int n)
+	if *s
+		splitvn1(v, c, s, n)
+
+splitvn1(vec *v, cstr s, char c, int n)
 	vec_push(v, s)
 	if --n
 		for_cstr(i, s)

@@ -207,3 +207,19 @@ or
 
 
 typed macros should behave like functions w.r.t. types, e.g. convert types using "soft casting", e.g. isdigit((char)'a') on netbsd should not give warning
+
+
+
+pselect / epoll_pwait issues, self-pipe trick:
+
+	pselect is currently emulated with a user-space wrapper that has a race
+	condition.  (probably not any more)  For reliable (and more portable) sig- nal
+	trapping, use the self-pipe trick.  (Where a signal handler writes to a pipe
+	whose other end  is  read  by  the  main loop.)
+
+	Under  Linux,  select  may  report  a socket file descriptor as "ready for
+	reading", while nevertheless a subsequent read blocks. This could for example
+	happen when data has arrived but upon examination has wrong  checksum and  is
+	discarded.  There may be other circumstances.  Thus it may be safer to use
+	O_NONBLOCK on sockets that should not block.
+
