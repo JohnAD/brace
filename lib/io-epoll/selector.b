@@ -47,10 +47,10 @@ def io_epoll_events(io, fd, can_read, can_write, has_error)
 def io_epoll_add(io, fd) io_epoll_add(io, fd, 1)
 
 int io_epoll_add(io_epoll *io, int fd, boolean et)
-	epoll_event event
-	event.events = (et ? EPOLLET : 0) | EPOLLIN | EPOLLOUT
-	event.data.fd = fd   # could put the proc here
-	if epoll_ctl(io->epfd, EPOLL_CTL_ADD, fd, &event) < 0
+	epoll_event ev
+	ev.events = (et ? EPOLLET : 0) | EPOLLIN | EPOLLOUT
+	ev.data.fd = fd   # could put the proc here
+	if epoll_ctl(io->epfd, EPOLL_CTL_ADD, fd, &ev) < 0
 		swarning("failed epoll_ctl ADD %d", fd)
 		return -1
 	io->count += 2
