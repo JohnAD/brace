@@ -1,7 +1,7 @@
 export io time selector
 use m
 
-#def io_selector io_epoll
+def io_selector io_epoll
 
 int io_epoll_size = 1024
 int io_epoll_maxevents = 1024
