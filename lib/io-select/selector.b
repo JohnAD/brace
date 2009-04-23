@@ -1,6 +1,6 @@
 export io time selector
 
-#def io_selector io_select
+def io_selector io_select
 
 def io_init io_selector^^_init
 def io_fd_top io_selector^^_fd_top

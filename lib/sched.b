@@ -4,7 +4,7 @@ export proc time timeout selector
 use deq io error process hash
 
 #def io_selector io_epoll
-def io_selector io_select
+#def io_selector io_select
 
 num sched_delay = 0
     # = 0      # don't sleep between steps

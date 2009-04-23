@@ -94,6 +94,7 @@ fi
 if [ -z "$BRACE_USE" ]; then
 	if [ -n "$MINGW" ]; then
 		BRACE_USE="mingw"
+		BRACE_USE="$BRACE_USE io-select"
 		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
 		LDLIBS="$LDLIBS -lws2_32"
 		LDLIBS_FANCY="$LDLIBS_FANCY -lopengl32 -lglu32 -lgdi32"
@@ -116,6 +117,19 @@ if [ -z "$BRACE_USE" ]; then
 		<.uname.$$.1 read UNAME
 		rm .uname.$$ .uname.$$.1  # coping with borken pipes in unxutils
 		BRACE_USE="$BRACE_USE $UNAME"
+		if [ "$UNAME" = "linux" ]; then
+			V=`uname -r`
+			V="${V%%-*}"
+			major="${V%.*}"
+			minor="${V##*.}"
+			if [ "$major" == 2.6 -a "$minor" -ge 19 ]; then
+				BRACE_USE="$BRACE_USE io-epoll"
+			else
+				BRACE_USE="$BRACE_USE io-select"
+			fi
+		else
+			BRACE_USE="$BRACE_USE io-select"
+		fi
 #		elif echo $UNAME | grep -i linux >/dev/null; then
 #			BRACE_USE="$BRACE_USE linux"
 #		fi
