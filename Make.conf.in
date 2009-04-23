@@ -1,0 +1,22 @@
+# generic Make.conf.in
+MAJOR=0
+VERSION=0.0
+
+CC=gcc -pedantic -std=gnu99
+
+OPTIMIZE=1
+DEBUG=1
+PROFILE=
+
+destdir=
+realprefix=/usr/local
+prefix=$(destdir)$(realprefix)
+bindir=$(prefix)/bin
+sbindir=$(prefix)/sbin
+libdir=$(prefix)/lib
+cgibindir=$(libdir)/cgi-bin
+perldir=$(prefix)/lib/perl5/site_perl
+includedir=$(prefix)/include
+datadir=$(prefix)/share
+langdir=$(destdir)/lang
+srcdir=.

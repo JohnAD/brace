@@ -1,4 +1,5 @@
 export io time selector
+use m
 
 #def io_selector io_epoll
 
@@ -28,7 +29,7 @@ int io_epoll_wait(io_epoll *io, num delay, sigset_t *sigmask)
 		delay_ms = rtime_to_ms(delay)
 	int n_ready = Epoll_pwait(io->epfd, vec0(io->events), vec_get_space(io->events), delay_ms, sigmask)
 #	warn("n_ready %d", n_ready)
-	vec_set_size(io->events, n_ready)
+	vec_set_size(io->events, imax(n_ready, 0))
 	return n_ready
 
 def io_epoll_events(io, fd, can_read, can_write, has_error)
