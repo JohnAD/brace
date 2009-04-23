@@ -1,0 +1,24 @@
+http://sam.nipl.net/brace
+
+
+   brace
+
+   Brace is a dialect of C which looks like python.  It has coroutines,
+   hygenic macros and reasonably nice libraries, including support for
+   graphics and music.
+
+
+   You can build the Debian package with:
+
+     debuild -b
+
+    or
+
+     fakeroot debian/rules binary
+
+
+   otherwise, try
+
+     ./configure
+     make
+     make install

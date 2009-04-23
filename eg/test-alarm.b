@@ -1,0 +1,9 @@
+#!/lang/b
+use b
+
+Main()
+	repeat
+		bm_start()
+		num t0 = rtime()
+		num t1 = asleep(1, t0)
+		warn("%f", t1-t0)
