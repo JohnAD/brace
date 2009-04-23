@@ -27,7 +27,7 @@ XGCValues gcvalues
 XFontStruct *_font = NULL
 XColor color
 int screen_number
-XEvent event
+XEvent x_event
 XShmSegmentInfo *shmseginfo = NULL
 
 font(cstr name, int size)
@@ -416,9 +416,9 @@ clear()
 def done() event_loop()
 event_loop()
 	repeat
-		XNextEvent(display, &event)
-		which event.type
-		Expose	if event.xexpose.count == 0
+		XNextEvent(display, &x_event)
+		which x_event.type
+		Expose	if x_event.xexpose.count == 0
 				paint()
 
 triangle(num x2, num y2)
