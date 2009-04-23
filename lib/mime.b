@@ -3,6 +3,11 @@ use hash sym util vio
 
 cstr mimetypes_file = "/etc/mime.types"
 
+mimetypes_init()
+	if !mimetypes
+		mimetypes = &struct__mimetypes
+		init(mimetypes, hashtable, cstr_hash, (eq_func)cstr_eq, mimetypes_n_buckets)
+
 def load_mimetypes()
 	load_mimetypes(mimetypes_file)
 def load_mimetypes(file)
@@ -12,10 +17,8 @@ def load_mimetypes(file)
 size_t mimetypes_n_buckets = 1009
 hashtable struct__mimetypes, *mimetypes = NULL
 load_mimetypes_vio()
+	mimetypes_init()
 	sym_init()
-	if !mimetypes
-		mimetypes = &struct__mimetypes
-		init(mimetypes, hashtable, cstr_hash, (eq_func)cstr_eq, mimetypes_n_buckets)
 	eachline(l)
 		if among(*l, '#', '\0')
 			continue

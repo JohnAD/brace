@@ -142,7 +142,7 @@ cstr *splitn(cstr s, char c, int n)
 
 splitvn(vec *v, cstr s, char c, int n)
 	if *s
-		splitvn1(v, c, s, n)
+		splitvn1(v, s, c, n)
 
 splitvn1(vec *v, cstr s, char c, int n)
 	vec_push(v, s)

@@ -61,7 +61,7 @@ def io_select_events(io, fd, can_read, can_write, has_error)
 
 def io_select_exists(io, fd) fd_isset(fd, &io->exceptfds)
 
-def io_select_add(io, fd) io_epoll_add(io, fd, 0)
+def io_select_add(io, fd) io_select_add(io, fd, 0)
 
 int io_select_add(io_select *io, int fd, boolean et)
 	use(et)  # ignored

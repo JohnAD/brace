@@ -119,6 +119,7 @@ if [ -z "$BRACE_USE" ]; then
 	fi
 fi
 export BRACE_LIB BRACE_USE
+if [ -n "$BR_DEBUG" ]; then echo "BRACE_USE=$BRACE_USE"; fi
 
 BRACE_LANGUAGE=C
 if [ "-bb" = "$1" -o "bbr" = "`basename "$0"`" ]; then
