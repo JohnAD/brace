@@ -865,6 +865,14 @@ def ary(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
 	sametype(a, a0)[10]
 	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8 ; a[9] = a9
 
+def ary(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+	sametype(a, a0)[11]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8 ; a[9] = a9 ; a[10] = a10
+
+def ary(a, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+	sametype(a, a0)[12]
+	a[0] = a0 ; a[1] = a1 ; a[2] = a2 ; a[3] = a3 ; a[4] = a4 ; a[5] = a5 ; a[6] = a6 ; a[7] = a7 ; a[8] = a8 ; a[9] = a9 ; a[10] = a10 ; a[11] = a11
+
 def aryp(a)
 	void *a[0]
 
@@ -964,6 +972,16 @@ def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
 	forary(i, my(ary))
 		.
 
+def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+	forary(i, my(ary))
+		.
+
+def eachp(i, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+	aryp(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+	forary(i, my(ary))
+		.
+
 def each(e)
 	never
 		.
@@ -1015,6 +1033,16 @@ def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8)
 
 def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
 	ary(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	forary(e, my(ary))
+		.
+
+def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+	ary(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+	forary(e, my(ary))
+		.
+
+def each(e, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+	ary(my(ary), a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
 	forary(e, my(ary))
 		.
 
