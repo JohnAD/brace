@@ -1125,3 +1125,50 @@ cstr_set_add(vec *set, cstr s)
 		if cstr_eq(*i, s)
 			return
 	vec_push(set, s)
+
+# this could be sped up if necessary
+unsigned int bit_reverse(unsigned int x)
+	int n = 0
+	while x
+		n <<= 1
+		n |= (x & 1)
+		x >>= 1
+	return n
+
+# get and put endian words, e.g. from binary files
+# TODO 64 bit?
+
+def byte(p) (unsigned char)p[0]
+
+def le2(p) byte(p) | (byte(p+1)<<8)
+def le3(p) byte(p) | (byte(p+1)<<8) | (byte(p+2)<<16)
+def le4(p) byte(p) | (byte(p+1)<<8) | (byte(p+2)<<16) | (byte(p+3)<<24)
+
+def be2(p) (byte(p)<<8) | byte(p+1)
+def be3(p) (byte(p)<<16) | (byte(p+1)<<8) | byte(p+2)
+def be4(p) (byte(p)<<24) | (byte(p+1)<<16) | (byte(p+2)<<8) | byte(p+3)
+
+def le2(p, i)
+	p[0] = i ; p[1] = (i>>8)
+def le3(p, i)
+	p[0] = i ; p[1] = (i>>8) ; p[2] = (i>>16)
+def le4(p, i)
+	p[0] = i ; p[1] = (i>>8) ; p[2] = (i>>16) ; p[3] = (i>>24)
+
+def be2(p, i)
+	p[0] = (i>>8) ; p[1] = i
+def be3(p, i)
+	p[0] = (i>>16) ; p[1] = (i>>8) ; p[2] = i
+def be4(p, i)
+	p[0] = (i>>24) ; p[1] = (i>>16) ; p[2] = (i>>8) ; p[3] = i
+
+def sbyte(p) ((long)byte(p)) << 24 >> 24
+
+def sle2(p) ((long)le2(p)) << 16 >> 16
+def sle3(p) ((long)le3(p)) << 8 >> 8
+def sle4(p) ((long)le4(p))
+
+def sbe2(p) ((long)be2(p)) << 16 >> 16
+def sbe3(p) ((long)be3(p)) << 8 >> 8
+def sbe4(p) ((long)be4(p))
+

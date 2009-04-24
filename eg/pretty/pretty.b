@@ -30,8 +30,6 @@ def pretty(pixel_type)
 	int da = 0
 	int dr = 0
 
-	sleep_step_debug = 1
-
 	repeat
 		pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
 		da+=2
@@ -52,7 +50,7 @@ def pretty(pixel_type)
 				r2 += 2*x+1   # maintain r2 = x*x+y*y
 
 		bm("calc done")
-#		sleep_step(0.15)
+#		csleep(0.15)
 		Paint()
 		bm("painted")
 		bm_start()

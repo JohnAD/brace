@@ -3,25 +3,30 @@
 
 # FIXME use "local" vars
 
-int rate = 44100
+int dsp_rate = 44100
 int bits_per_sample = 16
 int channels = 1
-int dsp_buf_initial_duration = 1
+num dsp_buf_initial_duration = 1
 int bytes_per_sample = 2
 # bits_per_sample/8*channels
 
-char *outfile = "/dev/dsp"
+char *dsp_outfile = "/dev/dsp"
 int use_dsp = 1
 
-int fd
+int dsp_fd
 
 def play(s) dsp_play_sound(s)
 dsp_play_sound(sound *s)
-	size_t size = sound_get_size(s)
-	dsp_buffer_set_size(dsp_buf, size)
-	fit(sound_range(s))
-	dsp_encode(sound_range(s), dsp_buffer_get_start(dsp_buf))
-	dsp_play(dsp_buffer_range(dsp_buf))
+	sample *i = sound_get_start(s)
+	sample *e = sound_get_end(s)
+	size_t buf_size = dsp_buffer_get_size(dsp_buf)
+	short *buf0 = dsp_buffer_get_start(dsp_buf)
+	while i < e
+		size_t count = imin(e-i, buf_size)
+		fit(i, i+count)
+		dsp_encode(i, i+count, buf0)
+		dsp_play((char *)buf0, (char *)(buf0 + count))
+		i += count
 
 # decl(dsp_buf, dsp_buffer)
 # this don't work because brace_header does not run brace_macro over things
@@ -32,44 +37,44 @@ dsp_buffer *dsp_buf = &struct__dsp_buf
 
 dsp_init()
 	# for "play"
-	dsp_buffer_init(dsp_buf, rate * dsp_buf_initial_duration)
+	dsp_buffer_init(dsp_buf, dsp_rate * dsp_buf_initial_duration)
 
-	fd = Open(outfile, O_WRONLY|O_CREAT|O_APPEND)
+	dsp_fd = Open(dsp_outfile, O_WRONLY|O_CREAT|O_APPEND)
 	
 	if use_dsp
 		int arg
 		int status
 		arg = bits_per_sample
-		status = ioctl(fd, SOUND_PCM_WRITE_BITS, &arg)
+		status = ioctl(dsp_fd, SOUND_PCM_WRITE_BITS, &arg)
 		if status == -1
 			error("SOUND_PCM_WRITE_BITS ioctl failed")
 		if (arg != bits_per_sample)
 			error("unable to set sample size")
 		
 		arg = channels
-		status = ioctl(fd, SOUND_PCM_WRITE_CHANNELS, &arg)
+		status = ioctl(dsp_fd, SOUND_PCM_WRITE_CHANNELS, &arg)
 		if (status == -1)
 			error("SOUND_PCM_WRITE_CHANNELS ioctl failed")
 		if (arg != channels)
 			error("unable to set number of channels")
 		
-		arg = rate
-		status = ioctl(fd, SOUND_PCM_WRITE_RATE, &arg)
+		arg = dsp_rate
+		status = ioctl(dsp_fd, SOUND_PCM_WRITE_RATE, &arg)
 		if (status == -1)
 			error("SOUND_PCM_WRITE_RATE ioctl failed")
-		if arg != rate
-			warn("using sample rate %d instead of %d\n", arg, rate)
-			rate = arg
+		if arg != dsp_rate
+			warn("using sample rate %d instead of %d\n", arg, dsp_rate)
+			dsp_rate = arg
 
-	sound_set_rate(rate)
+	sound_set_rate(dsp_rate)
 
 dsp_play(char *b0, char *b1)
 	size_t size = b1 - b0
-	Write(fd, b0, size)
+	Write(dsp_fd, b0, size)
 
 dsp_sync()
 	if use_dsp
-		int status = ioctl(fd, SOUND_PCM_SYNC, 0)
+		int status = ioctl(dsp_fd, SOUND_PCM_SYNC, 0)
 		if (status == -1)
 			error("SOUND_PCM_SYNC ioctl failed")
 
@@ -106,10 +111,8 @@ def dsp_buffer_set_size vec_set_size
 def dsp_buffer_get_size vec_get_size
 Def dsp_buffer_range vec_range
 
-export vec
-use util
-use sound
-use error
+export vec types
+use util sound error m
 
 use linux/soundcard.h
 

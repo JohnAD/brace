@@ -70,6 +70,12 @@ def failed(funcname, msg1, msg2)
 def failed0(funcname)
 	error("%s failed", funcname)
 
+def failed0(funcname, errmsg)
+	error("%s failed: %s", funcname, errmsg)
+
+def failed0(funcname, msg1, msg2)
+	error("%s failed: %s, %s", funcname, msg1, msg2)
+
 warn_failed(const char *funcname)
 	swarning("%s failed", funcname)
 

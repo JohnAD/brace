@@ -6,6 +6,8 @@ use m alloc util path env process
 
 use io
 
+size_t block_size = 1024
+
 # todo split io and fs
 
 int Open(const char *pathname, int flags, mode_t mode)

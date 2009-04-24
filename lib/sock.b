@@ -1,7 +1,5 @@
 export proc shuttle sched net io alloc
 
-size_t block_size = 1024
-
 struct sock
 	int fd
 	sockaddr *sa

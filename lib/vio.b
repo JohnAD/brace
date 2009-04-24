@@ -1,6 +1,6 @@
 # vstream contextual io!
 
-use io buffer circbuf
+use io buffer circbuf m
 
 # TODO could be simpler, it really only needs read, write and flush?
 # TODO integrate with rd, wr of shuttle.b
@@ -610,3 +610,12 @@ def cb_ioe(i, o, e)
 	new(my(vse), vstream, circbuf, e)
 	ioe(my(vsi), my(vso), my(vse))
 		.
+
+discard(size_t n)
+	char buf[block_size]
+	while n
+		size_t to_read = imin(block_size, n)
+		if vs_read(buf, to_read) != to_read
+			failed0("discard", "file too short")
+		n -= to_read
+
