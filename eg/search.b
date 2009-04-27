@@ -13,15 +13,22 @@ Main()
 		http_get(url, b)
 		Free(url)
 
-		new(b_split, buffer, 1024)
+		buffer_dump(b)
 
-		b_io(b, b_split)
+		decl(cb, circbuf)
+		buffer_to_circbuf(cb, b)
+		new(b_split, circbuf, 1024)
+
+		cb_io(cb, b_split)
 			html_split()
 
 		buffer_free(b)
 
+		circbuf_to_buffer(b, b_split)
+		buffer_dump(b)
+
 		new(v, vec, search_results, 10)
-		b_in(b_split)
+		cb_in(b_split)
 			eachline(s)
 				if cstr_begins_with(s, "<a ") && strstr(s, " class=l")
 					cstr href = Strchr(s, '"')+1;
@@ -51,7 +58,7 @@ Main()
 #					buffer_free(title)
 #					buffer_free(desc)
 
-		buffer_free(b_split)
+		circbuf_free(b_split)
 
 		for_vec(i, v, search_results)
 			sf("url:\t%s", i->href)

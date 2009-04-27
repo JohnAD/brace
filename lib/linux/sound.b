@@ -15,10 +15,13 @@ int use_dsp = 1
 
 int dsp_fd
 
-def play(s) dsp_play_sound(s)
-dsp_play_sound(sound *s)
-	sample *i = sound_get_start(s)
-	sample *e = sound_get_end(s)
+def play(s)
+	dsp_play_sound(s)
+def play(a, b)
+	dsp_play_sound(a, b)
+def dsp_play_sound(s)
+	dsp_play_sound(sound_get_start(s), sound_get_end(s))
+dsp_play_sound(sample *i, sample *e)
 	size_t buf_size = dsp_buffer_get_size(dsp_buf)
 	short *buf0 = dsp_buffer_get_start(dsp_buf)
 	while i < e

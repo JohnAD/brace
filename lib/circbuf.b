@@ -161,6 +161,7 @@ int Vsprintf_cb(circbuf *b, const char *format, va_list ap)
 	if space_1 == 0
 		circbuf_ensure_space(b, old_size+1)
 		start = cbufend(b)
+		space = circbuf_get_space(b)
 		space_1 = circbuf_get_space_end(b) - start
 	int len = Vsnprintf(start, space_1, format, ap)
 	if len < space_1
@@ -169,13 +170,14 @@ int Vsprintf_cb(circbuf *b, const char *format, va_list ap)
 		char tmp[len+1]
 		int len1 = Vsnprintf(tmp, len+1, format, ap1)
 		assert(len == len1, "vsnprintf returned different sizes on same input!!")
-		circbuf_cat_range(b, tmp, tmp+len+1)
+		circbuf_cat_range(b, tmp, tmp+len+1)  # FIXME just copy the 2nd half of it
 		circbuf_grow(b, -1)
 	 else
-		circbuf_set_size(b, old_size+len+1)
+		circbuf_ensure_space(b, old_size+len+1)
 		start = cbufend(b)
-		space = circbuf_get_space_end(b) - start
-		len = Vsnprintf(start, space, format, ap1)
+		space_1 = circbuf_get_space_end(b) - start
+		assert(space_1 >= len+1, "Vsprintf_cb: circbuf_ensure_space did not work properly")
+		len = Vsnprintf(start, space_1, format, ap1)
 		assert(old_size+len == circbuf_get_size(b)-1, "vsnprintf returned different sizes on same input!!")
 		circbuf_set_size(b, old_size+len)
 	va_end(ap1)

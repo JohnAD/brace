@@ -1,3 +1,8 @@
+# TODO use C99 complex numbers instead of this!
+# http://www.dinkumware.com/manuals/default.aspx?manual=compleat&page=complex2.html
+# http://std.dkuug.dk/jtc1/sc22/open/n2794/n2794.pdf
+# http://www.ddj.com/cpp/184401628
+
 use m
 
 struct complex

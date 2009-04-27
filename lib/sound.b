@@ -32,12 +32,18 @@ sound_print(sample *s0, sample *s1)
 		printf("%.2f ", *s)
 	nl() ; nl()
 
-fit(sample *s0, sample *s1)
+def fit(s0, s1)
+	normalize(s0, s1, 1)
+
+def normalize(s0, s1)
+	normalize(s0, s1, 0)
+
+normalize(sample *s0, sample *s1, boolean softer)
 	range r = check_range(s0, s1)
 	sample vol0 = fabs(r.min)
 	sample vol1 = fabs(r.max)
 	sample max = Max(vol0, vol1)
-	if max > 1
+	if !softer || max > 1
 		amplify(s0, s1, 1.0/max)
 		clip(s0, s1)
 
@@ -180,7 +186,7 @@ sound_info load_wav(sound *s)
 	vec_grow(s, info.n_samples)
 	sample *o = vec_element(s, old_size)
 
-	float divide = 1<<(bits_per_sample-1)
+	float divide = 1<<(info.bits_per_sample-1)
 	float origin = bytes_per_sample == 1 ? divide : 0
 
 	which bytes_per_sample

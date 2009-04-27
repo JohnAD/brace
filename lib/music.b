@@ -60,10 +60,11 @@ def wavegen(s)
 	wavegen(sound_get_start(s), sound_get_end(s))
 
 wavegen(float *from, float *to)
-	num vol_factor = pow(ref_freq / _freq, 0) # this may not be quite right, seems ok
+#	num loud_factor = pow(ref_freq / _freq, 1)  # this may not be quite right, seems good
+	num loud_factor = 1
 
 	num dur = _dur
-	num peak = _vol * vol_factor
+	num peak = _vol * loud_factor
 	num attack = _attack
 	num release = _release
 	num sustain = _dur - (attack + release)
@@ -98,7 +99,7 @@ wavegen(float *from, float *to)
 			freq = pow(tremolo_power, sin(2*pi*t*tremolo_freq)) * _freq
 		else
 			freq = _freq
-		*v += vol*(*wave)(t*freq)
+		*v += vol*(*music_wave)(t*freq)
 
 		if attack_c
 			--attack_c
@@ -113,7 +114,7 @@ wavegen(float *from, float *to)
 
 typedef num (*wave_f)(num t)
 
-wave_f wave = puretone
+wave_f music_wave = puretone
 
 num puretone(num t)
 	return sin(2*pi*t)
