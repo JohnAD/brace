@@ -2,6 +2,7 @@
 use b
 
 Main()
+	http_debug = 1
 	http_fake_browser(1)
 	eacharg(a)
 		cstr query = url_encode(a)
@@ -13,8 +14,6 @@ Main()
 		http_get(url, b)
 		Free(url)
 
-		buffer_dump(b)
-
 		decl(cb, circbuf)
 		buffer_to_circbuf(cb, b)
 		new(b_split, circbuf, 1024)
@@ -25,7 +24,6 @@ Main()
 		buffer_free(b)
 
 		circbuf_to_buffer(b, b_split)
-		buffer_dump(b)
 
 		new(v, vec, search_results, 10)
 		cb_in(b_split)
@@ -64,6 +62,9 @@ Main()
 			sf("url:\t%s", i->href)
 			sf("title:\t%s", i->title)
 			sf("desc:\t%s", i->desc)
+
+			if !strstr(i->href, ".cpan.")
+				continue
 
 			i->html = http_get(i->href)
 			i->text = html2text(i->html)

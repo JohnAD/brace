@@ -173,6 +173,5 @@ cstr html2text(cstr html)
 
 	buffer_free(decoded)
 	circbuf_free(b_split)
-	circbuf_free(b_html)
 
 	return circbuf_to_cstr(b_text)

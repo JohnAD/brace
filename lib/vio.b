@@ -526,8 +526,8 @@ char *vs_gets_circbuf(char *s, int size, vstream *vs)
 		char *space_end = circbuf_get_space_end(b)
 		char *o = s
 		char *e
-		if cbuflen(b) > size
-			e = cb(b, size)
+		if cbuflen(b) > size-1
+			e = cb(b, size-1)
 		 else
 			e = circbuf_get_end(b)
 		do

@@ -51,10 +51,12 @@ cstr get_path_from_url(cstr url)
 			path = "/"
 	return path
 
-int _http_fake_browser = 0
+boolean _http_fake_browser = 0
 def http_fake_browser() http_fake_browser(1)
-http_fake_browser(int f)
+http_fake_browser(boolean f)
 	_http_fake_browser = f
+
+boolean http_debug = 0
 
 cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *rsp_headers, buffer *rsp_data)
 	cstr host_port = get_host_from_url(url)
@@ -70,19 +72,32 @@ cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *
 		*port_s++ = '\0'
 		port = atoi(port_s)
 
+	if http_debug
+		warn("connecting to %s port %d", host, port)
 	int fd = Client(host, port)
 	FILE *s = Fdopen(fd, "r+b")
-	Fprintf(s, "%s %s HTTP/1.1\r\n", method, path)
-	Fprintf(s, "Host: %s\r\n", host_port)
-	if _http_fake_browser == 1
+	Fprintf(s, "%s %s HTTP/1.0\r\n", method, url)
+	if http_debug
+		warn("%s %s HTTP/1.0", method, url)
+#	Fprintf(s, "%s %s HTTP/1.1\r\n", method, path)
+	  # I was using HTTP/1.1 but I don't want to do the code to handle "chunked" encoding right now.
+#	Fprintf(s, "Host: %s\r\n", host_port)
+	if _http_fake_browser
 		Fprintf(s, "User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.6) Gecko/2009020911 Ubuntu/8.10 (intrepid) Firefox/3.0.6\r\n")
 		Fprintf(s, "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n")
+		if http_debug
+			warn("User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.6) Gecko/2009020911 Ubuntu/8.10 (intrepid) Firefox/3.0.6")
+			warn("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 
 	if req_headers
 		Fwrite_buffer(s, req_headers)
+		if http_debug
+			warn("%s", req_headers)
 	crlf(s)
 	if req_data
 		Fwrite_buffer(s, req_data)
+		if http_debug
+			warn("%s", req_data)
 	Fflush(s)
 
 	Shutdown(fd)
@@ -102,11 +117,18 @@ cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *
 			break
 		buffer_cat_char(rsp_headers, '\n')
 
+	if http_debug
+		buffer_nul_terminate(rsp_headers)
+		warn("%s", buf0(rsp_headers))
+
 	if !rsp_headers_orig
 		buffer_free(rsp_headers_tmp)
 
 	if rsp_data
 		fslurp(s, rsp_data)
+		if http_debug
+			buffer_nul_terminate(rsp_data)
+			warn("%s", buf0(rsp_data))
 
 	Fclose(s)
 
@@ -117,7 +139,7 @@ cstr http(cstr method, cstr url, buffer *req_headers, buffer *req_data, buffer *
 		rsp_data = rsp_headers
 	if rsp_data
 		buffer_nul_terminate(rsp_data)
-		return buffer_get_start(rsp_data)
+		return buf0(rsp_data)
 	return NULL
 
 def http_get(url) http_get_1(url)

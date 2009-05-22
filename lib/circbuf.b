@@ -156,30 +156,31 @@ int Vsprintf_cb(circbuf *b, const char *format, va_list ap)
 	va_copy(ap1, ap)
 	ssize_t old_size = circbuf_get_size(b)
 	char *start = cbufend(b)
-	ssize_t space = circbuf_get_space(b)
-	ssize_t space_1 = circbuf_get_space_end(b) - start
-	if space_1 == 0
+	ssize_t free = circbuf_get_free(b)
+	ssize_t free_1 = circbuf_get_free_1(b)
+	if free_1 == 0
 		circbuf_ensure_space(b, old_size+1)
 		start = cbufend(b)
-		space = circbuf_get_space(b)
-		space_1 = circbuf_get_space_end(b) - start
-	int len = Vsnprintf(start, space_1, format, ap)
-	if len < space_1
+		free = circbuf_get_free(b)
+		free_1 = circbuf_get_free_1(b)
+	int len = Vsnprintf(start, free_1, format, ap)
+	if len < free_1
 		circbuf_grow(b, len)
-	 eif len < space
+	 eif len < free
 		char tmp[len+1]
 		int len1 = Vsnprintf(tmp, len+1, format, ap1)
 		assert(len == len1, "vsnprintf returned different sizes on same input!!")
 		circbuf_cat_range(b, tmp, tmp+len+1)  # FIXME just copy the 2nd half of it
 		circbuf_grow(b, -1)
 	 else
+		# FIXME keep the 1st half of it when resizing?
 		circbuf_ensure_space(b, old_size+len+1)
 		start = cbufend(b)
-		space_1 = circbuf_get_space_end(b) - start
-		assert(space_1 >= len+1, "Vsprintf_cb: circbuf_ensure_space did not work properly")
-		len = Vsnprintf(start, space_1, format, ap1)
-		assert(old_size+len == circbuf_get_size(b)-1, "vsnprintf returned different sizes on same input!!")
-		circbuf_set_size(b, old_size+len)
+		free_1 = circbuf_get_free_1(b)
+		assert(free_1 >= len+1, "Vsprintf_cb: circbuf_ensure_space did not work properly")
+		int len1 = Vsnprintf(start, free_1, format, ap1)
+		assert(len == len1, "vsnprintf returned different sizes on same input!!")
+		circbuf_grow(b, len)
 	va_end(ap1)
 	# we don't include the nul in the circbuf size - but it is there!
 	# you'd better call circbuf_add_nul to make sure
@@ -252,3 +253,10 @@ circbuf_from_cstr(circbuf *b, cstr s, size_t len)
 
 def circbuf_from_cstr(b, s)
 	circbuf_from_cstr(b, s, strlen(s))
+
+circbuf_dump(FILE *stream, circbuf *b)
+	Fprintf(stream, "circbuf: %08x %08x %08x %08x:\n", b->data, b->size, b->space, b->start)
+	hexdump(stream, b->data, b->data + b->space)
+
+def circbuf_dump(b)
+	circbuf_dump(stderr, b)

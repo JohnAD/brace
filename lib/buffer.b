@@ -181,7 +181,7 @@ buffer_strip_nul(buffer *b)
 		buffer_grow(b, -1)
 
 buffer_dump(FILE *stream, buffer *b)
-	Fprintf(stderr, "buffer: %04x %04x %04x (%d):\n", b->start, b->end, b->space_end, b->end - b->start)
+	Fprintf(stream, "buffer: %08x %08x %08x (%d):\n", b->start, b->end, b->space_end, b->end - b->start)
 	hexdump(stream, b->start, b->end)
 
 def buffer_dump(b)
