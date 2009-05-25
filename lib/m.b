@@ -8,8 +8,8 @@ Def trig_unit rad
 # Def trig_unit deg
 # TODO: trig01, trig_neg1_to_1, grad
 
-const double pi = M_PI
-const double e = M_E
+const num pi = M_PI
+const num e = M_E
 
 def Rad(a) deg2rad(a)
 def deg2rad(a) a * pi / 180.0
@@ -105,7 +105,7 @@ def RANDL_MAX (unsigned int)RANDL_TOP-1
 
 def Randl() (long long int)random()*RAND_TOP+random()
 
-def Rand() (double)((long double)Randl()/RANDL_TOP)
+def Rand() (num)((long double)Randl()/RANDL_TOP)
 def Rand(max) Rand()*max
 def Rand(min, max) Rand(max-min)+min
 def toss() Rand()>0.5

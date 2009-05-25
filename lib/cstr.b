@@ -102,7 +102,8 @@ cstr cstr_chop_end(cstr c, cstr end)
 ## startmust be a pointer into the string c
 cstr cstr_chop_start(cstr c, cstr start)
 	int len = strlen(start)
-	strncpy(c, start, len)
+	memmove(c, start, len)
+	c[len] = '\0'
 	Realloc(c, len+1)
 	return c
 	# inefficient, who cares

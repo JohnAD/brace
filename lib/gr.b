@@ -325,3 +325,13 @@ def circle_fill(r)
 
 def disc(r)
 	disc(lx, ly, r)
+
+boolean curve_at_start = 1
+def curve()
+	curve_at_start = 1
+curve(num x, num y)
+	if curve_at_start
+		move(x, y)
+		curve_at_start = 0
+	 else
+	 	draw(x, y)
