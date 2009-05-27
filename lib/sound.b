@@ -62,7 +62,7 @@ clip(sample *s0, sample *s1)
 # dealing with real audio data, i.e. partly clip then amplify.  for synth data
 # doesn't matter
 
-sound_init(sound *s, size_t size)
+sound_init(sound *s, ssize_t size)
 	vec_init(s, sample, size)
 	vec_set_size(s, size)
 	sound_clear(s)
@@ -82,7 +82,7 @@ sound_same_size(sound *s1, sound *s2)
 	sound_grow(s1, sound_get_size(s2))
 	sound_grow(s2, sound_get_size(s1))
 
-sound_grow(sound *s, size_t size)
+sound_grow(sound *s, ssize_t size)
 	let(old_size, sound_get_size(s))
 	if old_size < size
 		sound_set_size(s, size)
