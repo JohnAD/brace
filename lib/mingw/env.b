@@ -1,0 +1,2 @@
+Clearenv()
+	environ = NULL

@@ -37,7 +37,7 @@ dump_env()
 
 def for_env_raw(e)
 	let(my(p), environ)
-	for ; *my(p); ++my(p)
+	for ; my(p) && *my(p); ++my(p)
 		let(e, *my(p))
 
 def for_env(k)

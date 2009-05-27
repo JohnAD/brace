@@ -1,16 +1,16 @@
 export circbuf
 export util
 
-# TODO implement without circbuf
+# TODO implement without circbuf??
 
 struct deq
 	circbuf b
-	size_t element_size
-	size_t space
-	size_t size
-	size_t start
+	ssize_t element_size
+	ssize_t space
+	ssize_t size
+	ssize_t start
 
-_deq_init(deq *q, size_t element_size, size_t space)
+_deq_init(deq *q, ssize_t element_size, ssize_t space)
 	q->space = space ? space : 1
 	circbuf_init(&q->b, q->space * element_size)
 	q->element_size = element_size
@@ -23,14 +23,14 @@ def deq_init(v, element_type) deq_init(v, element_type, 1)
 deq_free(deq *q)
 	circbuf_free(&q->b)
 
-deq_space(deq *q, size_t space)
+deq_space(deq *q, ssize_t space)
 	q->space = space ? space : 1
 	circbuf_set_space(&q->b, q->space * q->element_size)
 	if q->b.start == 0
 		q->start = 0
 
-deq_size(deq *q, size_t size)
-	size_t cap = q->space
+deq_size(deq *q, ssize_t size)
+	ssize_t cap = q->space
 	if size > cap
 		do
 			cap *= 2
@@ -48,7 +48,7 @@ deq_double(deq *q)
 deq_squeeze(deq *q)
 	deq_space(q, q->size)
 
-void *deq_element(deq *q, size_t index)
+void *deq_element(deq *q, ssize_t index)
 	#if index < 0
 	#	index += v->size
 	index += q->start
@@ -73,7 +73,7 @@ Def deq_pop(q, var)
 	data = *my(p)
 	deq_pop(q)
 
-void *deq_top(deq *q, size_t index)
+void *deq_top(deq *q, ssize_t index)
 	return deq_element(q, q->size -1 - index)
 def deq_top(q) deq_top(q, 0)
 def deq_bot(q) deq_get_start(q)
@@ -111,7 +111,7 @@ Def deq_shift(q, data)
 
 def deq_get_start(q) deq_element(q, 0)
 def deq_get_end(q) deq_element(q, q->size)
-def deq_set_size(q) deq_size(q)
+def deq_set_size(q, size) deq_size(q, size)
 def deq_get_size(q) q->size
 
 def deq_get_space_end(q) (void *)(q->b.data + q->b.space)
@@ -135,3 +135,54 @@ def q(deq, i) deq_element(deq, i)
 
 def deqlen(q) deq_get_size(q)
 def deqclr(q) deq_clear(q)
+
+deq_grow(deq *q, ssize_t delta_size)
+	deq_set_size(q, deqlen(q) + delta_size)
+
+deq_cat_range(deq *q, void *start, void *end)
+	ssize_t old_space = q->b.space
+	circbuf_cat_range(&q->b, start, end)
+	if q->b.space != old_space
+		deq_recalc_from_cb(q)
+	 else
+	 	q->size = q->b.size / q->element_size
+
+deq_recalc_from_cb(deq *q)
+	q->start = q->b.start / q->element_size
+	q->space = q->b.space / q->element_size
+	q->size = q->b.size / q->element_size
+
+deq_shifts(deq *q, ssize_t n)
+	circbuf_shift(&q->b, q->element_size * n)
+	q->size -= n
+	q->start += n
+	if q->start >= q->space
+		q->start -= q->space
+
+deq_copy_out(deq *q, void *dest, ssize_t i, ssize_t n)
+	ssize_t es = q->element_size
+	circbuf_copy_out(&q->b, dest, i*es, n*es)
+
+deq_cat_deq_range(deq *q, deq *from, ssize_t i, ssize_t n)
+	ssize_t old_space = q->b.space
+	ssize_t es = q->element_size
+	circbuf_cat_cb_range(&q->b, &from->b, i*es, n*es)
+	if q->b.space != old_space
+		deq_recalc_from_cb(q)
+	 else
+	 	q->size += n
+
+deq_copy_in(deq *q, ssize_t i, void *from, ssize_t n)
+	ssize_t es = q->element_size
+	circbuf_copy_in(&q->b, i*es, from, n*es)
+
+vec_to_deq(deq *q, vec *v)
+	q->element_size = v->element_size
+	buffer_to_circbuf(&q->b, &v->b)
+	deq_recalc_from_cb(q)
+
+deq_to_vec(vec *v, deq *q)
+	v->element_size = q->element_size
+	circbuf_to_buffer(&v->b, &q->b)
+	deq_recalc_from_cb(q)
+	vec_recalc_from_buffer(v)

@@ -1,7 +1,7 @@
 export stdlib.h
 use string.h
 export buffer str
-use alloc types error
+use alloc types error m
 
 # this is a circular buffer
 # should I integrate this with the general buffer?
@@ -61,8 +61,8 @@ circbuf_set_space(circbuf *b, ssize_t space)
 	b->space = space
 	b->start = 0
 
-circbuf_ensure_space(circbuf *b, size_t space)
-	size_t ospace = circbuf_get_space(b)
+circbuf_ensure_space(circbuf *b, ssize_t space)
+	ssize_t ospace = circbuf_get_space(b)
 	if space > ospace
 		do
 			ospace *= 2
@@ -121,7 +121,7 @@ circbuf_cat_char(circbuf *b, char c)
 	*cb(b, cbuflen(b)-1) = c
 
 circbuf_cat_cstr(circbuf *b, const char *s)
-	int l = strlen(s)
+	ssize_t l = strlen(s)
 	circbuf_cat_range(b, s, s+l)
 
 circbuf_cat_str(circbuf *b, str s)
@@ -130,7 +130,7 @@ circbuf_cat_str(circbuf *b, str s)
 # circbuf_cat_range does not work with a range that is inside the circbuf
 
 circbuf_cat_range(circbuf *b, const char *start, const char *end)
-	int l = end - start
+	ssize_t l = end - start
 	circbuf_grow(b, l)
 	char *space_end = circbuf_get_space_end(b)
 	char *i = cb(b, circbuf_get_size(b) - l)
@@ -163,12 +163,12 @@ int Vsprintf_cb(circbuf *b, const char *format, va_list ap)
 		start = cbufend(b)
 		free = circbuf_get_free(b)
 		free_1 = circbuf_get_free_1(b)
-	int len = Vsnprintf(start, free_1, format, ap)
+	ssize_t len = Vsnprintf(start, free_1, format, ap)
 	if len < free_1
 		circbuf_grow(b, len)
 	 eif len < free
 		char tmp[len+1]
-		int len1 = Vsnprintf(tmp, len+1, format, ap1)
+		ssize_t len1 = Vsnprintf(tmp, len+1, format, ap1)
 		assert(len == len1, "vsnprintf returned different sizes on same input!!")
 		circbuf_cat_range(b, tmp, tmp+len+1)  # FIXME just copy the 2nd half of it
 		circbuf_grow(b, -1)
@@ -178,7 +178,7 @@ int Vsprintf_cb(circbuf *b, const char *format, va_list ap)
 		start = cbufend(b)
 		free_1 = circbuf_get_free_1(b)
 		assert(free_1 >= len+1, "Vsprintf_cb: circbuf_ensure_space did not work properly")
-		int len1 = Vsnprintf(start, free_1, format, ap1)
+		ssize_t len1 = Vsnprintf(start, free_1, format, ap1)
 		assert(len == len1, "vsnprintf returned different sizes on same input!!")
 		circbuf_grow(b, len)
 	va_end(ap1)
@@ -199,8 +199,8 @@ circbuf_to_buffer(buffer *b, circbuf *cb)
 circbuf_tidy(circbuf *b)
 	if b->start == 0
 		return
-	int l1 = circbuf_get_size_1(b)
-	int l2 = circbuf_get_size_2(b)
+	ssize_t l1 = circbuf_get_size_1(b)
+	ssize_t l2 = circbuf_get_size_2(b)
 	if l1 <= l2
 		char tmp[l1]
 		memcpy(tmp, cbuf0(b), l1)
@@ -245,7 +245,7 @@ ssize_t cbindex_not_0(circbuf *b, char *p)
 		i += circbuf_get_space(b)
 	return i
 
-circbuf_from_cstr(circbuf *b, cstr s, size_t len)
+circbuf_from_cstr(circbuf *b, cstr s, ssize_t len)
 	b->data = s
 	b->size = len
 	b->space = len + 1
@@ -260,3 +260,33 @@ circbuf_dump(FILE *stream, circbuf *b)
 
 def circbuf_dump(b)
 	circbuf_dump(stderr, b)
+
+circbuf_copy_out(circbuf *b, void *dest, ssize_t i, ssize_t n)
+	i += b->start
+	if i >= b->space
+		i -= b->space
+	ssize_t n0 = imin(n, b->space - i)
+	ssize_t n1 = n - n0
+	memcpy(dest, b->data + i, n0)
+	if n1
+		memcpy((char*)dest + n0, b->data, n1)
+
+circbuf_cat_cb_range(circbuf *b, circbuf *from, ssize_t i, ssize_t n)
+	circbuf_grow(b, n)
+	ssize_t to = circbuf_get_size(b)
+	
+	ssize_t l1 = circbuf_get_size_1(from)
+	ssize_t l2 = circbuf_get_size_2(from)
+
+	circbuf_copy_in(b, to, cb(from, i), l1)
+	if l2
+		circbuf_copy_in(b, to, from->data, l2)
+
+circbuf_copy_in(circbuf *b, ssize_t i, void *from, ssize_t n)
+	char *p = cb(b, i)
+	ssize_t l0 = circbuf_get_space_end(b) - p
+	ssize_t l1 = n - l0
+	memcpy(p, from, l0)
+	if l1
+		memcpy(b->data, from+l0, l1)
+

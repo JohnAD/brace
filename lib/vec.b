@@ -9,11 +9,11 @@ export util
 
 struct vec
 	buffer b
-	size_t element_size
-	size_t space
-	size_t size
+	ssize_t element_size
+	ssize_t space
+	ssize_t size
 
-vec_init_el_size(vec *v, size_t element_size, size_t space)
+vec_init_el_size(vec *v, ssize_t element_size, ssize_t space)
 	v->space = space ? space : 1
 	buffer_init(&v->b, v->space * element_size)
 	v->element_size = element_size
@@ -34,12 +34,12 @@ vec_Free(vec *v)
 		Free(*i)
 	vec_free(v)
 
-vec_space(vec *v, size_t space)
+vec_space(vec *v, ssize_t space)
 	v->space = space ? space : 1
 	buffer_set_space(&v->b, v->space * v->element_size)
 
-vec_size(vec *v, size_t size)
-	size_t cap = v->space
+vec_size(vec *v, ssize_t size)
+	ssize_t cap = v->space
 	if size > cap
 		do
 			cap *= 2
@@ -56,12 +56,12 @@ vec_squeeze(vec *v)
 
 # TODO make this a macro?
 
-void *vec_element(vec *v, size_t index)
+void *vec_element(vec *v, ssize_t index)
 	#if index < 0
 	#	index += v->size
 	return v->b.start + index * v->element_size
 
-void *vec_top(vec *v, size_t index)
+void *vec_top(vec *v, ssize_t index)
 	return vec_element(v, v->size - 1 - index)
 #	return v->b.start + (v->size -1 - index) * v->element_size
 def vec_top(v) vec_top(v, 0)
@@ -83,7 +83,7 @@ Def vec_pop(v, data)
 	data = *my(p)
 	vec_pop(v)
 
-vec_grow(vec *v, size_t delta_size)
+vec_grow(vec *v, ssize_t delta_size)
 	vec_set_size(v, veclen(v) + delta_size)
 
 def vec_from_array(v, a)
@@ -126,7 +126,7 @@ Def for_vec(i, v, type)
 def vec_set_space vec_space
 def vec_get_space(v) v->space
 
-vec_ensure_size(vec *v, size_t size)
+vec_ensure_size(vec *v, ssize_t size)
 	if vec_get_size(v) < size
 		vec_set_size(v, size)
 
@@ -161,8 +161,8 @@ def vec0(v) vec_get_start(v)
 def vecend(v) vec_get_end(v)
 def vecclr(v) vec_clear(v)
 
-vec_splice(vec *v, size_t i, size_t cut, void *in, size_t ins)
-	size_t e = vec_get_el_size(v)
+vec_splice(vec *v, ssize_t i, ssize_t cut, void *in, ssize_t ins)
+	ssize_t e = vec_get_el_size(v)
 	buf_splice(&v->b, i*e, cut*e, in, ins*e)
 	v->size += ins - cut
 	v->space = buffer_get_space(&v->b) / e
@@ -177,21 +177,29 @@ def vec_insert(v, i, in, n) vec_splice(v, i, 0, in, n)
 
 def vec_unshift(v, in, n) vec_insert(v, 0, in, n)
 
+# def vec_shift ... ?
+
 def Subvec(v, i, n) Subvec(v, i, n, 0)
-vec *Subvec(vec *v, size_t i, size_t n, size_t extra)
+vec *Subvec(vec *v, ssize_t i, ssize_t n, ssize_t extra)
 	vec *sub = Talloc(vec)
 	subvec(sub, v, i, n)
 	buf_dup_guts(&sub->b, extra * vec_get_el_size(sub))
 	sub->space += extra
 	return sub
 
-vec *subvec(vec *sub, vec *v, size_t i, size_t n)
+# FIXME to be OO, subvec should take v as first parameter
+
+vec *subvec(vec *sub, vec *v, ssize_t i, ssize_t n)
 	# warning: subvec takes an uninitialised vec and sets it to access
 	# an area that is actually inside the old vec.
 	# The subvec should not be grown or shrunk! unless you don't mind
 	# overwriting the old vec.  Also it should be Free'd not vec_free'd!
-	size_t e = vec_get_el_size(v)
+	ssize_t e = vec_get_el_size(v)
 	subbuf(&sub->b, &v->b, i*e, n*e)
 	sub->element_size = e
 	sub->space = sub->size = n
 	return sub
+
+vec_recalc_from_buffer(vec *v)
+	v->space = buffer_get_space(&v->b) / v->element_size
+	v->size = buffer_get_size(&v->b) / v->element_size
