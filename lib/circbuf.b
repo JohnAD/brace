@@ -288,5 +288,5 @@ circbuf_copy_in(circbuf *b, ssize_t i, void *from, ssize_t n)
 	ssize_t l1 = n - l0
 	memcpy(p, from, l0)
 	if l1
-		memcpy(b->data, from+l0, l1)
+		memcpy(b->data, (char *)from+l0, l1)
 
