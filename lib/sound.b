@@ -1,4 +1,4 @@
-use util m sound
+use util m sound alloc
 export vec
 
 typedef float sample
@@ -58,6 +58,10 @@ clip(sample *s0, sample *s1)
 		eif *s > 1
 			*s = 1
 
+add_noise(sample *s0, sample *s1, num vol)
+	for(i, s0, s1)
+		*i += Rand(vol)-vol/2
+
 # TODO a proper "normalize" function - would need to consider "strays" when
 # dealing with real audio data, i.e. partly clip then amplify.  for synth data
 # doesn't matter
@@ -65,7 +69,7 @@ clip(sample *s0, sample *s1)
 sound_init(sound *s, ssize_t size)
 	vec_init(s, sample, size)
 	vec_set_size(s, size)
-	sound_clear(s)
+#	sound_clear(s)
 
 sound_clear(sound *s)
 	# FIXME this don't work because brace_macro doesn't eval macros inside args first
@@ -119,17 +123,17 @@ def sound_set_size vec_set_size
 def sound_get_size vec_get_size
 Def sound_range(s) sound_get_start(s), sound_get_end(s)
 
-struct sound_info
+
+struct audio
 	int channels
 	int sample_rate
 	size_t n_samples
 	int bits_per_sample
-
+	sound *data   # one for each channel
 
 # TODO load_wav, read until EOF for wav with unknown length
 
-sound_info load_wav(sound *s)
-	sound_info info
+load_wav(audio *a)
 	size_t header_size_1 = 36
 	size_t header_size_2 = 8
 	char headers[header_size_1 + header_size_2]
@@ -158,67 +162,67 @@ sound_info load_wav(sound *s)
 	if (size_t)le4(headers + header_size_1 + 4) != size
 		failed0("load_wav", "file size mismatch")
 
-	info.channels = le2(headers + 22)
-	info.sample_rate = le4(headers + 24)
+	a->channels = le2(headers + 22)
+	a->sample_rate = le4(headers + 24)
 	int bytes_per_second = le4(headers + 28)
 	use(bytes_per_second)
 	int block_align = le2(headers + 32)
-	info.bits_per_sample = le2(headers + 34)
-	if info.bits_per_sample * channels != 8 * block_align
+	a->bits_per_sample = le2(headers + 34)
+	if a->bits_per_sample * a->channels != 8 * block_align
 		failed0("load_wav", "bits_per_sample * channels != 8 * block_align")
 	if size % block_align
 		failed0("load_wav", "size is not a whole number of blocks")
-	if info.bits_per_sample % 8
+	if a->bits_per_sample % 8
 		failed0("load_wav", "bits_per_sample is not a multiple of 8")
-	int bytes_per_sample = info.bits_per_sample / 8
-	info.n_samples = size / bytes_per_sample
+	int bytes_per_sample = a->bits_per_sample / 8
+	a->n_samples = size / bytes_per_sample / a->channels
 
-#	warn("bits_per_sample: %d", info.bits_per_sample)
-#	warn("sample_rate: %d", info.sample_rate)
-#	warn("block_align: %d", block_align)
-#	warn("channels: %d", info.channels)
-#	warn("size: %d", size)
-#	warn("n_samples: %d", info.n_samples)
+	warn("bits_per_sample: %d", a->bits_per_sample)
+	warn("sample_rate: %d", a->sample_rate)
+	warn("block_align: %d", block_align)
+	warn("channels: %d", a->channels)
+	warn("size: %d", size)
+	warn("n_samples: %d", a->n_samples)
 
-	# FIXME should read stereo into two buffers, not one
+	a->data = Nalloc(sound, a->channels)
+	for(i, 0, a->channels)
+		sound_init(&a->data[i], a->n_samples)
 
-	int old_size = vec_get_size(s)
-	vec_grow(s, info.n_samples)
-	sample *o = vec_element(s, old_size)
-
-	float divide = 1<<(info.bits_per_sample-1)
-	float origin = bytes_per_sample == 1 ? divide : 0
+	float divide = 1<<(a->bits_per_sample-1)
+	float origin = bytes_per_sample == 1 ? (divide/2) : 0
 
 	which bytes_per_sample
-	1	read_samples(o, info.n_samples, 1, byte, divide, origin)
-	2	read_samples(o, info.n_samples, 2, sle2, divide, origin)
-	3	read_samples(o, info.n_samples, 3, sle3, divide, origin)
-	4	read_samples(o, info.n_samples, 4, sle4, divide, origin)
+	1	read_samples(a->data, a->channels, a->n_samples, 1, byte, divide, origin)
+	2	read_samples(a->data, a->channels, a->n_samples, 2, sle2, divide, origin)
+	3	read_samples(a->data, a->channels, a->n_samples, 3, sle3, divide, origin)
+	4	read_samples(a->data, a->channels, a->n_samples, 4, sle4, divide, origin)
 	else	failed0("load_wav", "bytes_per_sample is not 1, 2, 3 or 4")
 
-	return info
+def read_samples(o, channels, n, bytes_per_sample, sample_reader, divide, origin)
+	read_samples(o, channels, n, bytes_per_sample, sample_reader, divide, origin, my(chunk_size), my(chunk_samples), my(remain), my(to_read), my(to_read_bytes), my(in), my(end))
 
-def read_samples(o, n, bytes_per_sample, sample_reader, divide, origin)
-	read_samples(o, n, bytes_per_sample, sample_reader, divide, origin, my(chunk_size), my(chunk_samples), my(remain), my(to_read), my(to_read_bytes), my(in), my(end))
-
-def read_samples(o, n, bytes_per_sample, sample_reader, divide, origin, chunk_size, chunk_samples, remain, to_read, to_read_bytes, in, end)
+def read_samples(o, channels, n, bytes_per_sample, sample_reader, divide, origin, chunk_size, chunk_samples, remain, to_read, to_read_bytes, in, end)
 	.
-		int chunk_size = block_size - block_size % bytes_per_sample
-		int chunk_samples = chunk_size / bytes_per_sample
+		sample *O[channels]
+		for(i, 0, channels)
+			O[i] = sound_get_start(&o[i])
+		int chunk_size = block_size - block_size % (bytes_per_sample * channels)
+		int chunk_samples = chunk_size / (bytes_per_sample * channels)
 		int remain = n
 		char buf[chunk_size]
 		while remain
 #			warn("remain: %d", remain)
 			int to_read = imin(chunk_samples, remain)
-			size_t to_read_bytes = to_read * bytes_per_sample
+			size_t to_read_bytes = to_read * channels * bytes_per_sample
 			if vs_read(buf, to_read_bytes) != to_read_bytes
 				failed0("read_samples", "file too short")
 			remain -= to_read
 			char *in = buf
 			char *end = buf + to_read_bytes
 			while in < end
-				*o++ = sample_reader(in) / divide - origin
-				in += bytes_per_sample
+				for(i, 0, channels)
+					*(O[i]++) = sample_reader(in) / divide - origin
+					in += bytes_per_sample
 #		if vs_read(buf, chunk_size) != 0
 #			failed0("read_samples", "extra data at EOF")
 

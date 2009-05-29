@@ -19,6 +19,12 @@ sock_free(sock *s)
 	s->fd = -1
 	Free(s->sa)
 
+in_addr sock_in_addr(sock *s)
+	return ((sockaddr_in*)s->sa)->sin_addr
+
+u_int16_t sock_in_port(sock *s)
+	return ntohs(((sockaddr_in*)s->sa)->sin_port)
+
 struct shuttle_buffer
 	shuttle sh
 	buffer d

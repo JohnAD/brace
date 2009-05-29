@@ -6,6 +6,7 @@ use net
 typedef struct sockaddr sockaddr
 typedef struct sockaddr_in sockaddr_in
 typedef struct sockaddr_un sockaddr_un
+typedef struct in_addr in_addr
 
 int listen_backlog = SOMAXCONN
 

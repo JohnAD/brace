@@ -29,6 +29,7 @@ int first_line_of_macro = 0
 
 int blocktype[MAXTABS]
 int is_kwdparens
+int is_static
 
 # begins_with is from b/text.b
 # TODO: use that library (with BRACE_STANDALONE)
@@ -142,8 +143,8 @@ addvoids()
 	if c1
 		writes("extern \"C\" ")
 		line = c1
-	char *c = line
 	int addvoid = 1
+	char *c = line
 	for ; *c != 0; ++c
 		if *c == ' '
 			addvoid = 0
@@ -198,6 +199,7 @@ int classy(char *c)
 
 writestmt()
 	is_kwdparens = 0
+	is_static = 0
 
 	if caselabel && lasttabs >= tabs && !(lastblank && lastcase) \
 			&& blocktype[tabs-1] == WHICH
@@ -299,9 +301,13 @@ writestmt()
 		first_line_of_macro = 1
 		writes("#define ")
 		line += 4 ; len -= 4
-	eif cstr_begins_with(line, "local ")
+	eif cstr_begins_with(line, "local ") || cstr_begins_with(line, "static ")
+		char *l = strchr(line, ' ')+1
 		writes("static ")
-		line += 6 ; len -= 6
+		is_static = 1
+		len -= (l-line) ; line = l
+		if tabs == 0
+			addvoids()
 	eif cstr_begins_with(line, "^")
 		writes("#")
 		skipsemi = 1

@@ -166,14 +166,14 @@ int Vsprintf(buffer *b, const char *format, va_list ap)
 	# you'd better call buffer_add_nul to make sure
 	return len
 
-buffer_add_nul(buffer *b)
-	if buffer_get_size(b) == 0 || buffer_last_char(b) != '\0'
-		buffer_cat_char(b, '\0')
+char *buffer_add_nul(buffer *b)
+	buffer_cat_char(b, '\0')
+	return buf0(b)
 
 char *buffer_nul_terminate(buffer *b)
-	if buffer_get_size(b) == 0 || buffer_last_char(b) != '\0'
-		buffer_cat_char(b, '\0')
-		buffer_grow(b, -1)
+#	if buffer_get_size(b) == 0 || buffer_last_char(b) != '\0'
+	buffer_cat_char(b, '\0')
+	buffer_grow(b, -1)
 	return buf0(b)
 
 buffer_strip_nul(buffer *b)

@@ -46,6 +46,7 @@ char *caselabel;
 int casetabs;
 int blocktype[MAXTABS];
 int is_kwdparens;
+int is_static;
 
 char *kwdparens[] = { "if", "else if", "while", "do", "for", "switch", "else", 0 };
 char *lastlabel = 0;
@@ -230,8 +231,8 @@ void addvoids(void)
 		writes("extern \"C\" ");
 		line = c1;
 	}
-	char *c = line;
 	int addvoid = 1;
+	char *c = line;
 	for(; *c != 0; ++c)
 	{
 		if(*c == ' ')
@@ -322,6 +323,7 @@ int classy(char *c)
 void writestmt(void)
 {
 	is_kwdparens = 0;
+	is_static = 0;
 	if(caselabel && lasttabs >= tabs && !(lastblank && lastcase) && blocktype[tabs-1] == WHICH)
 	{
 		indent(tabs);
@@ -471,11 +473,17 @@ void writestmt(void)
 		line += 4;
 		len -= 4;
 	}
-	else if(cstr_begins_with(line, "local "))
+	else if(cstr_begins_with(line, "local ") || cstr_begins_with(line, "static "))
 	{
+		char *l = strchr(line, ' ')+1;
 		writes("static ");
-		line += 6;
-		len -= 6;
+		is_static = 1;
+		len -= (l-line);
+		line = l;
+		if(tabs == 0)
+		{
+			addvoids();
+		}
 	}
 	else if(cstr_begins_with(line, "^"))
 	{

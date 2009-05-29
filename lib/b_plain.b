@@ -14,7 +14,6 @@ export hunk
 
 export net process
 export cgi
-export place
 export qmath
 export mime
 

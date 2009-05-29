@@ -86,6 +86,11 @@ Def vec_pop(v, data)
 vec_grow(vec *v, ssize_t delta_size)
 	vec_set_size(v, veclen(v) + delta_size)
 
+vec_grow_squeeze(vec *v, ssize_t delta_size)
+	ssize_t size = veclen(v) + delta_size
+	vec_set_space(v, size)
+	vec_set_size(v, size)
+
 def vec_from_array(v, a)
 	new(v, vec, *a, array_size(a))
 	vec_set_size(v, array_size(a))

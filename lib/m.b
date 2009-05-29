@@ -79,6 +79,11 @@ int imin(int x, int y)
 		return x
 	return y
 
+long lmin(long x, long y)
+	if x < y
+		return x
+	return y
+
 int imax(int x, int y)
 	if x > y
 		return x
