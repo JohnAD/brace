@@ -310,7 +310,7 @@ mput(hashtable *ht, void *key, void *value)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
 	if kv->value == NULL
 		NEW(kv->value, vec, void*, 1)
-	*(void*)vec_push(kv->value) = value
+	*(void**)vec_push(kv->value) = value
 
 def mdel(ht, key, value, Free_or_void)
 	mdel(ht, key, value, Free_or_void, my(kv))
