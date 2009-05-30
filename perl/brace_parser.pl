@@ -61,6 +61,7 @@ sub read_lines_more {
 			die "can't open $_[0]";
 	}
 	while (defined ($_ = <$fh>)) {
+		s/\r//g;
 		push @lines, $_;
 	}
 }
@@ -95,6 +96,7 @@ sub parse_more {
 	my $copyblock = 0;
 	my $block_ref;
 	while (defined ($_ = <$fh>)) {
+		s/\r//g;
 		push @lines, $_;
 		if (/^\s*$/) { next } # skip blank lines
 		if (/^\s*#/) { next } # skip comments

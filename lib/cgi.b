@@ -1,3 +1,6 @@
+use io process stdc gr time cstr util alloc env
+export types http
+
 cgi_html()
 	cgi_content_type("text/html")
 
@@ -16,11 +19,11 @@ cgi_text()
 hashtable _cgi_query_hash, *cgi_query_hash
 cgi_init()
 	cgi_query_hash = &_cgi_query_hash
-	NEW(cgi_query_hash, hashtable, cstr_has, cstr_eq, 1009)
+	NEW(cgi_query_hash, hashtable, cstr_hash, cstr_eq, 1009)
 	cgi_query_load(Strdup(env("QUERY_STRING")))
 	if cstr_eq(env("REQUEST_METHOD"), "POST")
 		new(b, buffer, block_size)
-		buffer_cat_char(env("REQUEST_BODY_1"))  # to work with tachyon
+		buffer_cat_cstr(b, env("REQUEST_BODY_1"))  # to work with tachyon
 		slurp(0, b)
 		cgi_query_load(buffer_to_cstr(b))
 
@@ -76,9 +79,6 @@ void *cgi_error_to_browser(void *obj, void *common_arg, void *specific_arg)
 	vec_pop(error_handlers)
 	Throw()
 	return thunk_yes
-
-use io process stdc gr time cstr util alloc
-export types http
 
 # old-style code that put cgi query vars into the environment
 

@@ -39,7 +39,7 @@ else
 LDFLAGS += -s
 endif
 
-ifdef OPTIMIZE
+ifneq (0,$(OPTIMIZE))
 CFLAGS += -O2
 endif
 

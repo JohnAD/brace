@@ -11,6 +11,11 @@ def debug warn
 int exit__error = 125
 int exit__fault = 124
 
+# warning: because sigsetjmp is a lot slower than setjmp I have changed to using setjmp
+# This means that the signal mask might be wrong after an exception, have to be careful about that.
+# I could make an option to use sigsetjmp in some cases.
+# perf:  sigsetjmp = 0.7ms  setjmp = 0.025ms  28X faster
+
 # Generally, a function that outputs error messages etc should not generate new
 # errors (for fear of an infinite loop). That's also the case for warnings,
 # because many error printing functions call a warning function to print the
@@ -133,7 +138,8 @@ vec *errors
 # TODO add a way to handle errors in coros here
 
 struct error_handler
-	sigjmp_buf *jump
+#	sigjmp_buf *jump
+	jmp_buf *jump
 	thunk handler
 	int err
 
@@ -157,8 +163,10 @@ def try(h, thunk, need_jump)
 	state error_handler *h = vec_push(error_handlers)
 	h->handler = *thunk
 	if need_jump
-		h->jump = Talloc(sigjmp_buf)
-		h->err = sigsetjmp(*h->jump, 1)
+#		h->jump = Talloc(sigjmp_buf)
+		h->jump = Talloc(jmp_buf)
+#		h->err = sigsetjmp(*h->jump, 1)
+		h->err = setjmp(*h->jump)
 	 else
 		h->jump = NULL
 		h->err = 0
@@ -204,7 +212,8 @@ throw_(err *e)
 			h->jump = NULL
 	if h->jump
 		vec_pop(error_handlers)
-		siglongjmp(*h->jump, 1)
+#		siglongjmp(*h->jump, 1)
+		longjmp(*h->jump, 1)
 
 def die_errors() die_errors(1)
 

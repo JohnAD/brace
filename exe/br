@@ -223,7 +223,7 @@ if [ -n "$DEBUG" ]; then
 #	CFLAGS="$CFLAGS -ggdb"
 	CFLAGS="$CFLAGS -g"
 fi
-if [ -n "$OPTIMIZE" ]; then
+if [ "$OPTIMIZE" != "0" ]; then
 	CFLAGS="$CFLAGS -O2"
 fi
 if [ -n "$PROFILE" ]; then
