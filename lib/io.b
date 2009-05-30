@@ -117,7 +117,7 @@ buffer *slurp_1(int filedes)
 
 	return b
 
-def slurp(fd, b) slurp_2(fd)
+def slurp(fd, b) slurp_2(fd, b)
 def slurp(fd) slurp_1(fd)
 def slurp() slurp(STDIN_FILENO)
 

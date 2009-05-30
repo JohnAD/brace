@@ -27,6 +27,7 @@ def kv(ht, key) hashtable_lookup(ht, key)
 def del(ht, key) hashtable_delete(ht, key)
 def KV(ht, key) hashtable_lookup_or_die(ht, key)
 def kv(ht, key, init) hashtable_lookup_or_add_key(ht, key, init)
+
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.
 
@@ -295,3 +296,55 @@ boolean int_eq(int *a, int *b)
 hashtable_free(hashtable *ht)
 	use(ht)
 	# TODO
+
+
+# multi-hash functions
+
+# mget returns NULL if empty or a vec of pointers to whatever if not
+
+vec *mget(hashtable *ht, void *key)
+	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
+	return kv->value
+
+mput(hashtable *ht, void *key, void *value)
+	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
+	if kv->value == NULL
+		NEW(kv->value, vec, void*, 1)
+	*(void*)vec_push(kv->value) = value
+
+def mdel(ht, key, value, Free_or_void)
+	mdel(ht, key, value, Free_or_void, my(kv))
+def mdel(ht, key, value, Free_or_void, kv)
+	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
+	if kv->value == NULL
+		warn("mdel: key not found")
+	 else
+	 	int already = 0
+		grep(i, kv->value, void*, *i == value && !already++, Free_or_void)  # not ideal but ok
+
+def mdelmany(ht, key, value, Free_or_void)
+	mdelmany(ht, key, value, Free_or_void, my(kv))
+def mdelmany(ht, key, value, Free_or_void, kv)
+	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
+	if kv->value == NULL
+		warn("mdel: key not found")
+	 else
+		grep(i, kv->value, void*, *i == value, Free_or_void)
+
+def mdelall(ht, key, Free_or_void)
+	mdelall(ht, key, Free_or_void, my(kv))
+def mdelall(ht, key, Free_or_void)
+	list *l = hashtable_lookup_ref(ht, key)
+	if l->next != NULL
+		key_value *kv = hashtable_ref_lookup(l)
+	 	for_vec(i, kv->value, void *)
+			Free_or_void(*i)
+		vec_free(kv->value)
+		hashtable_ref_delete(l)
+
+# TODO for_mhashtable ...
+
+
+# TODO ordered hash option - using a double-linked list to keep the keys in insertion order
+# TODO sorted hash option - using a tree or something to keep the keys in sort order?
+# or actually use a tree for the data structure
