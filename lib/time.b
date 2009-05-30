@@ -298,7 +298,7 @@ def bm(s, n)
 		if bm_start == 0
 			bm_start()
 		num bm_end = rtime()
-		warn("%s: %f / %d", s, (bm_end-bm_start)/n, (size_t)n)
+		warn("%s: %f = %f * %d", s, bm_end-bm_start, (bm_end-bm_start)/n, (size_t)n)
 
 rtime_to_timeval(num rtime, struct timeval *tv)
 	tv->tv_sec = (long)rtime

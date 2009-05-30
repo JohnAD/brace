@@ -41,13 +41,13 @@ cstr_chomp(cstr s)
 
 # TODO implement ends_with and begins_with efficiently
 
-int cstr_eq(cstr s1, cstr s2)
+boolean cstr_eq(void *s1, void *s2)
 	return strcmp(s1, s2) == 0
 
-int cstr_is_empty(cstr s1)
+boolean cstr_is_empty(cstr s1)
 	return *s1 == '\0'
 
-int cstr_ends_with(cstr s, cstr substr)
+boolean cstr_ends_with(cstr s, cstr substr)
 	size_t s_len = strlen(s)
 	size_t substr_len = strlen(substr)
 	if substr_len > s_len

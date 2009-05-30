@@ -2,8 +2,8 @@ Main()
 	if args < 1
 		usage("program.b [ arg ... ]")
 
-	cstr br = "br"
-	cstr langopt = "-b"
+	volatile cstr br = "br"       # setjmp -> volatile
+	volatile cstr langopt = "-b"
 	if strncmp(program, "bb", 2) == 0
 		br = "bbr"
 		langopt = "-bb"
@@ -37,7 +37,7 @@ Main()
 
 	dirbasename(strdup(b), dir, base)
 
-	cstr x = path_tidy(format("%s%c.%s%s", dir, path__sep, base, EXE))
+	volatile cstr x = path_tidy(format("%s%c.%s%s", dir, path__sep, base, EXE))
 	cstr lockfile = path_tidy(format("%s%c.%s.lock", dir, path__sep, base))
 	cstr log = path_tidy(format("%s%c.%s.log", dir, path__sep, base))
 
