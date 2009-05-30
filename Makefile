@@ -19,10 +19,10 @@ build:
 	cd lib ; $(MAKE)
 	cd exe ; $(MAKE)
 clean:
-	rm -rf .build
 	cd exe ; $(MAKE) clean
 	cd lib ; $(MAKE) clean
 	cd eg ; $(MAKE) clean
+	rm -rf .build
 install: .build
 	cd .build/exe ; $(MAKE) install
 	cd .build/lib ; $(MAKE) install

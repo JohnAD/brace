@@ -39,7 +39,7 @@ bb1$(EXE): b1$(EXE)
 	touch .mk_baz_stamp
 
 clean:
-	< exe_types perl -ne 'chomp; s/.*\t//; unlink $$_';
+	< exe_types perl -ne 'chomp; s/\r//g; s/.*\t//; unlink $$_';
 	rm -f .mk_foo_stamp .mk_bar_stamp .mk_baz_stamp brace brace.exe bx bx.exe bbx bbx.exe brace.o brace.bh bx.bh .brace.1 .brace.2 .brace.test.c .bx.1 .bx.2 .bx.bak .bx.b1 .bx.c .bx.log .bx.b.xbak b1 b1.exe bb1 bb1.exe .b1.bak .b1.c .b1.b.xbak .b1.b1 .b1.bak2
 
 install: build
