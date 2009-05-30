@@ -166,7 +166,7 @@ def try(h, thunk, need_jump)
 #		h->jump = Talloc(sigjmp_buf)
 		h->jump = Talloc(jmp_buf)
 #		h->err = sigsetjmp(*h->jump, 1)
-		h->err = setjmp(*h->jump, 1)
+		h->err = setjmp(*h->jump)
 	 else
 		h->jump = NULL
 		h->err = 0
