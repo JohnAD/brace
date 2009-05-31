@@ -2,7 +2,7 @@
 use b
 def trig_unit deg
 Main()
-	space(midnightblue)
+	space(800, 600)
 	gr_fast()
 	zoom(40)
 

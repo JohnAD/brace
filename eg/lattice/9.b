@@ -3,7 +3,7 @@ use b
 def trig_unit deg
 Main()
 #	space(midnightblue)
-	space(1280, 800, midnightblue)
+	space(800, 600)
 	gr_fast()
 #	gr_delay(0.5)
 

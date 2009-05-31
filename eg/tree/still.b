@@ -12,7 +12,5 @@ Main()
 
 	tree(forks, 0, -200, 100, 90, 36, -43, .77, .80)
 
-	XSync(display, 1)
-
 use headers
 use tree
