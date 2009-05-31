@@ -220,11 +220,11 @@ LDLIBS="$LDLIBS -lm"
 LDLIBS_PLAIN="$LDLIBS"
 LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
 #CFLAGS="-Wall -Wextra -Werror -I. -I$BRACE_LIB $CFLAGS"
-CFLAGS="-Wall -Wextra -I. -I$BRACE_LIB $CFLAGS"
+CFLAGS="-Wall -Wextra -I. $CFLAGS"
 CINCLUDE="-I\"$BRACE_LIB\""
 if [ -n "$DEBUG" ]; then
-#	CFLAGS="$CFLAGS -ggdb"
-	CFLAGS="$CFLAGS -g"
+	CFLAGS="$CFLAGS -ggdb"
+#	CFLAGS="$CFLAGS -g"
 fi
 if [ "$OPTIMIZE" != "0" ]; then
 	CFLAGS="$CFLAGS -O2"
