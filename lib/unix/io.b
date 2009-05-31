@@ -1,6 +1,6 @@
 export sys/select.h poll.h sys/ioctl.h sys/socket.h
 
-export error types
+export error types process
 use util
 
 # this can return -1 on EINTR
