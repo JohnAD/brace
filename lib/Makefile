@@ -43,7 +43,7 @@ install:
 #	ln -sf libb.so.$(MAJOR) '$(libdir)'/libb.so
 #	ln -sf $(LIBB_SONAME) '$(libdir)'/$(LIBB_SONAME)
 #	ln -sf libbb.so.$(MAJOR) '$(libdir)'/libbb.so
-	@echo you might need to run ldconfig
+	@if [ -z "$$WINDIR" ]; then echo you might need to run ldconfig; fi
 
 uninstall:
 	find . -depth -path '*/.*' -prune -or -type d -print >.tmp.1 ; \
