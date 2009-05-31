@@ -19,7 +19,7 @@ brace$(EXE): brace.o
 	@echo "brace works ok"
 
 bx$(EXE): bx.b $(BRACE_SO)/$(LIBB_SONAME)
-	PATH="$(PATH)" PERL5LIB='$(PERL5LIB)' BRACE_SO='$(BRACE_SO)' BRACE_LIB='$(BRACE_LIB)' BRACE_USE='$(BRACE_USE)' CC='$(CC)' br bx.b bx
+	PATH="$(PATH)" PERL5LIB='$(PERL5LIB)' BRACE_SO='$(BRACE_SO)' BRACE_LIB='$(BRACE_LIB)' BRACE_USE='$(BRACE_USE)' CC='$(CC)' br bx.b bx$(EXE)
 bbx$(EXE): bx$(EXE)
 	ln -sf bx$(EXE) bbx$(EXE) || cp bx$(EXE) bbx$(EXE)
 
@@ -46,7 +46,7 @@ install: build
 	install -d '$(bindir)' "$(langdir)"
 	install `../util/lsx .` '$(bindir)'
 	ln -sf br '$(bindir)/bbr' || cp '$(bindir)/br' '$(bindir)/bbr'
-	ln -sf bx '$(bindir)/bbx' || cp '$(bindir)/bx$(EXE)' '$(bindir)/bbx$(EXE)'
+	ln -sf bx$(EXE) '$(bindir)/bbx$(EXE)' || cp '$(bindir)/bx$(EXE)' '$(bindir)/bbx$(EXE)'
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE)
 	ln -sf b1 '$(bindir)/bb1' || cp '$(bindir)/b1$(EXE)' '$(bindir)/bb1$(EXE)'
