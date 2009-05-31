@@ -26,12 +26,12 @@ install:
 #	install -m 644 *.b *.bb *.bh *.bbh $(includedir)
 	install -m 644 $(LIBB_SONAME) '$(libdir)'
 	install -m 644 $(LIBB_PLAIN_SONAME) '$(libdir)'
-	install -m 644 libb.a '$(libdir)'
-	install -m 644 libb_plain.a '$(libdir)'
 	install -m 644 $(LIBB_DEBUG_SONAME) '$(libdir)'
 	install -m 644 $(LIBB_PLAIN_DEBUG_SONAME) '$(libdir)'
-	install -m 644 libb_plain_debug.a '$(libdir)'
-	install -m 644 libb_debug.a '$(libdir)'
+#	install -m 644 libb.a '$(libdir)'
+#	install -m 644 libb_plain.a '$(libdir)'
+#	install -m 644 libb_plain_debug.a '$(libdir)'
+#	install -m 644 libb_debug.a '$(libdir)'
 	if [ -n '$(libdir2)' ]; then install -m 644 $(LIBB_SONAME) '$(libdir2)'; fi
 	if [ -n '$(libdir2)' ]; then install -m 644 $(LIBB_PLAIN_SONAME) '$(libdir2)'; fi
 	if [ -n '$(libdir2)' ]; then install -m 644 $(LIBB_DEBUG_SONAME) '$(libdir2)'; fi
@@ -59,10 +59,10 @@ uninstall:
 	rm .tmp.1 .tmp.2 .tmp.3 .tmp.4
 	rm -v -f '$(libdir)/$(LIBB_SONAME)'
 	rm -v -f '$(libdir)/$(LIBB_PLAIN_SONAME)'
-	rm -v -f '$(libdir)/libb.a'
-	rm -v -f '$(libdir)/libb_plain.a'
 	rm -v -f '$(libdir)/$(LIBB_DEBUG_SONAME)'
 	rm -v -f '$(libdir)/$(LIBB_PLAIN_DEBUG_SONAME)'
+	rm -v -f '$(libdir)/libb.a'
+	rm -v -f '$(libdir)/libb_plain.a'
 	rm -v -f '$(libdir)/libb_debug.a'
 	rm -v -f '$(libdir)/libb_plain_debug.a'
 	if [ -n '$(libdir2)' ]; then rm -v -f '$(libdir2)/$(LIBB_SONAME)'; fi
