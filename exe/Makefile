@@ -24,7 +24,7 @@ bbx$(EXE): bx$(EXE)
 	ln -sf bx$(EXE) bbx$(EXE) || cp bx$(EXE) bbx$(EXE)
 
 b1$(EXE): b1.b $(BRACE_SO)/$(LIBB_SONAME)
-	PATH="$(PATH)" PERL5LIB='$(PERL5LIB)' BRACE_SO='$(BRACE_SO)' BRACE_LIB='$(BRACE_LIB)' BRACE_USE='$(BRACE_USE)' CC='$(CC)' br b1.b b1
+	PATH="$(PATH)" PERL5LIB='$(PERL5LIB)' BRACE_SO='$(BRACE_SO)' BRACE_LIB='$(BRACE_LIB)' BRACE_USE='$(BRACE_USE)' CC='$(CC)' br b1.b b1$(EXE)
 bb1$(EXE): b1$(EXE)
 	ln -sf b1$(EXE) bb1$(EXE) || cp b1$(EXE) bb1$(EXE)
 
@@ -49,11 +49,11 @@ install: build
 	ln -sf bx$(EXE) '$(bindir)/bbx$(EXE)' || cp '$(bindir)/bx$(EXE)' '$(bindir)/bbx$(EXE)'
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE)
-	ln -sf b1 '$(bindir)/bb1' || cp '$(bindir)/b1$(EXE)' '$(bindir)/bb1$(EXE)'
+	ln -sf b1$(EXE) '$(bindir)/bb1$(EXE)' || cp '$(bindir)/b1$(EXE)' '$(bindir)/bb1$(EXE)'
 
 uninstall:
 	for F in `../util/lsx`; do rm -f '$(bindir)'/"$$F" ; done
-	rm -f '$(bindir)/bbr' '$(bindir)/bbx$(EXE)' '$(langdir)/b$(EXE)' '$(langdir)/bb$(EXE)' '$(bindir)/bb1$(EXE)'
+	rm -f '$(bindir)/bbr' '$(bindir)/bbx$(EXE)' '$(langdir)/b$(EXE)' '$(langdir)/bb$(EXE)' '$(bindir)/b1$(EXE)' '$(bindir)/bb1$(EXE)'
 	rmdir '$(bindir)' '$(langdir)' || true
 
 .PHONY: build boot clean install
