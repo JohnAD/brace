@@ -93,7 +93,7 @@ else
 fi
 if [ -z "$BRACE_USE" ]; then
 	if [ -n "$MINGW" ]; then
-		BRACE_USE="mingw"
+		BRACE_USE="mingw nongnu"
 		BRACE_USE="$BRACE_USE io-select"
 		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
 		LDLIBS="$LDLIBS -lws2_32"
@@ -127,8 +127,11 @@ if [ -z "$BRACE_USE" ]; then
 			else
 				BRACE_USE="$BRACE_USE io-select"
 			fi
-		else
+		elif [ "$UNAME" = "hurd" ]; then
 			BRACE_USE="$BRACE_USE io-select"
+		fi
+		if [ "$UNAME" != "linux" -a "$UNAME" != "hurd" -a "$UNAME" != "gnu" ]; then
+			BRACE_USE="$BRACE_USE nongnu"
 		fi
 #		elif echo $UNAME | grep -i linux >/dev/null; then
 #			BRACE_USE="$BRACE_USE linux"

@@ -199,10 +199,6 @@ def nodelay(fd) nodelay(fd, 1)
 nodelay(int fd, int nodelay)
 	Setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay))
 
-def cork(fd) cork(fd, 1)
-cork(int fd, int cork)
-	Setsockopt(fd, IPPROTO_TCP, TCP_CORK, &cork, sizeof(cork))
-
 def reuseaddr(fd) reuseaddr(fd, 1)
 reuseaddr(int fd, int reuseaddr)
 	Setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr))

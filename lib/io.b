@@ -1,7 +1,6 @@
 export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
 export str error buffer types net vec vio
-use sys/socket.h
 use m alloc util path env process
 
 use io
@@ -810,7 +809,6 @@ Mkdir(const char *pathname, mode_t mode)
 	if rv
 		failed("mkdir", pathname)
 
-def mkdir(pathname) mkdir(pathname, 0777)
 def Mkdir(pathname) Mkdir(pathname, 0777)
 
 Mkdir_if(const char *pathname, mode_t mode)
@@ -831,14 +829,6 @@ Chmod(const char *path, mode_t mode)
 	if chmod(path, mode) != 0
 		failed("chmod")
 
-Chown(const char *path, uid_t uid, gid_t gid)
-	if chown(path, uid, gid) != 0
-		failed("chown")
-
-Lchown(const char *path, uid_t uid, gid_t gid)
-	if lchown(path, uid, gid) != 0
-		failed("lchown")
-
 Symlink(const char *oldpath, const char *newpath)
 	if symlink(oldpath, newpath) == -1
 		failed("symlink", oldpath, newpath)
@@ -856,6 +846,7 @@ int Dup(int oldfd)
 	if fd == -1
 		failed("dup")
 	return fd
+
 int Dup2(int oldfd, int newfd)
 	int fd = dup2(oldfd, newfd)
 	# FIXME should call close(newfd) explicitly and check for errors? nah!
@@ -930,8 +921,9 @@ fcp(FILE *in, FILE *out)
 
 # this can return -1 on EINTR
 
-int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
-	int rv = select(nfds, readfds, writefds, exceptfds, timeout)
+int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, num timeout)
+	struct timeval timeout_tv
+	int rv = select(nfds, readfds, writefds, exceptfds, delay_to_timeval(timeout, &timeout_tv))
 	if rv < 0 && errno != EINTR
 		failed("select")
 	return rv
@@ -1097,23 +1089,12 @@ cp_attrs(cstr from, cstr to)
 	new(sf, Lstats, from)
 	cp_attrs_st(sf, to)
 
-cp_attrs_st(Lstats *sf, cstr to)
-	if !S_ISLNK(sf->st_mode)
-		cp_mode(sf, to)
-	if Getuid() == uid_root
-		cp_owner(sf, to)
-	cp_times(sf, to)
-
 cp_mode(Stats *sf, cstr to)
 	if chmod(to, sf->st_mode)
 		warn("chmod %s %0d failed", to, sf->st_mode)
 
-cp_owner(Lstats *sf, cstr to)
-	if chown(to, sf->st_uid, sf->st_gid)
-		warn("chown %s %0d:%0d failed", to, sf->st_uid, sf->st_gid)
-
 Utime(const char *filename, const struct utimbuf *times)
-	if utime(filename, times)
+	if utime(filename, (struct utimbuf *)times)
 		failed("utime", filename)
 
 cp_times(Lstats *sf, cstr to)
@@ -1182,11 +1163,6 @@ ssize_t Writev(int fd, const struct iovec *iov, int iovcnt)
 	if rv < 0
 		failed("writev")
 	return rv
-
-def Socketpair(sv[2]) Socketpair(AF_UNIX, SOCK_STREAM, 0, sv)
-Socketpair(int d, int type, int protocol, int sv[2])
-	if socketpair(d, type, protocol, sv) != 0
-		failed("socketpair")
 
 def nonblock(fd) nonblock(fd, 1)
 

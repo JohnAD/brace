@@ -8,10 +8,6 @@ use process
 
 int exit__execfailed = 127
 int status__execfailed = 512 + 127
-#int sig_execfailed = 64
-int sig_execfailed = SIGUSR2
-# A process in brace should not otherwise be terminated by SIGUSR2.
-# If that is a problem, the program can set sig_execfailed to 64 or something.
 
 boolean exec__warn_fail = 1
 
@@ -36,14 +32,6 @@ Execve(const char *filename, char *const argv[], char *const envp[])
 	if exec__warn_fail
 		warn_failed("execve")
 	exit_exec_failed()
-
-exit_exec_failed()
-	if sig_execfailed
-		Sigdfl(sig_execfailed)
-		Sig_pass(sig_execfailed)
-		Raise(sig_execfailed)
-
-	exit(exit__execfailed)
 
 # XXX TODO use local, not static?
 static vec exec_argv
@@ -263,17 +251,32 @@ def Sigdfl(signum) Sigact(signum, SIG_DFL, 0)
 def sigget(signum) sigact(signum, NULL, 0)
 def Sigget(signum) Sigact(signum, NULL, 0)
 
-Sigdfl_all()
-	for(i, 1, SIGRTMAX+1)
-		if among(i, SIGKILL, SIGSTOP) || (i>=32 && i<SIGRTMIN)
-			continue
-		sigdfl(i)
-
-def nochldwait(signum) signum == SIGCHLD ? SA_NOCLDSTOP : 0
-
 Raise(int sig)
 	if raise(sig)
 		failed("raise")
 
 void catch_signal_null(int sig)
 	use(sig)
+
+int wait__status
+
+def Child_wait() Child_wait(-1)
+
+int fix_exit_status(int status)
+	if WIFEXITED(status)
+		status = WEXITSTATUS(status)
+		if !sig_execfailed && status == exit__execfailed
+			status = status__execfailed
+	 eif WIFSIGNALED(status)
+		status = 256 + 128 + WTERMSIG(status)
+		if sig_execfailed && status == 256 + 128 + sig_execfailed
+			status = status__execfailed
+	 else
+		fault("unknown exit status %d - perhaps child stop/cont.\nSet your SIGCHLD handler with Sigact or Sigintr to avoid this.", status)
+	return status
+
+def status_normal(status) status >= 0 && status < 256 && (sig_execfailed || status != exit__execfailed)
+def status_signal(status) status >= 384 && status < 512 ? status - 384 : 0
+def status_execfailed(status) status == status__execfailed
+
+def Child_status() wait__status

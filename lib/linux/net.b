@@ -10,3 +10,7 @@ ssize_t Sendfile(int out_fd, int in_fd, off_t *offset, size_t count)
 		 else
 			failed("sendfile")
 	return rv
+
+def cork(fd) cork(fd, 1)
+cork(int fd, int cork)
+	Setsockopt(fd, IPPROTO_TCP, TCP_CORK, &cork, sizeof(cork))

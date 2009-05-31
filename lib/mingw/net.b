@@ -59,6 +59,8 @@ def SHUT_RDWR SD_BOTH
 
 # messages from ws-util.cpp, by Warren Young, http://tangentsoft.net/
 
+def ECONNRESET WSAECONNRESET
+
 winsock_error_message_init()
 	add_error_message(WSAEINTR,           "Interrupted system call")
 	add_error_message(WSAEBADF,           "Bad file number")

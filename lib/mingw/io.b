@@ -9,6 +9,10 @@ use m alloc util path net
 
 use io
 
+struct iovec
+	void *iov_base
+	size_t iov_len
+
 # FIXME mingw doesn't have lstat (yet), and mkdir doesn't take mode,
 # and missing mode stuff, etc, etc
 
@@ -96,3 +100,44 @@ def fd_full(new_fd, set) set->fd_count >= FD_SETSIZE
 
 #def windows_setmode_binary(f)
 #	setmode(fileno(f), _O_BINARY)
+
+ssize_t readv(int fd, const struct iovec *iov, int iovcnt)
+	ssize_t rv = 0
+	ssize_t c = 0
+	while iovcnt
+		c = read(fd, iov->iov_base, iov->iov_len)
+		if c == -1
+			return -1
+		rv += c
+		if c < (ssize_t)iov->iov_len
+			break
+		++iov ; --iovcnt
+	return rv
+
+ssize_t writev(int fd, const struct iovec *iov, int iovcnt)
+	ssize_t rv = 0
+	ssize_t c = 0
+	while iovcnt
+		c = write(fd, iov->iov_base, iov->iov_len)
+		if c == -1
+			return -1
+		rv += c
+		if c < (ssize_t)iov->iov_len
+			break
+		++iov ; --iovcnt
+	return rv
+
+cp_attrs_st(Lstats *sf, cstr to)
+	if !S_ISLNK(sf->st_mode)
+		cp_mode(sf, to)
+	cp_times(sf, to)
+
+# these do nothing on mingw
+def cloexec(fd)
+	.
+def cloexec_off(fd)
+	.
+
+int Pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, num timeout, const sigset_t *sigmask)
+	use(sigmask)
+	Select(nfds, readfds, writefds, exceptfds, timeout)

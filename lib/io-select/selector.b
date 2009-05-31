@@ -19,16 +19,10 @@ def io_select_fd_top(io) io->max_fd_plus_1
 def io_select_count(io) io->count
 
 int io_select_wait(io_select *io, num delay, sigset_t *sigmask)
-	timespec struct__delay_ts, *delay_ts
-	if delay == time_forever
-		delay_ts = NULL
-	 else
-		delay_ts = &struct__delay_ts
-		rtime_to_timespec(delay, delay_ts)
 	io->readfds_ready = io->readfds
 	io->writefds_ready = io->writefds
 	io->exceptfds_ready = io->exceptfds
-	int n_ready = Pselect(io->max_fd_plus_1, &io->readfds_ready, &io->writefds_ready, &io->exceptfds_ready, delay_ts, sigmask)
+	int n_ready = Pselect(io->max_fd_plus_1, &io->readfds_ready, &io->writefds_ready, &io->exceptfds_ready, delay, sigmask)
 	return n_ready
 
 def io_select_events(io, fd, can_read, can_write, has_error)
@@ -89,4 +83,4 @@ def io_select_can_read(io, fd) fd_isset(fd, &io->readfds_ready)
 def io_select_can_write(io, fd) fd_isset(fd, &io->writefds_ready)
 def io_select_has_error(io, fd) fd_isset(fd, &io->exceptfds_ready)
 
-def io_select_full(io, fd) fd_full(fd, &sched->exceptfds)
+def io_select_full(io, fd) fd_full(fd, &io->exceptfds)

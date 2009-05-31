@@ -1,0 +1,11 @@
+#!/bin/sh
+if [ -n "$WINDIR" ]; then
+	if [ "$1" = "-f" ]; then shift; fi
+	if [ "$1" = "." ]; then
+		echo "$PWD"
+	else
+		echo "$@"
+	fi
+else
+	readlink "$@"
+fi

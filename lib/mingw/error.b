@@ -1,4 +1,9 @@
 export setjmp.h
-def sigjmp_buf jmp_buf
-def sigsetjmp(env, savesigs) setjmp(env)
-def siglongjmp(env, val) longjmp(env, val)
+use util
+
+typedef jmp_buf sigjmp_buf
+int sigsetjmp(sigjmp_buf env, int savesigs)
+	use(savesigs)
+	return setjmp(env)
+siglongjmp(sigjmp_buf env, int val)
+	longjmp(env, val)

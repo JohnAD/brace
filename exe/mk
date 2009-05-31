@@ -47,7 +47,7 @@ fi
 LDFLAGS="$LDFLAGS $BRACE_L_SO"
 if [ -z "$BRACE_USE" ]; then
 	if [ -n "$WINDIR" -o -n "$windir" ]; then
-		BRACE_USE="mingw"
+		BRACE_USE="mingw nongnu"
 		BRACE_USE="$BRACE_USE io-select"
 		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
 		LDLIBS="$LDLIBS -lws2_32"
@@ -87,6 +87,9 @@ if [ -z "$BRACE_USE" ]; then
 			fi
 		else
 			BRACE_USE="$BRACE_USE io-select"
+		fi
+		if [ "$UNAME" != "linux" -a "$UNAME" != "hurd" -a "$UNAME" != "gnu" ]; then
+			BRACE_USE="$BRACE_USE nongnu"
 		fi
 #		elif echo $UNAME | grep -i linux >/dev/null; then
 #			BRACE_USE="$BRACE_USE linux"

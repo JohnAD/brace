@@ -22,12 +22,7 @@ def io_epoll_fd_top(io) io->max_fd_plus_1
 def io_epoll_count(io) io->count
 
 int io_epoll_wait(io_epoll *io, num delay, sigset_t *sigmask)
-	int delay_ms
-	if delay == time_forever
-		delay_ms = -1
-	 else
-		delay_ms = rtime_to_ms(delay)
-	int n_ready = Epoll_pwait(io->epfd, vec0(io->events), vec_get_space(io->events), delay_ms, sigmask)
+	int n_ready = Epoll_pwait(io->epfd, vec0(io->events), vec_get_space(io->events), delay, sigmask)
 #	warn("n_ready %d", n_ready)
 	vec_set_size(io->events, imax(n_ready, 0))
 	return n_ready

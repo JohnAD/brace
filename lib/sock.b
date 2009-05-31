@@ -1,4 +1,5 @@
 export proc shuttle sched net io alloc
+use sock
 
 struct sock
 	int fd
@@ -36,10 +37,6 @@ struct shuttle_sock_p
 listener_tcp_init(listener *p, cstr listen_addr, int listen_port)
 	int listen_fd = Server(listen_addr, listen_port)
 	init(p, listener, listen_fd, sizeof(sockaddr_in))
-
-listener_unix_init(listener *p, cstr addr)
-	int listen_fd = Server(addr)
-	init(p, listener, listen_fd, sizeof(sockaddr_un))
 
 #def listener listener_sel
 def listener listener_try

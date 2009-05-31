@@ -49,3 +49,6 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result)
 struct tm *localtime_r(const time_t *timep, struct tm *result)
 	*result = *localtime(timep)
 	return result
+
+long double asleep_small = 0.3
+def lsleep(dt) Sleep(dt)

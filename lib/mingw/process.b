@@ -1,5 +1,11 @@
+export signal.h
 export process.h
  # for getpid
+export types
+use util
+use process
+
+int sig_execfailed = 0
 
 def execl _execl
 def execle _execle
@@ -27,7 +33,10 @@ def ignore_hup()
 	.
 
 def WIFEXITED(status) 1
+def WIFSIGNALED(status) 0
+def WTERMSIG(status) 0
 def WEXITSTATUS(status) status
+def SIGCHLD -1
 
 sighandler_t sigact(int signum, sighandler_t handler, int sa_flags)
 	use(sa_flags)
@@ -38,3 +47,34 @@ sighandler_t sigact(int signum, sighandler_t handler, int sa_flags)
 def SA_NOCLDSTOP 1
 def SA_RESTART 0x10000000
 def SA_INTERRUPT 0x20000000
+
+exit_exec_failed()
+	exit(exit__execfailed)
+
+Sigdfl_all()
+	each(i, SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM)
+		sigdfl(i)
+
+def set_child_handler()
+	.
+
+# TODO can I implement Waitpid?  I think so.
+
+int Child_wait(pid_t pid)
+	# TODO
+	use(pid)
+	return -1
+#	Waitpid(pid, &wait__status, 0)
+#	wait__status = fix_exit_status(wait__status)
+#	return wait__status
+
+pid_t Child_done()
+	# TODO
+	return -1
+	return 0
+#	pid_t pid = Waitpid(-1, &wait__status, WNOHANG)
+#	if pid
+#		wait__status = fix_exit_status(wait__status)
+#	return pid
+
+def nochldwait(signum) 0

@@ -8,7 +8,6 @@ use string.h
 
 export buffer
 use error util m env process
-
 use time
 
 def time_forever -1
@@ -191,7 +190,6 @@ def xsleep(dt, t, use_asleep)
 # TODO maybe start asleep_small very small, and double it every time asleep
 # fails to be accurate?
 
-long double asleep_small = 0.0001
 def asleep(dt) asleep(dt, rtime())
 long double asleep(long double dt, long double t)
 	if dt <= 0.0
@@ -217,67 +215,8 @@ long double asleep(long double dt, long double t)
 				warn("asleep: slept too long, doubling asleep_small to %f", asleep_small)
 		return t2
 
-boolean lsleep_inited = 0
-lsleep_init()
-	Sigact(SIGALRM, catch_signal_null)
-	lsleep_inited = 1
 
-lsleep(num dt)
-	if !lsleep_inited
-		lsleep_init()
-#	itimerval v
-#	rtime_to_timeval(dt, &v.it_value)
-#	v.it_interval.tv_sec = v.it_interval.tv_usec = 0
-#	Setitimer(ITIMER_REAL, &v, NULL)
-	Ualarm(dt)
-	rsleep(dt+1)
-
-typedef struct itimerval itimerval
-
-Getitimer(int which, struct itimerval *value);
-	if getitimer(which, value)
-		failed("getitimer")
-
-Setitimer(int which, const struct itimerval *value, struct itimerval *ovalue);
-	if setitimer(which, value, ovalue)
-		failed("setitimer")
-
-Ualarm(num dt)
-	itimerval v
-	rtime_to_timeval(dt, &v.it_value)
-	v.it_interval.tv_sec = v.it_interval.tv_usec = 0
-	Setitimer(ITIMER_REAL, &v, NULL)
-
-
-# old asleep, used normal Sleep instead of lsleep (with an alarm), so
-# asleep_small is much bigger
-#long double asleep_small = 0.3
-#def asleep(dt) asleep(dt, rtime())
-#long double asleep(long double dt, long double t)
-#	if dt <= 0.0
-#		return t
-#	t += dt
-#	if dt <= asleep_small
-#		long double t1
-#		while (t1=rtime()) < t
-#			.
-#			# sched_yield might makes this busy loop a little less busy if other processes need to run?
-#			# any other way to do it?  a real-time alarm?
-#			#sched_yield()
-#		return t1
-#	 else
-#		Sleep(dt-asleep_small)
-#		long double t2 = rtime()
-#		long double dt2 = t - t2
-#		if dt2 > 0
-#			return asleep(dt2, t2)
-#		 eif dt < 0
-#			asleep_small *= 2
-#			if sleep_debug
-#				warn("asleep: slept too long, doubling asleep_small to %f", asleep_small)
-#		return t2
-
-# sort of benchmarking stuff
+# benchmarking stuff
 
 num bm_start = 0
 boolean bm_enabled = 1
@@ -319,6 +258,26 @@ int rtime_to_ms(num rtime)
 
 num ms_to_rtime(int ms)
 	return ms / 1000.0
+
+int delay_to_ms(num delay)
+	if delay == time_forever
+		return -1
+	 else
+		return rtime_to_ms(delay)
+
+struct timespec *delay_to_timespec(num delay, struct timespec *p)
+	if delay == time_forever
+		return NULL
+	 else
+		rtime_to_timespec(delay, p)
+		return p
+
+struct timeval *delay_to_timeval(num delay, struct timeval *p)
+	if delay == time_forever
+		return NULL
+	 else
+		rtime_to_timeval(delay, p)
+		return p
 
 date_rfc1123_init()
 	setlocale(LC_TIME, "POSIX")

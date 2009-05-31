@@ -10,9 +10,13 @@ sub new {
 	return $self;
 }
 
+my $lookup_max_depth = 64;
 sub lookup_vague {
-	my ($self, $macro_name) = @_;
-	return $self->{vague}{$macro_name} || $self->{parent} && $self->{parent}->lookup_vague($macro_name);
+	my ($self, $macro_name, $depth) = @_;
+	if (++$depth > $lookup_max_depth) {
+		die "Brace::Namespace->lookup is caught in a loop while looking up $macro_name";
+	}
+	return $self->{vague}{$macro_name} || $self->{parent} && $self->{parent}->lookup_vague($macro_name, $depth);
 }
 
 sub set {

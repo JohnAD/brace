@@ -17,14 +17,14 @@ Epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 
 # these can return -1 on EINTR
 
-int Epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
-	int rv = epoll_wait(epfd, events, maxevents, timeout)
+int Epoll_wait(int epfd, struct epoll_event *events, int maxevents, num timeout)
+	int rv = epoll_wait(epfd, events, maxevents, delay_to_ms(timeout))
 	if rv < 0 && errno != EINTR
 		failed("epoll_wait")
 	return rv
 
-int Epoll_pwait(int epfd, struct epoll_event *events, int maxevents, int timeout, const sigset_t *sigmask)
-	int rv = epoll_pwait(epfd, events, maxevents, timeout, sigmask)
+int Epoll_pwait(int epfd, struct epoll_event *events, int maxevents, num timeout, const sigset_t *sigmask)
+	int rv = epoll_pwait(epfd, events, maxevents, delay_to_ms(timeout), sigmask)
 	if rv < 0 && errno != EINTR
 		failed("epoll_pwait")
 	return rv

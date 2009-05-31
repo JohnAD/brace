@@ -5,6 +5,11 @@ use error cstr vec util
 
 use process
 
+#int sig_execfailed = 64
+int sig_execfailed = SIGUSR2
+# A process in brace should not otherwise be terminated by SIGUSR2.
+# If that is a problem, the program can set sig_execfailed to 64 or something.
+
 typedef void (*sighandler_t)(int)
 
 pid_t Fork()
@@ -26,10 +31,6 @@ pid_t Waitpid(pid_t pid, int *status, int options)
 		else
 			return r_pid
 
-int wait__status
-
-def Child_wait() Child_wait(-1)
-
 int Child_wait(pid_t pid)
 	Waitpid(pid, &wait__status, 0)
 	wait__status = fix_exit_status(wait__status)
@@ -40,25 +41,6 @@ pid_t Child_done()
 	if pid
 		wait__status = fix_exit_status(wait__status)
 	return pid
-
-int fix_exit_status(int status)
-	if WIFEXITED(status)
-		status = WEXITSTATUS(status)
-		if !sig_execfailed && status == exit__execfailed
-			status = status__execfailed
-	 eif WIFSIGNALED(status)
-		status = 256 + 128 + WTERMSIG(status)
-		if sig_execfailed && status == 256 + 128 + sig_execfailed
-			status = status__execfailed
-	 else
-		fault("unknown exit status %d - perhaps child stop/cont.\nSet your SIGCHLD handler with Sigact or Sigintr to avoid this.", status)
-	return status
-
-def status_normal(status) status >= 0 && status < 256 && (sig_execfailed || status != exit__execfailed)
-def status_signal(status) status >= 384 && status < 512 ? status - 384 : 0
-def status_execfailed(status) status == status__execfailed
-
-def Child_status() wait__status
 
 # This Waitpid can return -1 in case of an interrupted system call
 
@@ -337,3 +319,22 @@ Sched_yield()
 		failed("sched_yield")
 
 def SH_QUIET "exec 2>/dev/null; "
+
+exit_exec_failed()
+	if sig_execfailed
+		Sigdfl(sig_execfailed)
+		Sig_pass(sig_execfailed)
+		Raise(sig_execfailed)
+
+	exit(exit__execfailed)
+
+Sigdfl_all()
+	for(i, 1, SIGRTMAX+1)
+		if among(i, SIGKILL, SIGSTOP) || (i>=32 && i<SIGRTMIN)
+			continue
+		sigdfl(i)
+
+def set_child_handler()
+	Sigact(SIGCHLD, sigchld_handler)
+
+def nochldwait(signum) signum == SIGCHLD ? SA_NOCLDSTOP : 0

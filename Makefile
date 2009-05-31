@@ -4,7 +4,7 @@ include .Make.conf
 
 export BRACE_STANDALONE=
 
-all: tgz
+all: dotbuild
 
 tgz: dotbuild
 	tgz+ .

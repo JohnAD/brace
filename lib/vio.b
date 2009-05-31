@@ -74,7 +74,7 @@ vs_close_stdio(vstream *vs)
 	Fclose(vs->data)
 
 vs_shutdown_stdio(vstream *vs, int how)
-	Shutdown(fileno(vs->data), how)
+	Shutdown(fileno((FILE*)vs->data), how)
 
 vstream struct__in, *in
 vstream struct__out, *out

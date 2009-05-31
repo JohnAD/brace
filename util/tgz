@@ -1,7 +1,7 @@
 #!/bin/bash -e
 P=$PWD
 for D; do
-	D1=`readlink -f "$D"`
+	D1=`readlink1 -f "$D"`
 	cd "$D1"
 	N=`basename "$D1"`
 	rm -f "$N.tgz"

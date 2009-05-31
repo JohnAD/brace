@@ -2,6 +2,8 @@ package Brace::Namespace;
 
 use strict; use warnings;
 
+use Data::Dumper; # debug
+
 sub id { return @_; }
 
 sub new {
@@ -23,12 +25,16 @@ sub parent {
 	return $self->{parent}
 }
 
+my $lookup_max_depth = 64;
 sub lookup {
-	my ($self, $key) = @_;
+	my ($self, $key, $depth) = @_;
+	if (++$depth > $lookup_max_depth) {
+		die "Brace::Namespace->lookup is caught in a loop while looking up ".Dumper($key);
+	}
 	my $k = $self->{keymap}->($key);
 	return $self->{hash}{$k} if exists $self->{hash}{$k};
 	if ($self->{parent}) {
-		return $self->{parent}->lookup($key);
+		return $self->{parent}->lookup($key, $depth);
 	} else {
 		return undef;
 	}

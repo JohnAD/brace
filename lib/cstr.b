@@ -44,6 +44,9 @@ cstr_chomp(cstr s)
 boolean cstr_eq(void *s1, void *s2)
 	return strcmp(s1, s2) == 0
 
+boolean cstr_case_eq(void *s1, void *s2)
+	return strcasecmp(s1, s2) == 0
+
 boolean cstr_is_empty(cstr s1)
 	return *s1 == '\0'
 
@@ -55,6 +58,14 @@ boolean cstr_ends_with(cstr s, cstr substr)
 	cstr expect = s + s_len - substr_len
 	return cstr_eq(expect, substr)
 
+boolean cstr_case_ends_with(cstr s, cstr substr)
+	size_t s_len = strlen(s)
+	size_t substr_len = strlen(substr)
+	if substr_len > s_len
+		return 0
+	cstr expect = s + s_len - substr_len
+	return cstr_case_eq(expect, substr)
+
 # this returns a pointer to the character after the match, or NULL
 # I want it to preserve the constness of the first argument, but C can't.
 cstr cstr_begins_with(cstr s, cstr substr)
@@ -62,6 +73,14 @@ cstr cstr_begins_with(cstr s, cstr substr)
 		if *substr == '\0'
 			return (cstr)s
 		if *substr != *s
+			return NULL
+		++s ; ++substr
+
+cstr cstr_case_begins_with(cstr s, cstr substr)
+	repeat
+		if *substr == '\0'
+			return (cstr)s
+		if tolower((unsigned char)*substr) != tolower((unsigned char)*s)
 			return NULL
 		++s ; ++substr
 

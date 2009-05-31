@@ -2,6 +2,7 @@
 
 export proc time timeout selector
 use deq io error process hash
+use sched
 
 #def io_selector io_epoll
 #def io_selector io_select
@@ -47,7 +48,7 @@ scheduler_init(scheduler *sched)
 	sched->step = 0
 	sched->n_children = 0
 	sched->got_sigchld = 0
-	Sigact(SIGCHLD, sigchld_handler)
+	set_child_handler()
 
 def sched_free()
 	scheduler_free(sched)
@@ -98,11 +99,9 @@ step()
 
 	if need_select
 		if sched->n_children
-			oldsigmask = Sig_defer(SIGCHLD)
-			if sched->got_sigchld
-				delay = 0
 			oldsigmaskp = &oldsigmask
-
+			if sched_sig_child_exited(oldsigmaskp)
+				delay = 0
 		proc_debug("polling %d waiters for %f secs", io_count(io), delay)
 #		proc_debug_selectors()
 
@@ -112,10 +111,8 @@ step()
 		proc_debug("polling done")
 
 		if sched->n_children
-			if sched->got_sigchld
+			if sched_sig_child_exited_2(oldsigmaskp)
 				got_sigchld = 1
-				sched->got_sigchld = 0
-			Sig_setmask(&oldsigmask)
 
 	if got_sigchld
 		pid_t pid
