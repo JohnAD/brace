@@ -1,3 +1,4 @@
+export process
 use sched
 
 boolean sched_sig_child_exited(sigset_t *oldsigmask)
