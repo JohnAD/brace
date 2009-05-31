@@ -58,25 +58,27 @@ Main()
 
 	int status = 0
 
-	lock(lockfile)
-		new(x_stat, Stats, x)
-		int need_compile = !S_EXISTS(x_stat->st_mode) || x_stat->st_size == 0 || x_stat->st_mtime < b_stat->st_mtime || x_stat->st_mtime < libb_stat->st_mtime
-		int already_compiled = S_EXISTS(log_stat->st_mode) && b_stat->st_mtime < log_stat->st_mtime && log_stat->st_mtime > libb_stat->st_mtime
-		if already_compiled
-			error("%s has not been updated, check %s or try: fix %s", b, log, b)
-		if need_compile
-			try(err)
-				do
-					if mingw
-						status = Systeml(format("sh%s", EXE), br, langopt, b, x, NULL)
-					 else
-						status = Systeml(br, langopt, b, x, NULL)
-				 while status == br_return_again_after_fix
+	new(x_stat, Stats, x)
+	int need_compile = !S_EXISTS(x_stat->st_mode) || x_stat->st_size == 0 || x_stat->st_mtime < b_stat->st_mtime || x_stat->st_mtime < libb_stat->st_mtime
+	int already_compiled = S_EXISTS(log_stat->st_mode) && b_stat->st_mtime < log_stat->st_mtime && log_stat->st_mtime > libb_stat->st_mtime
+	if already_compiled
+		error("%s has not been updated, check %s or try: fix %s", b, log, b)
+	if need_compile
+		lock(lockfile)
+			need_compile = !S_EXISTS(x_stat->st_mode) || x_stat->st_size == 0 || x_stat->st_mtime < b_stat->st_mtime || x_stat->st_mtime < libb_stat->st_mtime
+			if need_compile
+				try(err)
+					do
+						if mingw
+							status = Systeml(format("sh%s", EXE), br, langopt, b, x, NULL)
+						 else
+							status = Systeml(br, langopt, b, x, NULL)
+					 while status == br_return_again_after_fix
 
-				if status
-					error("%s compile failed...", br)
-			except(err)
-				status = 1
+					if status
+						error("%s compile failed...", br)
+				except(err)
+					status = 1
 
 	if status
 		Throw()
