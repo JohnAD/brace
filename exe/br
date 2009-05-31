@@ -27,10 +27,10 @@ log_fix_exit() {
 }
 
 # basename is broken in unxutils
-basename() {
-	local d="`dirname "$1"`"
-	echo "${1#$d?}"
-}
+#basename() {
+#	local d="`dirname "$1"`"
+#	echo "${1#$d?}"
+#}
 
 export LDFLAGS LDLIBS CFLAGS CC BRACE_LANGUAGE
 
