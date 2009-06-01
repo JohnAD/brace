@@ -11,7 +11,7 @@ use Brace::Include;
 #use Brace::SplitVars;
 use Brace::Strip;
 use Brace::Expand;
-use Brace::PC;
+use Brace::Pc;
 use Brace::Proto;
 use Brace::Typedef;
 use Brace::Uniq;

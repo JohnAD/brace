@@ -13,7 +13,7 @@ Main()
 proc Reader()
 	port cstr out
 	repeat
-		cstr c = Input()
+		state cstr c = Input()
 		wr(out, c)
 		if c == NULL
 			break
@@ -22,7 +22,7 @@ proc Reader()
 proc Writer()
 	port cstr in
 	repeat
-		cstr s
+		state cstr s
 		rd(in, s)
 		if s == NULL
 			break

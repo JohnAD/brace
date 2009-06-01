@@ -1,4 +1,4 @@
-#package Brace::PC;
+#package Brace::Pc;
 
 # brace_pc
 # this provides a per-function "process counter"
