@@ -11,6 +11,8 @@ def debug warn
 int exit__error = 125
 int exit__fault = 124
 
+# TODO use collect() in here?
+
 # warning: because sigsetjmp is a lot slower than setjmp I have changed to using setjmp
 # This means that the signal mask might be wrong after an exception, have to be careful about that.
 # I could make an option to use sigsetjmp in some cases.

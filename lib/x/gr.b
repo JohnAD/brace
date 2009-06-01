@@ -47,9 +47,6 @@ font(cstr name, int size)
 #gr_
 
 gr_init()
-	if gr_auto_event_loop
-		Atexit(event_loop)
-
 #	vec_init(gr__stack, sizeof(GC), 8)
 	
 	if (display = XOpenDisplay(NULL)) == NULL
@@ -95,6 +92,9 @@ gr_init()
 		root_h = window_attributes.height
 
 	rainbow_init()
+
+	if gr_auto_event_loop
+		Atexit(event_loop)
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	if width
