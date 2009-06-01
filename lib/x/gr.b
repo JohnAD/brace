@@ -8,7 +8,7 @@ use string.h
 use stdio.h
 #ld -L/usr/X11R6/lib -lX11 -lXext ??
 
-use error alloc time vec io m util stdc process
+use error alloc time vec io m util process
 export types
 export colours
 
