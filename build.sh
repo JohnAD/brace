@@ -7,6 +7,7 @@ if [ ! -e .Make.conf ]; then
 	./configure.sh
 fi
 if [ -n "$WINDIR" -o -n "$windir" ]; then
+	make
 	make install
 else
 	export NPROCESSORS=2

@@ -50,9 +50,8 @@ uninstall:
 	<.tmp.1 sed 's,\\,/,g' >.tmp.2 ; \
 	while read D; do \
 		find "$$D" -maxdepth 1 -type f \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' \) >.tmp.3 ; \
-		<.tmp.3 sed 's,\\,/,g' >.tmp.4 ; \
+		<.tmp.3 sed 's,\\,/,g; s/\.[^.]*$$//' >.tmp.4 ; \
 		while read F; do \
-			F=${F%.*} \
 			rm -v -f '$(includedir)'/"$$F".*; \
 		done <.tmp.4 ; \
 		rmdir -v '$(includedir)'/"$$D" || true; \

@@ -45,11 +45,11 @@ clean:
 install: build
 	install -d '$(bindir)' "$(langdir)"
 	install `../util/lsx .` '$(bindir)'
-	ln -sf br '$(bindir)/bbr' || cp '$(bindir)/br' '$(bindir)/bbr'
-	ln -sf bx$(EXE) '$(bindir)/bbx$(EXE)' || cp '$(bindir)/bx$(EXE)' '$(bindir)/bbx$(EXE)'
+	ln -sf '$(bindir)/br' '$(bindir)/bbr' || cp '$(bindir)/br' '$(bindir)/bbr'
+	ln -sf bx$(EXE) '$(bindir)/bbx$(EXE)' || cp bx$(EXE) '$(bindir)/bbx$(EXE)'
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE)
-	ln -sf b1$(EXE) '$(bindir)/bb1$(EXE)' || cp '$(bindir)/b1$(EXE)' '$(bindir)/bb1$(EXE)'
+	ln -sf b1$(EXE) '$(bindir)/bb1$(EXE)' || cp 'b1$(EXE)' '$(bindir)/bb1$(EXE)'
 
 uninstall:
 	for F in `../util/lsx`; do rm -f '$(bindir)'/"$$F" ; done

@@ -2,6 +2,9 @@ Main()
 	if args < 1
 		usage("program.b [ arg ... ]")
 
+	if mingw && !*Getenv("MSYSTEM")
+		Atexit(hold_term_open)
+
 	volatile cstr br = "br"       # setjmp -> volatile
 	volatile cstr langopt = "-b"
 	if strncmp(program, "bb", 2) == 0
@@ -32,7 +35,16 @@ Main()
 	if !S_EXISTS(libb_stat->st_mode)
 		error("Please ensure libb" SO " is installed.")
 
-	let(b, strdup(arg[0]))
+	char *b = Malloc(strlen(arg[0]+2))
+	if mingw && arg[0][1] == ':'
+		b[0] = '/'
+		strcpy(b+1, arg[0])
+	 else
+		strcpy(b, arg[0])
+	if mingw
+		for_cstr(i, b)
+			if *i == '\\'
+				*i = '/'
 	b = readlinks(b)
 
 	dirbasename(strdup(b), dir, base)
@@ -109,4 +121,4 @@ Main()
 
 def br_return_again_after_fix 123
 
-use process error buffer cstr io alloc main path env time
+use process error buffer cstr io alloc main path env time stdc
