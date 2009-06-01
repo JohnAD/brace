@@ -157,8 +157,11 @@ fi
 [ -n "$1" ] || fail "syntax: ${b}r [-b|-bb] foo.$b [foo [cc/ld flags]]"
 
 B="$1"
+if [ -n "$WINDIR" ]; then
+	B=`echo "$B" | perl -pe 's{^([a-z]):(\\\\|/)?}{/$1/}i; s{\\\\}{/}g;'`
+fi
 shift
-X="$1"
+X="$B"
 
 if perl -ne 'exit !m{^#!/lang/bb$}' "$B"; then
 	BRACE_LANGUAGE=C++

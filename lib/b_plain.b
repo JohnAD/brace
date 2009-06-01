@@ -2,7 +2,7 @@
 # excluding graphics and sound (which require extra libraries / interface).
 
 export buffer cstr circbuf vec deq str rope list hash sym priq thunk cons
-export error alloc io path m time env stdc find
+export error alloc io path m time env find
 export sched proc shuttle pipe timeout sock
 export types main util
 export darcs

@@ -1,3 +1,4 @@
+use stdlib.h
 export types buffer
 use error cstr vec
 use process
@@ -10,6 +11,12 @@ int exit__execfailed = 127
 int status__execfailed = 512 + 127
 
 boolean exec__warn_fail = 1
+
+Atexit(void (*function)(void))
+	if atexit(function) != 0
+		failed("atexit")
+
+def exit() exit(0)
 
 # TODO maybe I could raise() a signal to kill the process with thereby a
 # non-normal exit status in case of not being able to exec the child process?
@@ -280,3 +287,8 @@ def status_signal(status) status >= 384 && status < 512 ? status - 384 : 0
 def status_execfailed(status) status == status__execfailed
 
 def Child_status() wait__status
+
+hold_term_open()
+	warn("\ndone, press enter to close the terminal")
+	new(b, buffer)
+	Freadline(stderr, b)
