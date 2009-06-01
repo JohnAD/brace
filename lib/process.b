@@ -291,4 +291,4 @@ def Child_status() wait__status
 hold_term_open()
 	warn("\ndone, press enter to close the terminal")
 	new(b, buffer)
-	Freadline(stderr, b)
+	Freadline(b, stderr)
