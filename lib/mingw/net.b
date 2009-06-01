@@ -1,6 +1,6 @@
 export winsock2.h ws2tcpip.h mswsock.h
 export vec
-use error stdc
+use error process
 
 # http://msdn.microsoft.com/en-us/library/ms740126(VS.85).aspx
 # do I need to use ioctlsocket / WSAIoctl?

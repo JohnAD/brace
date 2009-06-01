@@ -1,4 +1,4 @@
-use io process stdc gr time cstr util alloc env
+use io process gr time cstr util alloc env
 export types http
 
 cgi_html()

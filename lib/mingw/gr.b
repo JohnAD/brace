@@ -1,6 +1,6 @@
 use gr
 export gl/gl.h gl/glu.h
-use error alloc m stdc
+use error alloc m process
 export colours
 
 # here's the GL stuff:
