@@ -35,14 +35,11 @@ Main()
 	if !S_EXISTS(libb_stat->st_mode)
 		error("Please ensure libb" SO " is installed.")
 
-	char *b = Malloc(strlen(arg[0])+2)
-	if mingw && arg[0][1] == ':'
+	cstr b = strdup(arg[0])
+	if mingw && b[1] == ':' && among(b[2], '\\', '/')
+		b[1] = b[0]
 		b[0] = '/'
-		strcpy(b+1, arg[0])
-	 else
-		strcpy(b, arg[0])
-	if mingw
-		for_cstr(i, b)
+		for_cstr(i, b+2)
 			if *i == '\\'
 				*i = '/'
 	b = readlinks(b)
