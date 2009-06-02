@@ -8,7 +8,7 @@ Build-Depends: debhelper (>= 4), libx11-dev, libxext-dev, libio-string-perl, lib
 Package: brace
 Architecture: any
 Depends: libc6, ${perl:Depends}, libc6-dev | libc-dev, gcc (>= 3:3.3), g++ (>= 3:3.3), make, libio-string-perl, libx11-dev, libxext-dev
-Recommends: libncurses5-dev, msttcorefonts, fortunes
+Recommends: libncurses5-dev, msttcorefonts, fortunes, gsfonts-x11
 Description: the brace programming language
  Brace is a dialect of C which looks like python.  It has coroutines,
  hygenic macros and nice libraries, including graphics and music.
