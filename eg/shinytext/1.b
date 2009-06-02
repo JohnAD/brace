@@ -30,10 +30,13 @@ Main()
 		error("xshm pixmaps are not working")
 
 	if depth > 16
-#		shiny(long, 32)
-		shiny(long)
+		shiny(int)
 	 else
-		error("shinytext only works in 32 bit colour for now")
+		warn("shinytext only works properly in 32 bit colour for now")
+	if depth == 16
+		shiny(short)
+	 eif depth == 8
+	 	shiny(char)
 
 #def shiny(pixel_type, depth)
 #	shiny1(pixel_type, r^^depth, g^^depth, b^^depth, fastrgb^^depth)

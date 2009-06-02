@@ -22,10 +22,11 @@ Main()
 		error("xshm pixmaps are not working")
 
 	if depth > 16
-#		shiny(long, 32)
-		shiny(long)
+		shiny(int)
+	 eif depth == 16
+		shiny(short)
 	 else
-		error("shinytext only works in 32 bit colour for now")
+		shiny(char)
 
 cstr fortune()
 	cstr s = args ? join(" ", arg) : cmd("fortune -s -n 40")

@@ -84,7 +84,7 @@ gr_init()
 	root_window = DefaultRootWindow(display)
 	colours_init()
 
-	font("helvetica-medium", 11)
+	font("helvetica-medium", 12)
 
 	XWindowAttributes window_attributes
 	if XGetWindowAttributes(display, root_window, &window_attributes)
