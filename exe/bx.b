@@ -37,12 +37,13 @@ Main()
 
 	cstr b = strdup(arg[0])
 	if mingw && b[1] == ':' && among(b[2], '\\', '/')
-		b[1] = b[0]
+		b[1] = tolower(b[0])
 		b[0] = '/'
 		for_cstr(i, b+2)
 			if *i == '\\'
 				*i = '/'
-	b = readlinks(b)
+	 else
+		b = readlinks(b)
 
 	dirbasename(strdup(b), dir, base)
 
