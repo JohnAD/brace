@@ -161,7 +161,7 @@ if [ -n "$WINDIR" ]; then
 	B=`echo "$B" | perl -pe 's{^([a-z]):(\\\\|/)?}{/$1/}i; s{\\\\}{/}g;'`
 fi
 shift
-X="$B"
+X="$1"
 
 if perl -ne 'exit !m{^#!/lang/bb$}' "$B"; then
 	BRACE_LANGUAGE=C++
