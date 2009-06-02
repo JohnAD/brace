@@ -35,7 +35,7 @@ Main()
 	if !S_EXISTS(libb_stat->st_mode)
 		error("Please ensure libb" SO " is installed.")
 
-	char *b = Malloc(strlen(arg[0]+2))
+	char *b = Malloc(strlen(arg[0])+2)
 	if mingw && arg[0][1] == ':'
 		b[0] = '/'
 		strcpy(b+1, arg[0])
