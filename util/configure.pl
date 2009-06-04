@@ -53,7 +53,12 @@ End
 	$perlroot = dirname(dirname($perl));
 	if ($perlroot eq "/") { $perlroot = ""; }
 #	$perldir = "\$\(destdir\)$perlroot${sep}site${sep}lib";
-	$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}perl5${sep}site_perl";
+	if ($realprefix =~ m{local}) {
+		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}site_perl";
+	} else {
+		die $realprefix;
+		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}perl5${sep}site_perl";
+	}
 	print <<End;
 perldir:=$perldir
 End
@@ -72,6 +77,10 @@ End
 	if ($prefix eq "/usr" && -d "/usr/share/perl5") {
 		print <<End
 perldir:=\$\(prefix\)/share/perl5
+End
+	} elsif ($prefix eq "/usr/local") {
+		print <<End
+perldir:=\$\(prefix\)/lib/site_perl
 End
 	}
 }

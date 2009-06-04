@@ -1,4 +1,5 @@
-use setjmp.h stdio.h
+export setjmp.h
+use stdlib.h
 
 # ccoro - coroutines in standard C
 # Sam Watkins, 2009

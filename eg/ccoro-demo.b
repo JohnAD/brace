@@ -2,7 +2,7 @@
 use stdio.h
 use ccoro
 
-# the demo program:
+# ccoro demo program
 
 int factorial(int n)
 	if n == 0
@@ -28,7 +28,7 @@ my_fibonacci_coro(coro *caller)
 		printf("    %d %d\n", i, j)
 		yield(&caller)
 
-int ccoro_demo()
+int main()
 	coro *c = new_coro(my_fibonacci_coro)
 	coro *c2 = new_coro(my_factorial_coro)
 	int i
