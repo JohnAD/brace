@@ -3,7 +3,7 @@
 
 export buffer cstr circbuf vec deq str rope list hash sym priq thunk cons
 export error alloc io path m time env find
-export sched proc shuttle pipe timeout sock
+export sched proc shuttle pipe timeout sock ccoro
 export types main util
 export darcs
 export html http

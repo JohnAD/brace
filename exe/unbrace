@@ -10,5 +10,9 @@ sed '
 	s/^\(	*\)\(if\|else\|else if\|for\|switch\|while\|do\) *(\(.*\))$/\1\2 \3/;
 	s/^void \([^*]\)/\1/;
 	s/(void)/()/;
+	s:#define:def:;
+	s:#define:def:;
 	s:^\(	*\)//:\1#:;
+	s: *\*/::g;
+	s:/\* */# :g;
 '

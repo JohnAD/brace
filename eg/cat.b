@@ -17,7 +17,7 @@ proc Reader()
 		wr(out, c)
 		if c == NULL
 			break
-		yield
+		yield()
 
 proc Writer()
 	port cstr in

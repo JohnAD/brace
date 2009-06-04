@@ -1,8 +1,8 @@
 #package Brace::Coro;
 
 # brace_process
-# a nice syntax for coroutine processes
-# requires the libb coroutine process libraries
+# a nice syntax for procs (Simon Tatham's coroutine processes)
+# requires the libb proc libraries
 # this should be run BEFORE other steps, like brace_header!
 
 # TODO maybe: could eliminiate This variable
@@ -27,7 +27,7 @@ sub brace_process {
 my @new_funcs;
 for my $function (@function) {
 	# two options for keyword - I can't decide!
-	if ($function =~ s/^(?:proc|coro) (.*)/$1/) {
+	if ($function =~ s/^(?:proc) (.*)/$1/) {
 		my %port_type;
 		my %state_type;
 		my %struct_already;
@@ -113,7 +113,7 @@ End
 		push @new_funcs, $init, $new_func;
 	} else {
 		# In normal functions, remove any "state" prefix from variable declarations.
-		# This is so macros can use "state" declarations and work in coros or functions.
+		# This is so macros can use "state" declarations and work in procs or functions.
 
 		my ($ret, $proc_name, $args, $body) = $function =~ /^(.*?)([^\s\*\&]+?)\(([^\n]*)\)\n(.*)\z/s;
 		next unless $proc_name;

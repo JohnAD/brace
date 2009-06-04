@@ -31,7 +31,7 @@ int resume(proc *p)
 def stop
 	return 0
 
-def yield
+def yield()
 		proc_debug("yeilding")
 		return b__pc_next
 		b__pc_inc

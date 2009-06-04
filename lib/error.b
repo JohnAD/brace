@@ -379,6 +379,5 @@ any vopt_err_do(opt_err opt, any value, any errcode, char *format, va_list ap)
 	which opt
 	VALUE	return value
 	ERRCODE	return errcode
-
-	failed("vopt_err_do", "unknown opt_err option")
+	else	failed("vopt_err_do", "unknown opt_err option")
 	return errcode
