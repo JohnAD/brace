@@ -38,5 +38,3 @@ union any
 	long double ld
 	size_t z
 	off_t o
-
-typedef complex double complex

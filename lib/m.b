@@ -279,28 +279,28 @@ def ln(x) log(x)
 
 # complex number extensions
 
-complex cis(num ang)
+cmplx cis(num ang)
 	return cos(arg) + I*sin(ang)
 
-complex ccis(complex ang)
+cmplx ccis(cmplx ang)
 	return cpow(e, I*ang)
 
 # public domain code for computing the FFT
 # contributed by Christopher Diggins, 2005
 # adapted and converted from C++ to brace by Sam Watkins
 
-fft(complex *in, complex *out, int log2_n)
+fft(cmplx *in, cmplx *out, int log2_n)
 	int n = 1 << log2_n
 	for(i, 0, n)
 		out[bit_reverse(i)] = in[i]
 	for(s, 1, log2_n+1)
 		int m = 1 << s
-		complex w = 1
-		complex wm = cis(2*pi/m)
+		cmplx w = 1
+		cmplx wm = cis(2*pi/m)
 		for(j, 0, m/2)
 			for(k, j, n, m)
-				complex t = wi * out[k + m/2]
-				complex u = out[k]
+				cmplx t = wi * out[k + m/2]
+				cmplx u = out[k]
 				out[k] = u + t
 				out[k + m/2] = u - t
 			w = w * wm
