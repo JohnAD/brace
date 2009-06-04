@@ -56,7 +56,6 @@ End
 	if ($realprefix =~ m{local}) {
 		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}site_perl";
 	} else {
-		die $realprefix;
 		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}perl5${sep}site_perl";
 	}
 	print <<End;
