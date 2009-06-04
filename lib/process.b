@@ -1,5 +1,5 @@
-export types buffer util
 use stdlib.h
+export types buffer
 use error cstr vec
 use process
 
@@ -67,7 +67,7 @@ Vexecl(const char *path, va_list ap)
 # TODO macros!
 
 Execlp(const char *file, ...)
-	collect_void(Vexeclp, path)
+	collect_void(Vexeclp, file)
 
 Vexeclp(const char *file, va_list ap)
 	if !exec_argv_init
@@ -78,7 +78,7 @@ Vexeclp(const char *file, va_list ap)
 		*(char **)vec_push(&exec_argv) = arg
 		if arg == NULL
 			break
-	Execvp(path, (char *const *)exec_argv.b.start)
+	Execvp(file, (char *const *)exec_argv.b.start)
 
 Execle(const char *path, ...)
 	collect_void(Vexecle, path)

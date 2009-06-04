@@ -280,10 +280,7 @@ def ln(x) log(x)
 # complex number extensions
 
 cmplx cis(num ang)
-	return cos(arg) + I*sin(ang)
-
-cmplx ccis(cmplx ang)
-	return cpow(e, I*ang)
+	return cos(ang)+sin(ang)*I
 
 # public domain code for computing the FFT
 # contributed by Christopher Diggins, 2005
@@ -299,7 +296,7 @@ fft(cmplx *in, cmplx *out, int log2_n)
 		cmplx wm = cis(2*pi/m)
 		for(j, 0, m/2)
 			for(k, j, n, m)
-				cmplx t = wi * out[k + m/2]
+				cmplx t = w * out[k + m/2]
 				cmplx u = out[k]
 				out[k] = u + t
 				out[k + m/2] = u - t

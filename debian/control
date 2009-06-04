@@ -3,7 +3,7 @@ Section: devel
 Priority: extra
 Maintainer: Sam Watkins <sam@nipl.net>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 4), libx11-dev, libxext-dev, libio-string-perl, libncurses5-dev, ccache
+Build-Depends: debhelper (>= 4), libx11-dev, libxext-dev, libio-string-perl, libncurses5-dev
 
 Package: brace
 Architecture: any

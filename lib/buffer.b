@@ -1,8 +1,12 @@
-export str types util
-use alloc error io
-
-export stdlib.h stdio.h
+use alloc
+export stdlib.h
+use error
+export str
+use util
+export types
 use string.h
+export stdio.h
+use io
 
 # this is a general buffer, revised version to be compatible with libb strs
 # I haven't decided if this is a good idea or not yet.

@@ -1,6 +1,7 @@
 export sys/types.h
 export stdint.h
 export limits.h
+export complex.h
 
 typedef unsigned char byte
 typedef double num
@@ -38,3 +39,5 @@ union any
 	long double ld
 	size_t z
 	off_t o
+
+typedef double complex cmplx

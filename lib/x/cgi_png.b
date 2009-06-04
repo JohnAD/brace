@@ -1,6 +1,5 @@
-use cgi
-use io process env gr time cstr util alloc
 export types
+use cgi io process env gr time cstr util alloc
 
 # This HACK requires a vnc server, uses Setenv, etc.
 # It's a demo, has bugs,  not suitable for serious use.

@@ -1,4 +1,4 @@
-export buffer vec
+export vec
 
 # this is a binary help implementation of a priority queue
 

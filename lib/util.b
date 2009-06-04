@@ -1,8 +1,6 @@
-export io types alloc buffer vec
+export io types alloc
 export stdarg.h string.h
 use m
-
-use util
 
 def my(a) skip(1, `my__prefix)^^a
 
@@ -1173,3 +1171,4 @@ def sle4(p) ((long)le4(p))
 def sbe2(p) ((long)be2(p)) << 16 >> 16
 def sbe3(p) ((long)be3(p)) << 8 >> 8
 def sbe4(p) ((long)be4(p))
+

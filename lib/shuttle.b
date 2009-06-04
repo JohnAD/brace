@@ -1,5 +1,13 @@
+export proc
 use stdlib.h
-export buffer vec proc sched types error util
+ # for NULL
+use sched
+ # for start()
+export types
+ # for boolean
+use error
+ # for assert
+export util
 
 # type-specific shuttle structs
 

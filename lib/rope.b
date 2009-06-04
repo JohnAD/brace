@@ -1,5 +1,5 @@
-export str buffer vec types util
-use alloc cstr error io deq
+export str vec types
+use util alloc cstr error io deq
 
 # this (together with str.b) is the way I think strings ought to be done
 

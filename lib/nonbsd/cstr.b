@@ -1,4 +1,4 @@
-use cstr
+use cstr error
 
 size_t Strlcpy(char *dst, char *src, size_t size)
 	size_t rv

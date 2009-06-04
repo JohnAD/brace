@@ -1,5 +1,5 @@
 export winsock2.h ws2tcpip.h mswsock.h
-export buffer vec
+export vec
 use error process
 
 # http://msdn.microsoft.com/en-us/library/ms740126(VS.85).aspx

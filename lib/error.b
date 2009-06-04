@@ -1,8 +1,7 @@
 export errno.h setjmp.h
 use stdio.h stdarg.h stdlib.h
-
-export buffer vec hash thunk util
-use main path env io
+use main buffer util path env
+export vec hash thunk types
 
 export error
 
@@ -364,17 +363,22 @@ void *error_ignore(void *obj, void *common_arg, void *er)
 	vec_pop(errors)
 	return thunk_yes
 
-typedef enum { VALUE, ERRCODE, ERROR, ERRNULL, BEST, WARN=1<<31 } opt_err
+typedef enum { VALUE, ERRCODE, ERROR, WARN=1<<31 } opt_err
 
-void *opt_err_do(opt_err opt, any value, any errcode, char *format, ...)
+any opt_err_do(opt_err opt, any value, any errcode, char *format, ...)
 	collect(vopt_err_do, opt, value, errcode, format)
 
-void *vopt_err_do(opt_err opt, any value, any errcode, char *format, va_list ap)
+any vopt_err_do(opt_err opt, any value, any errcode, char *format, va_list ap)
 	if opt & WARN || opt == ERROR
 		opt &= ~WARN
-		if opt != ERROR
-			vwarn(format, ap)
-		 else
+		if opt == ERROR
 		 	verror(format, ap)
-	
-	return value
+		 else
+			vwarn(format, ap)
+
+	which opt
+	VALUE	return value
+	ERRCODE	return errcode
+
+	failed("vopt_err_do", "unknown opt_err option")
+	return errcode
