@@ -47,13 +47,13 @@ fi
 LDFLAGS="$LDFLAGS $BRACE_L_SO"
 if [ -z "$BRACE_USE" ]; then
 	if [ -n "$WINDIR" -o -n "$windir" ]; then
-		BRACE_USE="mingw nongnu"
+		BRACE_USE="mingw nongnu nonbsd"
 		BRACE_USE="$BRACE_USE io-select"
 		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
 		LDLIBS="$LDLIBS -lws2_32"
 		LDLIBS_FANCY="$LDLIBS_FANCY -lopengl32 -lglu32 -lgdi32"
 	else
-		BRACE_USE="unix" 
+		BRACE_USE="unix nonmingw"
 		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h ]; then
 			BRACE_USE="$BRACE_USE x"
 			LDLIBS_FANCY="$LDLIBS_FANCY -L/usr/X11R6/lib -lX11 -lXext"
@@ -69,11 +69,14 @@ if [ -z "$BRACE_USE" ]; then
 		uname > .uname
 		<.uname tr 'A-Z' 'a-z' >.uname.1
 #		UNAME=`uname | tr 'A-Z' 'a-z'`
-		if grep -i bsd <.uname.1 >/dev/null; then
-			BRACE_USE="$BRACE_USE bsd"
-		fi
 		<.uname.1 read UNAME
 		rm .uname .uname.1  # coping with borken pipes in unxutils
+		case "$UNAME" in
+		*bsd*)
+			BRACE_USE="$BRACE_USE bsd" ;;
+		*)
+			BRACE_USE="$BRACE_USE nonbsd" ;;
+		esac
 		BRACE_USE="$BRACE_USE $UNAME"
 		if [ "$UNAME" = "linux" ]; then
 			V=`uname -r`

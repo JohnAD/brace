@@ -1,13 +1,8 @@
-use alloc
-export stdlib.h
-use error
-export str
-use util
-export types
+export str types util
+use alloc error io
+
+export stdlib.h stdio.h
 use string.h
-export stdarg.h
-export stdio.h
-use io
 
 # this is a general buffer, revised version to be compatible with libb strs
 # I haven't decided if this is a good idea or not yet.
@@ -115,12 +110,7 @@ def buffer_get_free(b) (ssize_t)(b->space_end - b->end)
 # (possibly after a terminating \0 !)
 
 int Sprintf(buffer *b, const char *format, ...)
-	int len
-	va_list ap
-	va_start(ap, format)
-	len = Vsprintf(b, format, ap)
-	va_end(ap)
-	return len
+	collect(Vsprintf, b, format)
 
 # TODO move these?
 

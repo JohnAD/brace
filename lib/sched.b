@@ -1,6 +1,6 @@
 #  scheduler
 
-export proc time timeout selector
+export proc time timeout selector buffer vec
 use deq io error process hash
 use sched
 

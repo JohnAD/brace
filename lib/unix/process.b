@@ -102,7 +102,7 @@ int auth(passwd *pw, cstr pass)
 	char salt[64]
 	int l = Strrchr(x, '$') - x
 	assert(l < (int)sizeof(salt), "auth: salt too long")
-	strncpy(salt, x, l)
+	strlcpy(salt, x, l+1)
 	salt[l] = '\0'
 #	Sayf("%s %s %s", x, salt, crypt(pass, salt))
 	return cstr_eq(x, crypt(pass, salt)) && !cstr_eq(pw->pw_shell, "/bin/false")

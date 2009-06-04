@@ -16,8 +16,7 @@ char *strndup(const char *s, size_t n)
 		n = len
 	rv = malloc(n+1)
 	if rv
-		strncpy(rv, s, n)
-		rv[n] = '\0'
+		strlcpy(rv, s, n+1)
 	return rv
 
 char *strcasestr(const char *haystack, const char *needle)

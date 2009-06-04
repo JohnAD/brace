@@ -1,4 +1,4 @@
-export vec util
+export buffer vec util
 
 def read_tsv_vec(v)
 	read_tsv_vec(v, my(l))

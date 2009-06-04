@@ -1,7 +1,7 @@
 export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
-export str error buffer types net vec vio
-use m alloc util path env process
+export str error buffer types net vec vio util
+use m alloc path env process
 
 use io
 
@@ -464,8 +464,8 @@ int Tempfile(buffer *b, char *prefix, char *suffix, char *tmpdir, int dir, int m
 	char random[n_random_chars + 1]
 	char *pathname = b->start
 	if tmpdir == NULL
-		tmpdir = "/tmp"
-		# FIXME is this okay on mingw?
+		if mingw
+			tmpdir = "/tmp"
 	ssize_t len = strlen(tmpdir) + 1 + strlen(prefix) + strlen(suffix) + n_random_chars + 1
 	if buffer_get_space(b) < len
 		buffer_set_space(b, len)
@@ -752,22 +752,17 @@ cstr Readlink(const char *path)
 # this does NOT necessarily resolve to the canonical name,
 # it just reads links recursively
 
-typedef enum { if_dead_error, if_dead_null, if_dead_path, if_dead_warn=1<<31 } readlinks_if_dead
+#typedef enum { if_dead_error, if_dead_null, if_dead_path, if_dead_warn=1<<31 } readlinks_if_dead
 
-cstr readlinks(cstr path, readlinks_if_dead if_dead)
+cstr readlinks(cstr path, opt_err if_dead)
 	path = Strdup(path)
-	let(warn_if_dead, (if_dead & if_dead_warn) != 0)
+	let(warn_if_dead, (if_dead & WARN) != 0)
 	if_dead &= ~if_dead_warn
 
 	decl(stat_b, Stats)
 	repeat
 		if !Lstat(path, stat_b)
-			if warn_if_dead
-				warn("broken symlink to %s", path)
-			which if_dead
-			if_dead_null	return NULL
-			if_dead_path	return path
-			else	error("broken symlink to %s", path)
+			return opt_err_do(if_dead, (any){.cs=path}, (any){.cs=NULL}, "broken symlink to %s", path).cs
 		if !S_ISLNK(stat_b->st_mode)
 			break
 		let(path1, Readlink(path))

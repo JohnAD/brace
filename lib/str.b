@@ -59,7 +59,7 @@ str_free(str s)
 cstr cstr_from_str(const str s)
 	int size = str_get_size(s)
 	let(cs, cstr_of_size(size))
-	strncpy(cs, s.start, size)
+	strlcpy(cs, s.start, size+1)
 	return cs
 
 def str_from_buffer(b) *(str *)b

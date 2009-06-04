@@ -9,3 +9,4 @@ def play(s)
 	.
 def dsp_sync()
 	.
+static int hurd_sound = 1

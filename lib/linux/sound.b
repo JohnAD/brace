@@ -114,7 +114,7 @@ def dsp_buffer_set_size vec_set_size
 def dsp_buffer_get_size vec_get_size
 Def dsp_buffer_range vec_range
 
-export vec types
+export buffer vec types
 use util sound error m
 
 use linux/soundcard.h

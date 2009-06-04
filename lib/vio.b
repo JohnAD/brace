@@ -1,5 +1,6 @@
 # vstream contextual io!
 
+export util
 use io buffer circbuf m
 
 # TODO could be simpler, it really only needs read, write and flush?

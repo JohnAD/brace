@@ -1,5 +1,5 @@
 use util m sound alloc
-export vec
+export buffer vec
 
 typedef float sample
 	# The float format has 23-bit mantissa,

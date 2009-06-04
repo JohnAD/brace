@@ -1,4 +1,4 @@
-export types
+export types util
 export stdarg.h
 use m
 export gr

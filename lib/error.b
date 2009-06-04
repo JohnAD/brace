@@ -1,7 +1,8 @@
 export errno.h setjmp.h
 use stdio.h stdarg.h stdlib.h
-use main buffer util path env
-export vec hash thunk
+
+export buffer vec hash thunk util
+use main path env io
 
 export error
 
@@ -29,35 +30,35 @@ int exit__fault = 124
 # TODO or, use try and fatal to handle errors in error routines?
 
 error(const char *format, ...)
+	collect_void(verror, format)
+
+verror(const char *format, va_list ap)
 	New(b, buffer)
-	va_list ap
-	va_start(ap, format)
 	Vsprintf(b, format, ap)
-	va_end(ap)
 	buffer_add_nul(b)
 	buffer_squeeze(b)
 	Throw(buffer_get_start(b), 0, NULL)
 
 serror(const char *format, ...)
+	collect_void(vserror, format)
+
+vserror(const char *format, va_list ap)
 	int no = errno
 	New(b, buffer)
-	va_list ap
-	va_start(ap, format)
 	Vsprintf(b, format, ap)
-	va_end(ap)
 	Sprintf(b, ": %s", Strerror(no))
 	buffer_add_nul(b)
 	buffer_squeeze(b)
 	Throw(buffer_get_start(b), no, NULL)
 
 warn(const char *format, ...)
+	collect_void(vwarn, format)
+
+vwarn(const char *format, va_list ap)
 	format_add_nl(format1, format)
-	va_list ap
-	va_start(ap, format)
 	fflush(stdout)
 	vfprintf(stderr, format1, ap)
-	va_end(ap)
-	fflush(stderr)  # mingw doesn't autoflush stderr
+	on_mingw(fflush, stderr)
 
 failed(const char *funcname)
 	serror("%s failed", funcname)
@@ -87,14 +88,14 @@ warn_failed(const char *funcname)
 	swarning("%s failed", funcname)
 
 swarning(const char *format, ...)
-	va_list ap
-	va_start(ap, format)
+	collect_void(vswarning, format)
+
+vswarning(const char *format, va_list ap)
 	fflush(stdout)
 	Vfprintf(stderr, format, ap)
-	va_end(ap)
 	fprintf(stderr, ": ")
 	Perror(NULL)
-	fflush(stderr)
+	on_mingw(fflush, stderr)
 
 # hexdump from util is better, but this is ok for single-line stuff
 memdump(const char *from, const char *to)
@@ -103,16 +104,16 @@ memdump(const char *from, const char *to)
 		Fprintf(stderr, "%02x ", (const unsigned char)*from)
 		++from
 	Fprintf(stderr, "\n")
-	Fflush(stderr)
+	on_mingw(Fflush, stderr)
 
 # TODO provide a way to disable assertion checking (null macro)
 error__assert(int should_be_true, const char *format, ...)
+	collect_void(verror__assert, should_be_true, format)
+
+verror__assert(int should_be_true, const char *format, va_list ap)
 	if !should_be_true
 		New(b, buffer)
-		va_list ap
-		va_start(ap, format)
 		Vsprintf(b, format, ap)
-		va_end(ap)
 		buffer_add_nul(b)
 		buffer_squeeze(b)
 		Throw(buffer_get_start(b), 0, NULL)
@@ -295,13 +296,13 @@ def fault(format, a0, a1, a2, a3, a4)
 int throw_faults = 0
 
 fault_(char *file, int line, const char *format, ...)
+	collect_void(vfault_, file, line, format)
+
+vfault_(char *file, int line, const char *format, va_list ap)
 	file = best_path_main(Strdup(file))
 	New(b, buffer)
 	Sprintf(b, "%s:%d: ", file, line)
-	va_list ap
-	va_start(ap, format)
 	Vsprintf(b, format, ap)
-	va_end(ap)
 	buffer_add_nul(b)
 	buffer_squeeze(b)
 	if throw_faults
@@ -351,7 +352,7 @@ void *error_warn(void *obj, void *common_arg, void *er)
 	use(obj) ; use(common_arg)
 	fflush(stdout)
 	fprintf(stderr, "%s\n", ((err*)er)->msg)
-	fflush(stderr)
+	on_mingw(fflush, stderr)
 	vec_pop(errors)
 	return thunk_yes
 
@@ -362,3 +363,18 @@ void *error_ignore(void *obj, void *common_arg, void *er)
 	use(obj) ; use(common_arg) ; use(er)
 	vec_pop(errors)
 	return thunk_yes
+
+typedef enum { VALUE, ERRCODE, ERROR, ERRNULL, BEST, WARN=1<<31 } opt_err
+
+void *opt_err_do(opt_err opt, any value, any errcode, char *format, ...)
+	collect(vopt_err_do, opt, value, errcode, format)
+
+void *vopt_err_do(opt_err opt, any value, any errcode, char *format, va_list ap)
+	if opt & WARN || opt == ERROR
+		opt &= ~WARN
+		if opt != ERROR
+			vwarn(format, ap)
+		 else
+		 	verror(format, ap)
+	
+	return value

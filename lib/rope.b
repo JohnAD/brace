@@ -1,5 +1,5 @@
-export str vec types
-use util alloc cstr error io deq
+export str buffer vec types util
+use alloc cstr error io deq
 
 # this (together with str.b) is the way I think strings ought to be done
 
@@ -92,12 +92,12 @@ use stdarg.h
 Def ropev_range(v) (rope *)v.start, (rope *)v.end
 
 rope rope_cat_n(size_t n, ...)
+	collect(vrope_cat_n, n)
+
+rope vrope_cat_n(size_t n, va_list ap)
 	let(v, ropev_of_size(n))
-	va_list ap
-	va_start(ap, n)
 	for(i, ropev_range(v))
 		*i = va_arg(ap, rope)
-	va_end(ap)
 	return cast_to_rope(v)
 
 # these functions want to be called with "rope" args, not "rope *" args...??

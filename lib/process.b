@@ -1,5 +1,5 @@
+export types buffer util
 use stdlib.h
-export types buffer
 use error cstr vec
 use process
 
@@ -50,50 +50,50 @@ static void exec_argv_do_init()
 	exec_argv_init = 1
 
 Execl(const char *path, ...)
+	collect_void(Vexecl, path)
+
+Vexecl(const char *path, va_list ap)
 	if !exec_argv_init
 		exec_argv_do_init()
 	exec_argv.size = 0
-	va_list ap
-	va_start(ap, path)
 	repeat
 		char *arg = va_arg(ap, char *)
 		*(char **)vec_push(&exec_argv) = arg
 		if arg == NULL
 			break
-	va_end(ap)
 	Execv(path, (char *const *)exec_argv.b.start)
 
 # TODO macros to simplify common varargs usage?
 # TODO macros!
 
-Execlp(const char *path, ...)
+Execlp(const char *file, ...)
+	collect_void(Vexeclp, path)
+
+Vexeclp(const char *file, va_list ap)
 	if !exec_argv_init
 		exec_argv_do_init()
 	exec_argv.size = 0
-	va_list ap
-	va_start(ap, path)
 	repeat
 		char *arg = va_arg(ap, char *)
 		*(char **)vec_push(&exec_argv) = arg
 		if arg == NULL
 			break
-	va_end(ap)
 	Execvp(path, (char *const *)exec_argv.b.start)
 
 Execle(const char *path, ...)
+	collect_void(Vexecle, path)
+
+Vexecle(const char *path, va_list ap)
 	# and char *const envp[]
 	if !exec_argv_init
 		exec_argv_do_init()
 	exec_argv.size = 0
-	va_list ap
-	va_start(ap, path)
 	repeat
 		char *arg = va_arg(ap, char *)
 		*(char **)vec_push(&exec_argv) = arg
 		if arg == NULL
 			break
 	char *const *envp = va_arg(ap, char *const *)
-	va_end(ap)
 	Execve(path, (char *const *)exec_argv.b.start, envp)
 
 # as usual, you should set to->size to 0 first
@@ -210,18 +210,18 @@ int Systemv(const char *filename, char *const argv[])
 # filename is not repeated
 
 int Systeml(const char *filename, ...)
+	collect(Vsysteml, filename)
+
+int Vsysteml(const char *filename, va_list ap)
 	if !exec_argv_init
 		exec_argv_do_init()
 	exec_argv.size = 0
 	*(const char **)vec_push(&exec_argv) = filename
-	va_list ap
-	va_start(ap, filename)
 	repeat
 		char *arg = va_arg(ap, char *)
 		*(char **)vec_push(&exec_argv) = arg
 		if arg == NULL
 			break
-	va_end(ap)
 	return Systemv(filename, (char *const *)exec_argv.b.start)
 
 def Systeml(filename) Systeml(filename, NULL)

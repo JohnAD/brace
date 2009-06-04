@@ -24,3 +24,19 @@ typedef struct timespec timespec
 typedef struct tm datetime
 
 typedef void (*free_t)(void *)
+
+union any
+	void *p
+	char *cs
+	char c
+	short s
+	int i
+	long l
+	long long ll
+	float f
+	double d
+	long double ld
+	size_t z
+	off_t o
+
+typedef complex double complex

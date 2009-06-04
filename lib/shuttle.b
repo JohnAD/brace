@@ -1,13 +1,5 @@
-export proc
 use stdlib.h
- # for NULL
-use sched
- # for start()
-export types
- # for boolean
-use error
- # for assert
-export util
+export proc sched types error util
 
 # type-specific shuttle structs
 

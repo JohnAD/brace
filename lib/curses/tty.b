@@ -1,6 +1,6 @@
-export curses.h
-export stdarg.h
-use io util
+export curses.h stdarg.h
+export util
+use io
 
 # This curses wrapper is massively incomplete!  :)
 
