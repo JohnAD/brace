@@ -1,3 +1,4 @@
+#!/lang/b
 use stdio.h
 use ccoro
 
