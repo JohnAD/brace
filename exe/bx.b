@@ -35,7 +35,7 @@ Main()
 	if !S_EXISTS(libb_stat->st_mode)
 		error("Please ensure libb" SO " is installed.")
 
-	cstr b = strdup(arg[0])
+	volatile cstr b = strdup(arg[0])
 	if mingw && b[1] == ':' && among(b[2], '\\', '/')
 		b[1] = tolower(b[0])
 		b[0] = '/'

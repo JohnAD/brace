@@ -55,7 +55,11 @@ proc listener_sel(int listen_fd, socklen_t socklen)
 		s->fd = accept(listen_fd, (struct sockaddr *)s->sa, &s->len)
 		if s->fd < 0
 			sock_free(s)
-			if errno != EAGAIN  # can happen if forked
+			if errno == EAGAIN  # can happen if forked
+				.
+			 eif errno == EMFILE || errno == ENFILE
+				warn("listener: maximum number of file descriptors exceeded, rejecting %d", s->fd)
+			 else
 				failed("accept")
 		 eif add_fd(s->fd)
 			warn("listener: maximum number of sockets exceeded, rejecting %d", s->fd)
@@ -79,7 +83,11 @@ proc listener_try(int listen_fd, socklen_t socklen)
 		s->fd = accept(listen_fd, (struct sockaddr *)s->sa, &s->len)
 		if s->fd < 0
 			sock_free(s)
-			if errno != EAGAIN
+			if errno == EAGAIN  # can happen if forked
+				.
+			 eif errno == EMFILE || errno == ENFILE
+				warn("listener: maximum number of file descriptors exceeded, rejecting %d", s->fd)
+			 else
 				failed("accept")
 			read(listen_fd)
 		 eif add_fd(s->fd)
