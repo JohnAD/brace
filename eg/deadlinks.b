@@ -4,5 +4,5 @@ use b
 
 Main()
 	find_main(f, s)
-		if S_ISLNK(s->st_mode) && readlinks(f, ERRCODE) == NULL
+		if S_ISLNK(s->st_mode) && readlinks(f, OE_ERRCODE) == NULL
 			Say(f)

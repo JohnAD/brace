@@ -363,21 +363,21 @@ void *error_ignore(void *obj, void *common_arg, void *er)
 	vec_pop(errors)
 	return thunk_yes
 
-typedef enum { VALUE, ERRCODE, ERROR, WARN=1<<31 } opt_err
+typedef enum { OE_VALUE, OE_ERRCODE, OE_ERROR, OE_WARN=1<<31 } opt_err
 
 any opt_err_do(opt_err opt, any value, any errcode, char *format, ...)
 	collect(vopt_err_do, opt, value, errcode, format)
 
 any vopt_err_do(opt_err opt, any value, any errcode, char *format, va_list ap)
-	if opt & WARN || opt == ERROR
-		opt &= ~WARN
-		if opt == ERROR
+	if opt & OE_WARN || opt == OE_ERROR
+		opt &= ~OE_WARN
+		if opt == OE_ERROR
 		 	verror(format, ap)
 		 else
 			vwarn(format, ap)
 
 	which opt
-	VALUE	return value
-	ERRCODE	return errcode
+	OE_VALUE	return value
+	OE_ERRCODE	return errcode
 	else	failed("vopt_err_do", "unknown opt_err option")
 	return errcode

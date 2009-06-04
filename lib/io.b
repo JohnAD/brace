@@ -766,7 +766,7 @@ cstr readlinks(cstr path, opt_err if_dead)
 		path = path1
 	return path
 
-def readlinks(path) readlinks(path, ERROR)
+def readlinks(path) readlinks(path, OE_ERROR)
 
 _Getcwd(buffer *b)
 	repeat
