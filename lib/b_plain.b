@@ -19,3 +19,5 @@ export mime
 
 # export tty
 #   curses has conflicting symbols with libb etc, see ../curses_syms_conflicts
+# export ccomplex
+#   ccomplex conflicts with C++ complex

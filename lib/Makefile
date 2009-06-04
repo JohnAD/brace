@@ -52,11 +52,13 @@ uninstall:
 		find "$$D" -maxdepth 1 -type f \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' \) >.tmp.3 ; \
 		<.tmp.3 sed 's,\\,/,g; s/\.[^.]*$$//' >.tmp.4 ; \
 		while read F; do \
-			rm -v -f '$(includedir)'/"$$F".*; \
+			rm -v -f '$(includedir)'/"$$F".{c,b,bh}; \
 		done <.tmp.4 ; \
 		rmdir -v '$(includedir)'/"$$D" || true; \
 	done <.tmp.2
 	rm .tmp.1 .tmp.2 .tmp.3 .tmp.4
+	rm -v -f '$(includedir)/b.h'
+	rm -v -f '$(includedir)/b_plain.h'
 	rm -v -f '$(libdir)/$(LIBB_SONAME)'
 	rm -v -f '$(libdir)/$(LIBB_PLAIN_SONAME)'
 	rm -v -f '$(libdir)/$(LIBB_DEBUG_SONAME)'

@@ -1,4 +1,4 @@
-export math.h stdlib.h limits.h complex.h
+export math.h stdlib.h limits.h
 export types util time
 use process
 use m
@@ -275,30 +275,3 @@ def ln(x) log(x)
 # rand_normal uses the box-mueller method, from:
 # http://en.wikipedia.org/wiki/Normal_distribution#Generating_values_for_normal_random_variables
 # The Ziggurat method is faster, I could try that later.
-
-
-# complex number extensions
-
-cmplx cis(num ang)
-	return cos(ang)+sin(ang)*I
-
-# public domain code for computing the FFT
-# contributed by Christopher Diggins, 2005
-# adapted and converted from C++ to brace by Sam Watkins
-
-fft(cmplx *in, cmplx *out, int log2_n)
-	int n = 1 << log2_n
-	for(i, 0, n)
-		out[bit_reverse(i)] = in[i]
-	for(s, 1, log2_n+1)
-		int m = 1 << s
-		cmplx w = 1
-		cmplx wm = cis(2*pi/m)
-		for(j, 0, m/2)
-			for(k, j, n, m)
-				cmplx t = w * out[k + m/2]
-				cmplx u = out[k]
-				out[k] = u + t
-				out[k + m/2] = u - t
-			w = w * wm
-
