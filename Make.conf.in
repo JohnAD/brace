@@ -2,7 +2,7 @@
 MAJOR=0
 VERSION=0.0
 
-CC=gcc -pedantic -std=gnu99
+CC=ccache gcc -pedantic -std=gnu99
 
 OPTIMIZE=1
 DEBUG=1

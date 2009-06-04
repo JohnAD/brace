@@ -222,7 +222,7 @@ def for_buffer(i, b)
 #	for_buffer(i, b)
 #		if *i == c
 #			*i = '\0'
-			vec_push(v, i+1)
+#			vec_push(v, i+1)
 
 def buffer_is_empty(b) b->start == b->end
 
