@@ -1,4 +1,4 @@
-export io types alloc buffer
+export io types alloc buffer vec
 export stdarg.h string.h
 use m
 

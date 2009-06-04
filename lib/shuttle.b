@@ -1,5 +1,5 @@
 use stdlib.h
-export proc sched types error util
+export buffer vec proc sched types error util
 
 # type-specific shuttle structs
 
