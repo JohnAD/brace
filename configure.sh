@@ -2,5 +2,5 @@
 if [ -n "$WINDIR" -o -n "$windir" ]; then
 	./configure
 else
-	./configure --prefix=/usr
+	./configure --prefix=/usr/local
 fi
