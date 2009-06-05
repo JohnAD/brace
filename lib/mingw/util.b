@@ -29,10 +29,3 @@ int memcmp(const void *dst, const void *src, size_t count)
 	return 0
 
 def bzero(ptr, size) memset(ptr, 0, size)
-
-def on_mingw(what)
-	what()
-def on_mingw(what, a0)
-	what(a0)
-def on_mingw(what, a0, a1)
-	what(a0, a1)

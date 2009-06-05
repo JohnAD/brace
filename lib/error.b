@@ -57,7 +57,8 @@ vwarn(const char *format, va_list ap)
 	format_add_nl(format1, format)
 	fflush(stdout)
 	vfprintf(stderr, format1, ap)
-	on_mingw(fflush, stderr)
+	if mingw
+		fflush(stderr)
 
 failed(const char *funcname)
 	serror("%s failed", funcname)
@@ -94,7 +95,8 @@ vswarning(const char *format, va_list ap)
 	Vfprintf(stderr, format, ap)
 	fprintf(stderr, ": ")
 	Perror(NULL)
-	on_mingw(fflush, stderr)
+	if mingw
+		fflush(stderr)
 
 # hexdump from util is better, but this is ok for single-line stuff
 memdump(const char *from, const char *to)
@@ -103,7 +105,8 @@ memdump(const char *from, const char *to)
 		Fprintf(stderr, "%02x ", (const unsigned char)*from)
 		++from
 	Fprintf(stderr, "\n")
-	on_mingw(Fflush, stderr)
+	if mingw
+		Fflush(stderr)
 
 # TODO provide a way to disable assertion checking (null macro)
 error__assert(int should_be_true, const char *format, ...)
@@ -351,7 +354,8 @@ void *error_warn(void *obj, void *common_arg, void *er)
 	use(obj) ; use(common_arg)
 	fflush(stdout)
 	fprintf(stderr, "%s\n", ((err*)er)->msg)
-	on_mingw(fflush, stderr)
+	if mingw
+		fflush(stderr)
 	vec_pop(errors)
 	return thunk_yes
 
