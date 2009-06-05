@@ -36,10 +36,11 @@ Main()
 		error("Please ensure libb" SO " is installed.")
 
 	volatile cstr b = strdup(arg[0])
-	if mingw && b[1] == ':' && among(b[2], '\\', '/')
-		b[1] = tolower(b[0])
-		b[0] = '/'
-		for_cstr(i, b+2)
+	if mingw
+#		if b[1] == ':' && among(b[2], '\\', '/')
+#			b[1] = tolower(b[0])
+#			b[0] = '/'
+		for_cstr(i, b)
 			if *i == '\\'
 				*i = '/'
 	 else
