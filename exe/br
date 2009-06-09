@@ -139,12 +139,12 @@ if [ -z "$BRACE_USE" ]; then
 #		elif echo $UNAME | grep -i linux >/dev/null; then
 #			BRACE_USE="$BRACE_USE linux"
 #		fi
-		BU=""
-		for A in $BRACE_USE; do
-			[ -e "$BRACE_LIB/$A" ] && BU="$BU $A"
-		done
-		BRACE_USE="${BU# }"
 	fi
+	BU=""
+	for A in $BRACE_USE; do
+		[ -e "$BRACE_LIB/$A" ] && BU="$BU $A"
+	done
+	BRACE_USE="${BU# }"
 fi
 export BRACE_LIB BRACE_USE
 if [ -n "$BR_DEBUG" ]; then echo "BRACE_USE=$BRACE_USE"; fi
@@ -204,12 +204,12 @@ basename="`basename "$B"`"
 if [ -n "$X" -a "$X" = "${X#-}" ]; then
 	shift
 	X="${X%$EXE}$EXE"
-	XBAK="$dirname/.${basename}.xbak$EXE"
 else
 	X="$B$EXE"
 	[ "$X" = "$B" ] &&
 		fail "please specify a name for the executable"
 fi
+XBAK="$dirname/.${basename}.xbak$EXE"
 #C=`tempfile -s .c`
 B1="$dirname/.$basename.${b}1"
 C="$dirname/.$basename.$c"

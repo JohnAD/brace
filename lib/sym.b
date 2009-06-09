@@ -15,6 +15,8 @@ sym_init()
 
 # sym is called with a cstr.  this will be copied if it is put into the "syms" ht
 cstr sym(cstr s)
+	if !syms
+		sym_init()
 	list *ref = hashtable_lookup_ref(syms, s)
 	if hashtable_ref_exists(ref)
 		key_value *kv = hashtable_ref_key_value(ref)
@@ -31,6 +33,8 @@ cstr sym(cstr s)
 
 # sym_this is called with a malloc'd cstr; will be freed if already interned
 cstr sym_this(cstr s)
+	if !syms
+		sym_init()
 	list *ref = hashtable_lookup_ref(syms, s)
 	if hashtable_ref_exists(ref)
 		key_value *kv = hashtable_ref_key_value(ref)

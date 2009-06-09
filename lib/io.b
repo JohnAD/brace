@@ -145,7 +145,7 @@ fslurp_2(FILE *s, buffer *b)
 
 buffer *fslurp_1(FILE *s)
 	decl(st, Stats)
-	Fstat(fileno(s), st)
+	Fstat(Fileno(s), st)
 	int size = st->st_size
 
 	if size == 0
@@ -175,7 +175,7 @@ FILE *Fopen(const char *path, const char *mode)
 	if f == NULL
 		failed("fopen", mode, path)
 	return f
-def Fopen(pathname) Fopen(pathname, "r")
+def Fopen(pathname) Fopen(pathname, "rb")
 def Fopenout(pathname) Fopen(pathname, "wb")
 
 Fclose(FILE *fp)
@@ -949,6 +949,12 @@ cstr which(cstr file)
 	Free(PATH)
 	return path
 
+cstr Which(cstr file)
+	cstr path = which(file)
+	if !path
+		failed("which", file)
+	return path
+
 def fd_clr(fd, set)
 	FD_CLR(fd_to_socket(fd), set)
 def fd_isset(fd, set) FD_ISSET(fd_to_socket(fd), set)
@@ -1254,3 +1260,34 @@ insert_hole(cstr file, off_t offset, off_t size)
 		Remove(buffer_to_cstr(temp_name))
 
 	Close(fd)
+
+int Fileno(FILE *stream)
+	int rv = fileno(stream)
+	if rv < 0
+		failed("fileno")
+	return rv
+
+# TODO should use try / finally here, and make it re-throw (by default?)
+
+def stdio_redirect(stream, file)
+	stdio_redirect(stream, file, my(s), my(real_fd), my(saved_fd), my(x))
+def stdio_redirect(stream, file, s, real_fd, saved_fd, x)
+	FILE *s = Fopenout(file)
+	int real_fd = Fileno(stream)
+	int saved_fd
+	post(x)
+		Fflush(stream)
+		Dup2(saved_fd, real_fd)
+		Close(saved_fd)
+		Fclose(s)
+	pre(x)
+		Fflush(stream)
+		saved_fd = Dup(real_fd)
+		Dup2(Fileno(s), real_fd)
+
+
+fprint_vec_cstr(FILE *s, cstr h, vec *v)
+	Fprint(s, h)
+	for_vec(i, v, cstr)
+			Fprintf(s, " %s", *i)
+	nl(s)

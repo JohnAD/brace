@@ -8,6 +8,8 @@ extern char **environ
 
 char *env__required = (char *)-1
 
+# TODO change to use regular opt_err instead of env__required etc
+
 char *Getenv(const char *name, char *_default)
 	char *value = getenv(name)
 	if value == NULL

@@ -1172,3 +1172,22 @@ def sbe2(p) ((long)be2(p)) << 16 >> 16
 def sbe3(p) ((long)be3(p)) << 8 >> 8
 def sbe4(p) ((long)be4(p))
 
+
+def boolean(s) !among(*s, '\0', '0', 'n', 'N')
+
+# version_ge TODO a-z
+
+boolean version_ge(cstr v0, cstr v1)
+	cstr digits = "0123456789"
+	repeat
+		int i = atoi(v0), j = atoi(v1)
+		if i > j
+			return 1
+		if i < j
+			return 0
+		v0 += strspn(v0, digits) ; v0 += strcspn(v0, digits)
+		v1 += strspn(v1, digits) ; v1 += strcspn(v1, digits)
+		if *v0 == '\0'
+			return 1
+		if *v1 == '\0'
+			return 0

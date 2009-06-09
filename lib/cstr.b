@@ -25,19 +25,12 @@ cstr cstr_unix_to_dos(cstr s)
 	return buffer_to_cstr(b)
 
 cstr_chomp(cstr s)
-	int l = strlen(s)
-	if s[l-1] == '\n'
-		s[l-1] = '\0'
-
-## this chomp is interesting, it makes sure we have only a single line even if were multiple lines!
-## is this better?
-#cstr_chomp(cstr str)
-#	while *str
-#		if *str == '\n'
-#			*str = '\0'
-#			return
-#		
-#		str++
+	while *s
+		if among(*s, '\n', '\r')
+			*s = '\0'
+			return
+		s++
+def chomp(s) cstr_chomp(s)
 
 # TODO implement ends_with and begins_with efficiently
 
@@ -237,3 +230,14 @@ char *Strrchr(const char *s, int c)
 	if !rv
 		failed("strrchr")
 	return rv
+
+cstr_tolower(cstr s)
+	for_cstr(i, s)
+		*s = tolower(*s)
+
+cstr_toupper(cstr s)
+	for_cstr(i, s)
+		*s = tolower(*s)
+
+def lc(s) cstr_tolower(s)
+def uc(s) cstr_toupper(s)

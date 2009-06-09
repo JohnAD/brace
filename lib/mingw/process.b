@@ -1,9 +1,8 @@
-export signal.h
-export process.h
+export signal.h process.h
+use Windows.h
  # for getpid
 export types
-use util
-use process
+use util process
 
 int sig_execfailed = 0
 
@@ -78,3 +77,30 @@ pid_t Child_done()
 #	return pid
 
 def nochldwait(signum) 0
+
+struct utsname
+	char sysname[]
+	char nodename[]
+	char release[]
+	char version[]
+	char machine[]
+	char domainname[]
+
+int uname(struct utsname *buf)
+	buf->sysname = "mingw32"
+	# TODO fill in the rest!
+	buf->nodename = NULL
+	buf->release = NULL
+	buf->version = NULL
+	buf->machine = NULL
+	buf->domainname = NULL
+	return 0
+
+# TODO
+#int gethostname(char *name, size_t len)
+#	if strlcpy(name, Getenv("COMPUTERNAME"), len) >= len
+#		errno = EINVAL
+#		return -1
+#	if *name == '\0'
+#		GetComputerName
+#	return *name == '\0' ? -1 : 0

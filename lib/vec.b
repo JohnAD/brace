@@ -91,15 +91,15 @@ vec_grow_squeeze(vec *v, ssize_t delta_size)
 	vec_set_space(v, size)
 	vec_set_size(v, size)
 
-def vec_from_array(v, a)
-	new(v, vec, *a, array_size(a))
-	vec_set_size(v, array_size(a))
-	let(vfa__i0, a)
-	let(vfa__i1, array_end(a))
-	sametype(vfa__out, a) = vec_get_start(v)
-	for(vfa__i)
-		*out = *vfa__i
-		++out
+#def vec_from_array(v, a)
+#	new(v, vec, *a, array_size(a))
+#	vec_set_size(v, array_size(a))
+#	let(vfa__i0, a)
+#	let(vfa__i1, array_end(a))
+#	sametype(vfa__out, a) = vec_get_start(v)
+#	for(vfa__i)
+#		*out = *vfa__i
+#		++out
 
 def vec_get_start(v) vec_element(v, 0)
 def vec_get_end(v) vec_element(v, v->size)
@@ -152,6 +152,13 @@ void *vec_to_array(vec *v)
 	vec_squeeze(v)
 	vec_pop(v)
 	return vec_get_start(v)
+
+array_to_vec(vec *v, void *a)
+	v->b.start = a
+	v->element_size = sizeof(void*)
+	v->size = arylen(a)
+	v->space = v->size + 1
+	vec_recalc_buffer(v)
 
 def vec_null_terminate(v)
 	vec_push(v, NULL)
@@ -208,3 +215,15 @@ vec *subvec(vec *sub, vec *v, ssize_t i, ssize_t n)
 vec_recalc_from_buffer(vec *v)
 	v->space = buffer_get_space(&v->b) / v->element_size
 	v->size = buffer_get_size(&v->b) / v->element_size
+
+vec_recalc_buffer(vec *v)
+	v->b.end = v->b.start + v->element_size * v->size
+	v->b.space_end = v->b.start + v->element_size * v->space
+
+def vec_push_cstr(v, e)
+	*(cstr *)vec_push(v) = e
+
+def vec_append(v0, v1) vec_append_vec(v0, v1)
+vec_append_vec(vec *v0, vec *v1)
+	vec_append(v0, vec0(v1), veclen(v1))
+

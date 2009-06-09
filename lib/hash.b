@@ -304,32 +304,37 @@ hashtable_free(hashtable *ht)
 
 vec *mget(hashtable *ht, void *key)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	return kv->value
+	vec *v = kv->value
+	return v
 
 mput(hashtable *ht, void *key, void *value)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	if kv->value == NULL
+	vec *v = kv->value
+	if v == NULL
 		NEW(kv->value, vec, void*, 1)
-	*(void**)vec_push(kv->value) = value
+		v = kv->value
+	*(void**)vec_push(v) = value
 
 def mdel(ht, key, value, Free_or_void)
 	mdel(ht, key, value, Free_or_void, my(kv))
 def mdel(ht, key, value, Free_or_void, kv)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	if kv->value == NULL
+	vec *v = kv->value
+	if v == NULL
 		warn("mdel: key not found")
 	 else
 	 	int already = 0
-		grep(i, kv->value, void*, *i == value && !already++, Free_or_void)  # not ideal but ok
+		grep(i, v, void*, *i == value && !already++, Free_or_void)  # not ideal but ok
 
 def mdelmany(ht, key, value, Free_or_void)
 	mdelmany(ht, key, value, Free_or_void, my(kv))
 def mdelmany(ht, key, value, Free_or_void, kv)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	if kv->value == NULL
+	vec *v = kv->value
+	if v == NULL
 		warn("mdel: key not found")
 	 else
-		grep(i, kv->value, void*, *i == value, Free_or_void)
+		grep(i, v, void*, *i == value, Free_or_void)
 
 def mdelall(ht, key, Free_or_void)
 	mdelall(ht, key, Free_or_void, my(kv))
@@ -337,10 +342,40 @@ def mdelall(ht, key, Free_or_void)
 	list *l = hashtable_lookup_ref(ht, key)
 	if l->next != NULL
 		key_value *kv = hashtable_ref_lookup(l)
-	 	for_vec(i, kv->value, void *)
+		vec *v = kv->value
+	 	for_vec(i, v, void *)
 			Free_or_void(*i)
-		vec_free(kv->value)
+		vec_free(v)
 		hashtable_ref_delete(l)
+
+void *mget1(hashtable *ht, void *key)
+	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
+	vec *v = kv->value
+	if v && veclen(v) == 1
+		return *(void**)vec0(v)
+	 else
+	 	return NULL
+
+ssize_t mgetc(hashtable *ht, void *key)
+	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
+	vec *v = kv->value
+	return v ? veclen(v) : 0
+
+void *mget1st(hashtable *ht, void *key)
+	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
+	vec *v = kv->value
+	if v && veclen(v)
+		return *(void**)vec0(v)
+	 else
+	 	return NULL
+
+void *mgetlast(hashtable *ht, void *key)
+	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
+	vec *v = kv->value
+	if v && veclen(v)
+		return *(void**)vec_top(v)
+	 else
+	 	return NULL
 
 # TODO for_mhashtable ...
 
@@ -348,3 +383,9 @@ def mdelall(ht, key, Free_or_void)
 # TODO ordered hash option - using a double-linked list to keep the keys in insertion order
 # TODO sorted hash option - using a tree or something to keep the keys in sort order?
 # or actually use a tree for the data structure
+
+kv_cstr_to_hashtable(cstr kv[][2], hashtable *ht)
+	cstr (*i)[2] = kv
+	for ; (*i)[0] ; ++i
+		put(ht, (*i)[0], (*i)[1])
+
