@@ -44,7 +44,7 @@ Main()
 #def shiny1(pixel_type, r, g, b, rgb)
 
 cstr fortune()
-	cstr s = args ? join(" ", arg) : cmd("fortune -s -n 40")
+	cstr s = args ? join(' ', arg) : cmd("fortune -s -n 40")
 	if !s || !*s
 		s = "Hello World"
 	return s

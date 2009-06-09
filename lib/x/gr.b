@@ -19,7 +19,7 @@ Visual *visual
 XVisualInfo *visual_info
 int depth
 num pixel_size
-Pixmap buf
+Pixmap gr_buf
 Colormap colormap
 GC gc
 XGCValues gcvalues
@@ -137,11 +137,11 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 		if !XShmAttach(display, shmseginfo)
 			failed("XShmAttach")
 
-		buf = XShmCreatePixmap(display, window, vid, shmseginfo, w, h, depth)
+		gr_buf = XShmCreatePixmap(display, window, vid, shmseginfo, w, h, depth)
 	 else
-		buf = XCreatePixmap(display, window, w, h, depth)
+		gr_buf = XCreatePixmap(display, window, w, h, depth)
 
-#	XSetWindowBackgroundPixmap(display, window, buf)
+#	XSetWindowBackgroundPixmap(display, window, gr_buf)
 
 	XSelectInput(display, window, ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask|KeyReleaseMask|StructureNotifyMask)
 	XMapWindow(display, window)
@@ -154,7 +154,7 @@ gr_free()
 		XFree(visual_info)
 	if shmseginfo
 		XShmDetach(display, shmseginfo)
-	XFreePixmap(display, buf)
+	XFreePixmap(display, gr_buf)
 	if shmseginfo
 		shmdt(shmseginfo->shmaddr)
 		shmctl(shmseginfo->shmid, IPC_RMID, NULL)
@@ -215,16 +215,16 @@ rect_fill(num x, num y, num w, num h)
 	X = SX(x) ; Y = SY(y) ; W = SD(w) ; H = SD(h)
 	if !_yflip
 		Y -= H
-	XFillRectangle(display, buf, gc, X, Y, W, H)
+	XFillRectangle(display, gr_buf, gc, X, Y, W, H)
 	gr__change_hook()
 
 line(num x0, num y0, num x1, num y1)
-	XDrawLine(display, buf, gc, SX(x0), SY(y0), SX(x1), SY(y1))
+	XDrawLine(display, gr_buf, gc, SX(x0), SY(y0), SX(x1), SY(y1))
 	update_last(x1, y1)
 	gr__change_hook()
 
 point(num x, num y)
-	XDrawPoint(display, buf, gc, SX(x), SY(y))
+	XDrawPoint(display, gr_buf, gc, SX(x), SY(y))
 	gr__change_hook()
 
 circle(num x, num y, num r)
@@ -240,9 +240,9 @@ circle(num x, num y, num r)
 	# printf("%d %d %d %d\n", x0, y0, w, h)
 	if w == 0
 		# && h = 0, I hope!
-		XDrawPoint(display, buf, gc, x0, y0)
+		XDrawPoint(display, gr_buf, gc, x0, y0)
 	else
-		XDrawArc(display, buf, gc, x0, y0, w, h, 0, 64*360)
+		XDrawArc(display, gr_buf, gc, x0, y0, w, h, 0, 64*360)
 	#rgb(1, 0, 0)
 	#point(x, y)
 	#rgb(1, 1, 1)
@@ -263,10 +263,10 @@ circle_fill(num x, num y, num r)
 	# printf("%d %d %d %d\n", x0, y0, w, h)
 	if w == 0
 		# && h = 0, I hope!
-		XDrawPoint(display, buf, gc, x0, y0)
+		XDrawPoint(display, gr_buf, gc, x0, y0)
 	 else
-		XFillArc(display, buf, gc, x0, y0, w, h, 0, 64*360)
-		XDrawArc(display, buf, gc, x0, y0, w, h, 0, 64*360)
+		XFillArc(display, gr_buf, gc, x0, y0, w, h, 0, 64*360)
+		XDrawArc(display, gr_buf, gc, x0, y0, w, h, 0, 64*360)
 	#rgb(1, 0, 0)
 	#point(x, y)
 	#rgb(1, 1, 1)
@@ -310,15 +310,15 @@ polygon_draw(struct polygon *p)
 	XPoint *first_point = p->points
 	_polygon_point(p, first_point->x, first_point->y)
 	# and draw it
-	XDrawLines(display, buf, gc, p->points, p->n_points, CoordModeOrigin)
+	XDrawLines(display, gr_buf, gc, p->points, p->n_points, CoordModeOrigin)
 	# now unclose it again!
 	--(p->n_points)
 	gr__change_hook()
 
 polygon_fill(struct polygon *p)
-	XFillPolygon(display, buf, gc, p->points, p->n_points, Complex, CoordModeOrigin)
+	XFillPolygon(display, gr_buf, gc, p->points, p->n_points, Complex, CoordModeOrigin)
 	# make sure the thing shows up if it's small
-	XDrawPoint(display, buf, gc, p->points->x, p->points->y)
+	XDrawPoint(display, gr_buf, gc, p->points->x, p->points->y)
 	# should probably use Nonconvex instead of Complex,
 	# it might be faster
 	gr__change_hook()
@@ -329,9 +329,9 @@ polygon_end(struct polygon *p)
 def gprint_debug()
 	colour oldcol = fg_col
 	yellow()
-	XFillRectangle(display, buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5)-_font->ascent, text_width, _font->ascent+_font->descent)
+	XFillRectangle(display, gr_buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5)-_font->ascent, text_width, _font->ascent+_font->descent)
 	red()
-	XFillRectangle(display, buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5)-_font->ascent, text_width, _font->ascent)
+	XFillRectangle(display, gr_buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5)-_font->ascent, text_width, _font->ascent)
 	col(oldcol)
 
 def gprint_debug()
@@ -348,9 +348,9 @@ gprint(char *p)
 
 #	gprint_debug()
 
-#	XDrawString(display, buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+(_font->ascent+_font->descent)*(_yanc-1)/2.0+1)+_font->ascent, p, len)
+#	XDrawString(display, gr_buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+(_font->ascent+_font->descent)*(_yanc-1)/2.0+1)+_font->ascent, p, len)
 # the anchoring uses the ascent portion of the box only, this looks better
-	XDrawString(display, buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5), p, len)
+	XDrawString(display, gr_buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5), p, len)
 	move(lx + text_width, ly)
 	gr__change_hook()
 
@@ -370,7 +370,7 @@ gprint(char *p)
 #		eif len
 #			text_at_col0 = 0
 #		if len
-#			XDrawString(display, buf, gc, SX(lx), SY(ly)+_font->ascent, p, len)
+#			XDrawString(display, gr_buf, gc, SX(lx), SY(ly)+_font->ascent, p, len)
 #			move(lx + isd(text_width), ly)
 #		if *q == '\n'
 #			gnl()
@@ -385,7 +385,7 @@ num font_height()
 # TODO bbox function for fonts / text
 
 paint()
-	XCopyArea(display, buf, window, gc, 0, 0, w, h, 0, 0)
+	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
 #	XClearWindow(display, window)
 
 	# XClearWindow doesn't work to render the pixmap, I think the X server
@@ -397,7 +397,7 @@ paint()
 
 # this one waits for the paint to complete, in case you are poking the shm pixmap thing
 Paint()
-	XCopyArea(display, buf, window, gc, 0, 0, w, h, 0, 0)
+	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
 #	XClearWindow(display, window)
 	gr_sync()
 
@@ -407,7 +407,7 @@ gr_sync()
 clear()
 	colour fg = fg_col
 	col(bg_col)
-	XFillRectangle(display, buf, gc, 0, 0, w, h)
+	XFillRectangle(display, gr_buf, gc, 0, 0, w, h)
 	col(fg)
 	gr__change_hook()
 	# need to call paint also to update the actual window
@@ -425,7 +425,7 @@ triangle(num x2, num y2)
 	xpoint_set(p[0], lx2, ly2)
 	xpoint_set(p[1], lx, ly)
 	xpoint_set(p[2], x2, y2)
-	XFillPolygon(display, buf, gc, p, 3, Convex, CoordModeOrigin)
+	XFillPolygon(display, gr_buf, gc, p, 3, Convex, CoordModeOrigin)
 	move2(lx, ly, x2, y2)
 
 def xpoint_set(xpoint, X, Y)
@@ -438,7 +438,7 @@ quad(num x2, num y2, num x3, num y3)
 	xpoint_set(p[1], lx, ly)
 	xpoint_set(p[2], x2, y2)
 	xpoint_set(p[3], x3, y3)
-	XFillPolygon(display, buf, gc, p, 4, Convex, CoordModeOrigin)
+	XFillPolygon(display, gr_buf, gc, p, 4, Convex, CoordModeOrigin)
 	move2(x2, y2, x3, y3)
 
 def pixel(X, Y) pixel(vid, X, Y)

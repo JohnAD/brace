@@ -24,7 +24,7 @@ Main()
 		shmseginfo = Talloc(XShmSegmentInfo)
 		bzero(shmseginfo)
 		image = XShmCreateImage(display, visual, depth, ZPixmap, NULL, shmseginfo, w, h)
-#		image = XShmGetImage(display, buf, image, 0, 0, w, h, AllPlanes)
+#		image = XShmGetImage(display, gr_buf, image, 0, 0, w, h, AllPlanes)
 
 		shmseginfo->shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height, IPC_CREAT|0777)
 		if shmseginfo->shmid<0
@@ -40,7 +40,7 @@ Main()
 
 	else
 		warn("XShm not working")
-		image = XGetImage(display, buf, 0, 0, w, h, AllPlanes, ZPixmap)
+		image = XGetImage(display, gr_buf, 0, 0, w, h, AllPlanes, ZPixmap)
 
 	if image == NULL
 		failed("XGetImage")
@@ -82,9 +82,9 @@ Main()
 
 		bm("calc done")
 		if shm_ok
-			XShmPutImage(display, buf, gc, image, 0, 0, 0, 0, w, h, False)
+			XShmPutImage(display, gr_buf, gc, image, 0, 0, 0, 0, w, h, False)
 		else
-			XPutImage(display, buf, gc, image, 0, 0, 0, 0, w, h)
+			XPutImage(display, gr_buf, gc, image, 0, 0, 0, 0, w, h)
 		bm("put image")
 #		sleep_step(0.1)
 		Paint()

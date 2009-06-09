@@ -10,7 +10,7 @@ if [ -n "$WINDIR" -o -n "$windir" ]; then
 	make
 	make install
 else
-	export NPROCESSORS=2
+	export NPROCESSORS=${NPROCESSORS:-2}
 	make -j$NPROCESSORS
 	sudo make install
 fi

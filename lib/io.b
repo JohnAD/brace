@@ -507,6 +507,8 @@ int lexists(const char *file_name)
 	struct stat buf
 	return !lstat(file_name, &buf)
 
+def stat_exists(st) S_EXISTS(st->st_mode)
+
 off_t file_size(const char *file_name)
 	struct stat buf
 	Stat(file_name, &buf)
@@ -743,7 +745,7 @@ cstr Readlink(const char *path)
 	new(b, buffer, 256)
 	return Readlink(path, b)
 
-# this must be called with a malloc'd string
+# readlinks must be called with a malloc'd string
 # i.e. use Strdup.
 # it will free it if it was a link
 # the string it returns will also be malloc'd
@@ -752,7 +754,7 @@ cstr Readlink(const char *path)
 # it just reads links recursively
 
 cstr readlinks(cstr path, opt_err if_dead)
-	path = Strdup(path)
+#	path = Strdup(path)
 
 	decl(stat_b, Stats)
 	repeat
@@ -923,37 +925,6 @@ def Select(nfds, readfds, writefds, exceptfds) Select(nfds, readfds, writefds, e
 fd_set_init(fd_set *o)
 	fd_zero(o)
 
-# contextual io!  but this isn't the right way!
-
-#def in(filename) Freopen(filename, "r", stdin)
-#def out(filename) Freopen(filename, "wb", stdout)
-# this is a bit of a mess..
-
-# FIXME Input, tsv, in, etc - need a better way to do contextual IO!
-# just store current file descriptor/filehandle in a varible "in"  ??
-
-# use local / static?
-
-cstr which(cstr file)
-	cstr PATH = Strdup(Getenv("PATH"))
-	new(v, vec, cstr, 32)
-	splitv(v, PATH, PATH_sep)
-	cstr path = NULL
-	for_vec(dir, v, cstr)
-		path = path_cat(*dir, file)
-		if exists(path)
-			break
-		Free(path)
-		 # sets path = NULL again
-	vec_free(v)
-	Free(PATH)
-	return path
-
-cstr Which(cstr file)
-	cstr path = which(file)
-	if !path
-		failed("which", file)
-	return path
 
 def fd_clr(fd, set)
 	FD_CLR(fd_to_socket(fd), set)
@@ -1268,23 +1239,21 @@ int Fileno(FILE *stream)
 	return rv
 
 # TODO should use try / finally here, and make it re-throw (by default?)
+# TODO this will not work on mingw as it is
 
-def stdio_redirect(stream, file)
-	stdio_redirect(stream, file, my(s), my(real_fd), my(saved_fd), my(x))
-def stdio_redirect(stream, file, s, real_fd, saved_fd, x)
-	FILE *s = Fopenout(file)
+def stdio_redirect(stream, to_stream)
+	stdio_redirect(stream, to_stream, my(real_fd), my(saved_fd), my(x))
+def stdio_redirect(stream, to_stream, real_fd, saved_fd, x)
 	int real_fd = Fileno(stream)
 	int saved_fd
 	post(x)
 		Fflush(stream)
 		Dup2(saved_fd, real_fd)
 		Close(saved_fd)
-		Fclose(s)
 	pre(x)
 		Fflush(stream)
 		saved_fd = Dup(real_fd)
-		Dup2(Fileno(s), real_fd)
-
+		Dup2(Fileno(to_stream), real_fd)
 
 fprint_vec_cstr(FILE *s, cstr h, vec *v)
 	Fprint(s, h)

@@ -301,7 +301,7 @@ int rl(buffer *b)
 
 def rl() rl_0()
 cstr rl_0()
-	New(b, buffer, 128)
+	new(b, buffer, 128)
 	if rl(b) == 0
 		buffer_squeeze(b)
 		return buffer_to_cstr(b)
@@ -480,21 +480,23 @@ def F_ioe(i, o, e)
 
 
 vec *read_ints(cstr file)
-	read_file_to_vec(file, int, l, (int)atoi(l))
+	read_file_to_vec(v, file, int, l, (int)atoi(l))
+	return v
 
 vec *read_nums(cstr file)
-	read_file_to_vec(file, num, l, (num)atof(l))
+	read_file_to_vec(v, file, num, l, (num)atof(l))
+	return v
 
 vec *read_cstrs(cstr file)
-	read_file_to_vec(file, cstr, l, Strdup(l))
+	read_file_to_vec(v, file, cstr, l, Strdup(l))
+	return v
 
-def read_file_to_vec(file, type, l, map)
+def read_file_to_vec(v, file, type, l, map)
 	New(v, vec, type, 200)
 	F_in(file)
 		eachline(l)
 			vec_push(v, map)
 	vec_squeeze(v)
-	return v
 
 
 vstream_init_circbuf(vstream *vs, circbuf *b)

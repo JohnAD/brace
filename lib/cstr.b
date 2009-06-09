@@ -193,7 +193,14 @@ def for_cstr(i, s)
 	for i=s; *i != '\0'; ++i
 		.
 
-cstr join(cstr sep, cstr *s)
+cstr join(char sep, cstr *s)
+	char sep_cstr[2] = { sep, '\0' }
+	return joins(sep_cstr, s)
+
+cstr joinv(char sep, vec *v)
+	return join(sep, vec_to_array(v))
+
+cstr joins(cstr sep, cstr *s)
 	new(b, buffer, 256)
 	if *s
 		repeat
@@ -204,8 +211,8 @@ cstr join(cstr sep, cstr *s)
 			buffer_cat_cstr(b, sep)
 	return buffer_to_cstr(b)
 
-cstr joinv(cstr sep, vec *v)
-	return join(sep, vec_to_array(v))
+cstr joinsv(cstr sep, vec *v)
+	return joins(sep, vec_to_array(v))
 
 char *Strstr(const char *haystack, const char *needle)
 	char *rv = strstr(haystack, needle)
@@ -241,3 +248,9 @@ cstr_toupper(cstr s)
 
 def lc(s) cstr_tolower(s)
 def uc(s) cstr_toupper(s)
+
+cstr cstr_begins_with_word(cstr s, cstr substr)
+	cstr rv = cstr_begins_with(s, substr)
+	if among(*rv, '\0', ' ')
+		return rv
+	return NULL

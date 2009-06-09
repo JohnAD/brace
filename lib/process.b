@@ -393,11 +393,6 @@ uq_clean()
 		vec_clear(uq_vec)
 
 
-def if_null(p) if_null(p, "")
-void *if_null(void *p, void *dflt)
-	return p ? p : dflt
-
-
 # q(), this may be a better way than using uq() !
 
 vec struct__q_vec

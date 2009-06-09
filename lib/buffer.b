@@ -20,6 +20,13 @@ use io
 # so can alloc buffer size on first use in case of a repeatedly reused buffer
 # ???
 
+# TODO have two types of "buffer", "vec", etc, one that is on the heap, and one
+# that is on the stack (somehow!). We can't realloc space on the stack, it
+# would have to just lose the first space. It would be much faster than
+# malloc'd space though. Or maybe if it needs to realloc, it could move the
+# storage to the heap.
+
+
 struct buffer
 	char *start
 	char *end

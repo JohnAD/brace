@@ -3,6 +3,7 @@ use stdio.h
 export types
 use error io
 use alloc
+export vec
 
 def alloc_type normal
 #def alloc_type memlog
@@ -145,4 +146,31 @@ cstr memlog_Strndup(const char *s, size_t n, char *file, int line)
 	if memlog_on
 		Fprintf(memlog, "A\tstrndup\t%010p\t%d\t%s:%d\n", rv, strlen(rv), file, line)
 	return rv
+
+
+# tofree
+# TODO a proper block alloc / free, where I can free a whole block together
+
+vec *tofree_vec = NULL
+
+def tofree_block()
+	tofree_block(my(x))
+def tofree_block(x)
+	vec *tofree_vec_old = tofree_vec
+	post(x)
+		free_all(tofree_vec)
+		tofree_vec = tofree_vec_old
+	pre(x)
+		NEW(tofree_vec, vec, void*, 16)
+		.
+
+void *tofree(void *obj)
+	if obj
+		vec_push(tofree_vec, obj)
+	return obj
+
+free_all(vec *v)
+	for_vec(i, v, void*)
+		Free(*i)
+	vec_set_size(v, 0)
 

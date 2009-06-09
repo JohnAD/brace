@@ -212,3 +212,62 @@ boolean path_has_component(cstr path, cstr component)
 	Free(c1)
 	Free(c2)
 	return has
+
+# malloc->malloc
+def path_to_abs(path) path_to_abs(path, NULL)
+cstr path_to_abs(cstr path, cstr cwd)
+	if path_is_abs(path)
+		return path
+	 else
+		if !cwd
+			cwd = Getcwd()
+		cstr path1 = path_tidy(path_cat(cwd, path))
+		Free(path)
+		return path1
+
+# PATH is vaguely related to paths..!
+
+cstr which(cstr file)
+	cstr PATH = Strdup(Getenv("PATH"))
+	new(v, vec, cstr, 32)
+	splitv(v, PATH, PATH_sep)
+	cstr path = NULL
+	for_vec(dir, v, cstr)
+		path = path_cat(*dir, file)
+		if exists(path)
+			break
+		Free(path)
+		 # sets path = NULL again
+	vec_free(v)
+	Free(PATH)
+	return path
+
+cstr Which(cstr file)
+	cstr path = which(file)
+	if !path
+		failed("which", file)
+	return path
+
+PATH_prepend(cstr dir)
+	PATH_rm(dir)
+	cstr new_PATH = format("%s%c%s", dir, PATH_sep, Getenv("PATH"))
+	Setenv("PATH", new_PATH)
+	Free(new_PATH)
+
+PATH_append(cstr dir)
+	PATH_rm(dir)
+	cstr new_PATH = format("%s%c%s", Getenv("PATH"), PATH_sep, dir)
+	Setenv("PATH", new_PATH)
+	Free(new_PATH)
+
+PATH_rm(cstr dir)
+	cstr PATH = Strdup(Getenv("PATH"))
+	new(v, vec, cstr, 32)
+	splitv(v, PATH, PATH_sep)
+	ssize_t c = veclen(v)
+	grep(i, v, cstr, !cstr_eq(*i, dir), void)
+	if veclen(v) != c
+		cstr new_PATH = joinv(PATH_sep, v)
+		Setenv("PATH", new_PATH)
+		Free(new_PATH)
+	Free(PATH)

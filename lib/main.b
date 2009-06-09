@@ -1,5 +1,5 @@
 use m path error io net env vio sym
-export cstr
+export cstr hash
 
 use main
 
@@ -8,6 +8,7 @@ int args
 char **argv
 char **envp
 char *program_full
+char *program_real
 char *program
 char *program_dir
 char **arg
@@ -25,7 +26,9 @@ main__init(int _argc, char *_argv[], char *_envp[])
 	error_init()
 	main_dir = Getcwd()
 	program_full = argv[0]
-	dirbasename(Strdup(program_full), d, b)  # this is bogus!  need auto decl
+	program_real = readlinks(path_to_abs(Strdup(program_full)))
+	# TODO readlinks?
+	dirbasename(Strdup(program_real), d, b)  # this is bogus!  need auto decl
 	program_dir = d
 	program = b
 	if mingw && cstr_ends_with(program, ".exe")
@@ -52,15 +55,29 @@ def shift()
 
 # options
 
+def opt(opt) optlast(opt)
+def optc(opt) optc(O, opt)
+def optlast(opt) optlast(O, opt)
+def opt1st(opt) opt1st(O, opt)
+def optv(opt) optv(O, opt)
+
+def opt(O, opt) optlast(opt)
+def optc(O, opt) mgetc(&O->h, opt)
+def optlast(O, opt) mgetlast(&O->h, opt)
+def opt1st(O, opt) mget1st(&O->h, opt)
+def optv(O, opt) mget(&O->h, opt)
+
 struct opts
 	vec v
 	hashtable h
 
-typedef void (*opt_h)(cstr *arg)
-
 struct opt
 	cstr name
 	cstr *arg
+
+#TODO? :
+
+#typedef void (*opt_h)(cstr *arg)
 
 #struct opt
 #	cstr opt_short
@@ -160,11 +177,10 @@ opts *options(cstr options_short[][2])
 
 dump_options(opts *O)
 	for_vec(o, &O->v, opt)
-		Print(o->name)
+		Fprint(stderr, o->name)
 		if o->arg
-			Printf(" =")
+			Fprint(stderr, " =")
 			forary_null(j, o->arg)
-				Printf(" %s", j)
-		nl()
-	nl()
-
+				Fprintf(stderr, " %s", j)
+		nl(stderr)
+	nl(stderr)

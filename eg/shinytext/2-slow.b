@@ -10,7 +10,7 @@ Main()
 	gr_fast()
 	gprint_anchor(0, 0)
 	font("helvetica-medium", 200)
-	cstr s = args ? join(" ", arg) : "Hello World!"
+	cstr s = args ? join(' ', arg) : "Hello World!"
 	num tw = text_width(s)
 	int fs = (int)(200*(w-r1*2)/tw * 0.95)
 	font("helvetica-medium", fs)

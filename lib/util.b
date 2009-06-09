@@ -1191,3 +1191,19 @@ boolean version_ge(cstr v0, cstr v1)
 			return 1
 		if *v1 == '\0'
 			return 0
+
+cstr hashbang(cstr file)
+	cstr exe
+	F_in(file)
+		exe = rl()
+		if exe
+			cstr_chomp(exe)
+			if cstr_begins_with(exe, "#!") == 0
+				cstr_chop_start(exe, exe+2)
+			 else
+				Free(exe)
+	return exe
+
+def dflt(p) dflt(p, "")
+void *dflt(void *p, void *dflt)
+	return p ? p : dflt

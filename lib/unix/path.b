@@ -1,3 +1,5 @@
+export types
+
 def path__sep '/'
 def path__is_sep(c) c == '/'
 def path__sep_cstr "/"
@@ -7,5 +9,5 @@ def PATH_sep ':'
 def EXE ""
 def SO ".so"
 
-# to avoid this file being empty which annoys C99  :/
-int unix_path = 1
+boolean path_is_abs(cstr path)
+	return path__is_sep(path[0])
