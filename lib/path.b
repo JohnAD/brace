@@ -1,5 +1,5 @@
 export types util cstr
-use alloc vec
+use alloc vec env
 
 use path  # slight hack?  for the specifics path__sep etc
 
