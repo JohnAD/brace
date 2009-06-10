@@ -1,0 +1,15 @@
+#!/bin/sh
+exec perl -e '
+
+use strict; use warnings; use L;
+
+require "brace_parser.pl";
+
+use Brace::SplitUse;
+
+parse(\*STDIN);
+
+brace_split_use(\@ARGV);
+
+output_all();
+' "$@"
