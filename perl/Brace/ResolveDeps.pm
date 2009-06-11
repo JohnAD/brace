@@ -112,7 +112,7 @@ sub resolve_dep {
 
 	my ($h) = @_;
 	# if it already has a path, don't try to resolve further.
-	if ($h =~ m,^["</],) { warn "already: $h\n"; return [$h]; }
+	if ($h =~ m,^["</],) { return [$h]; }
 
 	my @c_names;
 	my @b_names;

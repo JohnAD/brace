@@ -116,7 +116,7 @@ cstr cstr_chop_start(cstr c, cstr start)
 	int len = strlen(start)
 	memmove(c, start, len)
 	c[len] = '\0'
-	Realloc(c, len+1)
+#	Realloc(c, len+1)
 	return c
 	# inefficient, who cares
 
@@ -254,3 +254,8 @@ cstr cstr_begins_with_word(cstr s, cstr substr)
 	if among(*rv, '\0', ' ')
 		return rv
 	return NULL
+
+def cstr_realloc(s)
+	cstr_realloc(s, strlen(s))
+def cstr_realloc(s, len)
+	Realloc(s, len+1)

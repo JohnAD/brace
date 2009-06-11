@@ -1,7 +1,7 @@
 use util
 
 #typedef enum { COMMENT, TABS, SPACE, NUMBER, STRING, CHARACTER, NAME, BRACKET, DELIMIT, OP, ILLEGAL = -1 } token_types
-typedef enum { NAME, SPACE, BRACKET, OP, NEWLINE, TABS, DELIMIT, NUMBER, COMMENT, STRING, CHARACTER, BSPACE, TOKEN_TYPE_TOP, ILLEGAL = -1 } token_types
+typedef enum { NAME, SPACE, BRACKET, OP, NEWLINE, TABS, DELIMIT, NUMBER, COMMENT, STRING, CHARACTER, BSPACE, TOKEN_TYPE_TOP, ILLEGAL = -1, TOK_EOT = -2 } token_t
 # tried to order with commonest ones first... probably should use stats to do that :p  lol
 # what is QUOTED good for?  symbols?  like in lisp?  code as data?
 # disabled for now (cause hardish to implement!)
@@ -24,7 +24,9 @@ def token_type(c) ct_token_type[(int)(uchar)c]
 def char_name2(c) ct_name2[(int)(uchar)(c)]
 
 char token_type_(char c)
-	if c == '#'
+	if c == '\0'
+		return TOK_EOT
+	 eif c == '#'
 		return COMMENT
 	 eif c == '\n'
 		return NEWLINE
@@ -36,7 +38,7 @@ char token_type_(char c)
 	 	return BSPACE
 	 eif tween(c, '0', '9')
 		return NUMBER
-		# I want to be able to identify a token from its first char.
+		# I want to be able to identify a token's type from its first char.
 		# So can't allow .1, you must type 0.1  :/
 	 eif c == '"'
 		return STRING
@@ -144,3 +146,24 @@ def tok_op(i)
 def tok_illegal(i)
 	while token_type(*i) == ILLEGAL && *i != tok_EOT
 		++i
+
+token_t token(char **i_ptr)
+	char *i = *i_ptr
+	token_t t = token_type(*i)
+	which t
+	TOK_EOT	.
+	COMMENT	tok_comment(i)
+	NEWLINE	++i
+	TABS	tok_tabs(i)
+	SPACE	tok_space(i)
+	BSPACE	tok_bspace(i)
+	NUMBER	tok_number(i)
+	STRING	tok_string(i)
+	CHARACTER	tok_char(i)
+	NAME	tok_name(i)
+	BRACKET	tok_bracket(i)
+	DELIMIT	tok_delimit(i)
+	OP	tok_op(i)
+	ILLEGAL	tok_illegal(i)
+	*i_ptr = i
+	return t

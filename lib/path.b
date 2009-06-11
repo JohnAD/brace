@@ -157,6 +157,7 @@ cstr path_under(cstr parent, cstr child)
 	if e
 		if path__is_sep(*e)
 			cstr_chop_start(child, e+1)
+			cstr_realloc(child)
 			return child
 		 eif *e == '\0'
 			Free(child)
