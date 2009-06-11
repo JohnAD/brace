@@ -1,26 +1,16 @@
-export cstr types
+export cstr types deq
 use vio
 
-boolean brace()
+boolean brace(deq *lines)
 	brace_init()
-	if readstmt()
+	if readstmt(lines)
 		writestmt()
-		while readstmt()
+		while readstmt(lines)
 			writedelim()
 			writestmt()
 		writedelim()
 	return 1
 
-def brace(b1_file, c_file)
-	brace_files(b1_file, c_file)
-boolean brace_files(cstr b1_file, cstr c_file)
-	boolean ok
-	F_io(b1_file, c_file)
-		ok = brace()
-	return ok
-
-
-local buffer *buf = NULL
 
 def MAXTABS 256
 
@@ -56,11 +46,9 @@ local brace_init()
 	lastcase = 0
 	in_macro = 0
 	first_line_of_macro = 0
-	if !buf
-		NEW(buf, buffer, 256)
 
-local int readstmt()
-	if !readln()
+local int readstmt(deq *lines)
+	if !readln(lines)
 		tabs = 0
 		return 0
 	tabs = striptabs()
@@ -301,14 +289,14 @@ local procstmt()
 				is_kwdparens = 1
 				break
 
-local int readln()
-	buffer_clear(buf)
-	if rl(buf) == EOF
+local int readln(deq *lines)
+	if deqlen(lines) == 0
 		return 0
-	l = buf0(buf)
+	l = *(cstr*)q(lines, 0)
+	deq_shift(lines)
 	len = strlen(l)
-	while last() == '\n' || last() == '\r'
-		l[--len] = '\0'
+#	while last() == '\n' || last() == '\r'
+#		l[--len] = '\0'
 	return 1
 
 local char last()

@@ -219,6 +219,7 @@ long double asleep(long double dt, long double t)
 # benchmarking stuff
 
 num bm_start = 0
+num bm_end = 0
 boolean bm_enabled = 1
 
 def bm_start()
@@ -229,7 +230,7 @@ def bm(s)
 	if bm_enabled
 		if bm_start == 0
 			bm_start()
-		num bm_end = rtime()
+		bm_end = rtime()
 		warn("%s: %f", s, bm_end-bm_start)
 
 def bm(s, n)

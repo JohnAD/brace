@@ -1,0 +1,16 @@
+#!/lang/b
+use b
+Main()
+	warn("type something! ^D to finish")
+	bm_start()
+	cstr text = buffer_to_cstr(fslurp(stdin))
+	int chars = strlen(text)
+	num words5 = chars / 5.0
+	bm("finished")
+	num secs = bm_end - bm_start
+	num mins = secs / 60
+	num wpm = words5 / mins
+	Sayf("words:\t%.2f", words5)
+	Sayf("seconds:\t%.2f", secs)
+	Sayf("wpm:\t%.2f", wpm)
+

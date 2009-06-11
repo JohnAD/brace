@@ -26,7 +26,10 @@ main__init(int _argc, char *_argv[], char *_envp[])
 	error_init()
 	main_dir = Getcwd()
 	program_full = argv[0]
-	program_real = readlinks(path_to_abs(Strdup(program_full)))
+	if !exists(program_full)
+		program_full = Which(program_full)
+		# this might fail if PATH was not exported :/
+	program_real = readlinks(Strdup(program_full))
 	# TODO readlinks?
 	dirbasename(Strdup(program_real), d, b)  # this is bogus!  need auto decl
 	program_dir = d
@@ -91,16 +94,16 @@ opts_init(opts *O, size_t opts_hash_size)
 	vec_init(&O->v, opt, 16)
 	hashtable_init(&O->h, cstr_hash, cstr_eq, opts_hash_size)
 
-# options() modifies its input, both the character data and the actual pointers
+# get_options() modifies its input, both the character data and the actual pointers
 # and updates the array arg points at to point at non-option arguments.
 
-def options() options(NULL)
+def get_options() get_options(NULL)
 
-opts *options(cstr options_short[][2])
+opts *get_options(cstr options[][2])
 	new(short_ht, hashtable, cstr_hash, cstr_eq, 257)
 
-	if options_short
-		kv_cstr_to_hashtable(options_short, short_ht)
+	if options
+		kv_cstr_to_hashtable(options, short_ht)
 
 	New(O, opts)
 

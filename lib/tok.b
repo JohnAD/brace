@@ -6,13 +6,17 @@ typedef enum { NAME, SPACE, BRACKET, OP, NEWLINE, TABS, DELIMIT, NUMBER, COMMENT
 # what is QUOTED good for?  symbols?  like in lisp?  code as data?
 # disabled for now (cause hardish to implement!)
 
+boolean tok_initd = 0
+
 typedef char char_table[256]
 char_table ct_token_type, ct_name2
 # TODO more tables for different types of characters?
 
 tok_init()
-	char_table_init(ct_token_type, c, token_type_(c))
-	char_table_init(ct_name2, c, char_name2_(c))
+	if !tok_initd
+		tok_initd = 1
+		char_table_init(ct_token_type, c, token_type_(c))
+		char_table_init(ct_name2, c, char_name2_(c))
 
 def char_name2_(c) tween(c, 'A', 'Z') || tween(c, 'a', 'z') || tween(c, '0', '9') || among(c, '_', '$')
 

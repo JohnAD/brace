@@ -554,7 +554,10 @@ size_t vs_read_circbuf(void *ptr, size_t size, size_t nmemb, vstream *vs)
 	circbuf *b = vs->data
 	ssize_t l = size * nmemb
 	if l > circbuf_get_size(b)
-		l = circbuf_get_size(b)
+		nmemb = circbuf_get_size(b) / size
+		l = size * nmemb
+		if !l
+			return 0
 	char *space_end = circbuf_get_space_end(b)
 	char *i = cbuf0(b)
 	ssize_t l1 = space_end - i

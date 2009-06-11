@@ -108,11 +108,11 @@ if [ -z "$BRACE_USE" ]; then
 			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
 		fi
 		LDLIBS="$LDLIBS -lcrypt"
-		uname > .uname.$$
-		<.uname.$$ tr 'A-Z' 'a-z' >.uname.$$.1
-#		UNAME=`uname | tr 'A-Z' 'a-z'`
-		<.uname.$$.1 read UNAME
-		rm .uname.$$ .uname.$$.1  # coping with borken pipes in unxutils
+#		uname > .uname.$$
+#		<.uname.$$ tr 'A-Z' 'a-z' >.uname.$$.1
+		UNAME=`uname | tr 'A-Z' 'a-z'`
+#		<.uname.$$.1 read UNAME
+#		rm .uname.$$ .uname.$$.1  # coping with borken pipes in unxutils
 		case "$UNAME" in
 		*bsd*)
 			BRACE_USE="$BRACE_USE bsd" ;;

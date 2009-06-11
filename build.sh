@@ -10,7 +10,14 @@ if [ -n "$WINDIR" -o -n "$windir" ]; then
 	make
 	make install
 else
-	export NPROCESSORS=${NPROCESSORS:-2}
+	if [ -z "$NPROCESSORS" ]; then
+		if [ -e /proc/cpuinfo ]; then
+			NPROCESSORS=`< /proc/cpuinfo grep '^processor' | wc -l`
+		else
+			NPROCESSORS=2
+		fi
+		export NPROCESSORS
+	fi
 	make -j$NPROCESSORS
 	sudo make install
 fi

@@ -130,11 +130,12 @@ fslurp_2(FILE *s, buffer *b)
 	int size = buffer_get_size(b)
 	char *start = buffer_get_start(b)
 	repeat
-		let(bytes_read, Fread(start + size, 1, space - size, s))
-		if bytes_read == 0
-			break
+		int to_read = space - size
+		ssize_t bytes_read = Fread(start + size, 1, to_read, s)
 		buffer_grow(b, bytes_read)
 		size += bytes_read
+		if bytes_read < to_read
+			break
 		if size == space
 			buffer_double(b)
 			space = buffer_get_space(b)
