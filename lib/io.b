@@ -28,6 +28,7 @@ def openin(pathname) Open(pathname, O_RDONLY)
 def openout(pathname, mode) Open(pathname, O_WRONLY|O_CREAT, mode)
 def openout(pathname) openout(pathname, 0666)
 def Open(pathname) openin(pathname)
+def open(pathname) open(pathname, O_RDONLY)
 
 # FIXME many uses of openout would want O_TRUNC
 
