@@ -116,7 +116,9 @@ opts *get_options(cstr options[][2])
 			continue
 		if i[1] == '-' && i[2] == '\0'
 			++p
-			continue
+			while *p
+				*out++ = *p++
+			break
 
 		opt *o = vec_push(&O->v)
 

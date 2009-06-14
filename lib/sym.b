@@ -10,7 +10,7 @@ hashtable *syms = NULL
 sym_init()
 	if !syms
 		syms = &syms__struct
-		init(syms, hashtable, cstr_hash, (eq_func)cstr_eq, syms_n_buckets)
+		init(syms, hashtable, cstr_hash, cstr_eq, syms_n_buckets)
 		# TODO rehash if the hashtable gets too full...?
 
 # sym is called with a cstr.  this will be copied if it is put into the "syms" ht

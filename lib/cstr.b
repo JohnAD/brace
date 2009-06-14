@@ -249,13 +249,33 @@ cstr_toupper(cstr s)
 def lc(s) cstr_tolower(s)
 def uc(s) cstr_toupper(s)
 
-cstr cstr_begins_with_word(cstr s, cstr substr)
-	cstr rv = cstr_begins_with(s, substr)
-	if among(*rv, '\0', ' ')
-		return rv
-	return NULL
-
 def cstr_realloc(s)
 	cstr_realloc(s, strlen(s))
 def cstr_realloc(s, len)
 	Realloc(s, len+1)
+
+boolean is_blank(cstr l)
+	return l[strspn(l, " \t")] == '\0'
+
+cstr cstr_begins_with_word(cstr s, cstr substr)
+	cstr rv = cstr_begins_with(s, substr)
+	if rv
+		if *rv == ' '
+			return rv+1
+		 eif *rv == '\0'
+			return rv
+	return NULL
+
+def cstr_begins_with_word(s) 1
+def cstr_begins_with_word(s, w0, w1) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1))
+def cstr_begins_with_word(s, w0, w1, w2) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2))
+def cstr_begins_with_word(s, w0, w1, w2, w3) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7, w8))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7, w8, w9))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11))
+def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12))

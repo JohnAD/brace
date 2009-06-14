@@ -38,7 +38,7 @@ buffer_init(buffer *b, size_t space)
 	b->start = (char *)Malloc(space)
 	b->end = b->start
 	b->space_end = b->start + space
-def buffer_init(b) buffer_init(b, 8)
+def buffer_init(b) buffer_init(b, 128)  # was 8
 
 buffer_free(buffer *b)
 	Free(b->start)
@@ -344,3 +344,8 @@ buf_dup_guts(buffer *b, size_t extra)
 	b->start = memdup(b->start, n, extra)
 	b->end = b->start + n
 	b->space_end = b->end + extra
+
+buffer_cat_chars(buffer *b, char c, size_t n)
+	buffer_grow(b, n)
+	char *p = bufend(b) - n
+	memset(p, c, n)

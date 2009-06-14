@@ -1,15 +1,15 @@
-export cstr types deq
+export cstr types vec
 use vio
 
-boolean brace(deq *lines)
+brace(vec *lines)
+	ssize_t lineno = 0
 	brace_init()
-	if readstmt(lines)
+	if readstmt(lines, lineno++)
 		writestmt()
-		while readstmt(lines)
+		while readstmt(lines, lineno++)
 			writedelim()
 			writestmt()
 		writedelim()
-	return 1
 
 
 def MAXTABS 256
@@ -47,8 +47,8 @@ local brace_init()
 	in_macro = 0
 	first_line_of_macro = 0
 
-local int readstmt(deq *lines)
-	if !readln(lines)
+local int readstmt(vec *lines, ssize_t lineno)
+	if !readln(lines, lineno)
 		tabs = 0
 		return 0
 	tabs = striptabs()
@@ -289,11 +289,10 @@ local procstmt()
 				is_kwdparens = 1
 				break
 
-local int readln(deq *lines)
-	if deqlen(lines) == 0
+local int readln(vec *lines, ssize_t lineno)
+	if lineno >= veclen(lines)
 		return 0
-	l = *(cstr*)q(lines, 0)
-	deq_shift(lines)
+	l = *(cstr*)v(lines, lineno)
 	len = strlen(l)
 #	while last() == '\n' || last() == '\r'
 #		l[--len] = '\0'

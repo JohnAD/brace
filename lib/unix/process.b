@@ -153,7 +153,7 @@ typedef struct spwd spwd
 int passwd_n_buckets = 1009
 
 hashtable *load_passwd()
-	New(ht, hashtable, cstr_hash, (eq_func)cstr_eq, passwd_n_buckets)
+	New(ht, hashtable, cstr_hash, cstr_eq, passwd_n_buckets)
 	passwd *p
 	while (p = Getpwent())
 		p = passwd_dup(p)

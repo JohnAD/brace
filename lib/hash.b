@@ -1,4 +1,4 @@
-export list cstr types
+export list cstr types vec
 use alloc m error
 
 # TODO base this on a hashset ?
@@ -27,6 +27,7 @@ def kv(ht, key) hashtable_lookup(ht, key)
 def del(ht, key) hashtable_delete(ht, key)
 def KV(ht, key) hashtable_lookup_or_die(ht, key)
 def kv(ht, key, init) hashtable_lookup_or_add_key(ht, key, init)
+def already(ht, key) hashtable_already(ht, key)
 
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.
@@ -182,11 +183,13 @@ size_t hashtable_sensible_size(size_t size)
 
 # TODO keep track of max bucket size, number of elements, etc.
 
+def hash_mult 101 #7123
+
 # TODO is this a good hash function?  I forget!
 unsigned int cstr_hash(void *s)
 	unsigned int rv = 0
 	for(i, cstr_range((char *)s))
-		rv *= 101 #7123
+		rv *= hash_mult
 		rv += *i
 	return rv
 
@@ -276,8 +279,8 @@ unsigned int int_hash(void *i_ptr)
 		failed("int_hash")
 	return cstr_hash(s)
 
-boolean int_eq(int *a, int *b)
-	return *a == *b
+boolean int_eq(void *a, void *b)
+	return *(int*)a == *(int*)b
 
 # here is an alternate I got from http://www.concentric.net/~Ttwang/tech/inthash.htm
 # in java code, works for 32 bits only
@@ -389,3 +392,35 @@ kv_cstr_to_hashtable(cstr kv[][2], hashtable *ht)
 	for ; (*i)[0] ; ++i
 		put(ht, (*i)[0], (*i)[1])
 
+ssize_t hashtable_already(hashtable *ht, void *key)
+	assert_warn(sizeof(ssize_t) <= sizeof(void*), "sizeof(ssize_t) %zu is bigger than sizeof(void *) %zu", sizeof(ssize_t), sizeof(void*))
+	ssize_t count, count1
+	key_value *x = kv(ht, key, i2p(0))
+	count = (ssize_t)p2i(x->value)
+	count1 = count + 1
+	if !count1
+		count1 = 1
+	x->value = i2p(count1)
+	return count
+
+
+unsigned int vos_hash(void *s)
+	unsigned int rv = 0
+	for_vec(i, (vec*)s, cstr)
+		cstr l = *i
+		rv *= hash_mult
+		for(j, cstr_range(l))
+			rv *= hash_mult
+			rv += *j
+	return rv
+
+boolean vos_eq(void *_v1, void *_v2)
+	vec *v1 = _v1, *v2 = _v2
+	if veclen(v1) != veclen(v2)
+		return 0
+	cstr *p2 = vec0(v2)
+	for_vec(p1, v1, cstr)
+		if !cstr_eq(*p1, *p2)
+			return 0
+		++p2
+	return 1

@@ -40,7 +40,8 @@ deq_size(deq *q, ssize_t size)
 	q->b.size = size * q->element_size
 
 deq_clear(deq *q)
-	q->size = q->b.size = 0
+	circbuf_clear(&q->b)
+	q->start = q->size = 0
 
 deq_double(deq *q)
 	deq_space(q, q->space * 2)

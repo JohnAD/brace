@@ -624,3 +624,10 @@ discard(size_t n)
 			failed0("discard", "file too short")
 		n -= to_read
 
+vcp()
+	char buf[block_size]
+	repeat
+		size_t bytes = vs_read(buf, block_size)
+		if bytes == 0
+			break
+		vs_write(buf, bytes)

@@ -64,12 +64,16 @@ Def for(v, ary)
 
 def for(v, from, to)
 	let(my(end), to)
-	for let(v, from); v<my(end); ++v
+	let(my(v1), from)
+	for ; my(v1)<my(end); ++my(v1)
+		let(v, my(v1))
 
 def for(v, from, to, step)
 	let(my(end), to)
 	let(my(st), step)
-	for let(v, from); v<my(end); v+=my(st)
+	let(my(v1), from)
+	for ; my(v1)<my(end); my(v1)+=my(st)
+		let(v, my(v1))
 
 def for_keep(v, from, to)
 	let(v, from)
@@ -84,15 +88,20 @@ def for_keep(v, from, to, step)
 
 def repeat(n)
 	for(my(i), 0, n)
+		use(my(i))
 
 def back(v, from, to)
 	let(my(end), to)
-	for let(v, from); v>my(end); --v
+	let(my(v1), from)
+	for ; my(v1)>my(end); --my(v1)
+		let(v, my(v1))
 
 def back(v, from, to, step)
 	let(my(end), to)
 	let(my(st), step)
-	for let(v, from); v>my(end); v-=my(st)
+	let(my(v1), from)
+	for ; my(v1)>my(end); my(v1)-=my(st)
+		let(v, my(v1))
 
 def for_step(i, d)
 	let(my(end), i^^1+d/2)
@@ -346,7 +355,8 @@ def eacharg(a)
 			break
 
 def foraryp_null(i, a)
-	for let(i, &a[0]) ; *i ; ++i
+	let(i, &a[0])
+	for ; *i ; ++i
 		.
 
 def forary_null(e, a)
@@ -356,8 +366,9 @@ def forary_null(e, a)
 
 def foraryp(i, a)
 	let(my(end), &a[sizeof(a)/sizeof(a[0])])
-	for let(i, &a[0]) ; i<my(end) ; ++i
-		.
+	let(my(i1), &a[0])
+	for ; my(i1)<my(end) ; ++my(i1)
+		let(i, my(i1))
 
 def forary(e, a)
 	foraryp(my(i), a)
@@ -1104,13 +1115,13 @@ def grep(i, v, type, test, Free_or_void, o)
 	# does not call vec_squeeze, my dodgy uniq depends on that!
 
 # e.g.:
-#   uniq(i, v, cstr, strcmp(i[0], i[1]), Free)
-#   uniq(i, v, int, i[0] != i[1], void)
-def uniq(i, v, type, cmp, Free_or_void)
+#   uniq(i, v, cstr, !strcmp(i[0], i[1]), Free)
+#   uniq(i, v, int, i[0] == i[1], void)
+def uniq(i, v, type, eq, Free_or_void)
 	if vec_get_size(v)
 		vec_grow(v, -1)
 		type *last = (type*)vecend(v)
-		grep(i, v, type, cmp, Free_or_void)
+		grep(i, v, type, !eq, Free_or_void)
 		vec_push(v, *last)
 
 # TODO grep and map that work with blocks instead of expressions:
@@ -1207,3 +1218,95 @@ cstr hashbang(cstr file)
 def dflt(p) dflt(p, "")
 void *dflt(void *p, void *dflt)
 	return p ? p : dflt
+
+def call_each(macro)
+	.
+def call_each(macro, a0)
+	macro(a0)
+def call_each(macro, a0, a1)
+	macro(a0)
+	macro(a1)
+def call_each(macro, a0, a1, a2)
+	macro(a0)
+	call_each(macro, a1, a2)
+def call_each(macro, a0, a1, a2, a3)
+	macro(a0)
+	call_each(macro, a1, a2, a3)
+def call_each(macro, a0, a1, a2, a3, a4)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4)
+def call_each(macro, a0, a1, a2, a3, a4, a5)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16)
+
+def i2p(i) (void*)i
+def p2i(p) (intptr_t)p
+
+remove_null(vec *v)
+	grep(i, v, void*, *i, void)
+	vec_squeeze(v)
+
+# uniqo and already keep a count
+# the count will not ever go back to 0
+# counting should not slow it down much compared to the hash lookups
+
+def uniqo(v, hash, eq, Free_or_void)
+	uniqo(v, hash, eq, Free_or_void, my(already_ht), 1001)
+def uniqo(v, hash, eq, Free_or_void, already_ht, hashsize)
+	uniqo_keep(v, hash, eq, Free_or_void, already_ht, hashsize)
+	hashtable_free(already_ht)
+def uniqo_keep(v, hash, eq, Free_or_void, already_ht, hashsize)
+	new(already_ht, hashtable, hash, eq, hashsize)
+	uniqo_cont(v, hash, eq, Free_or_void, already_ht)
+def uniqo_cont(v, hash, eq, Free_or_void, already_ht)
+	grep(i, v, void*, !already(already_ht, *i), Free_or_void)
+
+
+void *orp(void *a, void *b)
+	return a ? a : b ? b : NULL
+
+int ori(int a, int b)
+	return a ? a : b ? b : 0
+
+def nul_to_space(a, b) nul_to(a, b, ' ')
+
+def nul_to_nl(a, b) nul_to(a, b, '\n')
+
+cstr nul_to(char *a, char *b, char replacement)
+	for(i, a, b)
+		if !*i
+			*i = replacement
+	return a

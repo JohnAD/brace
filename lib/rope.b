@@ -276,6 +276,6 @@ def for_str_in_rope(S, R)
 			continue
 		 eif rope_is_a_ropev(my(r))
 		 	for(i, ropev_range(my(r).v))
-				deq_push(my(q), my(r))
+				deq_push(my(q), i)
 			continue
 		let(S, my(r).s)

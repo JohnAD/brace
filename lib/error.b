@@ -32,7 +32,7 @@ error(const char *format, ...)
 	collect_void(verror, format)
 
 verror(const char *format, va_list ap)
-	New(b, buffer)
+	new(b, buffer)  # FIXME 256
 	Vsprintf(b, format, ap)
 	buffer_add_nul(b)
 	buffer_squeeze(b)
@@ -43,7 +43,7 @@ serror(const char *format, ...)
 
 vserror(const char *format, va_list ap)
 	int no = errno
-	New(b, buffer)
+	new(b, buffer)
 	Vsprintf(b, format, ap)
 	Sprintf(b, ": %s", Strerror(no))
 	buffer_add_nul(b)
@@ -108,23 +108,39 @@ memdump(const char *from, const char *to)
 	if mingw
 		Fflush(stderr)
 
-# TODO provide a way to disable assertion checking (null macro)
-error__assert(int should_be_true, const char *format, ...)
-	collect_void(verror__assert, should_be_true, format)
+def assert_check 1
 
-verror__assert(int should_be_true, const char *format, va_list ap)
-	if !should_be_true
-		New(b, buffer)
-		Vsprintf(b, format, ap)
-		buffer_add_nul(b)
-		buffer_squeeze(b)
-		Throw(buffer_get_start(b), 0, NULL)
+def assert(should_be_true, format)
+	if assert_check && !should_be_true
+		error(format)
+def assert(should_be_true, format, a1)
+	if assert_check && !should_be_true
+		error(format, a1)
+def assert(should_be_true, format, a1, a2)
+	if assert_check && !should_be_true
+		error(format, a1, a2)
+def assert(should_be_true, format, a1, a2, a3)
+	if assert_check && !should_be_true
+		error(format, a1, a2, a3)
+def assert(should_be_true, format, a1, a2, a3, a4)
+	if assert_check && !should_be_true
+		error(format, a1, a2, a3, a4)
 
-def assert(should_be_true, format) error__assert(should_be_true, format)
-def assert(should_be_true, format, a1) error__assert(should_be_true, format, a1)
-def assert(should_be_true, format, a1, a2) error__assert(should_be_true, format, a1, a2)
-def assert(should_be_true, format, a1, a2, a3) error__assert(should_be_true, format, a1, a2, a3)
-def assert(should_be_true, format, a1, a2, a3, a4) error__assert(should_be_true, format, a1, a2, a3, a4)
+def assert_warn(should_be_true, format)
+	if assert_check && !should_be_true
+		error(format)
+def assert_warn(should_be_true, format, a1)
+	if assert_check && !should_be_true
+		error(format, a1)
+def assert_warn(should_be_true, format, a1, a2)
+	if assert_check && !should_be_true
+		error(format, a1, a2)
+def assert_warn(should_be_true, format, a1, a2, a3)
+	if assert_check && !should_be_true
+		error(format, a1, a2, a3)
+def assert_warn(should_be_true, format, a1, a2, a3, a4)
+	if assert_check && !should_be_true
+		error(format, a1, a2, a3, a4)
 
 usage(char *syntax)
 	error("usage: %s %s", program, syntax)
@@ -158,7 +174,7 @@ struct error_handler
 error_init()
 	global(error_handlers, vec, error_handler, 16)
 	global(errors, vec, err, 16)
-	global(extra_error_messages, hashtable, int_hash, (eq_func)int_eq, 101)
+	global(extra_error_messages, hashtable, int_hash, int_eq, 101)
 
 def try(h)
 	try(h, thunk_null, 1)
@@ -302,7 +318,7 @@ fault_(char *file, int line, const char *format, ...)
 
 vfault_(char *file, int line, const char *format, va_list ap)
 	file = best_path_main(Strdup(file))
-	New(b, buffer)
+	new(b, buffer)
 	Sprintf(b, "%s:%d: ", file, line)
 	Vsprintf(b, format, ap)
 	buffer_add_nul(b)

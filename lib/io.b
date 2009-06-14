@@ -760,7 +760,7 @@ cstr readlinks(cstr path, opt_err if_dead)
 	decl(stat_b, Stats)
 	repeat
 		if !Lstat(path, stat_b)
-			return opt_err_do(if_dead, (any){.cs=path}, (any){.cs=NULL}, "broken symlink to %s", path).cs
+			return opt_err_do(if_dead, (any){.cs=path}, (any){.cs=NULL}, "file does not exist: %s", path).cs
 		if !S_ISLNK(stat_b->st_mode)
 			break
 		let(path1, Readlink(path))
@@ -1259,5 +1259,33 @@ def stdio_redirect(stream, to_stream, real_fd, saved_fd, x)
 fprint_vec_cstr(FILE *s, cstr h, vec *v)
 	Fprint(s, h)
 	for_vec(i, v, cstr)
-			Fprintf(s, " %s", *i)
+		Fprintf(s, " %s", *i)
 	nl(s)
+
+cstr read_lines(vec *lines, cstr in_file)
+	FILE *in = Fopen(in_file, "r")
+	cstr data = buffer_to_cstr(fslurp(in))
+	Fclose(in)
+	cstr l = data
+	for_cstr(i, data)
+		if *i == '\n'
+			*i = '\0'
+			vec_push(lines, l)
+			l = i + 1
+	return data
+
+write_lines(vec *lines, cstr out_file)
+	F_out(out_file)
+		dump_lines(lines)
+
+dump_lines(vec *lines)
+	for_vec(i, lines, cstr)
+		say(*i)
+
+warn_lines(vec *lines, cstr msg)
+	if msg
+		warn("<< dumping lines: %s <<", msg)
+	f_out(stderr)
+		dump_lines(lines)
+	if msg
+		warn(">> done dumping lines: %s >>", msg)

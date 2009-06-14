@@ -1,4 +1,5 @@
-use util
+use util error
+export types
 
 #typedef enum { COMMENT, TABS, SPACE, NUMBER, STRING, CHARACTER, NAME, BRACKET, DELIMIT, OP, ILLEGAL = -1 } token_types
 typedef enum { NAME, SPACE, BRACKET, OP, NEWLINE, TABS, DELIMIT, NUMBER, COMMENT, STRING, CHARACTER, BSPACE, TOKEN_TYPE_TOP, ILLEGAL = -1, TOK_EOT = -2 } token_t
@@ -147,13 +148,15 @@ def tok_illegal(i)
 	while token_type(*i) == ILLEGAL && *i != tok_EOT
 		++i
 
+def bracket_type(c) among(c, '[', '(', '{') ? 1 : -1
+
 token_t token(char **i_ptr)
 	char *i = *i_ptr
-	token_t t = token_type(*i)
+	token_t t = token_type(*i++)
 	which t
 	TOK_EOT	.
 	COMMENT	tok_comment(i)
-	NEWLINE	++i
+	NEWLINE	.
 	TABS	tok_tabs(i)
 	SPACE	tok_space(i)
 	BSPACE	tok_bspace(i)
@@ -165,5 +168,12 @@ token_t token(char **i_ptr)
 	DELIMIT	tok_delimit(i)
 	OP	tok_op(i)
 	ILLEGAL	tok_illegal(i)
+	else	fault("unknown token type here: %s", *i_ptr)
 	*i_ptr = i
 	return t
+
+boolean tok_eq(char *p0, char *p1, cstr s)
+	while p0 != p1
+		if *p0++ != *s++
+			return 0
+	return *s == '\0'

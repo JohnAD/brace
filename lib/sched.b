@@ -44,7 +44,7 @@ scheduler_init(scheduler *sched)
 	init(&sched->writers, vec, proc_p, 8)
 	sched->now = -1
 	init(&sched->tos, timeouts)
-	init(&sched->children, hashtable, int_hash, (eq_func)int_eq, sched__children_n_buckets)
+	init(&sched->children, hashtable, int_hash, int_eq, sched__children_n_buckets)
 	sched->step = 0
 	sched->n_children = 0
 	sched->got_sigchld = 0

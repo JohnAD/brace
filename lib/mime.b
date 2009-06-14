@@ -6,7 +6,7 @@ cstr mimetypes_file = "/etc/mime.types"
 mimetypes_init()
 	if !mimetypes
 		mimetypes = &struct__mimetypes
-		init(mimetypes, hashtable, cstr_hash, (eq_func)cstr_eq, mimetypes_n_buckets)
+		init(mimetypes, hashtable, cstr_hash, cstr_eq, mimetypes_n_buckets)
 
 def load_mimetypes()
 	load_mimetypes(mimetypes_file)

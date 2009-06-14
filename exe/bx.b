@@ -71,12 +71,16 @@ Main()
 
 	new(x_stat, Stats, x)
 	int need_compile = !S_EXISTS(x_stat->st_mode) || x_stat->st_size == 0 || x_stat->st_mtime < b_stat->st_mtime || x_stat->st_mtime < libb_stat->st_mtime
-	int already_compiled = S_EXISTS(log_stat->st_mode) && b_stat->st_mtime < log_stat->st_mtime && log_stat->st_mtime > libb_stat->st_mtime
-	if already_compiled
-		error("%s has not been updated, check %s or try: fix %s", b, log, b)
 	if need_compile
 		lock(lockfile)
+			new(b_stat, Stats, b)
+			new(x_stat, Stats, x)
+			new(log_stat, Stats, log)
+			new(libb_stat, Stats, libb)
 			need_compile = !S_EXISTS(x_stat->st_mode) || x_stat->st_size == 0 || x_stat->st_mtime < b_stat->st_mtime || x_stat->st_mtime < libb_stat->st_mtime
+			int already_compiled = S_EXISTS(log_stat->st_mode) && b_stat->st_mtime < log_stat->st_mtime && log_stat->st_mtime > libb_stat->st_mtime
+			if already_compiled
+				error("%s has not been updated, check %s or try: fix %s", b, log, b)
 			if need_compile
 				try(err)
 					do
