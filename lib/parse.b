@@ -8,12 +8,15 @@ int struct_union_names_space = 257
 
 boolean cxx_using_c_lib = 0 # TODO set this
 
+boolean cz_section_comments = 1
+boolean cz_section_comments_empty = 0
+
 vec *lines, *work
 
 vec *defines, *cpp_directives,
  *includes, *extern_langs, *using_namespaces,
  *enums, *struct_union_class_template_protos, *struct_union_typedefs,
- *typedefs, *struct_union_class_templates, *function_protos, *var_protos,
+ *typedefs, *structs_unions_classes_templates, *function_protos, *var_protos,
  *local_and_global_vars, *var_assignments, *functions,
  *local_vars, *global_vars
 	
@@ -25,7 +28,7 @@ Def cz_parse_vov_names
  defines,
  extern_langs,
  enums,
- typedefs, struct_union_class_templates,
+ typedefs, structs_unions_classes_templates,
  var_assignments, functions,
  local_and_global_vars,
  local_vars, global_vars
@@ -99,7 +102,7 @@ cz_parse()
 			is_block = 0
 		 eif cstr_begins_with_word(l, "struct", "union", "class", "template") &&
 		  !possible_struct_is_func_returning_struct(l) && !strchr(l, '=')
-			v = struct_union_class_templates
+			v = structs_unions_classes_templates
 		 eif cstr_begins_with_word(l, "enum")
 			v = enums
 		 eif cstr_begins_with_word(l, "typedef")
@@ -140,7 +143,7 @@ cz_parse()
 
 	new(struct_union_names, hashtable, cstr_hash, cstr_eq, struct_union_names_space)
 
-	for_vec(i, struct_union_class_templates, vec*)
+	for_vec(i, structs_unions_classes_templates, vec*)
 		cstr l = *(cstr*)vec0(*i)
 		if veclen(*i) == 1
 			vec_push(struct_union_class_template_protos, l)
@@ -182,7 +185,7 @@ cz_parse()
 			vec_push(var_assignments, *i)
 			*i = NULL
 
-	call_each(remove_null, functions, struct_union_class_templates,
+	call_each(remove_null, functions, structs_unions_classes_templates,
 	 typedefs, local_and_global_vars)
 
 boolean possible_struct_is_func_returning_struct(cstr l)
@@ -211,3 +214,56 @@ cstr cxx_using_c_lib_correct_proto(cstr l)
 		tok_space(l)
 	l = tofree(format("extern \"C\" %s", l))
 	return l
+
+
+cz_shuffle()
+	adjacent("cpp directives", cpp_directives, 0)
+	gappy("defines", defines, 1)
+	adjacent("includes", includes, 0)
+	adjacent("using namespaces", using_namespaces, 0)
+	gappy("enums", enums, 1)
+	adjacent("struct/union/class/template protos", struct_union_class_template_protos, 0)
+	adjacent("struct/union typedefs", struct_union_typedefs, 0)
+	adjacent("typedefs", typedefs, 1)
+	gappy("structs/unions/classes/templates", structs_unions_classes_templates, 1)
+	adjacent("extern langs", extern_langs, 1)
+	adjacent("function protos", function_protos, 0)
+	adjacent("var protos", var_protos, 0)
+	adjacent("local and global vars", local_and_global_vars, 1)
+	adjacent("var assignments", var_assignments, 1)
+	gappy("functions", functions, 1)
+
+	swap(lines, work)
+	vecclr(work)
+
+def gappy(section, v, is_vov)
+	output(section, v, is_vov, 1)
+def adjacent(section, v, is_vov)
+	output(section, v, is_vov, 0)
+
+output(cstr section, vec *v, boolean is_vov, boolean gappy)
+	boolean empty = !veclen(v)
+	if empty && !cz_section_comments_empty
+		return
+	if cz_section_comments
+		vec_push(work, tofree(format("# %s", section)))
+		if !empty
+			work_nl()
+	if is_vov
+		for_vec(i, v, vec*)
+			for_vec(j, *i, cstr)
+				vec_push(work, *j)
+			if gappy
+				work_nl()
+	 else
+		for_vec(i, v, cstr)
+			vec_push(work, *i)
+			if gappy
+				work_nl()
+	if cz_section_comments
+		repeat(2)
+			work_nl()
+
+def work_nl()
+	vec_push(work, (cstr)"")
+

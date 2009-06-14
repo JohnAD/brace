@@ -1138,11 +1138,20 @@ def nonblock(fd) nonblock(fd, 1)
 
 int file_cmp(cstr fa, cstr fb)
 	int cmp
+	new(sta, Stats, fa)
+	new(stb, Stats, fb)
+	if sta->st_size != stb->st_size
+		return 1
 	new(a, buffer, 4096)
 	new(b, buffer, 4096)
 	ssize_t na, nb
-	int fda = Open(fa)
-	int fdb = Open(fb)
+	int fda = open(fa)
+	if fda == -1
+		return 1
+	int fdb = open(fb)
+	if fdb == -1
+		Close(fda)
+		return 1
 	repeat
 		na = Read(fda, buf0(a), buffer_get_space(a))
 		nb = Read(fdb, buf0(b), buffer_get_space(b))
