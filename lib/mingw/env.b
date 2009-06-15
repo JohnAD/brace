@@ -1,14 +1,11 @@
 use stdlib.h
 
 use error util alloc cstr
+export types
 use env
 
 Clearenv()
 	environ = NULL
-
-Setenv(const char *name, const char *value, int overwrite)
-	if setenv(name, value, overwrite)
-		failed("setenv")
 
 int setenv(const char *name, const char *value, int overwrite)
 	if overwrite || !getenv(name)
@@ -24,3 +21,6 @@ int setenv(const char *name, const char *value, int overwrite)
 
 		# XXX this string kv becomes "part of the environment" right?
 		# so I can't ever free it?
+
+cstr homedir()
+	return Getenv("USERPROFILEDIR", path__root)

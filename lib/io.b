@@ -1272,6 +1272,9 @@ fprint_vec_cstr(FILE *s, cstr h, vec *v)
 		Fprintf(s, " %s", *i)
 	nl(s)
 
+def warn_vec_cstr(s, v) fprint_vec_cstr(stderr, s, v)
+def print_vec_cstr(s, v) fprint_vec_cstr(stdout, s, v)
+
 cstr read_lines(vec *lines, cstr in_file)
 	FILE *in = Fopen(in_file, "r")
 	cstr data = buffer_to_cstr(fslurp(in))
@@ -1299,3 +1302,18 @@ warn_lines(vec *lines, cstr msg)
 		dump_lines(lines)
 	if msg
 		warn(">> done dumping lines: %s >>", msg)
+
+Fspurt(cstr file, cstr content)
+	F_out(file)
+		print(content)
+
+cstr Fslurp(cstr file)
+	FILE *s = fopen(file, "rb")
+	if !s
+		return Strdup("")
+	cstr rv = buffer_to_cstr(fslurp(s))
+	Fclose(s)
+	return rv
+
+cstr dotfile(cstr f)
+	return path_cat(homedir(), f)

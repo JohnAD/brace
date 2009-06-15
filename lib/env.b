@@ -1,6 +1,8 @@
 use stdlib.h
-use error util
-export types
+use error util vio
+export types cstr
+
+use env
 
 extern char **environ
 
@@ -33,6 +35,12 @@ Putenv(char *string)
 	if putenv(string) != 0
 		failed("putenv")
 
+# TODO Setenvf (or just use Putenv with format)
+
+Setenv(const char *name, const char *value, int overwrite)
+	if setenv(name, value, overwrite)
+		failed("setenv")
+
 dump_env()
 	for_env_raw(e)
 		Sayf("%s", e)
@@ -51,3 +59,25 @@ def for_env(k, v)
 			error("bad environment varaible >%s<", k)
 		*v = '\0'
 		++v
+
+# TODO use a normal hashtable for config instead of the environment?
+# then should load environment into the hashtable also.
+
+load_config(cstr file)
+	F_in(file)
+		eachline(l)
+			if among(*l, '#', '\0')
+				continue
+			cstr key = Strdup(l)
+			cstr val = strchr(key, '=')
+			if val
+				*val++ = '\0'
+			 else
+				val = "1"
+			if !is_env(key)
+				if *val == '"'
+					*val++ = '\0'
+				cstr lastq = strchr(val, '"')
+				if lastq
+					*lastq = '\0'
+				Setenv(key, val)

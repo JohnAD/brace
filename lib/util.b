@@ -537,7 +537,8 @@ def For(v, from, to)
 	let(my(end), to)
 	for ; v<my(end); ++v
 
-def use(v) v=v
+#def use(v) v=v
+def use(v) (void)v
 
 ## this defines print and say functions for type foo in terms of fprint_foo
 #Def prints_and_says(type)
@@ -1102,6 +1103,8 @@ void *memdup(const void *src, size_t n, size_t extra)
 	return dest
 
 # this is an inplace grep
+def grep(i, v, type, test)
+	grep(i, v, type, test, void)
 def grep(i, v, type, test, Free_or_void)
 	grep(i, v, type, test, Free_or_void, my(o))
 def grep(i, v, type, test, Free_or_void, o)
@@ -1117,6 +1120,8 @@ def grep(i, v, type, test, Free_or_void, o)
 # e.g.:
 #   uniq(i, v, cstr, !strcmp(i[0], i[1]), Free)
 #   uniq(i, v, int, i[0] == i[1], void)
+def uniq(i, v, type, eq)
+	uniq(i, v, type, eq, void)
 def uniq(i, v, type, eq, Free_or_void)
 	if vec_get_size(v)
 		vec_grow(v, -1)
@@ -1283,12 +1288,18 @@ remove_null(vec *v)
 # the count will not ever go back to 0
 # counting should not slow it down much compared to the hash lookups
 
+def uniqo_default_hashsize 1001
+
+def uniqo(v, hash, eq)
+	uniqo(v, hash, eq, void)
 def uniqo(v, hash, eq, Free_or_void)
-	uniqo(v, hash, eq, Free_or_void, my(already_ht), 1001)
-def uniqo(v, hash, eq, Free_or_void, already_ht, hashsize)
-	uniqo_keep(v, hash, eq, Free_or_void, already_ht, hashsize)
+	uniqo(v, hash, eq, Free_or_void, uniqo_default_hashsize)
+def uniqo(v, hash, eq, Free_or_void, hashsize)
+	uniqo(v, hash, eq, Free_or_void, hashsize, my(already_ht))
+def uniqo(v, hash, eq, Free_or_void, hashsize, already_ht)
+	uniqo_keep(v, hash, eq, Free_or_void, hashsize, already_ht)
 	hashtable_free(already_ht)
-def uniqo_keep(v, hash, eq, Free_or_void, already_ht, hashsize)
+def uniqo_keep(v, hash, eq, Free_or_void, hashsize, already_ht)
 	new(already_ht, hashtable, hash, eq, hashsize)
 	uniqo_cont(v, hash, eq, Free_or_void, already_ht)
 def uniqo_cont(v, hash, eq, Free_or_void, already_ht)
@@ -1310,3 +1321,10 @@ cstr nul_to(char *a, char *b, char replacement)
 		if !*i
 			*i = replacement
 	return a
+
+uniq_vos(vec *v)
+	uniqo(v, cstr_hash, cstr_eq)
+
+uniq_vovos(vec *v)
+	uniqo(v, vos_hash, vos_eq)
+

@@ -1,18 +1,12 @@
 use stdlib.h
 use error util
 export types
-use env
+use env path
 
 # FIXME these aren't in mingw, they are less standard apparently
 # I should implement setenv at least for mingw.
 # unsetenv can be implemented with putenv too.
 # clearenv might be done with environ = NULL ?
-
-# TODO Setenvf (or just use Putenv with format)
-
-Setenv(const char *name, const char *value, int overwrite)
-	if setenv(name, value, overwrite) != 0
-		failed("setenv")
 
 def Setenv(name, value)
 	Setenv(name, value, 1)
@@ -47,3 +41,5 @@ int clear_env(void)
 	buffer_free(k)
 	return 0
 
+cstr homedir()
+	return Getenv("HOME", path__root)
