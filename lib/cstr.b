@@ -24,12 +24,14 @@ cstr cstr_unix_to_dos(cstr s)
 		 	buffer_cat_char(b, *p1)
 	return buffer_to_cstr(b)
 
-cstr_chomp(cstr s)
-	while *s
-		if among(*s, '\n', '\r')
-			*s = '\0'
-			return
-		s++
+cstr cstr_chomp(cstr s)
+	char *p = s
+	while *p
+		if among(*p, '\n', '\r')
+			*p = '\0'
+			break
+		p++
+	return s
 def chomp(s) cstr_chomp(s)
 
 # TODO implement ends_with and begins_with efficiently
@@ -217,25 +219,25 @@ cstr joinsv(cstr sep, vec *v)
 char *Strstr(const char *haystack, const char *needle)
 	char *rv = strstr(haystack, needle)
 	if !rv
-		failed("strstr")
+		failed0("strstr")
 	return rv
 
 char *Strcasestr(const char *haystack, const char *needle)
 	char *rv = strcasestr(haystack, needle)
 	if !rv
-		failed("strcasestr")
+		failed0("strcasestr")
 	return rv
 
 char *Strchr(const char *s, int c)
 	char *rv = strchr(s, c)
 	if !rv
-		failed("strchr")
+		failed0("strchr")
 	return rv
 
 char *Strrchr(const char *s, int c)
 	char *rv = strrchr(s, c)
 	if !rv
-		failed("strrchr")
+		failed0("strrchr")
 	return rv
 
 cstr_tolower(cstr s)

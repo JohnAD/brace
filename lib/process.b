@@ -3,6 +3,8 @@ export types buffer
 use error cstr vec
 use process
 
+# maybe rename process.b -> system.b ?
+
 # magic exit code, semi-consistent with bash
 # bash distinguishes not found (127) and if the file was found but not
 # executable (126). We return 127 in case of any exec error.
@@ -423,3 +425,11 @@ cstr qq(cstr s)
 	sh_quote(s, b)
 	buffer_cat_char(b, '"')
 	return buffer_to_cstr(b)
+
+cstr x(cstr command)
+	FILE *s = Popen(command, "r")
+	cstr rv = buffer_to_cstr(fslurp(s))
+	Pclose(s)
+	return rv
+
+ # TODO similar with argument escaping and/or formatting etc.
