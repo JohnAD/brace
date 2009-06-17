@@ -265,28 +265,36 @@ circbuf_copy_out(circbuf *b, void *dest, ssize_t i, ssize_t n)
 	i += b->start
 	if i >= b->space
 		i -= b->space
-	ssize_t n0 = imin(n, b->space - i)
+	ssize_t n0 = lmin(n, b->space - i)
 	ssize_t n1 = n - n0
 	memcpy(dest, b->data + i, n0)
 	if n1
 		memcpy((char*)dest + n0, b->data, n1)
 
 circbuf_cat_cb_range(circbuf *b, circbuf *from, ssize_t i, ssize_t n)
-	circbuf_grow(b, n)
 	ssize_t to = circbuf_get_size(b)
+	circbuf_grow(b, n)
 	
 	ssize_t l1 = circbuf_get_size_1(from)
-	ssize_t l2 = circbuf_get_size_2(from)
 
-	circbuf_copy_in(b, to, cb(from, i), l1)
-	if l2
-		circbuf_copy_in(b, to, from->data, l2)
+	if i < l1
+		ssize_t n1 = l1 - i
+		if n1 > n
+			n1 = n
+		circbuf_copy_in(b, to, cb(from, i), n1)
+		n -= n1
+		if n
+			circbuf_copy_in(b, to, from->data, n)
+	 else
+		circbuf_copy_in(b, to, cb(from, i), n)
 
 circbuf_copy_in(circbuf *b, ssize_t i, void *from, ssize_t n)
 	char *p = cb(b, i)
 	ssize_t l0 = circbuf_get_space_end(b) - p
 	ssize_t l1 = n - l0
+	if n < l0
+		l0 = n
 	memcpy(p, from, l0)
-	if l1
+	if l1 > 0
 		memcpy(b->data, (char *)from+l0, l1)
 

@@ -126,10 +126,25 @@ Def sound_range(s) sound_get_start(s), sound_get_end(s)
 
 struct audio
 	int channels
-	int sample_rate
-	size_t n_samples
 	int bits_per_sample
-	sound *data   # one for each channel
+	long sample_rate
+	size_t n_samples
+	sound *sound   # one for each channel
+
+audio_init(audio *a)
+	use(a)
+def audio_init(a, channels)
+	audio_init(a, channels, 1)
+def audio_init(a, channels, n_samples)
+	audio_init_2(a, channels, n_samples)
+
+audio_init_2(audio *a, int channels, int n_samples)
+	a->channels = channels
+	a->n_samples = n_samples
+	a->sound = Nalloc(sound, channels)
+	for(i, 0, channels)
+		sound_init(&a->sound[i], n_samples)
+		sound_set_size(&a->sound[i], 0)
 
 # TODO load_wav, read until EOF for wav with unknown length
 
@@ -177,25 +192,25 @@ load_wav(audio *a)
 	int bytes_per_sample = a->bits_per_sample / 8
 	a->n_samples = size / bytes_per_sample / a->channels
 
-	warn("bits_per_sample: %d", a->bits_per_sample)
-	warn("sample_rate: %d", a->sample_rate)
-	warn("block_align: %d", block_align)
-	warn("channels: %d", a->channels)
-	warn("size: %d", size)
-	warn("n_samples: %d", a->n_samples)
+#	warn("bits_per_sample: %d", a->bits_per_sample)
+#	warn("sample_rate: %d", a->sample_rate)
+#	warn("block_align: %d", block_align)
+#	warn("channels: %d", a->channels)
+#	warn("size: %d", size)
+#	warn("n_samples: %d", a->n_samples)
 
-	a->data = Nalloc(sound, a->channels)
+	a->sound = Nalloc(sound, a->channels)
 	for(i, 0, a->channels)
-		sound_init(&a->data[i], a->n_samples)
+		sound_init(&a->sound[i], a->n_samples)
 
 	float divide = 1<<(a->bits_per_sample-1)
 	float origin = bytes_per_sample == 1 ? (divide/2) : 0
 
 	which bytes_per_sample
-	1	read_samples(a->data, a->channels, a->n_samples, 1, byte, divide, origin)
-	2	read_samples(a->data, a->channels, a->n_samples, 2, sle2, divide, origin)
-	3	read_samples(a->data, a->channels, a->n_samples, 3, sle3, divide, origin)
-	4	read_samples(a->data, a->channels, a->n_samples, 4, sle4, divide, origin)
+	1	read_samples(a->sound, a->channels, a->n_samples, 1, byte, divide, origin)
+	2	read_samples(a->sound, a->channels, a->n_samples, 2, sle2, divide, origin)
+	3	read_samples(a->sound, a->channels, a->n_samples, 3, sle3, divide, origin)
+	4	read_samples(a->sound, a->channels, a->n_samples, 4, sle4, divide, origin)
 	else	failed0("load_wav", "bytes_per_sample is not 1, 2, 3 or 4")
 
 def read_samples(o, channels, n, bytes_per_sample, sample_reader, divide, origin)

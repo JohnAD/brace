@@ -99,6 +99,9 @@ def deq_unshift(q, data)
 
 deq_shift(deq *q)
 	--q->size
+	if q->size == 0
+		deq_clear(q)
+		return
 	q->b.size -= q->element_size
 	++q->start
 	q->b.start += q->element_size
@@ -154,11 +157,14 @@ deq_recalc_from_cb(deq *q)
 	q->size = q->b.size / q->element_size
 
 deq_shifts(deq *q, ssize_t n)
-	circbuf_shift(&q->b, q->element_size * n)
 	q->size -= n
-	q->start += n
-	if q->start >= q->space
-		q->start -= q->space
+	if q->size == 0
+		deq_clear(q)
+	 else
+		circbuf_shift(&q->b, q->element_size * n)
+		q->start += n
+		if q->start >= q->space
+			q->start -= q->space
 
 deq_copy_out(deq *q, void *dest, ssize_t i, ssize_t n)
 	ssize_t es = q->element_size
