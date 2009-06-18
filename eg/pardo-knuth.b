@@ -1,0 +1,15 @@
+#!/lang/b
+use b
+num f(num t)
+	return sqrt(abs(t))+5*pow(t, 3)
+
+Main()
+	num a[11]
+	for(i, 0, 11)
+		a[i] = atof(rl())
+	back(i, 10, -1)  # FIXME
+		num y = f(a[i])
+		if y > 400
+			warn("%d TOO LARGE", i)
+		 else
+			sf("%d %f", i, y)
