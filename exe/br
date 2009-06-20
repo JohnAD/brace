@@ -225,7 +225,7 @@ LDLIBS="$BRACE_L_SO $LDLIBS"
 LDLIBS="$LDLIBS -lm"
 LDLIBS_PLAIN="$LDLIBS"
 LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
-CFLAGS="-Wall -Wextra -I. $CFLAGS"  # -Werror
+CFLAGS="-Wall -Wextra $CFLAGS"  # -I. -Werror
 CINCLUDE="-I\"$BRACE_LIB\""
 if [ -n "$DEBUG" ]; then
 	CFLAGS="$CFLAGS -ggdb"

@@ -6,7 +6,6 @@ use main
 int argc
 int args
 char **argv
-char **envp
 char *program_full
 char *program_real
 char *program
@@ -15,13 +14,12 @@ char **arg
 char *main_dir
 
 def Main()
-	main(int main__argc, char *main__argv[], char *main__envp[])
-		main__init(main__argc, main__argv, main__envp)
+	main(int main__argc, char *main__argv[])
+		main__init(main__argc, main__argv)
 
-main__init(int _argc, char *_argv[], char *_envp[])
+main__init(int _argc, char *_argv[])
 	argc = _argc
 	argv = _argv
-	envp = _envp
 	vstreams_init()
 	error_init()
 	main_dir = Getcwd()

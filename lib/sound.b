@@ -2,6 +2,7 @@ use util m sound alloc
 export vec
 
 typedef float sample
+typedef double sample2
 	# The float format has 23-bit mantissa,
 	# and is able to hold a 24-bit int.
 	# We can convert 24-bit audio to floats losslessly.

@@ -1154,7 +1154,11 @@ unsigned int bit_reverse(unsigned int x)
 # get and put endian words, e.g. from binary files
 # TODO 64 bit?
 
+# this stuff assumes 8 bit bytes etc
+
 def byte(p) (unsigned char)p[0]
+def u(x) (unsigned long)x
+def s(x) (long)x
 
 def le2(p) byte(p) | (byte(p+1)<<8)
 def le3(p) byte(p) | (byte(p+1)<<8) | (byte(p+2)<<16)
@@ -1165,18 +1169,18 @@ def be3(p) (byte(p)<<16) | (byte(p+1)<<8) | byte(p+2)
 def be4(p) (byte(p)<<24) | (byte(p+1)<<16) | (byte(p+2)<<8) | byte(p+3)
 
 def le2(p, i)
-	p[0] = i ; p[1] = (i>>8)
+	p[0] = u(i) ; p[1] = (u(i)>>8)
 def le3(p, i)
-	p[0] = i ; p[1] = (i>>8) ; p[2] = (i>>16)
+	p[0] = u(i) ; p[1] = (u(i)>>8) ; p[2] = (u(i)>>16)
 def le4(p, i)
-	p[0] = i ; p[1] = (i>>8) ; p[2] = (i>>16) ; p[3] = (i>>24)
+	p[0] = u(i) ; p[1] = (u(i)>>8) ; p[2] = (u(i)>>16) ; p[3] = (u(i)>>24)
 
 def be2(p, i)
-	p[0] = (i>>8) ; p[1] = i
+	p[0] = (u(i)>>8) ; p[1] = u(i)
 def be3(p, i)
-	p[0] = (i>>16) ; p[1] = (i>>8) ; p[2] = i
+	p[0] = (u(i)>>16) ; p[1] = (u(i)>>8) ; p[2] = u(i)
 def be4(p, i)
-	p[0] = (i>>24) ; p[1] = (i>>16) ; p[2] = (i>>8) ; p[3] = i
+	p[0] = (u(i)>>24) ; p[1] = (u(i)>>16) ; p[2] = (u(i)>>8) ; p[3] = u(i)
 
 def sbyte(p) ((long)byte(p)) << 24 >> 24
 

@@ -2,7 +2,7 @@ CC=gcc -pedantic -std=gnu99
 
 DIR=$(PWD)
 #CFLAGS:=-Wall -Wextra -Werror -I. $(CFLAGS)
-CFLAGS:=-Wall -Wextra -I. $(CFLAGS)
+CFLAGS:=-Wall -Wextra $(CFLAGS)
 
 ifndef BRACE_STANDALONE
 ifndef LIBB_BUILD
