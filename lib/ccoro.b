@@ -106,6 +106,7 @@ noret new_coro_2(coro_func f, coro *caller)
 	volatile char pad[coro_pad]
 	pad[0] = pad[coro_pad-1] = 0;
 	new_coro_3(f, caller)
+	pad[0] = pad[coro_pad-1] = 0;
 	# cannot return
 
 coro *new_coro(coro_func f)
