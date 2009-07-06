@@ -69,6 +69,14 @@ circbuf_ensure_space(circbuf *b, ssize_t space)
 		while space > ospace
 		circbuf_set_space(b, ospace)
 
+circbuf_ensure_size(circbuf *b, ssize_t size)
+	if circbuf_get_size(b) < size
+		circbuf_set_size(b, size)
+
+circbuf_ensure_free(circbuf *b, ssize_t free)
+	while circbuf_get_free(b) < free
+		circbuf_double(b)
+
 circbuf_set_size(circbuf *b, ssize_t size)
 	ssize_t space = b->space
 	while size > space
@@ -87,6 +95,16 @@ circbuf_shift(circbuf *b, ssize_t delta_size)
 
 def circbuf_shift(b)
 	circbuf_shift(b, 1)
+
+circbuf_unshift(circbuf *b, ssize_t delta_size)
+	circbuf_ensure_free(b, delta_size)
+	b->start -= delta_size
+	if b->start < 0
+		b->start += b->space
+	b->size += delta_size
+
+def circbuf_unshift(b)
+	circbuf_unshift(b, 1)
 
 # TODO push == grow, unshift, pop ???
 #   XXX push would not be similar to vec:push

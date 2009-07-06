@@ -88,8 +88,14 @@ int imax(int x, int y)
 		return x
 	return y
 
+long lmax(long x, long y)
+	if x > y
+		return x
+	return y
+
 def nmax(x, y, z) nmax(nmax(x, y), z)
 def imax(x, y, z) imax(imax(x, y), z)
+def lmax(x, y, z) lmax(lmax(x, y), z)
 
 def sqr(x) x*x
 

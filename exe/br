@@ -150,8 +150,10 @@ export BRACE_LIB BRACE_USE
 if [ -n "$BR_DEBUG" ]; then echo "BRACE_USE=$BRACE_USE"; fi
 
 BRACE_LANGUAGE=C
+b=b
 if [ "-bb" = "$1" -o "bbr" = "`basename "$0"`" ]; then
 	BRACE_LANGUAGE=C++
+	b=bb
 fi
 if [ "-bb" = "$1" -o "-b" = "$1" ]; then
 	shift
@@ -171,7 +173,6 @@ if perl -ne 'exit !m{^#!/lang/bb$}' "$B"; then
 fi
 
 if [ "$BRACE_LANGUAGE" = C++ ]; then
-	b=bb
 	c=cc
 	if [ -z "$CXX" ]; then
 		for CC in g++ c++ gcc tcc cc; do
@@ -185,7 +186,6 @@ if [ "$BRACE_LANGUAGE" = C++ ]; then
 	CFLAGS="$CFLAGS $CXXFLAGS"
 	CFLAGS="$CFLAGS -Weffc++"
 else
-	b=b
 	c=c
 	if [ -z "$CC" ]; then
 		for CC in gcc tcc cc; do

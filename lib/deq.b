@@ -1,5 +1,6 @@
 export circbuf
 export util
+export vec
 
 # TODO implement without circbuf??
 
@@ -166,6 +167,13 @@ deq_shifts(deq *q, ssize_t n)
 		if q->start >= q->space
 			q->start -= q->space
 
+deq_unshifts(deq *q, ssize_t n)
+	q->size += n
+	circbuf_unshift(&q->b, q->element_size * n)
+	q->start -= n
+	if q->start < 0
+		q->start += q->space
+
 deq_copy_out(deq *q, void *dest, ssize_t i, ssize_t n)
 	ssize_t es = q->element_size
 	circbuf_copy_out(&q->b, dest, i*es, n*es)
@@ -178,6 +186,9 @@ deq_cat_deq_range(deq *q, deq *from, ssize_t i, ssize_t n)
 		deq_recalc_from_cb(q)
 	 else
 	 	q->size += n
+
+deq_cat_deq(deq *q, deq *from)
+	deq_cat_deq_range(q, from, 0, deqlen(from))
 
 deq_copy_in(deq *q, ssize_t i, void *from, ssize_t n)
 	ssize_t es = q->element_size
@@ -193,3 +204,59 @@ deq_to_vec(vec *v, deq *q)
 	circbuf_to_buffer(&v->b, &q->b)
 	deq_recalc_from_cb(q)
 	vec_recalc_from_buffer(v)
+
+deq_tidy(deq *q)
+	circbuf_tidy(&q->b)
+	deq_recalc_from_cb(q)
+
+data_to_deq(deq *q, void *data, ssize_t size, ssize_t element_size)
+	q->element_size = element_size
+	q->size = q->space = size
+	q->start = 0
+	q->b.size = q->b.space = size * element_size
+	q->b.start = 0
+	q->b.data = data
+
+deq_to_data(deq *q, void **data, ssize_t *size)
+	deq_tidy(q)
+	*data = q(q, 0)
+	*size = deqlen(q)
+
+
+# deq tees
+
+ssize_t deqt_pre(deq *t, deq *q, ssize_t offset)
+	*t = *q
+	deq_shifts(t, offset)
+	return deqlen(t)
+
+ssize_t deqt_post(deq *t, ssize_t oldsize)
+	ssize_t offset = oldsize - deqlen(t)
+	return offset
+
+deqts_shift(deq *q, ssize_t *offsets, ssize_t n)
+	ssize_t min_offset = deqts_min_offset(offsets, n)
+	deqts_shift_offsets(offsets, n, min_offset)
+	deq_shifts(q, min_offset)
+
+ssize_t deqts_min_offset(ssize_t *offsets, ssize_t n)
+	ssize_t min_offset = *offsets
+	for(i, offsets+1, offsets+n)
+		if *i < min_offset
+			min_offset = *i
+	return min_offset
+
+deqts_shift_offsets(ssize_t *offsets, ssize_t n, ssize_t min_offset)
+	for(i, offsets, offsets+n)
+		*i -= min_offset
+
+def deqt_do(t, q, offset)
+	deqt_do(t, q, offset, my(size0), my(x))
+def deqt_do(t, q, offset, size0, x)
+	ssize_t size0
+	post(x)
+		offset = deqt_post(t, size0)
+	pre(x)
+		size0 = deqt_pre(t, q, offset)
+		.
+
