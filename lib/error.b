@@ -110,37 +110,43 @@ memdump(const char *from, const char *to)
 
 def assert_check 1
 
+def assert(should_be_true)
+	if assert_check && !should_be_true
+		fault("assertion failed")
 def assert(should_be_true, format)
 	if assert_check && !should_be_true
-		error(format)
+		fault(format)
 def assert(should_be_true, format, a1)
 	if assert_check && !should_be_true
-		error(format, a1)
+		fault(format, a1)
 def assert(should_be_true, format, a1, a2)
 	if assert_check && !should_be_true
-		error(format, a1, a2)
+		fault(format, a1, a2)
 def assert(should_be_true, format, a1, a2, a3)
 	if assert_check && !should_be_true
-		error(format, a1, a2, a3)
+		fault(format, a1, a2, a3)
 def assert(should_be_true, format, a1, a2, a3, a4)
 	if assert_check && !should_be_true
-		error(format, a1, a2, a3, a4)
+		fault(format, a1, a2, a3, a4)
 
+def assert_warn(should_be_true)
+	if assert_check && !should_be_true
+		warn("assertion failed")
 def assert_warn(should_be_true, format)
 	if assert_check && !should_be_true
-		error(format)
+		warn(format)
 def assert_warn(should_be_true, format, a1)
 	if assert_check && !should_be_true
-		error(format, a1)
+		warn(format, a1)
 def assert_warn(should_be_true, format, a1, a2)
 	if assert_check && !should_be_true
-		error(format, a1, a2)
+		warn(format, a1, a2)
 def assert_warn(should_be_true, format, a1, a2, a3)
 	if assert_check && !should_be_true
-		error(format, a1, a2, a3)
+		warn(format, a1, a2, a3)
 def assert_warn(should_be_true, format, a1, a2, a3, a4)
 	if assert_check && !should_be_true
-		error(format, a1, a2, a3, a4)
+		warn(format, a1, a2, a3, a4)
 
 usage(char *syntax)
 	error("usage: %s %s", program, syntax)
