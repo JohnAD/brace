@@ -5,10 +5,10 @@
 
 int dsp_rate = 44100
 int bits_per_sample = 16
-int channels = 1
+int dsp_channels = 1
 num dsp_buf_initial_duration = 1
 int bytes_per_sample = 2
-# bits_per_sample/8*channels
+# bits_per_sample/8*dsp_channels
 
 char *dsp_outfile = "/dev/dsp"
 int use_dsp = 1
@@ -54,11 +54,11 @@ dsp_init()
 		if (arg != bits_per_sample)
 			error("unable to set sample size")
 		
-		arg = channels
+		arg = dsp_channels
 		status = ioctl(dsp_fd, SOUND_PCM_WRITE_CHANNELS, &arg)
 		if (status == -1)
 			error("SOUND_PCM_WRITE_CHANNELS ioctl failed")
-		if (arg != channels)
+		if (arg != dsp_channels)
 			error("unable to set number of channels")
 		
 		arg = dsp_rate
@@ -95,7 +95,7 @@ size_t dsp_sample_size()
 	return bytes_per_sample
 
 dsp_encode(sample *in0, sample *in1, short *out)
-	assert(bits_per_sample == 16 && channels == 1 && bytes_per_sample == 2, "dsp_encode can only produce 16bit mono sound at the moment")
+	assert(bits_per_sample == 16 && dsp_channels == 1 && bytes_per_sample == 2, "dsp_encode can only produce 16bit mono sound at the moment")
 	assert(sizeof(short) == bytes_per_sample, "short type is not two bytes!! oh dear")
 	
 	# for the sake of symmetry, we don't use the -0x8000 value
