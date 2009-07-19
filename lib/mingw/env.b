@@ -4,8 +4,9 @@ use error util alloc cstr
 export types
 use env
 
-Clearenv()
+int clearenv()
 	environ = NULL
+	return 0
 
 int setenv(const char *name, const char *value, int overwrite)
 	if overwrite || !getenv(name)

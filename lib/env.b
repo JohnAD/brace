@@ -41,6 +41,9 @@ Setenv(const char *name, const char *value, int overwrite)
 	if setenv(name, value, overwrite)
 		failed("setenv")
 
+def Setenv(name, value)
+	Setenv(name, value, 1)
+
 dump_env()
 	for_env_raw(e)
 		Sayf("%s", e)
@@ -81,3 +84,7 @@ load_config(cstr file)
 				if lastq
 					*lastq = '\0'
 				Setenv(key, val)
+
+Clearenv()
+	if clearenv() != 0
+		failed("clearenv")

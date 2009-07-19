@@ -11,7 +11,7 @@ def SO ".dll"
 
 fix_path(cstr p)
 #	if p[1] == ':' && among(p[2], '\\', '/')
-#		p[1] = tolower(p[0])
+#		p[1] = tolower((unsigned char)p[0])
 #		p[0] = '/'
 	for_cstr(i, p)
 		if *i == '\\'

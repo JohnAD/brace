@@ -242,11 +242,11 @@ char *Strrchr(const char *s, int c)
 
 cstr_tolower(cstr s)
 	for_cstr(i, s)
-		*s = tolower(*s)
+		*s = tolower((unsigned char)*s)
 
 cstr_toupper(cstr s)
 	for_cstr(i, s)
-		*s = tolower(*s)
+		*s = toupper((unsigned char)*s)
 
 def lc(s) cstr_tolower(s)
 def uc(s) cstr_toupper(s)

@@ -8,18 +8,8 @@ use env path
 # unsetenv can be implemented with putenv too.
 # clearenv might be done with environ = NULL ?
 
-def Setenv(name, value)
-	Setenv(name, value, 1)
-
 Unsetenv(const char *name)
 	unsetenv(name)
-
-Clearenv()
-	if clearenv() != 0
-		failed("clearenv")
-
-# re-implement clearenv for openbsd, windows
-# FIXME mingw will need unsetenv too?
 
 #def clearenv() clear_env()
 
