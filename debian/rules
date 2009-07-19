@@ -38,7 +38,7 @@ binary-arch: install
 	dh_testdir -a
 	dh_testroot -a
 	dh_installexamples -a eg/* exe/brace.b exe/bx.b lib/mkcolours
-	dh_installdocs -a Readme Todo lib/Todo.libb doc/*
+	dh_installdocs -a !README Todo lib/Todo.libb doc/*
 	dh_installchangelogs -a
 	dh_makeshlibs -a
 	dh_strip -a
