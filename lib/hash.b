@@ -14,26 +14,26 @@ use alloc m error
 struct hashtable
 	list *buckets
 	size_t size
-	hash_func hash
-	eq_func eq
+	hash_func *hash
+	eq_func *eq
 
 # hashtable abbrevs:
 
-def Get(ht, key) hashtable_value(ht, key)
-def get(ht, key) hashtable_value_or_null(ht, key)
-def get(ht, key, value) hashtable_value_or(ht, key, value)
-def put(ht, key, value) hashtable_add(ht, key, value)
-def kv(ht, key) hashtable_lookup(ht, key)
-def del(ht, key) hashtable_delete(ht, key)
-def KV(ht, key) hashtable_lookup_or_die(ht, key)
-def kv(ht, key, init) hashtable_lookup_or_add_key(ht, key, init)
-def already(ht, key) hashtable_already(ht, key)
+def Get(ht, key) hashtable_value(ht, (void *)key)
+def get(ht, key) hashtable_value_or_null(ht, (void *)key)
+def get(ht, key, value) hashtable_value_or(ht, (void *)key, value)
+def put(ht, key, value) hashtable_add(ht, (void *)key, value)
+def kv(ht, key) hashtable_lookup(ht, (void *)key)
+def del(ht, key) hashtable_delete(ht, (void *)key)
+def KV(ht, key) hashtable_lookup_or_die(ht, (void *)key)
+def kv(ht, key, init) hashtable_lookup_or_add_key(ht, (void *)key, init)
+def already(ht, key) hashtable_already(ht, (void *)key)
 
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.
 
-typedef unsigned int (*hash_func)(void *key)
-typedef boolean (*eq_func)(void *k1, void *k2)
+typedef unsigned long (hash_func)(void *key)
+typedef boolean (eq_func)(void *k1, void *k2)
 
 # I miss C++!!
 
@@ -54,7 +54,7 @@ def kv_is_null(kv) kv.key == (void*)-1
 # TODO use ^^ to join type to _hash and _eq instead of passing both
 # TODO like priq, use macros for hash_func and all hashtable funcs and pass type / hash_func / type_eq in to functions that need them..?
 
-hashtable_init(hashtable *ht, hash_func hash, eq_func eq, size_t size)
+hashtable_init(hashtable *ht, hash_func *hash, eq_func *eq, size_t size)
 	ht->size = hashtable_sensible_size(size)
 	ht->buckets = alloc_buckets(ht->size)
 	ht->hash = hash
@@ -80,7 +80,7 @@ list *alloc_buckets(size_t size)
 #  this is so we can delete nodes, check if exists then add, etc
 list *hashtable_lookup_ref(hashtable *ht, void *key)
 	list *bucket = which_bucket(ht, key)
-	eq_func eq = ht->eq
+	eq_func *eq = ht->eq
 	repeat
 		node_kv *node = (node_kv *)bucket->next
 		if node == NULL || (*eq)(key, node->kv.key)
@@ -186,8 +186,8 @@ size_t hashtable_sensible_size(size_t size)
 def hash_mult 101 #7123
 
 # TODO is this a good hash function?  I forget!
-unsigned int cstr_hash(void *s)
-	unsigned int rv = 0
+unsigned long cstr_hash(void *s)
+	unsigned long rv = 0
 	for(i, cstr_range((char *)s))
 		rv *= hash_mult
 		rv += *i
@@ -271,8 +271,8 @@ def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end)
 #  - works with any size int
 #  - same method could work for other types (float, struct etc)
 
-unsigned int int_hash(void *i_ptr)
-	int i = *(int *)i_ptr
+unsigned long int_hash(void *i_ptr)
+	int i = (int)i_ptr
 	char s[64]
 	size_t size = snprintf(s, sizeof(s), "%d", i)
 	if size >= sizeof(s)
@@ -280,7 +280,18 @@ unsigned int int_hash(void *i_ptr)
 	return cstr_hash(s)
 
 boolean int_eq(void *a, void *b)
-	return *(int*)a == *(int*)b
+	return (int)a == (int)b
+
+unsigned long long_hash(void *_l)
+	long l = (long)_l
+	char s[64]
+	size_t size = snprintf(s, sizeof(s), "%ld", l)
+	if size >= sizeof(s)
+		failed("long_hash")
+	return cstr_hash(s)
+
+boolean long_eq(void *a, void *b)
+	return (long)a == (long)b
 
 # here is an alternate I got from http://www.concentric.net/~Ttwang/tech/inthash.htm
 # in java code, works for 32 bits only
@@ -404,8 +415,8 @@ ssize_t hashtable_already(hashtable *ht, void *key)
 	return count
 
 
-unsigned int vos_hash(void *s)
-	unsigned int rv = 0
+unsigned long vos_hash(void *s)
+	unsigned long rv = 0
 	for_vec(i, (vec*)s, cstr)
 		cstr l = *i
 		rv *= hash_mult

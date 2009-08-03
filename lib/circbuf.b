@@ -302,6 +302,7 @@ circbuf_cat_cb_range(circbuf *b, circbuf *from, ssize_t i, ssize_t n)
 		circbuf_copy_in(b, to, cb(from, i), n1)
 		n -= n1
 		if n
+			to += n1
 			circbuf_copy_in(b, to, from->data, n)
 	 else
 		circbuf_copy_in(b, to, cb(from, i), n)

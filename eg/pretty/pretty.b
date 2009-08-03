@@ -4,8 +4,8 @@
 
 Main()
 	gr_fast()
-#	space()
-	space(1280, 800)
+	space()
+#	space(1280, 800)
 
 	if !vid
 		error("xshm pixmaps are not working")

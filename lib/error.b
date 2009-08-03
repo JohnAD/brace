@@ -8,6 +8,8 @@ export error
 def debug warn
 #def debug void
 
+def verbose warn
+
 int exit__error = 125
 int exit__fault = 124
 
@@ -338,12 +340,10 @@ vfault_(char *file, int line, const char *format, va_list ap)
 hashtable *extra_error_messages
 
 add_error_message(int errnum, cstr message)
-	int *_errnum = Malloc(sizeof(int))
-	*_errnum = errnum
-	hashtable_add(extra_error_messages, _errnum, message)
+	hashtable_add(extra_error_messages, (void *)errnum, message)
 
 cstr Strerror(int errnum)
-	key_value *kv = hashtable_lookup(extra_error_messages, &errnum)
+	key_value *kv = hashtable_lookup(extra_error_messages, (void *)errnum)
 	if kv == NULL
 		return strerror(errnum)
 	 else

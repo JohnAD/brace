@@ -117,7 +117,7 @@ step()
 	if got_sigchld
 		pid_t pid
 		while sched->n_children && (pid = Child_done())
-			proc *p = get(&sched->children, &pid)
+			proc *p = get(&sched->children, pid)
 			if !p
 				error("no waiter for child %d", pid)
 			clr_waitchild(pid)
@@ -257,15 +257,13 @@ def waitchild(pid, status)
 
 set_waitchild(pid_t pid, proc *p)
 	proc_debug("set_waitchild %d", pid, p)
-	assert(get(&sched->children, &pid) == NULL, "set_waitchild: waiter already set")
-	pid_t *pidp = Talloc(pid_t)
-	*pidp = pid
-	put(&sched->children, pidp, p)
+	assert(get(&sched->children, pid) == NULL, "set_waitchild: waiter already set")
+	put(&sched->children, pid, p)
 	++sched->n_children
 
 clr_waitchild(pid_t pid)
 	proc_debug("clr_waitchild %d", pid)
-	key_value kv = del(&sched->children, &pid)
+	key_value kv = del(&sched->children, pid)
 	Free(kv.key)
 	--sched->n_children
 
