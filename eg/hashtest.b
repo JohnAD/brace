@@ -6,7 +6,7 @@ Main()
 #	test_interactive()
 
 test_speed()
-	new(ht, hashtable, cstr_hash, (eq_func)cstr_eq, 100003)
+	new(ht, hashtable, cstr_hash, cstr_eq, 100003)
 	eachline(l)
 		hashtable_add(ht, strdup(l), "bogus def")
 	cstr word
@@ -15,8 +15,8 @@ test_speed()
 		Sayf("%s %s", word, definition)
 
 test_interactive()
-#	new(ht, hashtable, cstr_hash, (eq_func)cstr_eq, 131)
-	new(ht, hashtable, cstr_hash, (eq_func)cstr_eq, 5)
+#	new(ht, hashtable, cstr_hash, cstr_eq, 131)
+	new(ht, hashtable, cstr_hash, cstr_eq, 5)
 
 	hashtable_dump(ht)
 

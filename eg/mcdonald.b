@@ -2,6 +2,7 @@
 use b
 Main()
 	new(noises, vec, cstr, 500)
+	Chdir(program_dir)
 	Freopen("mcdonald.conf", "r", stdin)
 	eachline(line)
 		cstr *w = split(line, ' ')
