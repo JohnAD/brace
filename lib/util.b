@@ -45,6 +45,8 @@ boolean printable(uchar c)
 
 Def lett(to, from) sametypet(to, from) = from
 Def let(to, from) state lett(to, from)
+ # the 0; is so we can put a declaration at the start of a "case",
+ # perhaps this should be added at each "case" in brace
 
 Def sametypet(to, ref) typeof(ref) to
 Def sametype(to, ref) state sametypet(to, ref)
@@ -1157,8 +1159,8 @@ unsigned int bit_reverse(unsigned int x)
 # this stuff assumes 8 bit bytes etc
 
 def byte(p) (unsigned char)p[0]
-def u(x) (unsigned long)x
-def s(x) (long)x
+def us(x) (unsigned long)x
+def si(x) (long)x
 
 def le2(p) byte(p) | (byte(p+1)<<8)
 def le3(p) byte(p) | (byte(p+1)<<8) | (byte(p+2)<<16)
@@ -1169,18 +1171,18 @@ def be3(p) (byte(p)<<16) | (byte(p+1)<<8) | byte(p+2)
 def be4(p) (byte(p)<<24) | (byte(p+1)<<16) | (byte(p+2)<<8) | byte(p+3)
 
 def le2(p, i)
-	p[0] = u(i) ; p[1] = (u(i)>>8)
+	p[0] = us(i) ; p[1] = (us(i)>>8)
 def le3(p, i)
-	p[0] = u(i) ; p[1] = (u(i)>>8) ; p[2] = (u(i)>>16)
+	p[0] = us(i) ; p[1] = (us(i)>>8) ; p[2] = (us(i)>>16)
 def le4(p, i)
-	p[0] = u(i) ; p[1] = (u(i)>>8) ; p[2] = (u(i)>>16) ; p[3] = (u(i)>>24)
+	p[0] = us(i) ; p[1] = (us(i)>>8) ; p[2] = (us(i)>>16) ; p[3] = (us(i)>>24)
 
 def be2(p, i)
-	p[0] = (u(i)>>8) ; p[1] = u(i)
+	p[0] = (us(i)>>8) ; p[1] = us(i)
 def be3(p, i)
-	p[0] = (u(i)>>16) ; p[1] = (u(i)>>8) ; p[2] = u(i)
+	p[0] = (us(i)>>16) ; p[1] = (us(i)>>8) ; p[2] = us(i)
 def be4(p, i)
-	p[0] = (u(i)>>24) ; p[1] = (u(i)>>16) ; p[2] = (u(i)>>8) ; p[3] = u(i)
+	p[0] = (us(i)>>24) ; p[1] = (us(i)>>16) ; p[2] = (us(i)>>8) ; p[3] = us(i)
 
 def sbyte(p) ((long)byte(p)) << 24 >> 24
 

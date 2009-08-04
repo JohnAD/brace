@@ -42,7 +42,7 @@ def Talloc(type) (type *)Malloc(sizeof(type))
 
 def Nalloc(type, nmemb) (type *)Malloc(nmemb * sizeof(type))
 
-def Renalloc(ptr, type, nmemb) ptr = (type *)Realloc(ptr, nmemb * sizeof(type))
+def Renalloc(ptr, type, nmemb) Realloc(ptr, nmemb * sizeof(type))
 
 def normal_Free(ptr) free(ptr)
 

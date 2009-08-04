@@ -97,8 +97,8 @@ str str_from_char(char c)
 
 str str_from_cstr(cstr cs)
 	return new_str(cstr_range(cs))
-def s(cs) str_from_cstr(cs)
-def S(cs) cstr_from_str(cs)  # XXX conflicts with South!
+def S(cs) str_from_cstr(cs)
+def CS(cs) cstr_from_str(cs)  # XXX conflicts with South!
  # this is for use mid-expression, especially with cstr literals
 
  # TODO need a better syntax for const literal strs

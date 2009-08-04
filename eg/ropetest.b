@@ -7,7 +7,7 @@ Main()
 	let(h4, r(h2, NL, h2))
 
 	*str_chr(hello.s, ',') = ';'
-	str_str(hello.s, s("World")).start[1] = 'u'
+	str_str(hello.s, S("World")).start[1] = 'u'
 
 	rope_dump(h4)
 	nl()

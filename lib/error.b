@@ -111,44 +111,39 @@ memdump(const char *from, const char *to)
 		Fflush(stderr)
 
 def assert_check 1
+def assert_error fault
 
 def assert(should_be_true)
-	if assert_check && !should_be_true
-		fault("assertion failed")
+	Assert(should_be_true, assert_error)
 def assert(should_be_true, format)
-	if assert_check && !should_be_true
-		fault(format)
+	Assert(should_be_true, assert_error, format)
 def assert(should_be_true, format, a1)
-	if assert_check && !should_be_true
-		fault(format, a1)
+	Assert(should_be_true, assert_error, format, a1)
 def assert(should_be_true, format, a1, a2)
-	if assert_check && !should_be_true
-		fault(format, a1, a2)
+	Assert(should_be_true, assert_error, format, a1, a2)
 def assert(should_be_true, format, a1, a2, a3)
-	if assert_check && !should_be_true
-		fault(format, a1, a2, a3)
+	Assert(should_be_true, assert_error, format, a1, a2, a3)
 def assert(should_be_true, format, a1, a2, a3, a4)
-	if assert_check && !should_be_true
-		fault(format, a1, a2, a3, a4)
+	Assert(should_be_true, assert_error, format, a1, a2, a3, a4)
 
-def assert_warn(should_be_true)
+def Assert(should_be_true, my_error)
 	if assert_check && !should_be_true
-		warn("assertion failed")
-def assert_warn(should_be_true, format)
+		my_error("assertion failed")
+def Assert(should_be_true, my_error, format)
 	if assert_check && !should_be_true
-		warn(format)
-def assert_warn(should_be_true, format, a1)
+		my_error(format)
+def Assert(should_be_true, my_error, format, a1)
 	if assert_check && !should_be_true
-		warn(format, a1)
-def assert_warn(should_be_true, format, a1, a2)
+		my_error(format, a1)
+def Assert(should_be_true, my_error, format, a1, a2)
 	if assert_check && !should_be_true
-		warn(format, a1, a2)
-def assert_warn(should_be_true, format, a1, a2, a3)
+		my_error(format, a1, a2)
+def Assert(should_be_true, my_error, format, a1, a2, a3)
 	if assert_check && !should_be_true
-		warn(format, a1, a2, a3)
-def assert_warn(should_be_true, format, a1, a2, a3, a4)
+		my_error(format, a1, a2, a3)
+def Assert(should_be_true, my_error, format, a1, a2, a3, a4)
 	if assert_check && !should_be_true
-		warn(format, a1, a2, a3, a4)
+		my_error(format, a1, a2, a3, a4)
 
 usage(char *syntax)
 	error("usage: %s %s", program, syntax)

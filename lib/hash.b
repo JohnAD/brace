@@ -404,7 +404,7 @@ kv_cstr_to_hashtable(cstr kv[][2], hashtable *ht)
 		put(ht, (*i)[0], (*i)[1])
 
 ssize_t hashtable_already(hashtable *ht, void *key)
-	assert_warn(sizeof(ssize_t) <= sizeof(void*), "sizeof(ssize_t) %zu is bigger than sizeof(void *) %zu", sizeof(ssize_t), sizeof(void*))
+	Assert(sizeof(ssize_t) <= sizeof(void*), warn, "sizeof(ssize_t) %zu is bigger than sizeof(void *) %zu", sizeof(ssize_t), sizeof(void*))
 	ssize_t count, count1
 	key_value *x = kv(ht, key, i2p(0))
 	count = (ssize_t)p2i(x->value)

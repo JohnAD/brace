@@ -121,7 +121,7 @@ rope_dump(rope r, int indent)
 	if rope_is_empty(r)
 		warn("empty")
 	eif rope_is_a_str(r)
-		cstr s = S(r.s)
+		cstr s = CS(r.s)
 		warn("str >%s<", s)
 		Free(s)
 	else
