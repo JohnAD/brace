@@ -56,5 +56,5 @@ colours_init()
 	lightgrey = coln("lightgrey")
 	cyan = coln("cyan")
 	pink = coln("pink")
-typedef long colour
+typedef unsigned long colour
 colour coln(char *name)

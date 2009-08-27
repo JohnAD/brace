@@ -1339,3 +1339,5 @@ def cache(ht, key, init) cachekv(ht, key, init)->value
 def cachekv(ht, key, init) (cache__ref = hashtable_lookup_ref(ht, key))->next ? (void)0 : hashtable_ref_add(cache__ref, key, (void*)(init)), hashtable_ref_lookup(cache__ref)
 list *cache__ref
   # cache is non reentrant at present, it uses this instead of a local variable
+
+Def tok_paste(x, y) x^^y

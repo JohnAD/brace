@@ -226,19 +226,29 @@ def bm_start()
 	if bm_enabled
 		bm_start = rtime()
 
-def bm(s)
+def bm()
 	if bm_enabled
 		if bm_start == 0
 			bm_start()
-		bm_end = rtime()
+		else
+			bm_end = rtime()
+
+def bm(s)
+	bm()
+	if bm_end
 		warn("%s: %f", s, bm_end-bm_start)
 
 def bm(s, n)
-	if bm_enabled
-		if bm_start == 0
-			bm_start()
-		num bm_end = rtime()
+	bm()
+	if bm_end
 		warn("%s: %f = %f * %d", s, bm_end-bm_start, (bm_end-bm_start)/n, (size_t)n)
+
+def bm_ps(s)
+	bm_ps(s, 1)
+def bm_ps(s, n)
+	bm()
+	if bm_end
+		warn("%s: %f / sec", s, n / (bm_end-bm_start))
 
 rtime_to_timeval(num rtime, struct timeval *tv)
 	tv->tv_sec = (long)rtime

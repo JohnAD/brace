@@ -62,6 +62,7 @@ if [ -z "$BRACE_USE" ]; then
 			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
 		fi
 		LDLIBS="$LDLIBS -lcrypt"
+		LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
 #		if [ -e /usr/include/curses.h ]; then          
 #			BRACE_USE="$BRACE_USE curses"
 #			LDFLAGS="$LDFLAGS -lncurses"

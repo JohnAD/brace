@@ -663,6 +663,12 @@ size_t Fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 		failed("fread")
 	return count
 
+size_t Fread_all(void *ptr, size_t size, size_t nmemb, FILE *stream)
+	size_t count = fread(ptr, size, nmemb, stream)
+	if count < nmemb
+		failed("fread")
+	return count
+
 Fwrite_str(FILE *stream, str s)
 	Fwrite(s.start, str_get_size(s), 1, stream)
 

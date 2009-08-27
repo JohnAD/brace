@@ -118,13 +118,14 @@ step()
 		pid_t pid
 		while sched->n_children && (pid = Child_done())
 			proc *p = get(&sched->children, pid)
-			if !p
-				error("no waiter for child %d", pid)
-			clr_waitchild(pid)
-			waitchild__pid = pid
-			waitchild__status = wait__status
-			proc_debug("child %d finished - resuming %010p", pid, p)
-			sched_resume(p)
+			if p
+				clr_waitchild(pid)
+				waitchild__pid = pid
+				waitchild__status = wait__status
+				proc_debug("child %d finished - resuming %010p", pid, p)
+				sched_resume(p)
+			 else
+				warn("no waiter for child %d", pid)
 
 	# TODO test timeouts, modify to work with procs directly?
 	if !timeouts_empty(tos)

@@ -1,4 +1,4 @@
-export list cstr types vec
+export list cstr types vec util
 use alloc m error
 
 # TODO base this on a hashset ?
@@ -21,13 +21,24 @@ struct hashtable
 
 def Get(ht, key) hashtable_value(ht, (void *)key)
 def get(ht, key) hashtable_value_or_null(ht, (void *)key)
-def get(ht, key, value) hashtable_value_or(ht, (void *)key, value)
-def put(ht, key, value) hashtable_add(ht, (void *)key, value)
+def get(ht, key, value) hashtable_value_or(ht, (void *)key, (void *)value)
+def put(ht, key, value) hashtable_add(ht, (void *)key, (void *)value)
 def kv(ht, key) hashtable_lookup(ht, (void *)key)
 def del(ht, key) hashtable_delete(ht, (void *)key)
 def KV(ht, key) hashtable_lookup_or_die(ht, (void *)key)
-def kv(ht, key, init) hashtable_lookup_or_add_key(ht, (void *)key, init)
+def kv(ht, key, init) hashtable_lookup_or_add_key(ht, (void *)key, (void *)init)
 def already(ht, key) hashtable_already(ht, (void *)key)
+
+def set(ht, key, value)
+	set(ht, key, value, void)
+def set(ht, key, value, free_or_void)
+	hashtable_set(ht, key, value, free_or_void)
+
+def hashtable_set(ht, k, v, free_or_void)
+	let(my(kv), kv(ht, k, NULL))
+	if my(kv)->value
+		free_or_void(my(kv)->value)
+	my(kv)->value = (void *)v
 
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.
