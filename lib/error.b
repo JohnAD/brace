@@ -335,10 +335,10 @@ vfault_(char *file, int line, const char *format, va_list ap)
 hashtable *extra_error_messages
 
 add_error_message(int errnum, cstr message)
-	hashtable_add(extra_error_messages, (void *)errnum, message)
+	hashtable_add(extra_error_messages, i2p(errnum), message)
 
 cstr Strerror(int errnum)
-	key_value *kv = hashtable_lookup(extra_error_messages, (void *)errnum)
+	key_value *kv = hashtable_lookup(extra_error_messages, i2p(errnum))
 	if kv == NULL
 		return strerror(errnum)
 	 else

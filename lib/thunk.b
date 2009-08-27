@@ -60,7 +60,7 @@ void *thunks_call(deq *q, void *specific_arg)
 # thunk_yes (1) means it was handled
 # thunk_err (-1) means some error happened but don't try other handers
 
-def thunk_no (void*)0
-def thunk_yes (void*)1
-def thunk_err (void*)-1
-def thunk_int(i) (void*)i
+def thunk_no i2p(0)
+def thunk_yes i2p(1)
+def thunk_err i2p(-1)
+def thunk_int(i) i2p(i)

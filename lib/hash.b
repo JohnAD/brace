@@ -19,15 +19,15 @@ struct hashtable
 
 # hashtable abbrevs:
 
-def Get(ht, key) hashtable_value(ht, (void *)key)
-def get(ht, key) hashtable_value_or_null(ht, (void *)key)
-def get(ht, key, value) hashtable_value_or(ht, (void *)key, (void *)value)
-def put(ht, key, value) hashtable_add(ht, (void *)key, (void *)value)
-def kv(ht, key) hashtable_lookup(ht, (void *)key)
-def del(ht, key) hashtable_delete(ht, (void *)key)
-def KV(ht, key) hashtable_lookup_or_die(ht, (void *)key)
-def kv(ht, key, init) hashtable_lookup_or_add_key(ht, (void *)key, (void *)init)
-def already(ht, key) hashtable_already(ht, (void *)key)
+def Get(ht, key) hashtable_value(ht, i2p(key))
+def get(ht, key) hashtable_value_or_null(ht, i2p(key))
+def get(ht, key, value) hashtable_value_or(ht, i2p(key), i2p(value))
+def put(ht, key, value) hashtable_add(ht, i2p(key), i2p(value))
+def kv(ht, key) hashtable_lookup(ht, i2p(key))
+def del(ht, key) hashtable_delete(ht, i2p(key))
+def KV(ht, key) hashtable_lookup_or_die(ht, i2p(key))
+def kv(ht, key, init) hashtable_lookup_or_add_key(ht, i2p(key), i2p(init))
+def already(ht, key) hashtable_already(ht, i2p(key))
 
 def set(ht, key, value)
 	set(ht, key, value, void)
@@ -38,7 +38,7 @@ def hashtable_set(ht, k, v, free_or_void)
 	let(my(kv), kv(ht, k, NULL))
 	if my(kv)->value
 		free_or_void(my(kv)->value)
-	my(kv)->value = (void *)v
+	my(kv)->value = i2p(v)
 
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.
@@ -58,9 +58,9 @@ struct node_kv
 	list l
 	key_value kv
 
-key_value kv_null = { (void*)-1, (void*)-1 }
+key_value kv_null = { i2p(-1), i2p(-1) }
 
-def kv_is_null(kv) kv.key == (void*)-1
+def kv_is_null(kv) kv.key == i2p(-1)
 
 # TODO use ^^ to join type to _hash and _eq instead of passing both
 # TODO like priq, use macros for hash_func and all hashtable funcs and pass type / hash_func / type_eq in to functions that need them..?

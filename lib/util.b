@@ -668,7 +668,7 @@ int cstrp_cmp_null(const void *_a, const void *_b)
 		return 0
 	return strcmp(*a, *b)
 
-comm(vec *merge_v, vec *comm_v, vec *va, vec *vb, cmp_t cmp, free_t freer)
+comm(vec *merge_v, vec *comm_v, vec *va, vec *vb, cmp_t cmp, free_t *freer)
 	size_t maxlen = veclen(va)+veclen(vb)
 	vec_set_space(merge_v, maxlen)
 	vec_set_space(comm_v, maxlen)
@@ -1283,7 +1283,7 @@ def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13,
 	macro(a0)
 	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16)
 
-def i2p(i) (void*)i
+def i2p(i) (void*)(intptr_t)i
 def p2i(p) (intptr_t)p
 
 remove_null(vec *v)
@@ -1336,7 +1336,7 @@ uniq_vovos(vec *v)
 
 
 def cache(ht, key, init) cachekv(ht, key, init)->value
-def cachekv(ht, key, init) (cache__ref = hashtable_lookup_ref(ht, key))->next ? (void)0 : hashtable_ref_add(cache__ref, key, (void*)(init)), hashtable_ref_lookup(cache__ref)
+def cachekv(ht, key, init) (cache__ref = hashtable_lookup_ref(ht, key))->next ? (void)0 : hashtable_ref_add(cache__ref, key, i2p(init)), hashtable_ref_lookup(cache__ref)
 list *cache__ref
   # cache is non reentrant at present, it uses this instead of a local variable
 
