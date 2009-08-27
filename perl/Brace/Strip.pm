@@ -60,7 +60,7 @@ for (@enum) {
 	}
 }
 for (@struct_union_class_template_proto) {
-	($name) = /($sym)$/o;
+	($name) = /($sym)([)(]|$)/o;
 	defined $name or die "weird struct_union_class_template_proto: $_\n";
 	push @{$def{$name}}, \$_;
 }

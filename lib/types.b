@@ -23,7 +23,7 @@ typedef struct timeval timeval
 typedef struct timespec timespec
 typedef struct tm datetime
 
-typedef void (free_t)(void *)
+typedef void free_t(void *)
 
 union any
 	void *p
