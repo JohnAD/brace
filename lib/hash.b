@@ -279,30 +279,19 @@ def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end)
 # disadvantage - a bit slow
 # advantages
 #  - can look up by string too potentially
-#  - works with any size int
+#  - works with any size int, long too, up to sizeof(void *)
 #  - same method could work for other types (float, struct etc)
 
 unsigned long int_hash(void *i_ptr)
-	int i = (int)i_ptr
+	long i = p2i(i_ptr)
 	char s[64]
-	size_t size = snprintf(s, sizeof(s), "%d", i)
+	size_t size = snprintf(s, sizeof(s), "%ld", i)
 	if size >= sizeof(s)
 		failed("int_hash")
 	return cstr_hash(s)
 
 boolean int_eq(void *a, void *b)
-	return (int)a == (int)b
-
-unsigned long long_hash(void *_l)
-	long l = (long)_l
-	char s[64]
-	size_t size = snprintf(s, sizeof(s), "%ld", l)
-	if size >= sizeof(s)
-		failed("long_hash")
-	return cstr_hash(s)
-
-boolean long_eq(void *a, void *b)
-	return (long)a == (long)b
+	return p2i(a) == p2i(b)
 
 # here is an alternate I got from http://www.concentric.net/~Ttwang/tech/inthash.htm
 # in java code, works for 32 bits only
