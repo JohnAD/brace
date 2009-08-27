@@ -43,8 +43,8 @@ def hashtable_set(ht, k, v, free_or_void)
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.
 
-typedef unsigned long (hash_func)(void *key)
-typedef boolean (eq_func)(void *k1, void *k2)
+typedef unsigned long hash_func(void *key)
+typedef boolean eq_func(void *k1, void *k2)
 
 # I miss C++!!
 
