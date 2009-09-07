@@ -71,7 +71,6 @@ hashtable_init(hashtable *ht, hash_func *hash, eq_func *eq, size_t size)
 	ht->hash = hash
 	ht->eq = eq
 
-# TODO hashtable_free ?
 # TODO rename to ht_* ?
 
 list *alloc_buckets(size_t size)
@@ -243,12 +242,13 @@ key_value *hashtable_lookup_or_die(hashtable *ht, void *key)
 def for_hashtable(key, value, ht)
 	for_hashtable(key, value, ht, my(kv), my(ref))
 def for_hashtable(key, value, ht, kv, ref)
-	_for_hashtable(key, value, ht, kv, ref, my(bucket), my(end))
-def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end)
+	_for_hashtable(key, value, ht, kv, ref, my(bucket), my(end), my(next))
+def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end, next)
 	list *bucket = ht->buckets
 	list *end = bucket + ht->size
 	list *ref = bucket
-	for ; ; ref = ref->next
+	list *next
+	for ; ; ref = next
 		while bucket != end && ref->next == NULL
 			++bucket
 			ref = bucket
@@ -258,6 +258,7 @@ def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end)
 		key_value *_kv = &n->kv
 		_key = (typeof(_key))_kv->key
 		_value = (typeof(_value))_kv->value
+		next = ref->next
 
 # this is redundant to hashtable_lookup I guess?
 # should def hashtable_exists hashtable_lookup  ?
@@ -307,10 +308,28 @@ boolean int_eq(void *a, void *b)
 #}
 #
 
-hashtable_free(hashtable *ht)
-	use(ht)
-	# TODO
+def hashtable_free(ht)
+	hashtable_free(ht, NULL, NULL)
+hashtable_free(hashtable *ht, free_t *free_key, free_t *free_value)
+	hashtable_clear(ht, free_key, free_value)
+	Free(ht->buckets)
 
+def hashtable_clear(ht)
+	hashtable_clear(ht, NULL, NULL)
+hashtable_clear(hashtable *ht, free_t *free_key, free_t *free_value)
+	list *bucket = ht->buckets
+	list *end = bucket + ht->size
+	for ; bucket != end; ++bucket
+		list *item = bucket->next
+		while item
+			list *next = item->next
+			node_kv *node = (node_kv *)item
+			if free_key
+				free_key(node->kv.key)
+			if free_value
+				free_value(node->kv.value)
+			Free(node)
+			item = next
 
 # multi-hash functions
 

@@ -1282,6 +1282,12 @@ def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13,
 def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16)
 	macro(a0)
 	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17)
+def call_each(macro, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18)
+	macro(a0)
+	call_each(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18)
 
 def i2p(i) (void*)(intptr_t)i
 def p2i(p) (intptr_t)p

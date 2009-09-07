@@ -22,17 +22,20 @@ sub brace_pc {
 
 for my $function (@function) {
 	my $pc = 1;
-	1 while $function =~ s/\b(b__pc|b__pc_inc|b__pc_next)\b/
-		if ($1 eq "b__pc") {
-			$pc;
-		} elsif ($1 eq "b__pc_inc") {
-			++$pc;
-			"";
-		} else {
-			$pc+1;
+	if ($function =~ /b__pc/) {  # quick check
+		my $tokens = tokenize($function);
+		for (@$tokens) {
+			if ($_ eq "b__pc") {
+				$_ = $pc;
+			} elsif ($_ eq "b__pc_next") {
+				$_ = $pc + 1;
+			} elsif ($_ eq "b__pc_inc") {
+				++$pc;
+			}
 		}
-	/ges;
-	1 while $function =~ s/\n\t*\n/\n/g;
+		$function = untokenize($tokens);
+		1 while $function =~ s/\n\t*\n/\n/g;
+	}
 }
 
 }

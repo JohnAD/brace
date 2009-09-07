@@ -134,7 +134,11 @@ if [ -z "$BRACE_HEADER_GUARD_PREFIX" ]; then
 fi
 echo "BRACE_HEADER_GUARD_PREFIX=$BRACE_HEADER_GUARD_PREFIX" >&2
 
-brace_update_headers
+export A="$*"
+
+if [ "$A" != clean ]; then
+	brace_update_headers
+fi
 
 brace_mk_cc >mkfile_cc
 
@@ -148,7 +152,6 @@ cat "$MK_LIB" >>mkfile.1
 echo 'include mkfile_cc' >>mkfile.1
 
 rm -f mk.failed
-export A="$*"
 
 #( make -f mkfile.1 $A 2>&1 || touch mk.failed ) |
 #grep --line-buffered -ve 'Each undeclared identifier is reported only once' \

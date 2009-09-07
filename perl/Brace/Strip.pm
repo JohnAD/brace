@@ -60,12 +60,12 @@ for (@enum) {
 	}
 }
 for (@struct_union_class_template_proto) {
-	($name) = /($sym)([)(]|$)/o;
+	($name) = /($sym)$/o;
 	defined $name or die "weird struct_union_class_template_proto: $_\n";
 	push @{$def{$name}}, \$_;
 }
 for (@struct_union_typedef, @typedef) {
-	($name) = /($sym)(?:\[\S*\])?$/o;
+	($name) = /($sym)(?:$|\[\S*\]$|[)(])/o;
 	if (!defined $name) {
 		# cope with weird typedefs: func ptrs - see osched.bb
 		($name) = /\(\s*\*\s*($sym)\s*\)/o;

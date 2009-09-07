@@ -8,7 +8,6 @@ export types main util
 export darcs
 export html http
 export tsv
-export tok
 export vio
 export hunk
 
