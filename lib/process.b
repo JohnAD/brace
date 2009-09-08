@@ -433,3 +433,35 @@ cstr x(cstr command)
 	return rv
 
  # TODO similar with argument escaping and/or formatting etc.
+
+sh_unquote(cstr s)
+	char *o = s
+	while *s
+		if *s == '\\'
+			++s
+		*o++ = *s++
+	*o = '\0'
+
+char *sh_unquote_full(cstr s)
+	char *o = s
+	while *s
+		if *s == '\''
+			while *s != '\''
+				*o++ = *s++
+			++s
+		 eif *s == '\"'
+			while *s != '\"'
+				if *s == '\\'
+					++s
+				*o++ = *s++
+			++s
+		 eif isspace(*s)
+			# this will separate args with \0
+			*o++ = '\0'
+			++s
+		 else
+			if *s == '\\'
+				++s
+			*o++ = *s++
+	*o = '\0'
+	return o

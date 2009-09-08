@@ -1347,3 +1347,8 @@ list *cache__ref
   # cache is non reentrant at present, it uses this instead of a local variable
 
 Def tok_paste(x, y) x^^y
+
+#def isword(c) char_name2(c)
+
+boolean isword(char c)
+	return isalnum(c) || c == '_'

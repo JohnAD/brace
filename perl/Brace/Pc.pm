@@ -31,6 +31,7 @@ for my $function (@function) {
 				$_ = $pc + 1;
 			} elsif ($_ eq "b__pc_inc") {
 				++$pc;
+				$_ = "";
 			}
 		}
 		$function = untokenize($tokens);

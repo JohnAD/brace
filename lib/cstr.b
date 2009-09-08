@@ -281,3 +281,21 @@ def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9) orp(cstr_be
 def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10))
 def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11))
 def cstr_begins_with_word(s, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12) orp(cstr_begins_with_word(s, w0), cstr_begins_with_word(s, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12))
+
+def cstr_chop(s)
+	cstr_chop(s, 1)
+cstr_chop(cstr s, long n)
+	s[strlen(s)-n] = '\0'
+
+cstr cstr_begins_with_sym(cstr s, cstr substr)
+	cstr rv = cstr_begins_with(s, substr)
+	if rv && !isword(*rv)
+		return rv
+	return NULL
+
+char *cstr_not_chr(cstr s, char c)
+	while *s == c
+		++s
+	return s
+
+def strlitlen(s) sizeof(s)-1

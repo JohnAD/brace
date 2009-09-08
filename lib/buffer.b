@@ -349,3 +349,8 @@ buffer_cat_chars(buffer *b, char c, size_t n)
 	buffer_grow(b, n)
 	char *p = bufend(b) - n
 	memset(p, c, n)
+
+buffer_cat_int(buffer *b, int i)
+	# TODO speed this up?
+	Sprintf(b, "%d", i)
+
