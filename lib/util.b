@@ -1293,7 +1293,7 @@ def i2p(i) (void*)(intptr_t)i
 def p2i(p) (intptr_t)p
 
 remove_null(vec *v)
-	grep(i, v, void*, *i, void)
+	grep(i, v, void*, *i)
 	vec_squeeze(v)
 
 # uniqo and already keep a count

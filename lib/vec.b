@@ -232,3 +232,8 @@ vec_append_vec(vec *v0, vec *v1)
 vov_free(vec *v)
 	for_vec(i, v, vec*)
 		vec_free(*i)
+
+vov_free_maybe_null(vec *v)
+	for_vec(i, v, vec*)
+		if *i
+			vec_free(*i)

@@ -136,6 +136,14 @@ cstr vformat(const char *format, va_list ap)
 	buffer_squeeze(b)
 	return buffer_get_start(b)
 
+# fformat calls tofree() on the new string:
+
+cstr fformat(const char *format, ...)
+	collect(vformat, format)
+
+cstr vfformat(const char *format, va_list ap)
+	return tofree(vformat(format, ap))
+
 int Vsnprintf(char *buf, size_t size, const char *format, va_list ap)
 	let(rv, vsnprintf(buf, size, format, ap))
 	if rv < 0

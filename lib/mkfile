@@ -1,7 +1,7 @@
 include ../.Make.conf
 
 finder=find . $(BRACE_USE) -maxdepth 1 -name
-grep_plain=grep -v -w -e b -e gr -e colours -e turtle -e sound -e music -e key -e tty -e cgi_png
+grep_plain=grep -v -w -e b -e gr -e colours -e turtle -e sound -e music -e key -e tty -e cgi_png -e sprite
 BOBJ=$(shell $(finder) "*.b" | perl -pe 's/\\/\//g; s/\.b$$/.o/')
 BBOBJ=$(shell $(finder) "*.bb" | perl -pe 's/\.bb$$/.o/')
 BHEADERS=$(shell $(finder) "*.b" | perl -pe 's/\.b$$/.bh/')
