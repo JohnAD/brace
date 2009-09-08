@@ -417,10 +417,16 @@ void *mgetlast(hashtable *ht, void *key)
 # TODO sorted hash option - using a tree or something to keep the keys in sort order?
 # or actually use a tree for the data structure
 
-kv_cstr_to_hashtable(cstr kv[][2], hashtable *ht)
-	cstr (*i)[2] = kv
-	for ; (*i)[0] ; ++i
-		put(ht, (*i)[0], (*i)[1])
+kv_cstr_to_hashtable(hashtable *ht, cstr kv[][2])
+	table_cstr_to_hashtable(ht, kv, 2, 0, 1)
+#	cstr (*i)[2] = kv
+#	for ; (*i)[0] ; ++i
+#		put(ht, (*i)[0], (*i)[1])
+
+table_cstr_to_hashtable(hashtable *ht, void *table, long width, long ki, long vi)
+	cstr *i = table
+	for ; *i ; i += width
+		put(ht, i[ki], i[vi])
 
 ssize_t hashtable_already(hashtable *ht, void *key)
 	Assert(sizeof(ssize_t) <= sizeof(void*), warn, "sizeof(ssize_t) %zu is bigger than sizeof(void *) %zu", sizeof(ssize_t), sizeof(void*))

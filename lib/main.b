@@ -97,11 +97,11 @@ opts_init(opts *O, size_t opts_hash_size)
 
 def get_options() get_options(NULL)
 
-opts *get_options(cstr options[][2])
+opts *get_options(cstr options[][3])
 	new(short_ht, hashtable, cstr_hash, cstr_eq, 257)
 
 	if options
-		kv_cstr_to_hashtable(options, short_ht)
+		table_cstr_to_hashtable(short_ht, options, 3, 0, 1)
 
 	New(O, opts)
 
@@ -187,3 +187,34 @@ dump_options(opts *O)
 				Fprintf(stderr, " %s", j)
 		nl(stderr)
 	nl(stderr)
+
+def version()
+	sf("%s version %s", program, version)
+
+def version_description()
+	sf("%s version %s - %s", program, version, description)
+
+def help()
+	help_(version, description, usage, options)
+help_(cstr version, cstr description, cstr *usage, cstr options[][3])
+	version_description()
+	say_usage()
+	say("options:")
+
+	typeof(&*options) i
+	int max_len = 0
+
+	for i = options; (*i)[0]; ++i
+		cstr long_opt = (*i)[1]
+		int len = strlen(long_opt)
+		if len > max_len
+			max_len = len
+
+	for i = options; (*i)[0]; ++i
+		cstr short_opt = (*i)[0]
+		cstr long_opt = (*i)[1]
+		cstr desc = (*i)[2]
+		if *short_opt
+			Sayf("  -%1s  --%-*s  %s", short_opt, max_len, long_opt, desc)
+		 else
+			Sayf("      --%-*s  %s", max_len, long_opt, desc)

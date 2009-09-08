@@ -145,8 +145,47 @@ def Assert(should_be_true, my_error, format, a1, a2, a3, a4)
 	if assert_check && !should_be_true
 		my_error(format, a1, a2, a3, a4)
 
-usage(char *syntax)
-	error("usage: %s %s", program, syntax)
+def usage(syntax)
+	warn_usage(syntax)
+	exit(1)
+def usage(s1, s2)
+	warn_usage(s1, s2)
+	exit(1)
+
+def fsay_usage(s, syntax)
+	Fsayf(s, "usage: %s %s", program, syntax)
+def fsay_usage(s, s1, s2)
+	Fsayf(s, "usage: %s %s\n       %s %s", program, s1, program, s2)
+
+def warn_usage(syntax)
+	fsay_usage(stderr, syntax)
+def warn_usage(s1, s2)
+	fsay_usage(stderr, s1, s2)
+
+def say_usage(syntax)
+	fsay_usage(stdout, syntax)
+def say_usage(s1, s2)
+	fsay_usage(stdout, s1, s2)
+
+fsay_usage_(FILE *s, cstr *usage)
+	let(i, usage)
+	let(my(first), 1)
+	for ; *i; ++i
+		if my(first)
+			Fsayf(s, "usage: %s %s", program, *i)
+			my(first) = 0
+		 else
+			Fsayf(s, "       %s %s", program, *i)
+
+def fsay_usage(s)
+	fsay_usage_(s, usage)
+def warn_usage()
+	fsay_usage(stderr)
+def say_usage()
+	fsay_usage(stdout)
+def usage()
+	warn_usage()
+	exit(1)
 
 # exception handling stuff - including revised versions of error() etc
 
