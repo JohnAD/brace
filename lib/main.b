@@ -192,7 +192,10 @@ def version()
 	sf("%s version %s", program, version)
 
 def version_description()
-	sf("%s version %s - %s", program, version, description)
+	if *description
+		sf("%s version %s - %s", program, version, description)
+	 else
+		version()
 
 def help()
 	help_(version, description, usage, options)
