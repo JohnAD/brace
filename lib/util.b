@@ -391,6 +391,9 @@ def eachline(v)
 
 def Id(x) x
 
+void *Id_func(void *x)
+	return x
+
 def ref(v, obj)
 	let(v, &obj)
 
@@ -590,30 +593,38 @@ void *mem_mem(const void* haystack, size_t haystacklen, const void* needle, size
 			return (void*)haystack
 	return 0
 
-def sort_num_array(x)
+def sort_array_num(x)
 	qsort(x, array_size(x), sizeof(*x), num_cmp)
 
-int num_cmp(const void *a, const void *b)
-	num diff = *(num*)a - *(num*)b
-	if num_eq(diff, 0)
-		return 0
-	 eif diff < 0
-		return -1
-	 else
-		return 1
+#int num_cmp(const void *a, const void *b)
+#	num diff = *(num*)a - *(num*)b
+#	if num_eq(diff, 0)
+#		return 0
+#	 eif diff < 0
+#		return -1
+#	 else
+#		return 1
 
-def sort_int_array(x)
+int num_cmp(const void *a, const void *b)
+	return ncmp(*(num*)a, *(num*)b)
+
+def sort_array_int(x)
 	qsort(x, array_size(x), sizeof(*x), int_cmp)
 
+def ncmp(a, b) a > b ? 1 : a < b ? -1 : 0
+
 int int_cmp(const void *a, const void *b)
-	int diff = *(int*)a - *(int*)b
-	return diff
+	return ncmp(*(int*)a, *(int*)b)
+#	int diff = *(int*)a - *(int*)b
+#	return diff
+
+int long_cmp(const void *a, const void *b)
+	return ncmp(*(long*)a, *(long*)b)
 
 int off_t_cmp(const void *a, const void *b)
-	off_t diff = *(off_t*)a - *(off_t*)b
-	return diff < 0 ? -1 : diff > 0 ? 1 : 0
+	return ncmp(*(off_t*)a, *(off_t*)b)
 
-def sort_cstr_array(x)
+def sort_array_cstr(x)
 	qsort(x, array_size(x), sizeof(*x), cstrp_cmp)
 
 # post / pre usage:
@@ -650,7 +661,11 @@ size_t arylen(void *_p)
 typedef int (*cmp_t)(const void *, const void *)
 
 sort_vec(vec *v, cmp_t cmp)
-	qsort(vec_get_start(v), vec_get_size(v), vec_get_el_size(v), cmp)
+	qsort(vec0(v), veclen(v), vec_get_el_size(v), cmp)
+
+sort_vec_cstr(vec *v)
+	sort_vec(v, cstrp_cmp)
+#	qsort(vec0(v), veclen(v), sizeof(cstr), cstrp_cmp)
 
 int cstrp_cmp(const void *_a, const void *_b)
 	char * const *a = _a
@@ -1328,10 +1343,10 @@ def uniqo_cont(v, hash, eq, Free_or_void, already_ht)
 
 
 void *orp(void *a, void *b)
-	return a ? a : b ? b : NULL
+	return a ? a : b
 
 int ori(int a, int b)
-	return a ? a : b ? b : 0
+	return a ? a : b
 
 def nul_to_space(a, b) nul_to(a, b, ' ')
 
@@ -1361,3 +1376,48 @@ Def tok_paste(x, y) x^^y
 
 boolean isword(char c)
 	return isalnum(c) || c == '_'
+
+# these boolean ops evaluate the args more than once, so are of limited use
+
+def or() 0
+def or(a) a
+def or(a, b) a ? a : b
+def or(a, b, c) a ? a : b ? b : c
+
+def and() 1
+def and(a) a
+def and(a, b) a ? b : 0
+def and(a, b, c) a ? b ? c : 0 : 0
+
+# these boolean ops create a variable and use it as a temporary,
+# and evaluate each arg only once
+
+def Or(v)
+	let(v, 0)
+def Or(v, a)
+	let(v, a)
+def Or(v, a, b)
+	let(v, a)
+	if !v
+		v = b
+def Or(v, a, b, c)
+	let(v, a)
+	if !v
+		v = b
+		if !v
+			v = c
+
+def And(v)
+	let(v, 1)
+def And(v, a)
+	let(v, a)
+def And(v, a, b)
+	let(v, a)
+	if v
+		v = b
+def And(v, a, b, c)
+	let(v, a)
+	if v
+		v = b
+		if v
+			v = c

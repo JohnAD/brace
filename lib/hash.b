@@ -17,6 +17,8 @@ struct hashtable
 	hash_func *hash
 	eq_func *eq
 
+# TODO count, is_empty
+
 # hashtable abbrevs:
 
 def Get(ht, key) hashtable_value(ht, i2p(key))
@@ -65,6 +67,24 @@ def kv_is_null(kv) kv.key == i2p(-1)
 # TODO use ^^ to join type to _hash and _eq instead of passing both
 # TODO like priq, use macros for hash_func and all hashtable funcs and pass type / hash_func / type_eq in to functions that need them..?
 
+
+# TODO replace new(ht, hashtable .......) crap with this simpler stuff
+
+def ht(foo)
+	new(foo, hashtable)
+def Ht(foo)
+	New(foo, hashtable)
+def HT(foo)
+	NEW(foo, hashtable)
+
+def hashtable_default_buckets 101
+
+def hashtable_init(ht)
+	hashtable_init(ht, hashtable_default_buckets)
+def hashtable_init(ht, size)
+	hashtable_init(ht, cstr_hash, cstr_eq, size)
+def hashtable_init(ht, hash, eq)
+	hashtable_init(ht, hash, eq, hashtable_default_buckets)
 hashtable_init(hashtable *ht, hash_func *hash, eq_func *eq, size_t size)
 	ht->size = hashtable_sensible_size(size)
 	ht->buckets = alloc_buckets(ht->size)
@@ -243,12 +263,12 @@ def for_hashtable(key, value, ht)
 	for_hashtable(key, value, ht, my(kv), my(ref))
 def for_hashtable(key, value, ht, kv, ref)
 	_for_hashtable(key, value, ht, kv, ref, my(bucket), my(end), my(next))
-def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end, next)
+def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end, _next)
 	list *bucket = ht->buckets
 	list *end = bucket + ht->size
 	list *ref = bucket
-	list *next
-	for ; ; ref = next
+	list *_next
+	for ; ; ref = _next
 		while bucket != end && ref->next == NULL
 			++bucket
 			ref = bucket
@@ -258,7 +278,7 @@ def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end, next)
 		key_value *_kv = &n->kv
 		_key = (typeof(_key))_kv->key
 		_value = (typeof(_value))_kv->value
-		next = ref->next
+		_next = ref->next
 
 # this is redundant to hashtable_lookup I guess?
 # should def hashtable_exists hashtable_lookup  ?
@@ -460,3 +480,17 @@ boolean vos_eq(void *_v1, void *_v2)
 			return 0
 		++p2
 	return 1
+
+keys(vec *out, hashtable *ht)
+	void *k, *v
+	for_hashtable(k, v, ht)
+		vec_push(out, k)
+
+values(vec *out, hashtable *ht)
+	void *k, *v
+	for_hashtable(k, v, ht)
+		vec_push(out, v)
+
+sort_keys(vec *out, hashtable *ht)
+	keys(out, ht)
+	sort_vec_cstr(out)
