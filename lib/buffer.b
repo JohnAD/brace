@@ -362,3 +362,6 @@ buffer_cat_int(buffer *b, int i)
 	# TODO speed this up?
 	Sprintf(b, "%d", i)
 
+buffer_cat_long(buffer *b, long i)
+	# TODO speed this up?
+	Sprintf(b, "%ld", i)
