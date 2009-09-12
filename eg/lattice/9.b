@@ -2,8 +2,9 @@
 use b
 def trig_unit deg
 Main()
+	space()
 #	space(midnightblue)
-	space(800, 600)
+#	space(800, 600)
 	gr_fast()
 #	gr_delay(0.5)
 
@@ -19,7 +20,7 @@ Main()
 		rt(a)
 		clear()
 		draw_lattice()
-		csleep(1.0/100.0)
+		csleep(1.0/70.0)
 		paint()
 		da *= 1.0005
 
