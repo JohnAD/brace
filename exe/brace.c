@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <string.h>
 
-enum { MAXLINE = 1024 };
+enum { MAXLINE = 4096 };
 
 enum { MAXTABS = 256 };
 

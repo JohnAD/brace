@@ -22,7 +22,7 @@ Main()
 		error("xshm pixmaps are not working")
 
 	if depth > 16
-		shiny(int)
+		shiny(long)
 	 eif depth == 16
 		shiny(short)
 	 else

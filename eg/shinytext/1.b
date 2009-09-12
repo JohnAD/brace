@@ -30,9 +30,9 @@ Main()
 		error("xshm pixmaps are not working")
 
 	if depth > 16
-		shiny(int)
+		shiny(long)
 	 else
-		warn("shinytext only works properly in 32 bit colour for now")
+		warn("shinytext works best in 32 bit colour")
 	if depth == 16
 		shiny(short)
 	 eif depth == 8

@@ -3,7 +3,7 @@ use stdio.h
 use ctype.h
 use string.h
 
-enum { MAXLINE = 1024 }
+enum { MAXLINE = 4096 }
 char buf[MAXLINE]
 
 enum { MAXTABS = 256 }

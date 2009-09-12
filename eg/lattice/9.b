@@ -19,6 +19,7 @@ Main()
 		rt(a)
 		clear()
 		draw_lattice()
+		csleep(1.0/100.0)
 		paint()
 		da *= 1.0005
 

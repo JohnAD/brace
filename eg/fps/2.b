@@ -7,6 +7,12 @@ Main()
 #	for(i, 0, n)
 #		lookup[i] = (long)sqrt(i)
 #	warn("done")
+	if depth == 16
+		fps2(short)
+	 else
+		fps2(long)
+
+def fps2(pixel_type)
 	num a = -60
 	int c = 0
 	repeat
@@ -43,7 +49,6 @@ Main()
 		Paint()
 #		asleep(1)
 		bm_ps("painted")
-typedef long pixel_type
 
 local int rv = 0
 def r() rv = ((rv * 12345678) ^ rv) + (rv>>17) + 89356913, rv < 0

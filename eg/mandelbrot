@@ -1,7 +1,7 @@
 #!/lang/b
+# usage ./mandelbrot x y r max_i rb_i w h
 # ./mandelbrot -.74364386269 .13182590271 .00000006763 16000 1000 100 100
 use b
-typedef long pixel_type
 Main()
 	num outside = 16, ox = -0.5, oy = 0, r = 1.5
 	long max_i = 100, rb_i = 30, i
@@ -18,6 +18,12 @@ Main()
 	 else
 		space()
 	rainbow_init()
+	if depth == 16
+		mandelbrot(short)
+	 else
+		mandelbrot(long)
+
+def mandelbrot(pixel_type)
 	pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
 	num d = 2*r/h, x0 = ox-d*w_2, y0 = oy+d*h_2
 #	int smooth_n = 1
