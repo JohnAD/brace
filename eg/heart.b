@@ -64,5 +64,3 @@ heart(num x, num y, num r)
 
 def stretch(x, in0, in1, out0, out1) (x-in0)/(in1-in0)*(out1-out0)+out0
 def stretch1(x, in0, in1, out0, out1) pow((x-in0)/(in1-in0), 3)*(out1-out0)+out0
-
-def trig_unit deg

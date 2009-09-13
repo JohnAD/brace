@@ -12,10 +12,10 @@ Main()
 		n2 = atoi(arg[1])
 		n3 = atoi(arg[2])
 		n4 = atoi(arg[3])
-	0	n1 = Randi(1,13)
-		n2 = Randi(1,13)
-		n3 = Randi(1,13)
-		n4 = Randi(1,13)
+	0	n1 = randi(1,13)
+		n2 = randi(1,13)
+		n3 = randi(1,13)
+		n4 = randi(1,13)
 	else	usage("[n1 n2 n3 n4]  e.g. 10 5 5 10")
 		exit(1)
 
@@ -44,7 +44,5 @@ Main()
 				d = d * 0.9
 		paint()
 		Sleep(0.01)
-
-def trig_unit deg
 
 use b

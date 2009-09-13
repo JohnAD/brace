@@ -81,5 +81,3 @@ def fnp 3
 
 #def fn(o, x0, x1, x2, x3) iclamp(toss() ? avg(o, x0, x1, x2, x3) : max(o, x0, x1, x2, x3)*0.8, 0, 255)
 def fn(o, x0, x1, x2, x3) avg(o, x0, x1, x2, x3)
-
-def trig_unit deg

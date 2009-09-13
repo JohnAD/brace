@@ -10,7 +10,7 @@ Main()
 		for(y, 0, h-2)
 			for(x, 0, w-2)
 				if i==0
-					*px = fastrgb32(Randi(0, 256), Randi(0, 256), Randi(0, 256))
+					*px = fastrgb32(randi(0, 256), randi(0, 256), randi(0, 256))
 				 else
 					int r = random() % 10
 					int lsb

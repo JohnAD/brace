@@ -35,8 +35,6 @@ Main()
 		
 			point(x, y)
 		paint()
-
-Def trig_unit deg
  # todo, make it angle_unit ?
 
 

@@ -6,6 +6,4 @@ Main()
 		for(a, 0, 360)
 			clear(rainbow(a))
 
-def trig_unit deg
-
 use b

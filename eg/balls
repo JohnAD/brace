@@ -62,6 +62,4 @@ Main()
 #			b->v *= 0.98
 		paint()
 
-def trig_unit deg
-
 use b

@@ -1,6 +1,6 @@
 #!/lang/b
 use b
-def trig_unit deg
+
 Main()
 	space(800, 600)
 	gr_fast()

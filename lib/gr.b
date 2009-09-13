@@ -179,6 +179,8 @@ def dot(x, y, r) circle_fill(x, y, r)
 
 num _xanc = -1, _yanc = 1
 
+num gprint_tab_width = 2  #  * font_height
+
 gprint_anchor(num xanc, num yanc)
 	_xanc = xanc; _yanc = yanc
 

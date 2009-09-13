@@ -99,8 +99,6 @@ def pulse_spin(which)
 	pulse(which)
 		spin()
 
-def trig_unit deg
-
 # move to m.b
 num fsgn(num x)
 	if x == 0.0

@@ -1,3 +1,7 @@
 BOBJ=$(shell ls *.b | perl -pe 's/\.b$$/.o/')
 
 graph: $(BOBJ)
+
+clean:
+	rm -f *.o *.c *.bh *.b1
+	mk-clean

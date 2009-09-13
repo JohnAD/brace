@@ -6,12 +6,11 @@ Main()
 	int mr = hypot(w_2, h_2)
 	int count = 0
 	repeat
-		int x = Randi(-w_2, w_2)
-		int y = Randi(-h_2, h_2)
-		int r = Randi(0, mr)
-		hsv(Randi(360), Rand(0.8, 1), Rand(0.2))
+		int x = randi(-w_2, w_2)
+		int y = randi(-h_2, h_2)
+		int r = randi(0, mr)
+		hsv(randi(360), Rand(0.8, 1), Rand(0.2))
 #		col(rb[Randint(360)])
 		circle(x, y, r)
 		if ++count % 100 == 0
 			paint()
-def trig_unit deg

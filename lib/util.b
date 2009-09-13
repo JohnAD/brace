@@ -1421,3 +1421,10 @@ def And(v, a, b, c)
 		v = b
 		if v
 			v = c
+
+Def back_vec(i, v, type)
+	state type *my(end) = (type *)vec0(v)-1
+	state type *my(i1) = (type *)vecend(v)-1
+	for ; my(i1)!=my(end) ; --my(i1)
+		let(i, my(i1))
+		.

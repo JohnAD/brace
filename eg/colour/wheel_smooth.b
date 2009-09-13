@@ -67,7 +67,5 @@ Main()
 def X Sin(a)*r
 def Y Cos(a)*r
 
-def trig_unit deg
-
 use b
 use lib_extra.b

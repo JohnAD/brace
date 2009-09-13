@@ -3,8 +3,8 @@ export types util time
 use process
 use m
 
-Def trig_unit rad
-# Def trig_unit deg
+#Def trig_unit rad
+Def trig_unit deg
 # TODO: trig01, trig_neg1_to_1, grad
 
 const num pi = M_PI
@@ -105,17 +105,17 @@ def sqr(x) x*x
 num notpot(num hypotenuse, num x)
 	return sqrt(sqr(hypotenuse) - sqr(x))
 
-def Randi() random()
-def Randi(max) (int)(max*Rand())
-def Randi(min, max) Randi(max-min)+min
+def randi() random()
+def randi(max) (int)(max*Rand())
+def randi(min, max) randi(max-min)+min
 
 def RAND_TOP (unsigned int)RAND_MAX+1
 def RANDL_TOP (unsigned long long int)RAND_TOP*RAND_TOP
 def RANDL_MAX (unsigned int)RANDL_TOP-1
 
-def Randl() (long long int)random()*RAND_TOP+random()
+def randl() (long long int)random()*RAND_TOP+random()
 
-def Rand() (num)((long double)Randl()/RANDL_TOP)
+def Rand() (num)((long double)randl()/RANDL_TOP)
 def Rand(max) Rand()*max
 def Rand(min, max) Rand(max-min)+min
 #def toss() Rand()>0.5

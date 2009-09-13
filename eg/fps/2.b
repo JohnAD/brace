@@ -52,5 +52,3 @@ def fps2(pixel_type)
 
 local int rv = 0
 def r() rv = ((rv * 12345678) ^ rv) + (rv>>17) + 89356913, rv < 0
-
-def trig_unit deg

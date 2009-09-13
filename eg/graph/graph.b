@@ -63,7 +63,7 @@ Arc *add_arc(Node *n0, Node *n1)
 
 # viewpoint --------------------------------------------------
 
-unsigned int window_width = 400, window_height = 300
+unsigned int window_width = 800, window_height = 600
 
 double viewpoint_angle = 0.0
 double viewpoint_scale = 30.0
@@ -115,6 +115,8 @@ XFontStruct *_font
 const char *font_name = "-adobe-helvetica-medium-r-normal--11-80-100-100-p-56-iso8859-1"
 
 # interface state --------------------------------------------
+
+typedef void (*Thunk)(void)
 
 XEvent event
 
@@ -252,29 +254,29 @@ event_loop()
 	while 1
 		XNextEvent(display, &event)
 		switch event.type
-			case Expose:
+			Expose	.
 				Sayf("expose event - count: %d", event.xexpose.count)
 				if event.xexpose.count == 0
 					redraw(True, True)
 				break
-			case ConfigureNotify:
+			ConfigureNotify	.
 				configure_notify()
 				break
-			case ButtonPress:
+			ButtonPress	.
 				if button != 0
 					warn("press %d then press %d - latter ignored\n", button, event.xbutton.button)
 				else
 					button = event.xbutton.button
 					button_event(button, 0, event.xbutton.x, event.xbutton.y)
 				break
-			case MotionNotify:
+			MotionNotify	.
 				# We skip all but the most recent motion event.
 				# This might be a bit dodgy, we could skip past a
 				# release/press pair...
 				while XCheckTypedEvent(display, MotionNotify, &event)
 				button_event(button, 1, event.xmotion.x, event.xmotion.y)
 				break
-			case ButtonRelease:
+			ButtonRelease	.
 				if button == 0
 					warn("no press then release b%d - release ignored", button, event.xbutton.button)
 				else if event.xbutton.button != button
@@ -283,14 +285,14 @@ event_loop()
 					button_event(button, 2, event.xbutton.x, event.xbutton.y)
 					button = 0
 				break
-			case KeyPress:
+			KeyPress	.
 				(*controller->keyboard)(event.xkey.keycode, event.xkey.state)
 				break
-			case MapNotify:
-			case UnmapNotify:
-			case ReparentNotify:
+			MapNotify	.
+			UnmapNotify	.
+			ReparentNotify	.
 				break
-			default:
+			else	.
 				warn("unhandled event, type: 0x%04x\n", event.type)
 				break
 	# this is unreachable

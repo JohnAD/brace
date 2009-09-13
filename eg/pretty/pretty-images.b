@@ -128,7 +128,6 @@ def bm(s)
 		bm_end = rtime()
 		Sayf("%s: %f", s, bm_end-bm_start)
 
-def trig_unit deg
 def screen_trans fast
 
 use b

@@ -55,7 +55,6 @@ def pretty(pixel_type)
 		bm("painted")
 		bm_start()
 
-def trig_unit deg
 def screen_trans fast
 
 use b

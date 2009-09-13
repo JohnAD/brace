@@ -26,7 +26,7 @@ Main()
 	R *= 0.9
 	int step
 	do
-		step = Randi(1, 12)
+		step = randi(1, 12)
 	 while step == 6
 	thin() ; white()
 	move(0, R)
@@ -52,8 +52,6 @@ Main()
 	gsayf("server software: %s", Getenv("SERVER_SOFTWARE"))
 	gnl()
 	gsay_date(time())
-
-def trig_unit deg
 
 gsay_date(num t)
 	# this prints the time and date

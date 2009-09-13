@@ -35,10 +35,10 @@ Main()
 	paint()
 	Sleep(2)
 	repeat
-		move(Randi(w), Randi(h))
-		hsv(Randi(360), 1, 0.7)
+		move(randi(w), randi(h))
+		hsv(randi(360), 1, 0.7)
 		gprint_anchor(0, 0)
-		font("helvetica-medium", Randi(8, 48))
+		font("helvetica-medium", randi(8, 48))
 		gprintf("%f", Rand(Rand(Rand())))
 		black()
 		draw_graph()
@@ -47,8 +47,6 @@ Main()
 		draw_msg(msg)
 		paint()
 		++heading_size
-
-def trig_unit deg
 
 def draw_graph()
 	int max = 0

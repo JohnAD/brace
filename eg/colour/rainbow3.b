@@ -62,8 +62,6 @@ def pulse_spin(which)
 	pulse(which)
 		spin()
 
-def trig_unit deg
-
 use main
 use m
 use gr

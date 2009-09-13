@@ -17,6 +17,4 @@ Main()
 			point(x, y)
 		paint()
 
-def trig_unit deg
-
 use b

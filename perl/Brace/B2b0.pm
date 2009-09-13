@@ -6,7 +6,7 @@ require "brace_parser.pl";
 
 our @lines;
 
-use Brace::RmCommentsBlank;
+use Brace::RmCommentsBlankColons;
 use Brace::Contlines;
 use Brace::SplitSemicolons;
 use Brace::SplitUse;

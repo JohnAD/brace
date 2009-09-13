@@ -114,8 +114,6 @@ Main()
 	Sayf("max g: %f", max_g)
 	Sayf("max b: %f", max_b)
 
-def trig_unit lun
-
 num square(num x)
 	return x * x
 

@@ -16,9 +16,9 @@ Main()
 	int fs = font_size_to_fit(s)
 
 	repeat(50)
-		col(rb[Randi(0,360)])
-		font("helvetica-medium", fs/Randi(2, 5))
-		move(Randi(-w_2, w_2), Randi(-h_2, h_2))
+		col(rb[randi(0,360)])
+		font("helvetica-medium", fs/randi(2, 5))
+		move(randi(-w_2, w_2), randi(-h_2, h_2))
 		gsayf(s)
 
 	font("helvetica-bold", fs)
@@ -65,11 +65,11 @@ def shiny(pixel_type)
 		if m == 0
 			cl = white
 		 eif m == 50
-			cl = rb[Randi(0, 360)]
+			cl = rb[randi(0, 360)]
 		if Rand() < 0.3
-			col(rb[Randi(0,360)])
-			font("helvetica-medium", fs/Randi(2, 5))
-			move(Randi(-w_2, w_2), Randi(-h_2, h_2))
+			col(rb[randi(0,360)])
+			font("helvetica-medium", fs/randi(2, 5))
+			move(randi(-w_2, w_2), randi(-h_2, h_2))
 			gsayf(s)
 			paint()
 		if m == 0 || m == 50
@@ -94,7 +94,7 @@ def shiny(pixel_type)
 				if Rand() < 0.8 || x<4 || y<4 || x>w-5 || y>h-5
 					px[-w-1] = o
 				 else
-					px[-w-1] = px[Randi(-4, 5) + Randi(-4, 5)*w]
+					px[-w-1] = px[randi(-4, 5) + randi(-4, 5)*w]
 				++px
 			px += 2
 		back(y, h-2, 0)

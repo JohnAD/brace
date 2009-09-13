@@ -1,6 +1,6 @@
 #!/lang/b
 use b
-def trig_unit deg
+
 num rt3
 Main()
 	space(midnightblue)

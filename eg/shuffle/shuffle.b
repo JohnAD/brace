@@ -6,5 +6,5 @@ Main()
 	let(lines, slurp_lines())
 	int n = lines->size
 	for_vec(i, lines, cstr)
-		swap(*i, i[Randi(n--)])
+		swap(*i, i[randi(n--)])
 		Say(*i)

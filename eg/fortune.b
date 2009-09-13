@@ -1,13 +1,13 @@
 #!/lang/b
 use b
 
-Main()
+Main():
 	let(n, 1)
 	cstr choice = NULL
 	eachline(l)
-		if Randi(n) == 0
+		if randi(n) == 0:
 			Free(choice)
 			choice = strdup(l)
 		++n
-	if choice
+	if choice:
 		Say(choice)

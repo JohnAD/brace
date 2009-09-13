@@ -31,7 +31,7 @@ if (/#/) { # rough check first to speed up
 	}
 }
 if (!$had_comment) {
-	if (/\S/) { push @out, $_ };
+	if (/\S/) { s/([^ ]):$/$1/; push @out, $_ };
 }
 }
 

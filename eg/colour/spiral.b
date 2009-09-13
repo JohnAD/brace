@@ -64,8 +64,6 @@ def spin()
 	rb_green_angle += 2*dt
 	rb_blue_angle += -1*dt
 
-def trig_unit deg
-
 use main
 use m
 use gr

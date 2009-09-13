@@ -26,6 +26,4 @@ def blacken()
 	blacken(green)
 	blacken(blue)
 
-def trig_unit deg
-
 use b

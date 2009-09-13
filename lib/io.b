@@ -490,7 +490,7 @@ int Tempfile(buffer *b, char *prefix, char *suffix, char *tmpdir, int dir, int m
 	return -1
 
 char random_alphanum()
-	int r = Randi(10 + 26 * 2)
+	int r = randi(10 + 26 * 2)
 	if r < 10
 		return '0' + r
 	if r < 10 + 26

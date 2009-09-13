@@ -24,6 +24,18 @@ def rb(a) col(rb[mod((int)(a+0.5), 360)])
 
 # 1956.10.28 9.0.0  -  +42.30.17 +10.7.3
 
+struct place
+	num ns, ns_min, ns_sec
+	num ew, ew_min, ew_sec
+
+place_init(place *p, num ns, num ns_min, num ns_sec, num ew, num ew_min, num ew_sec)
+	p->ns = ns
+	p->ns_min = ns_min
+	p->ns_sec = ns_sec
+	p->ew = ew
+	p->ew_min = ew_min
+	p->ew_sec = ew_sec
+
 struct time_place
 	datetime time
 	place place
@@ -50,8 +62,8 @@ Main()
 
 	switch args
 	1	person_name = arg[0]
-	0	datetime_init(birth_t, Randi(1970, 2006), Randi(1, 13), Randi(1, 28),  Randi(24), Randi(60), Randi(60))
-		place_init(birth_p, Randi(-90, 90), Randi(60), Randi(60),  Randi(-180, 180), Randi(60), Randi(60))
+	0	datetime_init(birth_t, randi(1970, 2006), randi(1, 13), randi(1, 28),  randi(24), randi(60), randi(60))
+		place_init(birth_p, randi(-90, 90), randi(60), randi(60),  randi(-180, 180), randi(60), randi(60))
 		break
 		#datetime_init(birth_t, 1976,9,1, 0,0,0)
 		#place_init(birth_p, +42,30,17, 10,7,3)
@@ -284,8 +296,6 @@ def pluto_charon()
 	polar_to_rec_clock(x, y, oa+180, pc_r, charon_x, charon_y)
 	Disc(charon_x, charon_y, 1)
 
-def trig_unit deg
-
 def eachplanet(i)
 	for(i, 0, n_planets)
 def eachstar(i)
@@ -381,15 +391,15 @@ def curves()
 			if i == 0
 				continue
 			planet_pos(i, r, a, x1, y1)
-			curve(i, x0, y0, or, oa, r, a, 0)
-			curve(i, x0, y0, or, oa, r, a, 1)
+			draw_curve(i, x0, y0, or, oa, r, a, 0)
+			draw_curve(i, x0, y0, or, oa, r, a, 1)
 			x0 = x1 ; y0 = y1
 			or = r ; oa = a
 
 #x=x ; y=y  # keep gcc happy  IDEA for macros; omit to do an op if the result isn't ever used;
 	   #                 this would keep gcc happy too!
 
-curve(int i, num x0, num y0, num or, num oa, num r, num a, boolean golong)
+draw_curve(int i, num x0, num y0, num or, num oa, num r, num a, boolean golong)
 	num da = a - oa
 	da = rmod(da, 360)
 	num da1 = -(360-da)
@@ -601,7 +611,6 @@ use util
 use m
 use main
 use time
-use place
 use error
 use alloc
 use key

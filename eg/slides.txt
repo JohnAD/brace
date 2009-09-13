@@ -1,10 +1,11 @@
-hello world
+The CZ Programming Language
 
-this is my slideshow
+- a new dialect of C
+- pronounced see-zee or C-easy
 
-very nice!
-
-woo woo
-
-woop woop
+- good for newbies, kids, experts
+- as fast and powerful as C
+- code like python; no { } ;
+  - easier to edit, read
+- translated to C, then compiled
 

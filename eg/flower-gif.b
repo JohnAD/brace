@@ -56,5 +56,3 @@ Main()
 
 	System("gifsicle --colors 256 -O2 --delay 4 --loopcount flower-*.gif > flower.gif")
 	System("rm flower-*.gif")
-
-def trig_unit deg
