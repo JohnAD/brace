@@ -53,6 +53,7 @@ Main():
 	space()
 	gr_fast()
 	gprint_anchor(-1, 1)
+	csleep(smooth_delay)
 
 	new(lines, vec, cstr, 16)
 
@@ -113,7 +114,6 @@ show_slide(vec *lines):
 	num y = height * n / 2
 
 	if smooth && !start_of_page
-		csleep(smooth_delay)
 		for(i, 0.0, 1.0, 1.0/smooth_steps)
 			num y1 = blend(i, old_y, y)
 			num font_size1 = blend(i, old_font_size, font_size)
@@ -204,15 +204,3 @@ run_demo(cstr file)
 def effect_stop():
 	if i % 10 && rtime() > time+effect_duration:
 		break
-
-# TODO put in libb
-
-do_delay(num t)
-	if t
-		if can_read(STDIN_FILENO, t)
-			Readline()
-	 else
-	 	Readline()
-
-num blend(num i, num x0, num x1)
-	return (x1-x0)*i + x0
