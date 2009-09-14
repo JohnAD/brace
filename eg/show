@@ -113,12 +113,13 @@ show_slide(vec *lines):
 	num y = height * n / 2
 
 	if smooth && !start_of_page
+		csleep(smooth_delay)
 		for(i, 0.0, 1.0, 1.0/smooth_steps)
 			num y1 = blend(i, old_y, y)
 			num font_size1 = blend(i, old_font_size, font_size)
 			num height1 = blend(i, old_height, height)
 			draw_lines(lines, y1, font_size1, height1)
-			asleep(smooth_delay)
+			csleep(smooth_delay)
 
 	draw_lines(lines, y, font_size, height)
 
