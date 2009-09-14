@@ -56,12 +56,8 @@ Main()
 	load_and_convert_regions("data/regions")
 	load_points("data/points")
 	
-<<<<<<< HEAD/eg/geon/geon.bb
 #	paper(window_width, window_height)
 	paper()
-=======
-	paper()
->>>>>>> 04a655ccd98608d1c97d816f3369d5b3c77b3825/eg/geon/geon.bb
 	gr_fast()
 	window_radius = hypot(window_width/2, window_height/2)
 	load_palette("data/palette")
