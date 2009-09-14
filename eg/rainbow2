@@ -22,6 +22,8 @@ Main()
 	for(i, 0, 360)
 		rb[i] = rainbow(i)
 
+	bm_enabled = 0
+
 	bm_start()
 	int i = 0
 	for(y, -h_2, h_2)
