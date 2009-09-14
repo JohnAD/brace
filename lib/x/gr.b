@@ -19,6 +19,7 @@ Visual *visual
 XVisualInfo *visual_info
 int depth
 num pixel_size
+int pixel_size_i
 Pixmap gr_buf
 Colormap colormap
 GC gc
@@ -70,6 +71,7 @@ gr_init()
 	pixel_size = depth / 8.0
 	if pixel_size == 3
 		pixel_size = 4
+	pixel_size_i = (int)pixel_size
 
 	gc = DefaultGC(display, screen_number)
 	gcvalues.function = GXcopy
@@ -453,7 +455,9 @@ quad(num x2, num y2, num x3, num y3)
 	move2(x2, y2, x3, y3)
 
 def pixel(X, Y) pixel(vid, X, Y)
-def pixel(vid, X, Y) ((long *)vid) + (int)Y*w + (int)X
+def pixel(vid, X, Y) (void *)(((char *)vid) + ((int)Y*w + (int)X) * pixel_size_i)
+def pixel() pixel(0, 0)
+def pixel(pixmap) pixel(pixmap, 0, 0)
 
 # type can be png, gif, jpeg ...
 

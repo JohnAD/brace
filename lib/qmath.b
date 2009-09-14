@@ -68,3 +68,14 @@ def qAtan(a, t)
 def qAtan2(a, y, x)
 	qatan2(a, y, x)
 	a = rad2angle(a)
+
+# quick random numbers (in a macro)
+
+def rand_M ((1U<<31) -1)
+def rand_A 48271
+def rand_Q 44488
+def rand_R 3399
+
+unsigned int rand_v = 1
+def qrand() (unsigned int)(rand_v = rand_A*(rand_v%rand_Q) - rand_R*(rand_v/rand_Q))
+def qtoss() (qrand() % 2)
