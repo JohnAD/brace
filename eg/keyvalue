@@ -8,6 +8,7 @@ struct person
 
 Main()
 	scan_space = ": "
+	print_space = "\n"
 	eachline(l)
 		oread(l, k, v)
 		if *k

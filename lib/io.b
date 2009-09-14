@@ -1453,10 +1453,12 @@ cstr scan_float(float *a, cstr l)
 	scan_x(float, "%f", a, l)
 
 cstr scan_skip(cstr l)
-	while *l && !is_scan_space(l)
+	cstr next
+	while *l && !(next = is_scan_space(l))
 		++l
 	if *l
-		*l++ = '\0'
+		*l = '\0'
+		l = next
 	return l
 
 def scan_x(type, format, a, l)
@@ -1467,9 +1469,16 @@ def scan_x(type, format, a, l)
 	return scan_skip(l)
 
 cstr scan_space = NULL
-boolean is_scan_space(cstr s)
+cstr is_scan_space(cstr s)
 	if scan_space
 		return cstr_begins_with(s, scan_space)
-#		return strchr(scan_space, *s) != NULL
+#		return strchr(scan_space, *s) ? s+1 : NULL
 	 else
-		return isspace(*s)
+		return isspace(*s) ? s+1 : NULL
+
+do_delay(num t)
+	if t
+		if can_read(STDIN_FILENO, t)
+			Readline()
+	 else
+	 	Readline()

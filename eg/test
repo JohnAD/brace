@@ -1,0 +1,12 @@
+#!/lang/b
+use b
+
+struct test
+	long i
+	int k:3
+	int j:2
+	long a[]
+
+Main()
+	Pr(long, sizeof(test))
+	Pr(int, offsetof(test, i), offsetof(test, a), offsetof(test, k))

@@ -283,3 +283,6 @@ def ln(x) log(x)
 # rand_normal uses the box-mueller method, from:
 # http://en.wikipedia.org/wiki/Normal_distribution#Generating_values_for_normal_random_variables
 # The Ziggurat method is faster, I could try that later.
+
+num blend(num i, num x0, num x1)
+	return (x1-x0)*i + x0
