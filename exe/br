@@ -127,6 +127,8 @@ if [ -z "$BRACE_USE" ]; then
 			major="${V%.*}"
 			minor="${V##*.}"
 			if [ "$major" = 2.6 -a "$minor" -ge 20 ]; then
+				# allegedly this is included in 2.6.19,
+				# but not in knoppix, perhaps glibc was too old
 				BRACE_USE="$BRACE_USE io-epoll"
 			else
 				BRACE_USE="$BRACE_USE io-select"
