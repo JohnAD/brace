@@ -92,7 +92,7 @@ gr_init()
 
 	rainbow_init()
 
-	if gr_auto_event_loop
+	if !gr_exit
 		Atexit(event_loop)
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
@@ -493,3 +493,12 @@ def dump_img(type)
 def dump_img(type, file)
 	dump_img(type, file, 1)
 
+def with_pixel_type(macro)
+	if depth > 16
+		macro(long)
+	 eif depth == 16
+		macro(short)
+	 eif depth == 8
+		macro(char)
+	 else
+		error("unsupported video depth: %d", depth)

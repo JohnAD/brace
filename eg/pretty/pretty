@@ -18,10 +18,7 @@ Main()
 
 	bm("got image")
 
-	if depth == 16
-		pretty(short)
-	 eif depth > 16
-		pretty(long)
+	with_pixel_type(pretty)
 
 	gr_free()
 

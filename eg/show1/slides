@@ -1,0 +1,169 @@
+CZ
+
+- a new dialect of C, "C easy"
+
+- good for beginners, kids, experts
+- code looks like python; no { } ;
+- translated to C, then compiled
+- as fast and powerful as C
+
+main features
+
+- python-like syntax
+- library with graphics and sound
+- #! and cached executables
+- translates fairly cleanly to C
+- header generation / prototyping
+- flexible error handling, wrappers
+- hygenic macros
+- lightweight coroutines
+
+!star
+drawing a simple star shape
+
+<star
+
+python-like syntax
+
+- it's easier to edit
+- it's easier to read
+- it's safer
+- it's regular
+- some people hate it!
+- { } ; for one-liners
+
+library
+
+- graphics, sound, networking, structures
+- learning programming can be fun!
+- easy to use, like BASIC and logo not xlib
+- rainbows / hsv, sprites, pixel poking
+- fast and portable
+- synthesis, harmonic scales for music
+- the library includes many other things
+- CZ comes with lots of examples / demos
+
+!flower
+#! scripting
+
+- no need to run gcc or make
+
+- caches the executable
+  - only slow first time, or when changed
+  - hidden file
+
+- also stores C code, compile log, backups
+
+fortune program - choose a line at random
+
+<fortune
+
+!balls
+translates to C
+
+- C is fast and portable
+- can use C libraries directly
+
+- the generated code is readable
+  - important for debugging
+  - unlike most translators
+  - with exensions, it can get ugly
+
+- it can also be used with C++ etc
+
+header generation
+
+- automatic headers and prototypes
+- "don't repeat yourself"
+- half as many files to maintain
+- regular, easy to read
+- present code in any order
+  - top down
+  - literate programming
+
+!roses
+flexible error handling
+
+- warn, error, fault, debug, verbose
+
+- by default, error -> exit(1)
+- wrappers for libc / syscalls
+  - no need to check return values
+  - shorter code, safer
+- W. Richard Stevens, perl AutoDie
+
+- try / except / final / throw
+- bash, bash_warn, user defined
+
+!pretty
+hygenic macros
+
+- better than cpp macros
+
+#define max(m, a)            \
+  do {                       \
+    typeof(a) max_tmp = (a); \
+    if (max_tmp > (m))       \
+      (m) = max_tmp;         \
+  } while(0)
+
+def max(m, a)
+	let(my(A), a)
+	if my(A) > m
+		m = my(A)
+
+- no do { } while(0), no \
+- my(foo) for unique locals
+- arg a is wrapped to (a)
+- foo foo() foo(a) foo(a, b) etc
+- reliable inlining
+
+eachline(l)
+	Say(*l)
+
+def trig_unit deg
+
+each(x, a, b, c)
+	x = sqrt(x*x + 7)
+
+grep(i, lines, cstr, strlen(*i) < 10)
+grep(i, lines, cstr, strlen(*i) < 10, Free)
+
+int Sayf(const char *format, ...)
+	collect(Vsayf, format)
+
+!lattice
+lightweight coroutines
+
+- communicating sequential processes
+  - mass production / factory model / shell
+
+- Simon Tatham's, uses switch / Duffs device
+  - very fast and light
+  - tachyon httpd: 20000 connections, 60000 coros
+
+- my ccoro, shares normal stack space
+  - can yield from a subroutine
+  - more portable than other coroutine libraries
+
+!fps
+It's a work in progress.
+
+I'm rewriting CZ in itself, it was mostly perl.
+  - can translate the library in 0.3s
+  - that's for 15603 lines (367k) on an eee pc
+  - library is bloated due to no variadic macros
+
+Some features to add:
+  - variadic macros
+  - typed macros
+  - lighter syntax
+  - inline assembly
+
+- no backwards compatibility!  upgrade scripts
+- experimental. I'll make it less eccentric.
+
+!rainbow2
+!mandelbrot
+!fps2
+!heart

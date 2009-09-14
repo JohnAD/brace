@@ -1,0 +1,8 @@
+#!/lang/b
+use b
+
+Main():
+	space()
+	repeat(12):
+		fd(300)
+		rt(150)

@@ -29,14 +29,10 @@ Main()
 	if !vid
 		error("xshm pixmaps are not working")
 
-	if depth > 16
-		shiny(long)
-	 else
-		warn("shinytext works best in 32 bit colour")
-	if depth == 16
-		shiny(short)
-	 eif depth == 8
-	 	shiny(char)
+	if depth <= 16
+		warn("shinytext works best in true colour, not %d bit colour", depth)
+
+	with_pixel_type(shiny)
 
 #def shiny(pixel_type, depth)
 #	shiny1(pixel_type, r^^depth, g^^depth, b^^depth, fastrgb^^depth)

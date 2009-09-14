@@ -28,6 +28,11 @@ void writestmt(void);
 void writedelim(void);
 int main(void);
 
+extern char *lastlabel;
+extern char *lastcase;
+extern int in_macro;
+extern int first_line_of_macro;
+
 char buf[MAXLINE];
 char *line;
 int len;

@@ -9,25 +9,32 @@ Main()
 #	space(320, 240)
 	gr_fast()
 	gprint_anchor(0, 0)
-	font("helvetica-medium", 200)
-	cstr s = args ? join(' ', arg) : "Hello World!"
-	num tw = text_width(s)
-	int fs = (int)(200*(w-r1*2)/tw * 0.95)
-	font("helvetica-medium", fs)
+
+	cstr s = fortune()
+	int fs = font_size_to_fit(s)
+
 	col(black)
 	move(0, 0)
 	gsayf(s)
-	Paint()
+	gr_sync()
 
 	if !vid
 		error("xshm pixmaps are not working")
 
-	if depth > 16
-		shiny(int)
-	 eif depth == 16
-		shiny(short)
-	 else
-		shiny(char)
+	with_pixel_type(shiny)
+
+cstr fortune()
+	cstr s = args ? join(' ', arg) : cmd("fortune -s -n 40")
+	if !s || !*s
+		s = "Hello World"
+	return s
+
+int font_size_to_fit(cstr s)
+	font("helvetica-medium", 200)
+	num tw = text_width(s)
+	int fs = (int)(200*(w-r1*2)/tw * 0.95)
+	font("helvetica-medium", fs)
+	return fs
 
 def shiny(pixel_type)
 	new(v, vec, XPoint)
@@ -45,7 +52,6 @@ def shiny(pixel_type)
 	clear()
 
 	back(r, r1, -1)
-#		Sayf("%d", r)
 		font("helvetica-medium", fs)
 		hsv((r*16) % 360, 1, r*1.0/r1)
 		for_vec(i, v, XPoint)

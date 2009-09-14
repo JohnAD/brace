@@ -23,7 +23,7 @@ ball_init(ball *b)
 	b->vy = Rand(-12, 12)
 
 Main()
-	space(800, 600)
+	space()
 	gr_fast()
 
 	int n = 5
@@ -60,6 +60,7 @@ Main()
 			b->vy -= 0.5
 #			b->s *= 0.98
 #			b->v *= 0.98
+		csleep(1.0/100)
 		paint()
 
 use b

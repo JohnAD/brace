@@ -26,8 +26,8 @@ use draw_sectors
 
 # maybe should ALWAYS add using namespace std and using namespace __gnu_cxx to brace c++ ??
 
-int window_width = 600
-int window_height = 600
+int window_width = 1024
+int window_height = 768
 num window_radius
 
 int focus_region = -1
@@ -56,7 +56,7 @@ Main()
 	load_and_convert_regions("data/regions")
 	load_points("data/points")
 	
-	paper(window_width, window_height)
+	paper()
 	gr_fast()
 	window_radius = hypot(window_width/2, window_height/2)
 	load_palette("data/palette")

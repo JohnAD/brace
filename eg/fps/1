@@ -7,10 +7,8 @@ Main()
 #	for(i, 0, n)
 #		lookup[i] = (long)sqrt(i)
 #	warn("done")
-	if depth == 16
-		fps1(short)
-	 else
-		fps1(long)
+	bm_enabled = 0
+	with_pixel_type(fps1)
 
 def fps1(pixel_type)
 	repeat
@@ -28,5 +26,5 @@ def fps1(pixel_type)
 		Paint()
 		bm_ps("painted")
 
-local int rv = 0
-def r() rv = ((rv * 12345678) ^ rv) + (rv>>17) + 89356913, rv < 0
+#local int rv = 0
+#def r() rv = ((rv * 12345678) ^ rv) + (rv>>17) + 89356913, rv < 0

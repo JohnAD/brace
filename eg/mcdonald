@@ -20,12 +20,3 @@ Main()
 		sf()
 	sf("Old MacDonald had a farm,")
 	sf("E-I-E-I-O.")
-
-# TODO put in lib
-
-Def back_vec(i, v, type)
-	state type *my(end) = (type *)vec0(v)-1
-	state type *my(i1) = (type *)vecend(v)-1
-	for ; my(i1)!=my(end) ; --my(i1)
-		let(i, my(i1))
-		.

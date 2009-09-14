@@ -1,10 +1,11 @@
 #!/lang/b
 use b
-Main()
-	if args
+
+Main():
+	if args:
 		usage("< file")
-	let(lines, slurp_lines())
+	let(lines, lines())
 	int n = lines->size
-	for_vec(i, lines, cstr)
+	For(lines):
 		swap(*i, i[randi(n--)])
 		Say(*i)

@@ -63,7 +63,7 @@ def space(bg)
 
 num a_pixel = 1
 
-boolean gr_auto_event_loop = 1
+boolean gr_exit = 0
 
 origin(num _ox, num _oy)
 	ox = _ox ; oy = _oy

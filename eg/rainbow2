@@ -1,13 +1,15 @@
 #!/lang/b
 
 Main()
-	paper(640, 480, black)
+	space()
+#	paper(640, 480, black)
 	gr_fast()
 
 	let(dt, angle2rad(1))
 	dt = dt
 
-	int R = 768/2
+	int R = hypot(w_2, h_2)
+#	int R = 768/2
 
 	int *a = Nalloc(int, (R*2+1) * (R*2+1))
 	int *d = Nalloc(int, (R*2+1) * (R*2+1))
