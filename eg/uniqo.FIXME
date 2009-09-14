@@ -1,0 +1,10 @@
+#!/lang/b
+
+use b
+use lib.b
+
+Main()
+	new(ix, hashtable, cstr_hash, (eq_func)cstr_eq, 10001)
+	eachline(l)
+		if hashtable_add_maybe(ix, l, NULL)
+			Say(l)

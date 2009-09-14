@@ -52,8 +52,6 @@ leaf(num x, num y, num a, num r)
 #	polar_to_rec(0, 0, a, r, dx, dy)
 #	line(x-dx, y-dy, x+dx, y+dy)
 
-def trig_unit deg
-
 export m
 export gr
 use types

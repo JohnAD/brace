@@ -63,7 +63,7 @@ def space(bg)
 
 num a_pixel = 1
 
-boolean gr_auto_event_loop = 1
+boolean gr_exit = 0
 
 origin(num _ox, num _oy)
 	ox = _ox ; oy = _oy
@@ -178,6 +178,8 @@ def dot(x, y, r) circle_fill(x, y, r)
 # TODO wrapping
 
 num _xanc = -1, _yanc = 1
+
+num gprint_tab_width = 2  #  * font_height
 
 gprint_anchor(num xanc, num yanc)
 	_xanc = xanc; _yanc = yanc

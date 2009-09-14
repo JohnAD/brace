@@ -449,6 +449,9 @@ vec *slurp_lines(vec *lines)
 		vec_push(lines, Strdup(s))
 	return lines
 
+def lines() slurp_lines()
+def lines(v) slurp_lines(v)
+
 Remove(const char *path)
 	if remove(path) != 0
 		failed("remove")
@@ -490,7 +493,7 @@ int Tempfile(buffer *b, char *prefix, char *suffix, char *tmpdir, int dir, int m
 	return -1
 
 char random_alphanum()
-	int r = Randi(10 + 26 * 2)
+	int r = randi(10 + 26 * 2)
 	if r < 10
 		return '0' + r
 	if r < 10 + 26
@@ -944,20 +947,24 @@ def fd_zero(set)
 
 fd_set *tmp_fd_set = NULL
 
-int can_read(int fd)
-	select_wrap(fd, tmp_fd_set, NULL, NULL)
+def can_read(fd) can_read(fd, 0)
+def can_write(fd) can_write(fd, 0)
+def has_error(fd) has_error(fd, 0)
 
-int can_write(int fd)
-	select_wrap(fd, NULL, tmp_fd_set, NULL)
+int can_read(int fd, num timeout)
+	select_wrap(fd, tmp_fd_set, NULL, NULL, timeout)
 
-int has_error(int fd)
-	select_wrap(fd, NULL, NULL, tmp_fd_set)
+int can_write(int fd, num timeout)
+	select_wrap(fd, NULL, tmp_fd_set, NULL, timeout)
 
-def select_wrap(fd, read_fds, write_fds, except_fds)
+int has_error(int fd, num timeout)
+	select_wrap(fd, NULL, NULL, tmp_fd_set, timeout)
+
+def select_wrap(fd, read_fds, write_fds, except_fds, timeout)
 	if !tmp_fd_set
 		global(tmp_fd_set, fd_set)
 	timeval tv
-	rtime_to_timeval(0, &tv)
+	rtime_to_timeval(timeout, &tv)
 	fd_set(fd, tmp_fd_set)
 	int n_ready = select(fd+1, read_fds, write_fds, except_fds, &tv)
 	fd_clr(fd, tmp_fd_set)
@@ -1327,3 +1334,151 @@ cstr Fslurp(cstr file)
 
 cstr dotfile(cstr f)
 	return path_cat(homedir(), f)
+
+cstr print_space = " "
+
+def pr(type)
+	.
+def pr(type, a0)
+	pr_^^type(a0)
+	print(print_space)
+def pr(type, a0, a1)
+	pr(type, a0)
+	pr(type, a1)
+def pr(type, a0, a1, a2)
+	pr(type, a0, a1)
+	pr(type, a2)
+def pr(type, a0, a1, a2, a3)
+	pr(type, a0, a1, a2)
+	pr(type, a3)
+def pr(type, a0, a1, a2, a3, a4)
+	pr(type, a0, a1, a2, a3)
+	pr(type, a4)
+def pr(type, a0, a1, a2, a3, a4, a5)
+	pr(type, a0, a1, a2, a3, a4)
+	pr(type, a5)
+def Pr(type)
+	pr(type)
+	sf()
+def Pr(type, a0)
+	pr(type, a0)
+	sf()
+def Pr(type, a0, a1)
+	pr(type, a0, a1)
+	sf()
+def Pr(type, a0, a1, a2)
+	pr(type, a0, a1, a2)
+	sf()
+def Pr(type, a0, a1, a2, a3)
+	pr(type, a0, a1, a2, a3)
+	sf()
+def Pr(type, a0, a1, a2, a3, a4)
+	pr(type, a0, a1, a2, a3, a4)
+	sf()
+def Pr(type, a0, a1, a2, a3, a4, a5)
+	pr(type, a0, a1, a2, a3, a4, a5)
+	sf()
+
+def pr_cstr(a0)
+	pf("%s", a0)
+def pr_int(a0)
+	pf("%d", a0)
+def pr_long(a0)
+	pf("%ld", a0)
+def pr_num(a0)
+	pf("%f", a0)
+def pr_double(a0)
+	pf("%f", a0)
+def pr_float(a0)
+	pf("%f", a0)
+
+def sc(type, l)
+	.
+def sc(type, l, a0)
+	l = scan_^^type(&a0, l)
+def sc(type, l, a0, a1)
+	sc(type, l, a0)
+	sc(type, l, a1)
+def sc(type, l, a0, a1, a2)
+	sc(type, l, a0, a1)
+	sc(type, l, a2)
+def sc(type, l, a0, a1, a2, a3)
+	sc(type, l, a0, a1, a2)
+	sc(type, l, a3)
+def sc(type, l, a0, a1, a2, a3, a4)
+	sc(type, l, a0, a1, a2, a3)
+	sc(type, l, a4)
+def sc(type, l, a0, a1, a2, a3, a4, a5)
+	sc(type, l, a0, a1, a2, a3, a4)
+	sc(type, l, a5)
+
+def Sc(type, l)
+	.
+def Sc(type, l, a0)
+	type a0
+	sc(type, l, a0)
+def Sc(type, l, a0, a1)
+	Sc(type, l, a0)
+	Sc(type, l, a1)
+def Sc(type, l, a0, a1, a2)
+	Sc(type, l, a0, a1)
+	Sc(type, l, a2)
+def Sc(type, l, a0, a1, a2, a3)
+	Sc(type, l, a0, a1, a2)
+	Sc(type, l, a3)
+def Sc(type, l, a0, a1, a2, a3, a4)
+	Sc(type, l, a0, a1, a2, a3)
+	Sc(type, l, a4)
+def Sc(type, l, a0, a1, a2, a3, a4, a5)
+	Sc(type, l, a0, a1, a2, a3, a4)
+	Sc(type, l, a5)
+
+cstr scan_cstr(cstr *a, cstr l)
+	*a = l
+	return scan_skip(l)
+
+cstr scan_int(int *a, cstr l)
+	scan_x(int, "%d", a, l)
+
+cstr scan_long(long *a, cstr l)
+	scan_x(long, "%ld", a, l)
+
+cstr scan_num(num *a, cstr l)
+	scan_x(num, "%lf", a, l)
+
+cstr scan_double(double *a, cstr l)
+	scan_x(double, "%lf", a, l)
+
+cstr scan_float(float *a, cstr l)
+	scan_x(float, "%f", a, l)
+
+cstr scan_skip(cstr l)
+	cstr next
+	while *l && !(next = is_scan_space(l))
+		++l
+	if *l
+		*l = '\0'
+		l = next
+	return l
+
+def scan_x(type, format, a, l)
+	if is_scan_space(l)
+		error("scan_x: found space")
+	if sscanf(l, format, a) != 1
+		error("scan_x: not found")
+	return scan_skip(l)
+
+cstr scan_space = NULL
+cstr is_scan_space(cstr s)
+	if scan_space
+		return cstr_begins_with(s, scan_space)
+#		return strchr(scan_space, *s) ? s+1 : NULL
+	 else
+		return isspace(*s) ? s+1 : NULL
+
+do_delay(num t)
+	if t
+		if can_read(STDIN_FILENO, t)
+			Readline()
+	 else
+	 	Readline()

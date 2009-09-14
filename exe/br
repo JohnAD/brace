@@ -126,7 +126,7 @@ if [ -z "$BRACE_USE" ]; then
 			V="${V%%-*}"
 			major="${V%.*}"
 			minor="${V##*.}"
-			if [ "$major" = 2.6 -a "$minor" -ge 19 ]; then
+			if [ "$major" = 2.6 -a "$minor" -ge 20 ]; then
 				BRACE_USE="$BRACE_USE io-epoll"
 			else
 				BRACE_USE="$BRACE_USE io-select"

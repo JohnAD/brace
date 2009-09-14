@@ -11,5 +11,9 @@ Depends: libc6, ${perl:Depends}, libc6-dev | libc-dev, gcc (>= 3:3.3), g++ (>= 3
 Recommends: libncurses5-dev, msttcorefonts, fortunes, gsfonts-x11
 Description: the brace programming language
  Brace is a dialect of C which looks like python.  It has coroutines,
+<<<<<<< HEAD/debian/control
  automatic prototyping and header generation, hygenic macros,
  and nice libraries, including support for graphics and music.
+=======
+ hygenic macros, header generation, and libraries with graphics and sound.
+>>>>>>> 04a655ccd98608d1c97d816f3369d5b3c77b3825/debian/control

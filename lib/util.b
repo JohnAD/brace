@@ -660,17 +660,19 @@ size_t arylen(void *_p)
 
 typedef int (*cmp_t)(const void *, const void *)
 
-sort_vec(vec *v, cmp_t cmp)
+vec *sort_vec(vec *v, cmp_t cmp)
 	qsort(vec0(v), veclen(v), vec_get_el_size(v), cmp)
+	return v
 
-sort_vec_cstr(vec *v)
-	sort_vec(v, cstrp_cmp)
-#	qsort(vec0(v), veclen(v), sizeof(cstr), cstrp_cmp)
+def sort(v) sort(cstr, v)
+def sort(type, v) sort_vec(v, type^^_cmp)
 
-int cstrp_cmp(const void *_a, const void *_b)
+int cstr_cmp(const void *_a, const void *_b)
 	char * const *a = _a
 	char * const *b = _b
 	return strcmp(*a, *b)
+
+def cstrp_cmp cstr_cmp
 
 int cstrp_cmp_null(const void *_a, const void *_b)
 	char * const *a = _a
@@ -1421,3 +1423,10 @@ def And(v, a, b, c)
 		v = b
 		if v
 			v = c
+
+def cstr_to_cstr(x) Id(x)
+def cstr_to_int(x) atoi(x)
+def cstr_to_long(x) atol(x)
+def cstr_to_num(x) cstr_to_double(x)
+def cstr_to_double(x) atof(x)
+def cstr_to_float(x) (float)atof(x)

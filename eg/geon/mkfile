@@ -5,4 +5,4 @@ geon: $(OBJFILES)
 #split_regions_among_sectors.o
 clean:
 	mk-clean
-	rm -f geon *.bbh *.cc .*.cc *.o
+	rm -f geon *.bbh *.cc .*.cc *.o *.bb1

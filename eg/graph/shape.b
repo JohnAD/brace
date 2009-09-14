@@ -93,12 +93,14 @@ make_transform(Transform *dest, double angle, double scale, double x, double y, 
 	make_rotate_transform(dest, angle)
 	scale_transform(dest, dest, scale)
 	translate_transform(dest, dest, x, y)
-	if flip) flip_transform(dest
+	if flip
+		flip_transform(dest)
 
 make_inverse_transform(Transform *dest, double angle, double scale, double x, double y, boolean flip)
 	Transform tmp
 	tmp = id_trans
-	if flip) flip_transform(&tmp
+	if flip
+		flip_transform(&tmp)
 	translate_transform(&tmp, dest, -x, -y)
 	scale_transform(dest, dest, 1.0/scale)
 	make_rotate_transform(&tmp, -angle)

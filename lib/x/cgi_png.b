@@ -31,7 +31,7 @@ cgi_png(int w, int h, num scale)
 	# FIXME set resolution based on paper size!
 
 	gr_fast()
-	gr_auto_event_loop = 0
+	gr_exit = 1
 
 	Atexit(cgi_png_done)
 

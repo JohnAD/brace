@@ -1,6 +1,5 @@
 #!/lang/b
 use b
-def trig_unit deg
 
 Main()
 	space(600, 600)

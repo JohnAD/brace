@@ -92,7 +92,7 @@ gr_init()
 
 	rainbow_init()
 
-	if gr_auto_event_loop
+	if !gr_exit
 		Atexit(event_loop)
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
@@ -338,15 +338,26 @@ def gprint_debug()
 	void()
 
 num text_width(char *p)
+	# tab support, limited to indent for now!
+	int tabs_width = 0
+	while *p == '\t'
+		tabs_width += gprint_tab_width * font_height()
+		++p
+
 	int len = strlen(p)
-	return isd(XTextWidth(_font, p, len))
+	return tabs_width + isd(XTextWidth(_font, p, len))
 
 # this one doesn't do word wrapping but does do anchors!
 gprint(char *p)
+#	gprint_debug()
+
+	# tab support, limited to indent for now!
+	while *p == '\t'
+		lx += gprint_tab_width * font_height()
+		++p
+
 	int len = strlen(p)
 	int text_width = XTextWidth(_font, p, len)
-
-#	gprint_debug()
 
 #	XDrawString(display, gr_buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+(_font->ascent+_font->descent)*(_yanc-1)/2.0+1)+_font->ascent, p, len)
 # the anchoring uses the ascent portion of the box only, this looks better
@@ -482,3 +493,12 @@ def dump_img(type)
 def dump_img(type, file)
 	dump_img(type, file, 1)
 
+def with_pixel_type(macro)
+	if depth > 16
+		macro(long)
+	 eif depth == 16
+		macro(short)
+	 eif depth == 8
+		macro(char)
+	 else
+		error("unsupported video depth: %d", depth)

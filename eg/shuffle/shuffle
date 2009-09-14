@@ -1,0 +1,11 @@
+#!/lang/b
+use b
+
+Main():
+	if args:
+		usage("< file")
+	let(lines, lines())
+	int n = lines->size
+	For(lines):
+		swap(*i, i[randi(n--)])
+		Say(*i)

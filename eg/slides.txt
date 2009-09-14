@@ -1,0 +1,11 @@
+The CZ Programming Language
+
+- a new dialect of C
+- pronounced see-zee or C-easy
+
+- good for newbies, kids, experts
+- as fast and powerful as C
+- code like python; no { } ;
+  - easier to edit, read
+- translated to C, then compiled
+

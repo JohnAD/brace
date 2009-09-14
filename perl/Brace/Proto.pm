@@ -41,7 +41,7 @@ for (@var_assignment) {
 		$proto = "extern $proto";
 	}
 	if ($proto =~ /\[\]/) {
-		return;
+		next;
 	}
 	push @var_proto, $proto;
 }

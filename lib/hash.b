@@ -493,4 +493,4 @@ values(vec *out, hashtable *ht)
 
 sort_keys(vec *out, hashtable *ht)
 	keys(out, ht)
-	sort_vec_cstr(out)
+	sort(out)

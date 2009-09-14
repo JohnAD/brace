@@ -100,7 +100,10 @@ def Getgid() (gid_t)(mygid != -1 ? mygid : (mygid = getgid()))
 int auth(passwd *pw, cstr pass)
 	char *x = pw->pw_passwd
 	char salt[64]
-	int l = Strrchr(x, '$') - x
+	char *dollar = strrchr(x, '$')
+	if !dollar
+		return 0
+	int l = dollar - x
 	assert(l < (int)sizeof(salt), "auth: salt too long")
 	strlcpy(salt, x, l+1)
 	salt[l] = '\0'

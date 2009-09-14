@@ -48,5 +48,3 @@ main()
 	for rot = 0; rot <= 360; ++rot
 		roses()
 		paint()
-
-def trig_unit deg

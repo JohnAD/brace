@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <string.h>
 
-enum { MAXLINE = 1024 };
+enum { MAXLINE = 4096 };
 
 enum { MAXTABS = 256 };
 
@@ -27,6 +27,11 @@ int classy(char *c);
 void writestmt(void);
 void writedelim(void);
 int main(void);
+
+extern char *lastlabel;
+extern char *lastcase;
+extern int in_macro;
+extern int first_line_of_macro;
 
 char buf[MAXLINE];
 char *line;

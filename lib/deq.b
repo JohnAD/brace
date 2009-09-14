@@ -123,11 +123,12 @@ def deq_get_space_end(q) (void *)(q->b.data + q->b.space)
 def deq_get_space_start(q) (void *)(q->b.data)
 
 def for_deq(i, q, type)
-	type *i = deq_get_start(q)
-	type *my(end) = deq_get_end(q)
-	type *my(wrap) = deq_get_space_end(q)
-	type *my(origin) = deq_get_space_start(q)
-	if deq_get_size(q)
+	state deq *my(q1) = q
+	state type *i = deq_get_start(my(q1))
+	state type *my(end) = deq_get_end(my(q1))
+	state type *my(wrap) = deq_get_space_end(my(q1))
+	state type *my(origin) = deq_get_space_start(my(q1))
+	if deq_get_size(my(q1))
 		my(st)
 	for ; i != my(end) ; ++i, i = i == my(wrap) ? my(origin) : i
 my(st)		.
