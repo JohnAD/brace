@@ -65,5 +65,3 @@ Main()
 #		Sleep(0.01)
 		a += 0.2
 		bm_ps("fps")
-
-def trig_unit deg

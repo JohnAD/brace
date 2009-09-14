@@ -1,5 +1,7 @@
 # TODO make these xpm compatible!
 
+ldef debug void
+
 typedef unsigned long pix_t
 
 def pix_r(p) p>>16 & 0xFF

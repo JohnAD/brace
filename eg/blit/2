@@ -81,5 +81,3 @@ Main()
 			xi = -w_2
 
 		bm_ps("fps")
-
-def trig_unit deg
