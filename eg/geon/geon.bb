@@ -56,6 +56,7 @@ Main()
 	load_and_convert_regions("data/regions")
 	load_points("data/points")
 	
+#	paper(window_width, window_height)
 	paper()
 	gr_fast()
 	window_radius = hypot(window_width/2, window_height/2)

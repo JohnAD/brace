@@ -6,7 +6,7 @@ http://sam.nipl.net/brace
    Brace is a dialect of C which looks like python.  It has coroutines,
    hygenic macros, header generation, and libraries with graphics and sound.
 
-   Will rename as CZ.
+   Brace will be renamed as CZ.
 
 
    You can build the Debian package with:
