@@ -1,0 +1,44 @@
+r + g + b = 3/2;
+r^2 + g^2 + b^2 = 9/8;
+bc(x) := 1-(1-x*bri)*col;
+R = bc(r);
+G = bc(g);
+B = bc(b);
+
+known: R G B
+unknown: r g b bri col
+facts: 5
+
+bc(x) := 1-(1-x*bri)*col;
+eliminate([r + g + b = 3/2, r^2 + g^2 + b^2 = 9/8, R = bc(r), G = bc(g), B = bc(b)], [col]);
+
+
+
+solved for r:
+
+either:
+  R = 1
+or:
+  0 = 3 * B^2 - 6 * B * G + 3 * G^2 +
+  ((- 16 * B^2) + 16 * B * G - 16 * G^2 + (16 * B + 16 * G) * R - 16 * R^2) * r +
+  (16 * B^2 - 16 * B * G + 16 * G^2 + ((- 16 * B) - 16 * G) * R + 16 * R^2) * r^2
+
+  foo := 16 * (B^2 + G^2 + R^2 - B*G - (G+B)*R);
+  foo*r^2 - foo*r + 3*(G+B)^2 = 0;
+
+  r^2 - r + 3*(G+B)^2 / foo = 0;
+  (r - 1/2)^2 - (1/4 - 3*(G+B)^2 / foo) = 0
+
+  (r - 1/2 - sqrt(1/4 - 3*(G+B)^2 / foo)) * (r - 1/2 + sqrt(1/4 - 3*(G+B)^2 / foo)) = 0
+
+
+
+
+  r1 = 1/2 + sqrt(1/4 - 3*(G+B)^2 / foo)
+  r2 = 1/2 - sqrt(1/4 - 3*(G+B)^2 / foo)
+
+
+  det = sqrt(1/4 - 3*(G+B)^2 / (16*(B^2 + G^2 + R^2 - B*G - (G+B)*R)))
+  r = 1/2 +or- det
+
+
