@@ -1,0 +1,51 @@
+#!/lang/b
+use b
+
+def N 10000000
+
+boolean my_func()
+	static int i=0
+	++i
+	if i == N
+		warn("%d", i)
+		return 0
+	return 1
+
+proc my_stcoro()
+	state int i=0
+	while i < N
+		++i
+		yield()
+	warn("%d", i)
+
+my_ccoro(coro *caller)
+	int i=0
+	while i < N
+		++i
+		yield(&caller)
+	warn("%d", i)
+
+Main()
+	sched_init()
+	bm_start()
+	coro *c = new_coro(my_ccoro)
+	while c
+		yield(&c)
+	bm_ps("ccoro test done", N)
+	bm_start()
+	new(s, my_stcoro)
+	start(s)
+	run()
+	bm_ps("stcoro test done - with sched", N)
+	bm_start()
+	new(S, my_stcoro)
+	repeat
+		int pc = S->p.pc = my_stcoro_f(&S->p)
+		if !pc
+			break
+	run()
+	bm_ps("stcoro test done - without sched", N)
+	bm_start()
+	while my_func()
+		.
+	bm_ps("function call test done", N)
