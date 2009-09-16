@@ -64,8 +64,6 @@ Main()
 			da += 720
 		first = 0
 
-	done()
-
 #def ix(x,y) (x+R) + (y+R) * (R*2+1)
 
 def wheel()

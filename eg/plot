@@ -32,8 +32,6 @@ Main()
 	for(f)
 		plot()
 
-	done()
-
 def plot()
 	t = t0
 	move(X, Y)

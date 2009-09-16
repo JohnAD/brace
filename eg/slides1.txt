@@ -146,7 +146,7 @@ lightweight coroutines
   - can yield from a subroutine
   - more portable than other coroutine libraries
 
-!fps
+!fps1
 It's a work in progress.
 
 I'm rewriting CZ in itself, it was mostly perl.

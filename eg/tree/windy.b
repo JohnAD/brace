@@ -44,6 +44,4 @@ Main()
 
 		Sleep(0.02)
 
-	done()
-
 use headers

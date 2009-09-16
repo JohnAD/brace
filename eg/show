@@ -7,7 +7,7 @@ num effect_duration = 1
 boolean step_by_step = 1
 boolean effects = 1
 num delay = 0, delay_demo = 0, delay_page = 0
-cstr demos_dir = "demos"
+cstr demos_dir = "."
 boolean loop = 0
 boolean smooth = 1
 int smooth_steps = 30

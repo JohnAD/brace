@@ -53,7 +53,7 @@ CZ - "C easy"
 !roses
 !pretty
 !lattice
-!fps
+!fps1
 !rainbow2
 !mandelbrot
 !fps2

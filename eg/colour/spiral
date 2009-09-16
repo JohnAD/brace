@@ -41,8 +41,6 @@ Main()
 		da -= 8
 		first = 0
 
-	done()
-
 def wheel()
 	.
 		for(i, 0, 360)

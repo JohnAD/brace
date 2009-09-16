@@ -35,7 +35,6 @@ Main()
 	wheel()
 	paint()
 	Sleep(3)
-	done()
 
 	first = 0
 
@@ -46,8 +45,6 @@ Main()
 		#da -= 5
 		da -= 8
 		first = 0
-
-	done()
 
 def ix(x,y) (x+R) + (y+R) * (R*2+1)
 
