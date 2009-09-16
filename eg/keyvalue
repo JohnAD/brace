@@ -10,7 +10,7 @@ struct person
 
 Main()
 	meta_init()
-	type_add(&meta__person.t)
+	type_add((type*)t_person)
 	kv_io_init()
 	person p
 	type *t_person = type_get("person")
@@ -19,11 +19,11 @@ Main()
 
 # XXX this initialization of flexible array members gives a warning, may not be portable:
 
-type__struct_union meta__person =
-	{ TYPE_STRUCT, "person", sizeof(person) },
-	5,
+type__struct_union struct__t_person =
+	{ TYPE_STRUCT, "person", sizeof(person) }, 5,
 		{ (type*)t_cstr, "name", offsetof(person, name) },
 		{ (type*)t_cstr, "sex", offsetof(person, sex) },
 		{ (type*)t_cstr, "asawa", offsetof(person, asawa) },
 		{ (type*)t_int, "yob", offsetof(person, yob) },
 		{ (type*)t_float, "weight", offsetof(person, weight) }
+type__struct_union *t_person = &struct__t_person

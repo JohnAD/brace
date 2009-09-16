@@ -47,7 +47,7 @@ int read_struct(void *s, type *t, opt_err unknown_key)
 					break
 				++i
 			char *p = (char*)s + e->offset
-			if among(e->type, (type*)t_cstr, (type*)t_p_char)
+			if among(e->type, (type*)t_cstr, (type*)t_char_p)
 				*(cstr*)p = Strdup(v)
 			 eif among(e->type, (type*)t_int, (type*)t_unsigned_int, (type*)t_signed_int)
 				sc(int, v, *(int*)p)
@@ -80,7 +80,7 @@ boolean write_struct(void *s, type *t, opt_err unknown_type)
 	for(i, 0, tsu->n)
 		type__element *e = &tsu->e[i]
 		char *p = (char*)s + e->offset
-		if among(e->type, (type*)t_cstr, (type*)t_p_char)
+		if among(e->type, (type*)t_cstr, (type*)t_char_p)
 			if *(cstr*)p
 				pr(cstr, e->name)
 				Pr(cstr, *(cstr*)p)
@@ -253,11 +253,11 @@ type__point t_points[] =
 	{ { TYPE_POINT, "char *", sizeof(char *) }, &t_char->t },
 	{ { TYPE_POINT, "void *", sizeof(void *) }, &t_void->t }
 
-def t_p_char t_points + 0
-def t_p_void t_points + 1
+def t_char_p t_points + 0
+def t_void_p t_points + 1
 
 type__def t_defs[] =
-	{ { TYPE_DEF, "cstr", sizeof(cstr) }, &t_p_char->t }
+	{ { TYPE_DEF, "cstr", sizeof(cstr) }, &t_char_p->t }
 
 def t_cstr t_defs + 0
 
