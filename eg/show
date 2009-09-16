@@ -146,7 +146,7 @@ def effect(pixel_type):
 	num time = rtime()
 	which page % 4:
 	0	for int i=0; ; ++i:
-			pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
+			pixel_type *px = pixel()
 			long x, y
 			for y=-h_2; y<h_2; ++y:
 				for x=-w_2; x<w_2; ++x:
@@ -167,7 +167,7 @@ def effect(pixel_type):
 				hsv(i/3000.0 * 360 * 2, Sin(180*i/3000.0)/2, 0)
 			effect_stop()
 	2	for int i=0; ; ++i:
-			pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
+			pixel_type *px = pixel()
 			long x, y
 			colour c = hsv(i/100.0 * 360, 1-(i/100.0), 1-(i/100.0))
 			for y=-h_2; y<h_2; ++y:

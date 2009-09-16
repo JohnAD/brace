@@ -421,7 +421,7 @@ void *error_ignore(void *obj, void *common_arg, void *er)
 	vec_pop(errors)
 	return thunk_yes
 
-typedef enum { OE_VALUE, OE_ERRCODE, OE_ERROR, OE_WARN=1<<31 } opt_err
+typedef enum { OE_CONT, OE_ERRCODE, OE_ERROR, OE_WARN=1<<31 } opt_err
 
 any opt_err_do(opt_err opt, any value, any errcode, char *format, ...)
 	collect(vopt_err_do, opt, value, errcode, format)
@@ -435,7 +435,7 @@ any vopt_err_do(opt_err opt, any value, any errcode, char *format, va_list ap)
 			vwarn(format, ap)
 
 	which opt
-	OE_VALUE	return value
+	OE_CONT	return value
 	OE_ERRCODE	return errcode
 	else	failed("vopt_err_do", "unknown opt_err option")
 	return errcode

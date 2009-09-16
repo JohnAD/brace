@@ -8,7 +8,7 @@ Main()
 
 def test_x11_poke(pixel_type)
 	bm_start()
-	pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
+	pixel_type *px = pixel()
 	for(y, -h_2, h_2)
 		for(x, -w_2, w_2)
 			point(x, y)

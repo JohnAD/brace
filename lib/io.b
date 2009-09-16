@@ -1357,40 +1357,63 @@ def pr(type, a0, a1, a2, a3, a4)
 def pr(type, a0, a1, a2, a3, a4, a5)
 	pr(type, a0, a1, a2, a3, a4)
 	pr(type, a5)
+
 def Pr(type)
-	pr(type)
-	sf()
+	.
 def Pr(type, a0)
-	pr(type, a0)
+	pr_^^type(a0)
 	sf()
 def Pr(type, a0, a1)
-	pr(type, a0, a1)
-	sf()
+	pr(type, a0)
+	Pr(type, a1)
 def Pr(type, a0, a1, a2)
-	pr(type, a0, a1, a2)
-	sf()
+	pr(type, a0, a1)
+	Pr(type, a2)
 def Pr(type, a0, a1, a2, a3)
-	pr(type, a0, a1, a2, a3)
-	sf()
+	pr(type, a0, a1, a2)
+	Pr(type, a3)
 def Pr(type, a0, a1, a2, a3, a4)
-	pr(type, a0, a1, a2, a3, a4)
-	sf()
+	pr(type, a0, a1, a2, a3)
+	Pr(type, a4)
 def Pr(type, a0, a1, a2, a3, a4, a5)
-	pr(type, a0, a1, a2, a3, a4, a5)
-	sf()
+	pr(type, a0, a1, a2, a3, a4)
+	Pr(type, a5)
 
 def pr_cstr(a0)
 	pf("%s", a0)
+
 def pr_int(a0)
 	pf("%d", a0)
+def pr_short(a0)
+	pf("%h", a0)
+# pr_char prints as an integer 123 not %
+def pr_char(a0)
+	pf("%hhd", a0)
 def pr_long(a0)
 	pf("%ld", a0)
+def pr_long_long(a0)
+	pf("%lld", a0)
+
+def pr_unsigned_int(a0)
+	pf("%ud", a0)
+def pr_unsigned_short(a0)
+	pf("%uh", a0)
+# pr_unsigned_char prints as an integer 123 not %
+def pr_unsigned_char(a0)
+	pf("%uhhd", a0)
+def pr_unsigned_long(a0)
+	pf("%uld", a0)
+def pr_unsigned_long_long(a0)
+	pf("%ulld", a0)
+
 def pr_num(a0)
 	pf("%f", a0)
 def pr_double(a0)
 	pf("%f", a0)
 def pr_float(a0)
 	pf("%f", a0)
+def pr_long_double(a0)
+	pf("%Lf", a0)
 
 def sc(type, l)
 	.
@@ -1440,8 +1463,18 @@ cstr scan_cstr(cstr *a, cstr l)
 cstr scan_int(int *a, cstr l)
 	scan_x(int, "%d", a, l)
 
+cstr scan_short(short *a, cstr l)
+	scan_x(short, "%hd", a, l)
+
+# NOTE scan_char reads an integer like 123, not a character like %
+cstr scan_char(char *a, cstr l)
+	scan_x(signed_char, "%hhd", (signed char *)a, l)
+
 cstr scan_long(long *a, cstr l)
 	scan_x(long, "%ld", a, l)
+
+cstr scan_long_long(long long *a, cstr l)
+	scan_x(long long, "%lld", a, l)
 
 cstr scan_num(num *a, cstr l)
 	scan_x(num, "%lf", a, l)
@@ -1451,6 +1484,9 @@ cstr scan_double(double *a, cstr l)
 
 cstr scan_float(float *a, cstr l)
 	scan_x(float, "%f", a, l)
+
+cstr scan_long_double(long double *a, cstr l)
+	scan_x(double, "%Lf", a, l)
 
 cstr scan_skip(cstr l)
 	cstr next
@@ -1482,3 +1518,13 @@ do_delay(num t)
 			Readline()
 	 else
 	 	Readline()
+
+def scan_kv(l)
+	scan_kv(l, k, v)
+def scan_kv(l, key, value)
+	Sc(cstr, l, key)
+	cstr value = l
+
+kv_io_init()
+	scan_space = ": "
+	print_space = ": "

@@ -38,3 +38,17 @@ union any
 	long double ld
 	size_t z
 	off_t o
+
+typedef long long long_long
+typedef long double long_double
+
+typedef signed int signed_int
+typedef signed short signed_short
+typedef signed char signed_char
+typedef signed long signed_long
+typedef signed long long signed_long_long
+typedef unsigned int unsigned_int
+typedef unsigned short unsigned_short
+typedef unsigned char unsigned_char
+typedef unsigned long unsigned_long
+typedef unsigned long long unsigned_long_long

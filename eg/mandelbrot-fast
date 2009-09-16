@@ -1,0 +1,90 @@
+#!/lang/b
+# ./mandelbrot-fast -.74364386269 .13182590271 .00000006763 16000 1000 100 100
+# ./mandelbrot-fast -.743643135 .131825963 .0000054855
+use b
+
+cstr usage[] = { "x y r max_i rb_i w h", NULL }
+
+def blank_colour 1
+
+Main()
+	bm_start()
+	num outside = 16
+	long i
+	num ox = -0.5, oy = 0, r = 1.5
+	long max_i = 1024, rb_i = 30, W=0, H=0
+	getargs(float, ox, oy, r)
+	getargs(long, max_i, rb_i, W, H)
+	if args
+		usage()
+	pr(float, ox, oy, r)
+	Pr(long, max_i, rb_i, W, H)
+	if W
+		space(W, H, blank_colour)
+	 else
+		typedef long pixel_type  # the nested macros lose expansions
+		space(blank_colour)
+	rainbow_init()
+	with_pixel_type(mandelbrot)
+	bm(program)
+
+
+typedef long pixel_type  # the nested macros lose expansions
+
+def mandelbrot(pixel_type)
+	int counter = 0
+	num d = 2*r/h, x0 = ox-d*w_2, y0 = oy+d*h_2
+	cmplx c0 = x0 + y0*I
+#	int smooth_n = 1
+	smooth_init()
+	new(seeds, deq, pointi2, (w+h) * 2)
+	pointi2 p
+	for(x, 0, w)
+		p.x[0] = x
+		p.x[1] = 0
+		deq_push(seeds, p)
+		p.x[1] = h-1
+		deq_push(seeds, p)
+	for(y, 0, h)
+		p.x[0] = 0
+		p.x[1] = y
+		deq_push(seeds, p)
+		p.x[0] = w-1
+		deq_push(seeds, p)
+
+	flood_4(seeds, 0, 0, w, h, blank, test, fill)
+	for_pixels(px)
+		if *px == blank_colour
+			*px = 0
+	Paint()
+
+def blank(p) *(pixel_type*)pixel(vid, p.x[0], p.x[1]) == blank_colour
+def test(t, a, b)
+	t = *(pixel_type*)pixel(vid, a.x[0], a.x[1]) != 0
+def fill(p)
+	pixel_type *px = (pixel_type *)pixel(vid, p.x[0], p.x[1])
+	cmplx c = c0 + d*p.x[0] - d*p.x[1]*I
+	cmplx W = c
+	for i=0; i < max_i; ++i
+		W = W*W + c
+		if cabs(W) > outside
+			break
+	smooth_i(i, W)
+	*px = i < max_i*smooth_n ? rb[i*359 / (rb_i*smooth_n) % 360] : black
+	if counter++ % (w+h) == 0
+		Paint()
+
+def smooth_init()
+	int smooth_n = 32
+	num smooth_fac = pow(2, 1.0/smooth_n)
+	num smooth_outside[smooth_n]
+	for(j, 0, smooth_n)
+		smooth_outside[j] = pow(outside, pow(smooth_fac, j))
+
+def smooth_i(i, W)
+	num a = cabs(W)
+	i = i * smooth_n + smooth_n-1
+	for(j, 1, smooth_n)
+		if a < smooth_outside[j]
+			break
+		--i

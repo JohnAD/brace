@@ -506,6 +506,7 @@ def readtsv(v, stream)
 def bzero(ptr) bzero(ptr, sizeof(*ptr))
 
 def zero(start, end) bzero(start, end-start)
+def zero(ptr) bzero(ptr)
 
 def Map(a, b)
 	a = a0
@@ -1430,3 +1431,37 @@ def cstr_to_long(x) atol(x)
 def cstr_to_num(x) cstr_to_double(x)
 def cstr_to_double(x) atof(x)
 def cstr_to_float(x) (float)atof(x)
+
+# 2d flood fill algorithm!
+
+def flood_4(seeds, x0, y0, x1, y1, blank, test, fill)
+	while(deqlen(seeds))
+		pointi2 p
+		pointi2 new
+		deq_shift(seeds, p)
+		if blank(p)
+			fill(p)
+			new = p
+			boolean t
+			if p.x[0] > x0
+				new.x[0] = p.x[0] - 1
+				flood_test_push(p, new, blank, test, t, seeds)
+			if p.x[0] < x1-1
+				new.x[0] = p.x[0] + 1
+				flood_test_push(p, new, blank, test, t, seeds)
+			new.x[0] = p.x[0]
+			if p.x[1] > y0
+				new.x[1] = p.x[1] - 1
+				flood_test_push(p, new, blank, test, t, seeds)
+			if p.x[1] < y1-1
+				new.x[1] = p.x[1] + 1
+				flood_test_push(p, new, blank, test, t, seeds)
+
+def flood_test_push(p, new, blank, test, t, seeds)
+	if blank(new)
+		test(t, p, new)
+		if t
+			deq_push(seeds, new)
+
+def decl_cast(v, type, o)
+	type *v = (type *)o

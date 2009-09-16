@@ -286,3 +286,18 @@ def ln(x) log(x)
 
 num blend(num i, num x0, num x1)
 	return (x1-x0)*i + x0
+
+def iabs(a) a >= 0 ? a : -a
+
+struct pointi1
+	int x[1]
+struct pointi2
+	int x[2]
+struct pointi3
+	int x[3]
+struct pointn1
+	num x[1]
+struct pointn2
+	num x[2]
+struct pointn3
+	num x[3]

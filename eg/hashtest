@@ -9,6 +9,7 @@ test_speed()
 	new(ht, hashtable, cstr_hash, cstr_eq, 100003)
 	eachline(l)
 		hashtable_add(ht, strdup(l), "bogus def")
+	exit()
 	cstr word
 	cstr definition
 	for_hashtable(word, definition, ht)

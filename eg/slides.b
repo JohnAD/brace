@@ -61,7 +61,7 @@ def effect(pixel_type)
 	num time = rtime()
 	which page % 2
 	0	for int i=0; ; ++i
-			pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
+			pixel_type *px = pixel()
 			long x, y
 			for y=-h_2; y<h_2; ++y
 				for x=-w_2; x<w_2; ++x

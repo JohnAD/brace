@@ -58,34 +58,26 @@ sprite_screen(sprite *s)
 sprite_clip(sprite *target, sprite *source, sprite *target_full, sprite *source_full, long x, long y)
 	*source = *source_full
 
+	sprite_clip_1(x, width, 1)
+	sprite_clip_1(y, height, source->stride)
+
+	target->stride = target_full->stride
+	target->pixels = target_full->pixels + y*target->stride + x
+	target->width = source->width
+	target->height = source->height
+
+def sprite_clip_1(x, width, step)
 	if x < 0
 		source->width += x
-		source->pixels -= x
+		source->pixels -= x * step
 		if source->width < 0
 			source->width = 0
 		x = 0
-	long x_over = x + source->width - target_full->width
-	if x_over > 0
-		source->width -= x_over
+	long my(x_over) = x + source->width - target_full->width
+	if my(x_over) > 0
+		source->width -= my(x_over)
 		if source->width < 0
 			source->width = 0
-
-	if y < 0
-		source->height += y
-		source->pixels -= y * source->stride
-		if source->height < 0
-			source->height = 0
-		y = 0
-	long y_over = y + source->height - target_full->height
-	if y_over > 0
-		source->height -= y_over
-		if source->height < 0
-			source->height = 0
-
-	target->stride = target_full->stride
-	target->pixels = target_full->pixels + y * target->stride + x
-	target->width = source->width
-	target->height = source->height
 
 sprite_blit(sprite *to, sprite *from)
 	pix_t *i = from->pixels
@@ -134,6 +126,21 @@ sprite_blit_transp(sprite *to, sprite *from)
 			++o
 		i += from->stride - w
 		o += to->stride - w
+
+def sprite_put(to, from, x, y)
+	sprite_put_x(, to, from, x, y)
+def sprite_put_transp(to, from, x, y)
+	sprite_put_x(transp, to, from, x, y)
+def sprite_put_transl(to, from, x, y)
+	sprite_put_x(transl, to, from, x, y)
+def sprite_put_x(plottype, to, from, x, y)
+	sprite_put_x(plottype, to, from, x, y, my(source), my(target))
+def sprite_put_x(plottype, to, from, x, y, source, target)
+	decl(source, sprite)
+	decl(target, sprite)
+	sprite_clip(target, source, to, from, 0, 0)
+	sprite_blit^^plottype(target, source)
+	gr__change_hook()
 
 sprite_gradient(sprite *s, colour c00, colour c10, colour c01, colour c11)
 	sprite_gradient_angle(s, c00, c10, c01, c11, 0)

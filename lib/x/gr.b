@@ -95,7 +95,7 @@ gr_init()
 	rainbow_init()
 
 	if !gr_exit
-		Atexit(event_loop)
+		Atexit(event_loop_at_exit)
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	if width
@@ -425,7 +425,7 @@ clear()
 	gr__change_hook()
 	# need to call paint also to update the actual window
 
-def done() event_loop()
+#def done() event_loop()
 event_loop()
 	repeat
 		XNextEvent(display, &x_event)

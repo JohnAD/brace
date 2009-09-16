@@ -17,7 +17,7 @@ def fps2(pixel_type)
 		int xb = Sin(a*2) * 500 + 200
 		int yb = Cos(a*3) * 500 + 100
 		bm_start()
-		pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
+		pixel_type *px = pixel()
 #		px += Randi(w*h)
 #		*px = x
 #		memset(px, x, w*h*sizeof(pixel_type))

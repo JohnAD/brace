@@ -5,150 +5,25 @@ struct person
 	cstr name
 	cstr sex
 	cstr asawa
+	int yob
+	float weight
 
 Main()
-	scan_space = ": "
-	print_space = "\n"
-	eachline(l)
-		oread(l, k, v)
-		if *k
-			Pr(cstr, k, v)
-		 else
-			sf()
+	meta_init()
+	type_add(&meta__person.t)
+	kv_io_init()
+	person p
+	type *t_person = type_get("person")
+	while read_struct(&p, t_person, OE_CONT|OE_WARN)
+		write_struct(&p, t_person)
 
-# TODO put in lib
+# XXX this initialization of flexible array members gives a warning, may not be portable:
 
-def oread(l)
-	oread(l, k, v)
-def oread(l, key, value)
-	Sc(cstr, l, key)
-	cstr value = l
-
-
-typedef enum { TYPE_VOID, TYPE_INT, TYPE_FLOAT, TYPE_POINT, TYPE_ARRAY, TYPE_STRUCT, TYPE_UNION, TYPE_FUNC, TYPE_DEF } type_t
-
-typedef enum { SIGNED_NORMAL, SIGNED_SIGNED, SIGNED_UNSIGNED=-1 } signed_t
-
-struct type__size
-	int size
-	int var_size
-
-type__size type__sizes[] =
-	{ sizeof(type__void), 0 },
-	{ sizeof(type__int), 0 },
-	{ sizeof(type__float), 0 },
-	{ sizeof(type__point), 0 },
-	{ sizeof(type__array), sizeof(int) },
-	{ sizeof(type__struct_union), sizeof(type__element) },
-	{ sizeof(type__struct_union), sizeof(type__element) },
-	{ sizeof(type__func), sizeof(type *) },
-	{ sizeof(type__def), 0 }
-
-struct type__element
-	type *type
-	cstr name
-	long offset
-	short bits
-	short offset_bit
-
-struct type
-	type_t type
-	cstr name
-	long size
-
-struct type__void
-	type t
-
-struct type__int
-	type t
-	signed_t sign
-
-struct type__float
-	type t
-
-struct type__point
-	type t
-	type *ref
-
-struct type__array
-	type t
-	int dims
-	type *ref
-	int n[]
-
-struct type__struct_union
-	type t
-	long n
-	type__element e[]
-
-struct type__func
-	type t
-	int n
-	type *ret
-	type *arg[]
-
-struct type__def
-	type t
-	type *ref
-
-type__int t_ints[] =
-	{ { TYPE_INT, "int", sizeof(int) }, SIGNED_NORMAL },
-	{ { TYPE_INT, "char", sizeof(char) }, SIGNED_NORMAL },
-	{ { TYPE_INT, "short", sizeof(short) }, SIGNED_NORMAL },
-	{ { TYPE_INT, "long", sizeof(long) }, SIGNED_NORMAL },
-	{ { TYPE_INT, "long long", sizeof(long long) }, SIGNED_NORMAL },
-
-	{ { TYPE_INT, "signed int", sizeof(signed int) }, SIGNED_SIGNED },
-	{ { TYPE_INT, "signed char", sizeof(signed char) }, SIGNED_SIGNED },
-	{ { TYPE_INT, "signed short", sizeof(signed short) }, SIGNED_SIGNED },
-	{ { TYPE_INT, "signed long", sizeof(signed long) }, SIGNED_SIGNED },
-	{ { TYPE_INT, "signed long long", sizeof(signed long long) }, SIGNED_SIGNED },
-
-	{ { TYPE_INT, "unsigned int", sizeof(unsigned int) }, SIGNED_UNSIGNED },
-	{ { TYPE_INT, "unsigned char", sizeof(unsigned char) }, SIGNED_UNSIGNED },
-	{ { TYPE_INT, "unsigned short", sizeof(unsigned short) }, SIGNED_UNSIGNED },
-	{ { TYPE_INT, "unsigned long", sizeof(unsigned long) }, SIGNED_UNSIGNED },
-	{ { TYPE_INT, "unsigned long long", sizeof(unsigned long long) }, SIGNED_UNSIGNED }
-
-def t_int t_ints + 0
-def t_char t_ints + 1
-def t_short t_ints + 2
-def t_long t_ints + 3
-def t_long_long t_ints + 4
-
-def t_signed_int t_ints + 5
-def t_signed_char t_ints + 6
-def t_signed_short t_ints + 7
-def t_signed_long t_ints + 8
-def t_signed_long_long t_ints + 9
-
-def t_unsigned_int t_ints + 10
-def t_unsigned_char t_ints + 11
-def t_unsigned_short t_ints + 12
-def t_unsigned_long t_ints + 13
-def t_unsigned_long_long t_ints + 14
-
-type__float t_floats[] =
-	{ { TYPE_FLOAT, "float", sizeof(float) } },
-	{ { TYPE_FLOAT, "double", sizeof(double) } },
-	{ { TYPE_FLOAT, "long double", sizeof(long double) } }
-
-def t_float t_floats + 0
-def t_double t_floats + 1
-def t_long_double t_floats + 2
-
-type__void t_voids[] =
-	{ { TYPE_VOID, "void", 0 } }
-
-def t_void t_voids + 0
-
-type__point t_points[] =
-	{ { TYPE_POINT, "char *", sizeof(char *) }, &t_char->t },
-	{ { TYPE_POINT, "void *", sizeof(void *) }, &t_void->t }
-
-def t_p_char t_points + 0
-
-type__def t_defs[] =
-	{ { TYPE_DEF, "cstr", sizeof(cstr) }, &t_p_char->t }
-
-def t_cstr t_defs + 0
+type__struct_union meta__person =
+	{ TYPE_STRUCT, "person", sizeof(person) },
+	5,
+		{ (type*)t_cstr, "name", offsetof(person, name) },
+		{ (type*)t_cstr, "sex", offsetof(person, sex) },
+		{ (type*)t_cstr, "asawa", offsetof(person, asawa) },
+		{ (type*)t_int, "yob", offsetof(person, yob) },
+		{ (type*)t_float, "weight", offsetof(person, weight) }

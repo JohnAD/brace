@@ -337,3 +337,13 @@ curve(num x, num y)
 		curve_at_start = 0
 	 else
 	 	draw(x, y)
+
+event_loop_at_exit()
+	if !gr_exit
+		event_loop()
+
+def for_pixels(px)
+	pixel_type *px = pixel()
+	pixel_type *my(end) = px + w*h
+	for ; px != my(end) ; ++px
+		.

@@ -334,7 +334,7 @@ DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
 	wglDeleteContext( hRC )
 	ReleaseDC( hWnd, hDC )
 
-def done() event_loop()
+#def done() event_loop()
 event_loop()
 	# XXX FIXME XXX this is BAD as it is a busy-wait loop...
 	while !quit

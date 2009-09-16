@@ -20,7 +20,7 @@ Main()
 	sprite_put(screen, image, 0, 0)
 	Readline()
 
-	new(seeds, deq, point2, (image->width+image->height)*2)
+	new(seeds, deq, pointi2, (image->width+image->height)*2)
 	pix_t *i0 = image->pixels
 	pix_t *c0 = components->pixels
 	pix_t *i = i0
@@ -30,7 +30,7 @@ Main()
 			if ccl_blank_code(*c)
 #				int region = i - image->pixels
 				int region = qrand()
-				point2 p = {{ x, y }}
+				pointi2 p = {{ x, y }}
 				deq_push(seeds, p)
 				flood_4(seeds, 0, 0, image->width, image->height, ccl_blank, ccl_test, ccl_fill)
 			++i ; ++c
@@ -43,38 +43,6 @@ Main()
 
 		sprite_put(screen, image, 0, 0)
 		Readline()
-
-struct point2
-	int x[2]
-
-def flood_4(seeds, x0, y0, x1, y1, blank, test, fill)
-	while(deqlen(seeds))
-		point2 p
-		point2 new
-		deq_shift(seeds, p)
-		if blank(p)
-			fill(p)
-			new = p
-			boolean t
-			if p.x[0] > x0
-				new.x[0] = p.x[0] - 1
-				flood_test_push(p, new, blank, test, t, seeds)
-			if p.x[0] < x1-1
-				new.x[0] = p.x[0] + 1
-				flood_test_push(p, new, blank, test, t, seeds)
-			new.x[0] = p.x[0]
-			if p.x[1] > y0
-				new.x[1] = p.x[1] - 1
-				flood_test_push(p, new, blank, test, t, seeds)
-			if p.x[1] < y1-1
-				new.x[1] = p.x[1] + 1
-				flood_test_push(p, new, blank, test, t, seeds)
-
-def flood_test_push(p, new, blank, test, t, seeds)
-	if blank(new)
-		test(t, p, new)
-		if t
-			deq_push(seeds, new)
 
 # def flood_lines_4(v_seeds, h_seeds
 
@@ -102,14 +70,3 @@ def pixdiff(d, A, B, a, b, rd, gd, bg)
 	int gd = pix_g(a) - pix_g(b)
 	int bd = pix_b(a) - pix_b(b)
 	d = iabs(rd)+iabs(gd)+iabs(bd)
-
-def iabs(a) a >= 0 ? a : -a
-
-def sprite_put(to, from, x, y)
-	sprite_put(to, from, x, y, my(source), my(target))
-def sprite_put(to, from, x, y, source, target)
-	decl(source, sprite)
-	decl(target, sprite)
-	sprite_clip(target, source, to, from, 0, 0)
-	sprite_blit(target, source)
-	gr__change_hook()

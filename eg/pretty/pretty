@@ -28,7 +28,7 @@ def pretty(pixel_type)
 	int dr = 0
 
 	repeat
-		pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
+		pixel_type *px = pixel()
 		da+=2
 
 		int y

@@ -40,9 +40,9 @@ for (@var_assignment) {
 	if ($proto !~ /^(static|local) /) {
 		$proto = "extern $proto";
 	}
-	if ($proto =~ /\[\]/) {
-		next;
-	}
+#	if ($proto =~ /\[\]/) {
+#		next;
+#	}
 	push @var_proto, $proto;
 }
 

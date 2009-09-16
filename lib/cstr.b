@@ -240,13 +240,15 @@ char *Strrchr(const char *s, int c)
 		failed0("strrchr")
 	return rv
 
-cstr_tolower(cstr s)
+cstr cstr_tolower(cstr s)
 	for_cstr(i, s)
 		*s = tolower((unsigned char)*s)
+	return s
 
-cstr_toupper(cstr s)
+cstr cstr_toupper(cstr s)
 	for_cstr(i, s)
 		*s = toupper((unsigned char)*s)
+	return s
 
 def lc(s) cstr_tolower(s)
 def uc(s) cstr_toupper(s)
@@ -299,3 +301,9 @@ char *cstr_not_chr(cstr s, char c)
 	return s
 
 def strlitlen(s) sizeof(s)-1
+
+cstr make_name(cstr s)
+	for_cstr(i, s)
+		if !isword(*s)
+			*s = '_'
+	return s

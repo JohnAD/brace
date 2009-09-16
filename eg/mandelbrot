@@ -5,6 +5,7 @@ use b
 cstr usage[] = { "x y r max_i rb_i w h", NULL }
 
 Main()
+	bm_start()
 	num outside = 16
 	long i
 	num ox = -0.5, oy = 0, r = 1.5
@@ -21,9 +22,10 @@ Main()
 		space()
 	rainbow_init()
 	with_pixel_type(mandelbrot)
+	bm(program)
 
 def mandelbrot(pixel_type)
-	pixel_type *px = (pixel_type *)pixel(vid, 0, 0)
+	pixel_type *px = pixel()
 	num d = 2*r/h, x0 = ox-d*w_2, y0 = oy+d*h_2
 #	int smooth_n = 1
 	smooth_init()
@@ -43,7 +45,7 @@ def mandelbrot(pixel_type)
 		c = creal(x0) + (cimag(c)-d)*I
 
 def smooth_init()
-	int smooth_n = 8
+	int smooth_n = 32
 	num smooth_fac = pow(2, 1.0/smooth_n)
 	num smooth_outside[smooth_n]
 	for(j, 0, smooth_n)
