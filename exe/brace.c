@@ -28,6 +28,7 @@ void writestmt(void);
 void writedelim(void);
 int main(void);
 
+extern char *kwdparens[];
 extern char *lastlabel;
 extern char *lastcase;
 extern int in_macro;

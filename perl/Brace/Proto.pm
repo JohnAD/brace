@@ -39,10 +39,9 @@ for (@var_assignment) {
 	$proto =~ s/\s*=.*/\n/s;
 	if ($proto !~ /^(static|local) /) {
 		$proto = "extern $proto";
+	} elsif ($proto =~ /\[\]/) {
+		next;
 	}
-#	if ($proto =~ /\[\]/) {
-#		next;
-#	}
 	push @var_proto, $proto;
 }
 
