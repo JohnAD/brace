@@ -1495,6 +1495,8 @@ cstr scan_skip(cstr l)
 	if *l
 		*l = '\0'
 		l = next
+	 else
+		l = NULL
 	return l
 
 def scan_x(type, format, a, l)
@@ -1519,8 +1521,6 @@ do_delay(num t)
 	 else
 	 	Readline()
 
-def scan_kv(l)
-	scan_kv(l, k, v)
 def scan_kv(l, key, value)
 	Sc(cstr, l, key)
 	cstr value = l
@@ -1528,3 +1528,24 @@ def scan_kv(l, key, value)
 kv_io_init()
 	scan_space = ": "
 	print_space = ": "
+
+
+def chars(stream, c, n)
+	repeat(n)
+		Putc(c, stream)
+def strs(stream, s, n)
+	repeat(n)
+		Fprint(stream, s)
+def chars(c, n)
+	chars(stdout, c, n)
+def strs(s, n)
+	chars(stdout, s, n)
+
+int Fgetline(buffer *b, FILE *stream)
+	buffer_clear(b)
+	let(rv, Freadline(b, stream))
+#	buffer_nul_terminate(b)
+	return rv
+
+int Getline(buffer *b)
+	return Fgetline(b, stdin)

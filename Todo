@@ -223,3 +223,6 @@ pselect / epoll_pwait issues, self-pipe trick:
 	discarded.  There may be other circumstances.  Thus it may be safer to use
 	O_NONBLOCK on sockets that should not block.
 
+
+# like in English, use lower-case for types (and parameters?),
+# and title-case for proper things.. ?

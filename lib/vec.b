@@ -125,31 +125,34 @@ vec *vec_dup(vec *to, vec *from)
 
 Def for_vec(i, v, type)
 	state vec *my(v1) = v
-	state type *my(end) = (type *)vecend(my(v1))
-	state type *my(i1) = (type *)vec0(my(v1))
+	state type *my(end) = vecend(my(v1))
+	state type *my(i1) = vec0(my(v1))
 	for ; my(i1)!=my(end) ; ++my(i1)
 		let(i, my(i1))
 		.
 
 Def back_vec(i, v, type)
 	state vec *my(v1) = v
-	state type *my(end) = (type *)vec0(my(v))-1
-	state type *my(i1) = (type *)vecend(my(v1))-1
+	state type *my(end) = vec0(my(v))-1
+	state type *my(i1) = vecend(my(v1))-1
 	for ; my(i1)!=my(end) ; --my(i1)
 		let(i, my(i1))
 		.
 
-def for_vec(i, v)
-	for_vec(i, v, cstr)
-def for_vec(v)
-	for_vec(i, v)
-
-def For(v)
-	for_vec(v)
-def For(i, v)
-	for_vec(i, v)
 def For(i, v, type)
 	for_vec(i, v, type)
+def For(i, v)
+	for_vec(i, v, cstr)
+def For(v)
+	for_vec(i, v)
+
+def for_vec(i, v)
+	state vec *my(v1) = v
+	state char *my(end) = vecend(my(v1))
+	state char *my(i1) = vec0(my(v1))
+	for ; my(i1)!=my(end) ; my(i1) += my(v1)->element_size
+		void *i = my(i1)
+		.
 
 def vec_set_space vec_space
 def vec_get_space(v) v->space

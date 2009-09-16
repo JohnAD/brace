@@ -38,9 +38,9 @@ def set(ht, key, value, free_or_void)
 
 def hashtable_set(ht, k, v, free_or_void)
 	let(my(kv), kv(ht, k, NULL))
-	if my(kv)->value
-		free_or_void(my(kv)->value)
-	my(kv)->value = i2p(v)
+	if my(kv)->v
+		free_or_void(my(kv)->v)
+	my(kv)->v = i2p(v)
 
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.
@@ -52,17 +52,9 @@ typedef boolean eq_func(void *k1, void *k2)
 
 # TODO typedef list *hashtable_node_ref
 
-struct key_value
-	void *key
-	void *value
-
-struct node_kv
-	list l
-	key_value kv
-
 key_value kv_null = { i2p(-1), i2p(-1) }
 
-def kv_is_null(kv) kv.key == i2p(-1)
+def kv_is_null(kv) kv.k == i2p(-1)
 
 # TODO use ^^ to join type to _hash and _eq instead of passing both
 # TODO like priq, use macros for hash_func and all hashtable funcs and pass type / hash_func / type_eq in to functions that need them..?
@@ -113,7 +105,7 @@ list *hashtable_lookup_ref(hashtable *ht, void *key)
 	eq_func *eq = ht->eq
 	repeat
 		node_kv *node = (node_kv *)bucket->next
-		if node == NULL || (*eq)(key, node->kv.key)
+		if node == NULL || (*eq)(key, node->kv.k)
 			return bucket
 		bucket = (list *)node
 
@@ -135,7 +127,7 @@ void *hashtable_value(hashtable *ht, void *key)
 		error("hashtable_value: key does not exist")
 		return NULL # keep GCC happy
 	 else
-		return kv->value
+		return kv->v
 
 void *hashtable_value_or_null(hashtable *ht, void *key)
 	return hashtable_value_or(ht, key, NULL)
@@ -144,7 +136,7 @@ void *hashtable_value_or(hashtable *ht, void *key, void *def)
 	if kv == NULL
 		return def
 	 else
-		return kv->value
+		return kv->v
 
 key_value *hashtable_add(hashtable *ht, void *key, void *value)
 	list *l = hashtable_lookup_ref(ht, key)
@@ -152,12 +144,24 @@ key_value *hashtable_add(hashtable *ht, void *key, void *value)
 	return hashtable_ref_key_value(l)
 
 hashtable_ref_add(list *l, void *key, void *value)
-	if l->next != NULL
+	if !hashtable_ref_add_maybe(l, key, value)
 		error("hashtable_ref_add: key already exists")
+
+key_value *hashtable_add_maybe(hashtable *ht, void *key, void *value)
+	list *l = hashtable_lookup_ref(ht, key)
+	if hashtable_ref_add_maybe(l, key, value)
+		return hashtable_ref_key_value(l)
+	 else
+		return NULL
+
+boolean hashtable_ref_add_maybe(list *l, void *key, void *value)
+	if l->next != NULL
+		return 0
 	
 	node_kv *node = Talloc(node_kv)
-	node->kv.key = key ; node->kv.value = value
+	node->kv.k = key ; node->kv.v = value
 	list_insert(list_next_p(l), (list *)node)
+	return 1
 
 # XXX TODO MAYBE make hashtable_add receive an already alloc'd node_kv,
 #   and make hashtable_delete return it again, i.e. hashtable does not do
@@ -250,11 +254,11 @@ key_value *hashtable_lookup_or_die(hashtable *ht, void *key)
 
 #void *hashtable_ref_value(list *l)
 #	node_kv *node = hashtable_ref_node(l)
-#	return node->kv.value
+#	return node->kv.v
 #
 #void *hashtable_ref_value_ptr(list *l)
 #	node_kv *node = hashtable_ref_node(l)
-#	return &node->kv.value
+#	return &node->kv.v
 
 
 # this is hackily designed in a single loop so you can "break" from it
@@ -276,9 +280,11 @@ def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end, _next)
 			break
 		node_kv *n = (node_kv *)ref->next
 		key_value *_kv = &n->kv
-		_key = (typeof(_key))_kv->key
-		_value = (typeof(_value))_kv->value
+		_key = (typeof(_key))_kv->k
+		_value = (typeof(_value))_kv->v
 		_next = ref->next
+
+def hashtable_exists(ht, key) hashtable_lookup(kt, key)
 
 # this is redundant to hashtable_lookup I guess?
 # should def hashtable_exists hashtable_lookup  ?
@@ -292,7 +298,7 @@ def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end, _next)
 
 # TODO change hashtable_init so the number is the 3rd arg, as we're more likely to want to vary it than the hash type (cstr)  ??
 
-# FIXME rename node->kv to node->key_value ?
+# FIXME rename node->kv to node->k_value ?
 
 
 
@@ -345,9 +351,9 @@ hashtable_clear(hashtable *ht, free_t *free_key, free_t *free_value)
 			list *next = item->next
 			node_kv *node = (node_kv *)item
 			if free_key
-				free_key(node->kv.key)
+				free_key(node->kv.k)
 			if free_value
-				free_value(node->kv.value)
+				free_value(node->kv.v)
 			Free(node)
 			item = next
 
@@ -357,22 +363,22 @@ hashtable_clear(hashtable *ht, free_t *free_key, free_t *free_value)
 
 vec *mget(hashtable *ht, void *key)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	vec *v = kv->value
+	vec *v = kv->v
 	return v
 
 mput(hashtable *ht, void *key, void *value)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	vec *v = kv->value
+	vec *v = kv->v
 	if v == NULL
-		NEW(kv->value, vec, void*, 1)
-		v = kv->value
+		NEW(kv->v, vec, void*, 1)
+		v = kv->v
 	*(void**)vec_push(v) = value
 
 def mdel(ht, key, value, Free_or_void)
 	mdel(ht, key, value, Free_or_void, my(kv))
 def mdel(ht, key, value, Free_or_void, kv)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	vec *v = kv->value
+	vec *v = kv->v
 	if v == NULL
 		warn("mdel: key not found")
 	 else
@@ -383,7 +389,7 @@ def mdelmany(ht, key, value, Free_or_void)
 	mdelmany(ht, key, value, Free_or_void, my(kv))
 def mdelmany(ht, key, value, Free_or_void, kv)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	vec *v = kv->value
+	vec *v = kv->v
 	if v == NULL
 		warn("mdel: key not found")
 	 else
@@ -395,7 +401,7 @@ def mdelall(ht, key, Free_or_void)
 	list *l = hashtable_lookup_ref(ht, key)
 	if l->next != NULL
 		key_value *kv = hashtable_ref_lookup(l)
-		vec *v = kv->value
+		vec *v = kv->v
 	 	for_vec(i, v, void *)
 			Free_or_void(*i)
 		vec_free(v)
@@ -403,7 +409,7 @@ def mdelall(ht, key, Free_or_void)
 
 void *mget1(hashtable *ht, void *key)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	vec *v = kv->value
+	vec *v = kv->v
 	if v && veclen(v) == 1
 		return *(void**)vec0(v)
 	 else
@@ -411,12 +417,12 @@ void *mget1(hashtable *ht, void *key)
 
 ssize_t mgetc(hashtable *ht, void *key)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	vec *v = kv->value
+	vec *v = kv->v
 	return v ? veclen(v) : 0
 
 void *mget1st(hashtable *ht, void *key)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	vec *v = kv->value
+	vec *v = kv->v
 	if v && veclen(v)
 		return *(void**)vec0(v)
 	 else
@@ -424,7 +430,7 @@ void *mget1st(hashtable *ht, void *key)
 
 void *mgetlast(hashtable *ht, void *key)
 	key_value *kv = hashtable_lookup_or_add_key(ht, key, NULL)
-	vec *v = kv->value
+	vec *v = kv->v
 	if v && veclen(v)
 		return *(void**)vec_top(v)
 	 else
@@ -452,11 +458,11 @@ ssize_t hashtable_already(hashtable *ht, void *key)
 	Assert(sizeof(ssize_t) <= sizeof(void*), warn, "sizeof(ssize_t) %zu is bigger than sizeof(void *) %zu", sizeof(ssize_t), sizeof(void*))
 	ssize_t count, count1
 	key_value *x = kv(ht, key, i2p(0))
-	count = (ssize_t)p2i(x->value)
+	count = (ssize_t)p2i(x->v)
 	count1 = count + 1
 	if !count1
 		count1 = 1
-	x->value = i2p(count1)
+	x->v = i2p(count1)
 	return count
 
 
@@ -494,3 +500,4 @@ values(vec *out, hashtable *ht)
 sort_keys(vec *out, hashtable *ht)
 	keys(out, ht)
 	sort(out)
+

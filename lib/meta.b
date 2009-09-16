@@ -1,4 +1,4 @@
-export hash cstr
+export hash cstr vec
 use io
 
 meta_init()
@@ -16,18 +16,32 @@ type_add(type *t)
 type *type_get(cstr name)
 	return get(type_ix, name)
 
+read_structs(vec *v, type__struct_union *t)
+	while read_struct(vec_push(v), t)
+		.
+	vec_pop(v)
+
+write_structs(vec *v, type__struct_union *t)
+	for_vec(i, v)
+		write_struct(i, t)
+
+# TODO how about "comments" aka markup in the file?
+# maybe don't allow nested objects / hierarchical trees, use refs instead..?
+# option for extra fields added to an "extra" catch all list or hash in each struct :)
+
 def read_struct(s, t) read_struct(s, t, OE_ERROR)
-int read_struct(void *s, type *t, opt_err unknown_key)
-	zero((char*)s, (char*)s+t->size)
-	cstr name = t->name
-	decl_cast(tsu, type__struct_union, t)
+int read_struct(void *s, type__struct_union *t, opt_err unknown_key)
+	zero((char*)s, (char*)s+t->t.size)
+	cstr name = t->t.name
 	new(b, buffer, 64)
 	boolean more = 0
 	long i = 0
-	long n = tsu->n
+	long n = t->n
 	eachline(l)
 		scan_kv(l, k, v)
 		if *k
+			if !v
+				error("read_struct: missing delimiter after key: %s", k)
 			make_name(lc(k))
 			type__element *e
 			repeat
@@ -40,9 +54,9 @@ int read_struct(void *s, type *t, opt_err unknown_key)
 							return 0
 						 else
 							skip
-					e = &tsu->e[i]
+					e = &t->e[i]
 					break
-				e = &tsu->e[i]
+				e = &t->e[i]
 				if cstr_eq(k, e->name)
 					break
 				++i
@@ -71,14 +85,18 @@ int read_struct(void *s, type *t, opt_err unknown_key)
 			more = 1
 			break
 skip		.
+
+	if more == 0 && i>0
+		error("read_struct: missing newline before EOF")
+		# to avoid truncated records
+
 	buffer_free(b)
 	return more
 
 def write_struct(s, t) write_struct(s, t, OE_ERROR)
-boolean write_struct(void *s, type *t, opt_err unknown_type)
-	decl_cast(tsu, type__struct_union, t)
-	for(i, 0, tsu->n)
-		type__element *e = &tsu->e[i]
+boolean write_struct(void *s, type__struct_union *t, opt_err unknown_type)
+	for(i, 0, t->n)
+		type__element *e = &t->e[i]
 		char *p = (char*)s + e->offset
 		if among(e->type, (type*)t_cstr, (type*)t_char_p)
 			if *(cstr*)p
@@ -262,3 +280,10 @@ type__def t_defs[] =
 def t_cstr t_defs + 0
 
 hashtable struct__type_ix, *type_ix = &struct__type_ix
+
+def struct_ref(s, offset) (void *)(((char *)s)+offset)
+def struct_ref_ptr(s, offset) (void **)struct_ref(s, offset)
+def struct_ref_int(s, offset) (int *)struct_ref(s, offset)
+
+def struct_set_ptr(s, offset, value) *struct_ref_ptr(s, offset) = value
+def struct_get_ptr(s, offset) *struct_ref_ptr(s, offset)

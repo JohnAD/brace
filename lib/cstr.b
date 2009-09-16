@@ -242,12 +242,12 @@ char *Strrchr(const char *s, int c)
 
 cstr cstr_tolower(cstr s)
 	for_cstr(i, s)
-		*s = tolower((unsigned char)*s)
+		*i = tolower((unsigned char)*i)
 	return s
 
 cstr cstr_toupper(cstr s)
 	for_cstr(i, s)
-		*s = toupper((unsigned char)*s)
+		*i = toupper((unsigned char)*i)
 	return s
 
 def lc(s) cstr_tolower(s)
@@ -304,6 +304,6 @@ def strlitlen(s) sizeof(s)-1
 
 cstr make_name(cstr s)
 	for_cstr(i, s)
-		if !isword(*s)
-			*s = '_'
+		if !isword(*i)
+			*i = '_'
 	return s

@@ -9,7 +9,6 @@ test_speed()
 	new(ht, hashtable, cstr_hash, cstr_eq, 100003)
 	eachline(l)
 		hashtable_add(ht, strdup(l), "bogus def")
-	exit()
 	cstr word
 	cstr definition
 	for_hashtable(word, definition, ht)
@@ -35,10 +34,10 @@ test_interactive()
 
 		if hashtable_ref_exists(L)
 			key_value *kv = hashtable_ref_key_value(L)
-			Sayf("%s", kv->value)
+			Sayf("%s", kv->v)
 			key_value KV = hashtable_ref_delete(L)
-			Free(KV.key)
-			Free(KV.value)
+			Free(KV.k)
+			Free(KV.v)
 		 else
 		 	cstr val = Input("value: ")
 			hashtable_ref_add(L, cstr_copy(l), val)

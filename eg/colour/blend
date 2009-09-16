@@ -144,7 +144,7 @@ cstr Sym(cstr s)
 	list *ref = hashtable_lookup_ref(syms, s)
 	if hashtable_ref_exists(ref)
 		key_value *kv = hashtable_ref_key_value(ref)
-		if (cstr)kv->key != s
+		if (cstr)kv->k != s
 			error("string table has duplicate \"%s\" - or Sym function misused", s)
 
 	hashtable_add(syms, s, NULL)

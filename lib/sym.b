@@ -20,7 +20,7 @@ cstr sym(cstr s)
 	list *ref = hashtable_lookup_ref(syms, s)
 	if hashtable_ref_exists(ref)
 		key_value *kv = hashtable_ref_key_value(ref)
-		return (cstr)kv->key
+		return (cstr)kv->k
 
 	cstr s1 = cstr_copy(s)
 	hashtable_add(syms, s1, NULL)
@@ -39,7 +39,7 @@ cstr sym_this(cstr s)
 	if hashtable_ref_exists(ref)
 		key_value *kv = hashtable_ref_key_value(ref)
 		Free(s)
-		return (cstr)kv->key
+		return (cstr)kv->k
 
 	hashtable_add(syms, s, NULL)
 	return s

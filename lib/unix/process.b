@@ -337,7 +337,7 @@ Sigdfl_all()
 			continue
 		sigdfl(i)
 
-def set_child_handler()
+def set_child_handler(sigchld_handler)
 	Sigact(SIGCHLD, sigchld_handler)
 
 def nochldwait(signum) signum == SIGCHLD ? SA_NOCLDSTOP : 0

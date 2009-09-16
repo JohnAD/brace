@@ -15,9 +15,9 @@ Main()
 		cstr location = words[4]
 		if *type == 'A'
 			key_value = kv(alloced, addr, NULL)
-			if key_value->value == NULL
-				key_value->key = strdup(addr)
-				key_value->value = strdup(l)
+			if key_value->v == NULL
+				key_value->k = strdup(addr)
+				key_value->v = strdup(l)
 			 else
 				Say("bad\t%s", l)
 		 else  # type == 'F'

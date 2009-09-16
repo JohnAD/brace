@@ -379,7 +379,7 @@ cstr Strerror(int errnum)
 	if kv == NULL
 		return strerror(errnum)
 	 else
-		return kv->value
+		return kv->v
 
 Perror(const char *s)
 	cstr msg = Strerror(errno)

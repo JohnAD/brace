@@ -23,6 +23,7 @@ def usage()
 	usage("slides_file [start_page]")
 
 Main():
+	set_child_handler(sigchld_handler)
 	int start_page = 0
 
 	if *Getenv("quick")
@@ -34,7 +35,7 @@ Main():
 	demos_dir = Getenv("demos", demos_dir)
 	delay = atof(Getenv("delay", "0"))
 	delay_demo = atof(Getenv("delay_demo", "0"))
-	delay_demo = atof(Getenv("delay_page", "0"))
+	delay_page = atof(Getenv("delay_page", "0"))
 	if delay && !delay_demo
 		delay_demo = delay * 4
 	if delay && !delay_page
@@ -184,15 +185,6 @@ def effect(pixel_type):
 			if i % 3 == 0
 				paint()
 			effect_stop()
-	4	which page / 5
-		0	run_demo("star")
-		1	run_demo("flower")
-			run_demo("balls")
-			run_demo("roses")
-		2	run_demo("fps")
-			run_demo("pretty")
-			run_demo("mandelbrot")
-			run_demo("lattice")
 
 run_demo(cstr file)
 	int child = fork()
@@ -200,6 +192,9 @@ run_demo(cstr file)
 		Execl(format("%s/%s", demos_dir, file), NULL)
 	do_delay(delay_demo)
 	kill(child, SIGTERM)
+
+sigchld_handler(int signum)
+	use(signum)
 
 def effect_stop():
 	if i % 10 && rtime() > time+effect_duration:

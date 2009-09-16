@@ -54,7 +54,7 @@ Sigdfl_all()
 	each(i, SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM)
 		sigdfl(i)
 
-def set_child_handler()
+def set_child_handler(sigchld_handler)
 	.
 
 # TODO can I implement Waitpid?  I think so.

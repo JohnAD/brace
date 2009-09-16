@@ -1,4 +1,4 @@
-export io types alloc
+export io types alloc list
 export stdarg.h string.h
 use m
 
@@ -1368,7 +1368,7 @@ uniq_vovos(vec *v)
 	uniqo(v, vos_hash, vos_eq)
 
 
-def cache(ht, key, init) cachekv(ht, key, init)->value
+def cache(ht, key, init) cachekv(ht, key, init)->v
 def cachekv(ht, key, init) (cache__ref = hashtable_lookup_ref(ht, key))->next ? (void)0 : hashtable_ref_add(cache__ref, key, i2p(init)), hashtable_ref_lookup(cache__ref)
 list *cache__ref
   # cache is non reentrant at present, it uses this instead of a local variable
@@ -1465,3 +1465,31 @@ def flood_test_push(p, new, blank, test, t, seeds)
 
 def decl_cast(v, type, o)
 	type *v = (type *)o
+
+struct key_value
+	void *k
+	void *v
+
+struct cstr2cstr
+	cstr k
+	cstr v
+
+struct node_kv
+	list l
+	key_value kv
+
+def lookup_cstr(ix, key) lookup_cstr(ix, key, NULL)
+cstr lookup_cstr(cstr2cstr *ix, cstr key, cstr default_val)
+	let(i, ix)
+	for i=ix; i->k != NULL; ++i
+		if cstr_eq(i->k, key)
+			return i->v
+	return default_val
+
+cstr Lookup_cstr(cstr2cstr *ix, cstr key)
+	cstr val = lookup_cstr(ix, key, badptr)
+	if val == badptr
+		failed("lookup_cstr", key)
+	return val
+
+def badptr (void*)-1

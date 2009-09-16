@@ -48,7 +48,7 @@ scheduler_init(scheduler *sched)
 	sched->step = 0
 	sched->n_children = 0
 	sched->got_sigchld = 0
-	set_child_handler()
+	set_child_handler(sigchld_handler)
 
 def sched_free()
 	scheduler_free(sched)
@@ -265,7 +265,7 @@ set_waitchild(pid_t pid, proc *p)
 clr_waitchild(pid_t pid)
 	proc_debug("clr_waitchild %d", pid)
 	key_value kv = del(&sched->children, pid)
-	Free(kv.key)
+	Free(kv.k)
 	--sched->n_children
 
 sigchld_handler(int signum)

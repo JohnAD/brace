@@ -13,7 +13,7 @@ Main()
 	type_add((type*)t_person)
 	kv_io_init()
 	person p
-	type *t_person = type_get("person")
+#	type *t_person = type_get("person")
 	while read_struct(&p, t_person, OE_CONT|OE_WARN)
 		write_struct(&p, t_person)
 

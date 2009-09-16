@@ -52,3 +52,5 @@ typedef unsigned short unsigned_short
 typedef unsigned char unsigned_char
 typedef unsigned long unsigned_long
 typedef unsigned long long unsigned_long_long
+
+typedef void *ptr
