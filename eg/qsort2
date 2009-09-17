@@ -1,7 +1,0 @@
-#!/lang/b
-
-use b
-
-Main()
-	For(sort(lines()))
-		Say(*i)
