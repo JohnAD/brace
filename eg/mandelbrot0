@@ -1,41 +1,18 @@
 #!/lang/b
 use b
 
-cstr usage[] = { "x y r max_i rb_i w h", NULL }
-
 Main()
-	bm_start()
-	num outside = 4 # 16
-	long i
-	num ox = -0.5, oy = 0, r = 1.5
-	long max_i = 100, rb_i = 30, W=0, H=0
-	getargs(float, ox, oy, r)
-	getargs(long, max_i, rb_i, W, H)
-	if args
-		usage()
-	pr(float, ox, oy, r)
-	Pr(long, max_i, rb_i, W, H)
-	if W
-		space(W, H)
-	 else
-		space()
-	rainbow_init()
-	with_pixel_type(mandelbrot)
-	bm(program)
-
-def mandelbrot(pixel_type)
-	pixel_type *px = pixel()
+	num outside = 16, ox = -0.5, oy = 0, r = 1.5
+	long i, max_i = 100, rb_i = 30
+	space()
+	long *px = pixel()
 	num d = 2*r/h, x0 = ox-d*w_2, y0 = oy+d*h_2
-	cmplx c = x0 + y0*I
 	for(y, 0, h)
+		cmplx c = x0 + (y0-d*y)*I
 		repeat(w)
 			cmplx w = c
-			for i=0; i < max_i; ++i
+			for i=0; i < max_i && cabs(w) < outside; ++i
 				w = w*w + c
-				if cabs(w) > outside
-					break
-			*px++ = i < max_i ? rb[i*359 / rb_i % 360] : black
+			*px++ = i < max_i ? rainbow(i*359 / rb_i % 360) : black
 			c += d
-		if y % 3 == 0
-			Paint()
-		c = creal(x0) + (cimag(c)-d)*I
+		Paint()
