@@ -5,6 +5,8 @@ typedef double complex cmplx
 
 # complex number extensions
 
+def cabs2(w) creal(w*(creal(w)-cimag(w)*I))
+
 cmplx cis(num ang)
 	return cos(ang)+sin(ang)*I
 

@@ -177,15 +177,15 @@ def font(name) xfont(name)
 
 colour rgb(num red, num green, num blue)
 	colour c
+	int r = iclamp(red*256, 0, 255)
+	int g = iclamp(green*256, 0, 255)
+	int b = iclamp(blue*256, 0, 255)
 	if depth >= 24
-		c = (int)(red*255.9999)<<16 | (int)(green*255.9999)<<8 | (int)(blue*255.9999)
+		c = r<<16 | g<<8 | b
+		col(c)
 	 else
 		# XXX this way is slow and crap!
 		char name[8]
-		int r, g, b
-		r = iclamp(red*256, 0, 255)
-		g = iclamp(green*256, 0, 255)
-		b = iclamp(blue*256, 0, 255)
 		snprintf(name, sizeof(name), "#%02x%02x%02x", r, g, b)
 		c = coln(name)
 	return c
@@ -434,10 +434,22 @@ clear()
 #def done() event_loop()
 event_loop()
 	repeat
+		handle_event()
+
+handle_event()
+	XNextEvent(display, &x_event)
+	which x_event.type
+	Expose	if x_event.xexpose.count == 0
+			paint()
+
+handle_events()
+#	int i = XEventsQueued(display, QueuedAlready)
+#	warn("XEventsQueued: %d", i)
+	while XEventsQueued(display, QueuedAlready)
 		XNextEvent(display, &x_event)
 		which x_event.type
 		Expose	if x_event.xexpose.count == 0
-				paint()
+				Paint()
 
 triangle(num x2, num y2)
 	XPoint p[3]

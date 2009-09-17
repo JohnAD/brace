@@ -41,6 +41,10 @@ if [ -n "$WINDIR" -o -n "$windir" ]; then
 	EXE=.exe
 fi
 
+USER_CFLAGS="$CFLAGS" ; CFLAGS=""
+USER_LDFLAGS="$LDFLAGS" ; LDFLAGS=""
+USER_LDLIBS="$LDLIBS" ; LDLIBS=""
+
 CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
 
 # msys which is a shell script which for some reason won't run from here :/
@@ -186,7 +190,7 @@ if [ "$BRACE_LANGUAGE" = C++ ]; then
 	else
 		CC="$CXX"
 	fi
-	CFLAGS="$CFLAGS $CXXFLAGS"
+	USER_CFLAGS="$USER_CFLAGS $CXXFLAGS"
 	CFLAGS="$CFLAGS -Weffc++"
 else
 	c=c
@@ -248,6 +252,11 @@ LDLIBS_PLAIN="${LDLIBS_PLAIN## }"
 if [ -n "$BRACE_PLAIN" ]; then
 	LDLIBS="$LDLIBS_PLAIN"
 fi
+
+CFLAGS="$CFLAGS $USER_CFLAGS"
+LDFLAGS="$LDFLAGS $USER_LDFLAGS"
+LDLIBS="$LDLIBS $USER_LDLIBS"
+
 if [ -z "$BRACE_STANDALONE" ]; then
 	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CINCLUDE $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
 	PID=$$

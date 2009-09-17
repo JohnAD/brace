@@ -48,6 +48,9 @@ CFLAGS += -pg
 LDFLAGS += -pg
 endif
 
+CFLAGS:=$(CFLAGS) $(USER_CFLAGS)
+LDFLAGS:=$(LDFLAGS) $(USER_LDFLAGS)
+LDLIBS:=$(LDLIBS) $(USER_LDLIBS)
 CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
 
 # TODO redefine the %.o: %.c and %.o: %.cc patterns?

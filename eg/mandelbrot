@@ -34,21 +34,6 @@ Main()
 	Paint()
 	bm(program)
 
-colour rgb(num red, num green, num blue)
-	colour c
-	if depth >= 24
-		c = (int)(red*255.9999)<<16 | (int)(green*255.9999)<<8 | (int)(blue*255.9999)
-	 else
-		char name[8]
-		int r, g, b
-		r = iclamp(red*256, 0, 255)
-		g = iclamp(green*256, 0, 255)
-		b = iclamp(blue*256, 0, 255)
-		# this way is slow and crap!
-		snprintf(name, sizeof(name), "#%02x%02x%02x", r, g, b)
-		c = coln(name)
-	return c
-
 
 typedef long pixel_type  # the nested macros lose expansions
 
@@ -175,5 +160,3 @@ def smooth_i(i, W)
 		if a < smooth_outside[j]
 			break
 		--i
-
-def cabs2(w) creal(w*(creal(w)-cimag(w)*I))

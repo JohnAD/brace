@@ -6,6 +6,12 @@
 #MK_LIB=`readlink -f \`dirname "$0"\`/../include/mk`
 MK_LIB="`dirname "$0"`/../lib/mk"
 
+USER_CFLAGS="$CFLAGS" ; CFLAGS=""
+USER_LDFLAGS="$LDFLAGS" ; LDFLAGS=""
+USER_LDLIBS="$LDLIBS" ; LDLIBS=""
+
+export USER_CFLAGS USER_LDFLAGS USER_LDLIBS
+
 CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
 
 which() {

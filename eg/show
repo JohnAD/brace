@@ -13,6 +13,7 @@ boolean smooth = 1
 int smooth_steps = 30
 int smooth_dur = 0.50
 def smooth_delay smooth_dur / smooth_steps
+num x_expose_delay = 0.2
 
 num old_y, old_font_size, old_height
 boolean start_of_page = 1
@@ -23,7 +24,6 @@ def usage()
 	usage("slides_file [start_page]")
 
 Main():
-	set_child_handler(sigchld_handler)
 	int start_page = 0
 
 	if *Getenv("quick")
@@ -138,7 +138,7 @@ draw_lines(vec *lines, num y, num font_size, num height)
 		move(-w_2 + margins/2, y)
 		gsayf(*l)
 		y -= height
-	paint()
+	Paint()
 
 effect():
 	with_pixel_type(effect)
@@ -189,12 +189,13 @@ def effect(pixel_type):
 run_demo(cstr file)
 	int child = fork()
 	if child == 0
+		Close(3)
 		Execl(format("%s/%s", demos_dir, file), NULL)
 	do_delay(delay_demo)
 	kill(child, SIGTERM)
-
-sigchld_handler(int signum)
-	use(signum)
+	Child_wait()
+	Sleep(x_expose_delay)
+#	handle_events()
 
 def effect_stop():
 	if i % 10 && rtime() > time+effect_duration:
