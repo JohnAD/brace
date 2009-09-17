@@ -176,13 +176,19 @@ xfont(const char *font_name)
 def font(name) xfont(name)
 
 colour rgb(num red, num green, num blue)
-	char name[8]
-	int r, g, b
-	r = iclamp(red*256, 0, 255)
-	g = iclamp(green*256, 0, 255)
-	b = iclamp(blue*256, 0, 255)
-	snprintf(name, sizeof(name), "#%02x%02x%02x", r, g, b)
-	return coln(name)
+	colour c
+	if depth >= 24
+		c = (int)(red*255.9999)<<16 | (int)(green*255.9999)<<8 | (int)(blue*255.9999)
+	 else
+		# XXX this way is slow and crap!
+		char name[8]
+		int r, g, b
+		r = iclamp(red*256, 0, 255)
+		g = iclamp(green*256, 0, 255)
+		b = iclamp(blue*256, 0, 255)
+		snprintf(name, sizeof(name), "#%02x%02x%02x", r, g, b)
+		c = coln(name)
+	return c
 
 colour col(colour pixel)
 	gcvalues.foreground = pixel

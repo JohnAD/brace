@@ -11,7 +11,7 @@ def paint_as_you_go 1
 int payg = 5
 
 Main()
-	num outside = 16 # 4
+	num outside = 4 # 16
 	num outside2 = outside*outside
 	num out_square = sqrt(outside2/2)
 	long i
@@ -21,13 +21,12 @@ Main()
 	getargs(long, max_i, rb_i, payg, W, H)
 	if args
 		usage()
+	pr(float, ox, oy, r)
+	Pr(long, max_i, rb_i, W, H)
 	if W
 		space(W, H, blank_colour)
 	 else
 		space(blank_colour)
-	pr(cstr, program)
-	pr(float, ox, oy, r)
-	Pr(long, max_i, rb_i, payg, w, h)
 	bm_start()
 	rainbow_init()
 	with_pixel_type(mandelbrot)
@@ -73,12 +72,12 @@ def mandelbrot(pixel_type)
 		seeds[i+1].x[1] = y
 		i+=2
 
-	flood_8(seeds, 0, 0, w, h, blank, test, fill)
+	flood_4(seeds, 0, 0, w, h, blank, test, fill)
 	for_pixels(px)
 		if *px == blank_colour
 			*px = 0
 
-def flood_8(seeds, x0, y0, x1, y1, blank, test, fill)
+def flood_4(seeds, x0, y0, x1, y1, blank, test, fill)
 	int s = sizeof(seeds) / sizeof(*seeds)
 	int n = i
 	i = 0
@@ -107,22 +106,6 @@ def flood_8(seeds, x0, y0, x1, y1, blank, test, fill)
 				flood_test_push(p, new, blank, test, t, seeds)
 			if p->x[1] < y1-1
 				new->x[1] = p->x[1] + 1
-				flood_test_push(p, new, blank, test, t, seeds)
-			if p->x[0] > x0 && p->x[1] > y0
-				new->x[0] = p->x[0] - 1
-				new->x[1] = p->x[1] - 1
-				flood_test_push(p, new, blank, test, t, seeds)
-			if p->x[0] > x0 && p->x[1] < y1-1
-				new->x[0] = p->x[0] - 1
-				new->x[1] = p->x[1] + 1
-				flood_test_push(p, new, blank, test, t, seeds)
-			if p->x[0] < x1-1 && p->x[1] < y1-1
-				new->x[0] = p->x[0] + 1
-				new->x[1] = p->x[1] + 1
-				flood_test_push(p, new, blank, test, t, seeds)
-			if p->x[0] < x1-1 && p->x[1] > y0
-				new->x[0] = p->x[0] + 1
-				new->x[1] = p->x[1] - 1
 				flood_test_push(p, new, blank, test, t, seeds)
 
 def flood_test_push(p, new, blank, test, t, seeds)
@@ -154,7 +137,6 @@ def fill(p)
 		if (re > out_square || im > out_square) && (re*re + im*im) > outside2
 			break
 	smooth_i(it, W)
-#	*px = it < max_i*smooth_n ? rb[it*359 / (rb_i*smooth_n) % 360] : black
 	*px = it < max_i*smooth_n ? rb[it*359 / (rb_i*smooth_n) % 360] : black
 #	*px = i < max_i ? rb[i*359 / rb_i % 360] : black
 	if paint_as_you_go && payg && counter++ > (n-i+s) % s * payg
@@ -162,7 +144,7 @@ def fill(p)
 		paint()
 
 def smooth_init()
-	int smooth_n = 32 # 8
+	int smooth_n = 8 # 32
 	num smooth_fac = pow(2, 1.0/smooth_n)
 	num smooth_outside[smooth_n]
 	for(j, 0, smooth_n)
