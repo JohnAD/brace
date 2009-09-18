@@ -36,11 +36,11 @@ def set(ht, key, value)
 def set(ht, key, value, free_or_void)
 	hashtable_set(ht, key, value, free_or_void)
 
-def hashtable_set(ht, k, v, free_or_void)
-	let(my(kv), kv(ht, k, NULL))
+def hashtable_set(ht, key, value, free_or_void)
+	let(my(kv), kv(ht, key, NULL))
 	if my(kv)->v
 		free_or_void(my(kv)->v)
-	my(kv)->v = i2p(v)
+	my(kv)->v = i2p(value)
 
 # TODO, simplify hashtable so that it always returns a ref, and use key() and
 # val() to get the key and value parts.

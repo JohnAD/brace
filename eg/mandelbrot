@@ -14,7 +14,6 @@ Main()
 	num outside = 16 # 4
 	num outside2 = outside*outside
 	num out_square = sqrt(outside2/2)
-	long i
 	num ox = -0.5, oy = 0, r = 1.5
 	long max_i = 1024, rb_i = 30, W=0, H=0
 	getargs(float, ox, oy, r)
@@ -43,7 +42,6 @@ def mandelbrot(pixel_type)
 	cmplx c0 = x0 + y0*I
 	smooth_init()
 	pointi2 seeds[(w+h-2)*2*5]
-	pointi2 p
 	int i=0
 	for(x, 0, w)
 		seeds[i].x[0] = x

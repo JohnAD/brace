@@ -133,8 +133,8 @@ Def for_vec(i, v, type)
 
 Def back_vec(i, v, type)
 	state vec *my(v1) = v
-	state type *my(end) = vec0(my(v))-1
-	state type *my(i1) = vecend(my(v1))-1
+	state type *my(end) = (type*)vec0(my(v1))-1
+	state type *my(i1) = (type*)vecend(my(v1))-1
 	for ; my(i1)!=my(end) ; --my(i1)
 		let(i, my(i1))
 		.

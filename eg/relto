@@ -1,15 +1,13 @@
 #!/lang/b
 
+cstr usage[] =
+	"base rel",
+	NULL
+
 Main()
-	unless(args == 2)
-		usage("base rel")
-
-	let(base, arg[0])
-	let(rel, strdup(arg[1]))
-
-	let(path, path_relative_to(base, rel))
-#	path = path_tidy(path)
-
+	args(cstr, base, dir)
+	let(path, path_relative_to(Strdup(base), dir))
+	path = path_tidy(path)
 	Say(path)
 
 use b
