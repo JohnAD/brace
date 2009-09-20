@@ -54,3 +54,5 @@ typedef unsigned long unsigned_long
 typedef unsigned long long unsigned_long_long
 
 typedef void *ptr
+
+typedef unsigned int flag

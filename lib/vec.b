@@ -215,7 +215,8 @@ def vec_insert(v, i, in, n) vec_splice(v, i, 0, in, n)
 
 def vec_unshift(v, in, n) vec_insert(v, 0, in, n)
 
-# def vec_shift ... ?
+def vec_shift(v, n) vec_cut(v, 0, n)
+def vec_shift(v) vec_shift(v, 1)
 
 def Subvec(v, i, n) Subvec(v, i, n, 0)
 vec *Subvec(vec *v, ssize_t i, ssize_t n, ssize_t extra)
