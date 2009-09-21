@@ -1,0 +1,8 @@
+#!/lang/b
+use b
+Main()
+	space()
+	repeat
+		each(x, red, green, blue, yellow, white, black, grey, purple, pink, brown, orange)
+			clear(x) ; paint()
+			Readline()

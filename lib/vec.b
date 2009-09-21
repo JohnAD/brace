@@ -262,3 +262,8 @@ vov_free_maybe_null(vec *v)
 	for_vec(i, v, vec*)
 		if *i
 			vec_free(*i)
+
+vec *vec1(void *e)
+	New(v, vec, void*, 1)
+	vec_push(v, e)
+	return v

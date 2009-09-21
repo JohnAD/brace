@@ -1,4 +1,4 @@
-export io types alloc list
+export buffer io types alloc list
 export stdarg.h string.h
 use m
 
@@ -1493,3 +1493,8 @@ cstr Lookup_cstr(cstr2cstr *ix, cstr key)
 	return val
 
 def badptr (void*)-1
+
+def delimit(p, s, c)
+	p = strchr(s, c)
+	if p
+		*p++ = '\0'
