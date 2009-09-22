@@ -230,9 +230,10 @@ def buffer_from_cstr(s)
 	buffer_from_cstr_1(s)
 
 def for_buffer(i, b)
-	char *i
-	char *my(end) = buffer_get_end(b)
-	for i=buffer_get_start(b); i!=my(end); ++i
+	state char *my(i1)
+	state char *my(end) = buffer_get_end(b)
+	for my(i1)=buffer_get_start(b); my(i1)!=my(end); ++my(i1)
+		let(i, my(i1))
 
 # THIS was not working with brace_include or something :/
 #split_buffer(vec *v, buffer *b, char c)

@@ -25,8 +25,10 @@ for (@l) {
 	if (/^(struct|union) (.*)$/) {
 		# add a typedef:
 		push @struct_union_typedef, "typedef $1 $2 $2\n";
+#		$_ = "";
 	}
 }
+#@struct_union_class_template_proto = grep /./, @struct_union_class_template_proto;
 
 }
 
