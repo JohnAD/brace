@@ -1,4 +1,4 @@
-export math.h stdlib.h limits.h
+export math.h stdlib.h limits.h float.h
 export types util time
 use process
 use m

@@ -1,0 +1,35 @@
+#!/lang/b
+
+use b
+
+Main()
+	do_test(1.0, 4)
+	do_test(0.1, 4)
+	do_test(0.01, 4)
+	do_test(0.001, 4)
+	do_test(0.0001, 4)
+	do_test(0.00001, 4)
+	do_test(0.000001, 4)
+	do_test(0.0, 4)
+
+def do_test(delay, n)
+	Sayf("sleeping for %f seconds", delay)
+	Printf("actual delay: ")
+	repeat(n)
+		num t1 = rtime()
+		Sleep(delay)
+		num t2 = rtime()
+		Printf("%f ", t2-t1)
+		Fflush()
+	nl()
+
+	Sayf("sleeping for %f seconds with more accurate asleep (which busy-waits part)", delay)
+	Printf("actual delay: ")
+	repeat(n)
+		num t1 = rtime()
+		num t2 = asleep(delay, t1)
+		Printf("%f ", t2-t1)
+		Fflush()
+	nl()
+	nl()
+

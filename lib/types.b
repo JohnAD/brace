@@ -1,6 +1,7 @@
 export sys/types.h
 export stdint.h
 export limits.h
+export float.h
 
 typedef unsigned char byte
 typedef double num
