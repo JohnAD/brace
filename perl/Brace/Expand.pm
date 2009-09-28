@@ -154,7 +154,7 @@ sub expand_macros_tokenized {
 			$indent += length($token);
 		}
 		my $macro;
-		if ($token =~ /^[a-z0-9_\$]+$/i) {
+		if ($token =~ /^[a-z_\$]/i) {
 			my $name = $token;
 			# are there any macros with this name?
 			debug("$name: lookup up macro name", 1);

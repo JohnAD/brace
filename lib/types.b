@@ -3,7 +3,7 @@ export stdint.h
 export limits.h
 export float.h
 
-typedef unsigned char byte
+typedef uint8_t byte
 typedef double num
 typedef unsigned char boolean
   # TODO change all boolean to bool
@@ -13,8 +13,12 @@ typedef char *cstr
 typedef unsigned int count_t
 #typedef size_t size
 
-typedef unsigned char uchar
-#typedef unsigned int uint
+typedef unsigned short ushort;
+typedef unsigned char uchar;
+typedef unsigned long ulong;
+typedef unsigned int uint;
+typedef signed char schar;
+typedef long vlong;
 
 # TODO if not C++  ?
 def true 1
