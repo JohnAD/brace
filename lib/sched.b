@@ -264,7 +264,7 @@ set_waitchild(pid_t pid, proc *p)
 
 clr_waitchild(pid_t pid)
 	proc_debug("clr_waitchild %d", pid)
-	key_value kv = del(&sched->children, pid)
+	del(&sched->children, pid)
 	--sched->n_children
 
 sigchld_handler(int signum)
