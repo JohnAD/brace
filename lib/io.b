@@ -1550,3 +1550,20 @@ int Fgetline(buffer *b, FILE *stream)
 
 int Getline(buffer *b)
 	return Fgetline(b, stdin)
+
+def fopen_close(fp, file)
+	fopen_close(fp, file, "rb")
+def fopen_close(fp, file, mode)
+	FILE *fp = Fopen(file, mode)
+	post(my(x))
+		Fclose(fp)
+	pre(my(x))
+		.
+
+def cd_block(dir)
+	cstr old_dir = Getcwd()
+	post(my(x))
+		Chdir(old_dir)
+	pre(my(x))
+		Chdir(dir)
+

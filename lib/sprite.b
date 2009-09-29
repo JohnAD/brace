@@ -130,15 +130,15 @@ sprite_blit_transp(sprite *to, sprite *from)
 def sprite_put(to, from, x, y)
 	sprite_put_x(, to, from, x, y)
 def sprite_put_transp(to, from, x, y)
-	sprite_put_x(transp, to, from, x, y)
+	sprite_put_x(_transp, to, from, x, y)
 def sprite_put_transl(to, from, x, y)
-	sprite_put_x(transl, to, from, x, y)
+	sprite_put_x(_transl, to, from, x, y)
 def sprite_put_x(plottype, to, from, x, y)
 	sprite_put_x(plottype, to, from, x, y, my(source), my(target))
 def sprite_put_x(plottype, to, from, x, y, source, target)
 	decl(source, sprite)
 	decl(target, sprite)
-	sprite_clip(target, source, to, from, 0, 0)
+	sprite_clip(target, source, to, from, x, y)
 	sprite_blit^^plottype(target, source)
 	gr__change_hook()
 
@@ -239,13 +239,16 @@ sprite_circle_aa(sprite *s)
 			++p
 		p += s->stride - w
 
-sprite *sprite_load_png(cstr filename)
-	FILE *fp = Fopen(filename)
-	sprite *s = sprite_load_png_stream(fp)
-	Fclose(fp)
+def sprite_load_png(filename) sprite_load_png(filename, Talloc(sprite))
+
+sprite *sprite_load_png(cstr filename, sprite *s)
+	fopen_close(fp, filename)
+		sprite_load_png_stream(fp, s)
 	return s
 
-sprite *sprite_load_png_stream(FILE *in)
+def sprite_load_png_stream(in) sprite_load_png_stream(in, Talloc(sprite))
+
+sprite *sprite_load_png_stream(FILE *in, sprite *s)
 #	unsigned char header[8]
 #	Fread_all(header, 1, 8, in)
 #	if png_sig_cmp(header, 0, 8)
@@ -291,16 +294,16 @@ sprite *sprite_load_png_stream(FILE *in)
 		debug("png_set_strip_16")
 		png_set_strip_16(png_ptr)
 	png_set_invert_alpha(png_ptr)
-	if color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_GRAY
+	if among(color_type, PNG_COLOR_TYPE_RGB, PNG_COLOR_TYPE_GRAY, PNG_COLOR_TYPE_PALETTE)
 		debug("png_set_add_alpha")
 		png_set_add_alpha(png_ptr, 0x0, PNG_FILLER_AFTER)
-#	if color_type == PNG_COLOR_TYPE_RGB_ALPHA || color_type == PNG_COLOR_TYPE_GRAY_ALPHA
+#	if among(color_type, PNG_COLOR_TYPE_RGB_ALPHA, PNG_COLOR_TYPE_GRAY_ALPHA)
 #		debug("png_set_swap_alpha")
 #		png_set_swap_alpha(png_ptr)
-	if color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA
+	if among(color_type, PNG_COLOR_TYPE_GRAY, PNG_COLOR_TYPE_GRAY_ALPHA)
 		debug("png_set_gray_to_rgb")
 		png_set_gray_to_rgb(png_ptr)
-	if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+	if among(color_type, PNG_COLOR_TYPE_RGB, PNG_COLOR_TYPE_RGB_ALPHA, PNG_COLOR_TYPE_PALETTE)
 		png_set_bgr(png_ptr)
 
 #	# gamma
@@ -332,7 +335,7 @@ sprite *sprite_load_png_stream(FILE *in)
 	if rowbytes != width * 4
 		error("sprite_load_png: rowbytes != width * 4 ; %ld != %ld", (long)rowbytes, (long)width*4)
 
-	New(s, sprite, width, height)
+	init(s, sprite, width, height)
 	png_bytep row_pointers[height]
 	for long y=0; y<(long)height; ++y
 		row_pointers[y] = (png_bytep)(s->pixels + y * width)
