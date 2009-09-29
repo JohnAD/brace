@@ -84,7 +84,7 @@ colour rainbow_(num a)
 		return rgb(r, 0, b)
 
 	bug("rainbow: a = %f !in [-5, 7) ?", a)
-	exit(1)  # keep gcc happy
+	Exit(1)  # keep gcc happy
 	  # FIXME do bug, error, etc as macros that exit in the caller?
 
 void bug(const char *format, ...)
@@ -94,7 +94,7 @@ void bug(const char *format, ...)
 	vfprintf(stderr, format, ap)
 	va_end(ap)
 	fprintf(stderr, "\n")
-	exit(1)
+	Exit(1)
 
 def solve_colour(i0, i1, a0, a1)
 	num my(a) = a0 + a1

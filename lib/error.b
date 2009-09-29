@@ -145,10 +145,10 @@ def Assert(should_be_true, my_error, format, a1, a2, a3, a4)
 
 def usage(syntax)
 	warn_usage(syntax)
-	exit(1)
+	Exit(1)
 def usage(s1, s2)
 	warn_usage(s1, s2)
-	exit(1)
+	Exit(1)
 
 def fsay_usage(s, syntax)
 	Fsayf(s, "usage: %s %s", program, syntax)
@@ -183,7 +183,7 @@ def say_usage()
 	fsay_usage(stdout)
 def usage()
 	warn_usage()
-	exit(1)
+	Exit(1)
 
 # exception handling stuff - including revised versions of error() etc
 
@@ -282,7 +282,7 @@ die_errors(int status)
 	warn_errors()
 	if *env("DEBUG")
 		abort()
-	exit(status)
+	Exit(status)
 
 clear_errors()
 	for_vec(e, errors, err)

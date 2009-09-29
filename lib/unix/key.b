@@ -76,7 +76,7 @@ cont_handler(int signum)
 int_handler(int signum)
 	use(signum)
 	cooked()
-	exit(1)
+	Exit(1)
 
 def Input_passwd() Input_passwd("Password: ")
 cstr Input_passwd(cstr prompt)

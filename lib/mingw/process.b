@@ -48,7 +48,7 @@ def SA_RESTART 0x10000000
 def SA_INTERRUPT 0x20000000
 
 exit_exec_failed()
-	exit(exit__execfailed)
+	Exit(exit__execfailed)
 
 Sigdfl_all()
 	each(i, SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM)

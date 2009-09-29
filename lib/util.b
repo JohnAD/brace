@@ -1498,3 +1498,10 @@ def delimit(p, s, c)
 	p = strchr(s, c)
 	if p
 		*p++ = '\0'
+
+def tmpnul(p)
+	char my(tmp)
+	post(x)
+		*p = my(tmp)
+	pre(x)
+		my(tmp) = *p ; *p = '\0'

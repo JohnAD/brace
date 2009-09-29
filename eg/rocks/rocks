@@ -619,7 +619,7 @@ prev_level()
 	new_level()
 
 do_exit()
-	exit(0)
+	Exit(0)
 
 const char *compliments[] =
 	"Right on, commander!",

@@ -17,7 +17,7 @@ Main()
 		n4 = atoi(arg[3])
 	0	n1 = 9 ; n2 = 12 ; n3 = 5 ; n4 = 12
 	else	usage("[n1 n2 n3 n4]  e.g. 10 5 5 10")
-		exit(1)
+		Exit(1)
 
 	Sayf("%d %d %d %d", n1, n2, n3, n4)
 

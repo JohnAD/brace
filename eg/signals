@@ -23,7 +23,7 @@ Main()
 			dump_sig_info()
 			Fflush()
 			Execl(program_full, program_full, "--exec")
-			exit()
+			Exit()
 	 else
 		Say("after exec")
 		dump_sig_info()

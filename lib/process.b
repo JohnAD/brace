@@ -12,6 +12,10 @@ use process
 int exit__execfailed = 127
 int status__execfailed = 512 + 127
 
+boolean process__forked = 0
+boolean process__fork_fflush = 1
+boolean process__exit_fflush = 1
+
 boolean exec__warn_fail = 1
 
 Atexit(void (*function)(void))
@@ -19,6 +23,15 @@ Atexit(void (*function)(void))
 		failed("atexit")
 
 def exit() exit(0)
+
+void Exit(int status)
+	if process__forked
+		if process__exit_fflush
+			Fflush_all()
+		_Exit(status)
+	exit(status)
+
+def Exit() Exit(0)
 
 # TODO maybe I could raise() a signal to kill the process with thereby a
 # non-normal exit status in case of not being able to exec the child process?

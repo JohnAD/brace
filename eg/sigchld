@@ -9,11 +9,11 @@ Main()
 
 	Sig_defer(SIGCHLD)
 
-	if fork() == 0
+	if Fork() == 0
 		warn("child sleeping for 2")
 		sleep(2)
 		Say("child finishing")
-		exit(0)
+		Exit(0)
 
 	warn("parent sleeping for 4")
 

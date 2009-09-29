@@ -13,9 +13,13 @@ int sig_execfailed = SIGUSR2
 typedef void (*sighandler_t)(int)
 
 pid_t Fork()
+	if process__fork_fflush
+		Fflush_all()
 	pid_t pid = fork()
 	if pid == -1
 		failed("fork")
+	 eif pid == 0
+		process__forked = 1
 	return pid
 
 # TODO cope with interrupted system calls universally, aargh
@@ -329,7 +333,7 @@ exit_exec_failed()
 		Sig_pass(sig_execfailed)
 		Raise(sig_execfailed)
 
-	exit(exit__execfailed)
+	Exit(exit__execfailed)
 
 Sigdfl_all()
 	for(i, 1, SIGRTMAX+1)

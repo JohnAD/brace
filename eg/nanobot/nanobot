@@ -51,6 +51,6 @@ Main()
 			Say(reply)  # do something sensible with this?
 
 		Fclose(server)
-		exit()
+		Exit()
 
 use b

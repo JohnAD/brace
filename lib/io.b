@@ -247,9 +247,10 @@ Fflush(FILE *stream)
 	winsock_fflush(stream)
 	if fflush(stream) != 0
 		failed("fflush")
-
 def Fflush()
 	Fflush(stdout)
+def Fflush_all()
+	Fflush(NULL)
 
 # don't forget to use the "b" flag, e.g. "r+b"
 FILE *Fdopen(int filedes, const char *mode)

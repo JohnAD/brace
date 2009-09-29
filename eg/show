@@ -187,7 +187,7 @@ def effect(pixel_type):
 			effect_stop()
 
 run_demo(cstr file)
-	int child = fork()
+	int child = Fork()
 	if child == 0
 		Close(3)
 		Execl(format("%s/%s", demos_dir, file), NULL)

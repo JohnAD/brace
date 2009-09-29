@@ -222,12 +222,15 @@ help_(cstr version, cstr description, cstr *usage, cstr options[][3])
 		 else
 			Sayf("      --%-*s  %s", max_len, long_opt, desc)
 
+def getargs_(type, a0)
+	a0 = cstr_to_^^type(arg[0])
+	shift()
+
 def getargs(type)
 	.
 def getargs(type, a0)
 	if args
-		a0 = cstr_to_^^type(arg[0])
-		shift()
+		getargs_(type, a0)
 def getargs(type, a0, a1)
 	getargs(type, a0)
 	getargs(type, a1)
@@ -249,7 +252,7 @@ def Getargs(type)
 def Getargs(type, a0)
 	if !args
 		usage()
-	getargs(type, a0)
+	getargs_(type, a0)
 def Getargs(type, a0, a1)
 	Getargs(type, a0)
 	Getargs(type, a1)
