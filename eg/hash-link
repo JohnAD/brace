@@ -5,27 +5,41 @@ use b
 #link ssl
 # LDLIBS="-lssl" hash-link
 
-enum {SYMLINK_NO, SYMLINK_PATH, SYMLINK_NAME} use_symlink = SYMLINK_NO
+cstr version = "1.0"
 
-cstr usage[] = { "[-s|-S] out-dir in-dir ...", NULL }
+cstr description = "hash link - Sam Watkins, 2009"
+
+cstr usage[] = { "[-s|-S] out-dir in-dir ...", "--help", NULL }
 
 opts *O
 
 cstr options[][3] =
-	{ "s", "sympath",   "" },
-	{ "S", "symname",   "" },
+	{ "V", "version",   "" },
+	{ "s", "sympath",   "symlink hash files over original files" },
+	{ "S", "symname",   "symlink hash leafnames over original files" },
 	{ NULL, NULL, NULL }
 
 Main()
 	O = get_options(options)
+
+	if opt("help")
+		help()
+	 eif opt("version")
+		version()
+	 else
+		hash_link_main()
+
+enum {SYMLINK_NO, SYMLINK_PATH, SYMLINK_NAME} use_symlink = SYMLINK_NO
+
+hash_link_main()
 	args(cstr, hash_dir)
+
+	mkdir(hash_dir, 0777)
 
 	if opt("sympath")
 		use_symlink = SYMLINK_PATH
-	 eif opt("symname")
+	if opt("symname")
 		use_symlink = SYMLINK_NAME
-
-	mkdir(hash_dir, 0777)
 
 	find_main(f, s)
 		if S_ISREG(s->st_mode)
@@ -65,12 +79,12 @@ Main()
 			 else
 				Rename(f, hash_path)
 
+			if use_symlink == SYMLINK_NO
+				Link(hash_path, f)
+			if use_symlink == SYMLINK_PATH
+				Symlink(hash_path, f)
 			if use_symlink == SYMLINK_NAME
 				Symlink(hash_file, f)
-			 eif use_symlink == SYMLINK_PATH
-				Symlink(hash_path, f)
-			 else
-				Link(hash_path, f)
 
 			Sayf("%s\t%s", hash_file, f)
 			Close(fd)
