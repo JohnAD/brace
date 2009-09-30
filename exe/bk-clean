@@ -10,4 +10,4 @@ rm .tmp .tmp.1 .tmp.2
 find . -name '.*.b1' -o -name '.*.bb1' -o -name '.*.c' -o -name '.*.cc' -o -name '.*.log' -o -name '.*.exe' -o -name '.*.bak' -o -name '.*.bak2' -o -name '.*.xbak' -o -name '.*.lock' -o -name '.*.bh' >.tmp
 <.tmp xargs rm -rvf
 rm .tmp
-rm -vf mk.log mkfile.1 mkfile_cc headers.timestamp mk.failed
+rm -vf bk.log bkfile.1 bkfile_cc headers.timestamp bk.failed

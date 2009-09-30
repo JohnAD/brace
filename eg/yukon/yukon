@@ -1,5 +1,4 @@
 #!/lang/b
-use png.h
 use b
 
 def N 52
@@ -39,7 +38,7 @@ plot_cards_test()
 	bm_start()
 	let(reps, 500)
 	repeat(reps)
-		Clear()
+		pix_clear()
 #		for(i, 0, N*packs)
 		back(i, N*packs-1, -1)   # high cards on top
 			pointn2 *p = &card_pos[i]
@@ -67,15 +66,3 @@ plot_cards_test()
 # TODO
 
 # sprite_put_behind ...
-
-Clear()
-	clear()
-	gr_sync()
-
-pix_clear(colour c)
-	with_pixel_type(pix_clear_1)
-
-def pix_clear_1(pixel_type)
-	pixel_type *px = pixel()
-	repeat(w*h)
-		*px++ = c

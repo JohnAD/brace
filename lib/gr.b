@@ -239,6 +239,20 @@ def clear(c)
 	bg(c)
 	clear()
 
+Clear(colour c)
+	clear(c)
+	gr_sync()
+
+def pix_clear() pix_clear(bg_col)
+pix_clear(colour c)
+	bg(c)
+	with_pixel_type(pix_clear_1)
+
+def pix_clear_1(pixel_type)
+	pixel_type *px = pixel()
+	repeat(w*h)
+		*px++ = c
+
 # change this to a macro?
 gr__change_hook()
 	if _autopaint

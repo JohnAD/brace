@@ -4,4 +4,4 @@ graph: $(BOBJ)
 
 clean:
 	rm -f *.o *.c *.bh *.b1
-	mk-clean
+	bk-clean

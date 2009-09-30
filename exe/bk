@@ -3,8 +3,8 @@
 # TODO remove .b files etc from .build if they are no-longer in the source dir
 # TODO use a gcc option to make warnings fatal ??
 
-#MK_LIB=`readlink -f \`dirname "$0"\`/../include/mk`
-MK_LIB="`dirname "$0"`/../lib/mk"
+#BK_LIB=`readlink -f \`dirname "$0"\`/../include/bk`
+BK_LIB="`dirname "$0"`/../lib/bk"
 
 USER_CFLAGS="$CFLAGS" ; CFLAGS=""
 USER_LDFLAGS="$LDFLAGS" ; LDFLAGS=""
@@ -114,7 +114,7 @@ if [ -z "$BRACE_USE" ]; then
 		echo "BRACE_USE: $BRACE_USE"
 	fi
 fi
-export MK_LIB BRACE_LIB BRACE_USE CFLAGS LDFLAGS LDLIBS LDLIBS_PLAIN
+export BK_LIB BRACE_LIB BRACE_USE CFLAGS LDFLAGS LDLIBS LDLIBS_PLAIN
 
 LDLIBS_PLAIN="$LDLIBS"
 LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
@@ -148,31 +148,31 @@ if [ "$A" != clean ]; then
 	brace_update_headers
 fi
 
-brace_mk_cc >mkfile_cc
+brace_mk_cc >bkfile_cc
 
-# split the mkfile, so var decls come before include
+# split the bkfile, so var decls come before include
 # FIXME this is a bit dodgy, e.g. won't work if we have
 # an assignment with a ': ' in it!
-<mkfile sed -n '/: /q; p' >mkfile.1
-#echo 'include $(MK_LIB)' >>mkfile.1
-cat "$MK_LIB" >>mkfile.1
-<mkfile sed -n '/: /,$p' >>mkfile.1
-echo 'include mkfile_cc' >>mkfile.1
+<bkfile sed -n '/: /q; p' >bkfile.1
+#echo 'include $(BK_LIB)' >>bkfile.1
+cat "$BK_LIB" >>bkfile.1
+<bkfile sed -n '/: /,$p' >>bkfile.1
+echo 'include bkfile_cc' >>bkfile.1
 
-rm -f mk.failed
+rm -f bk.failed
 
-#( make -f mkfile.1 $A 2>&1 || touch mk.failed ) |
+#( make -f bkfile.1 $A 2>&1 || touch bk.failed ) |
 #grep --line-buffered -ve 'Each undeclared identifier is reported only once' \
 #  -e 'for each function it appears in' |
 #sed -u 's,^[^.:]*\.\(c\|cc\):,.build/&,' |
-#tee mk.log
+#tee bk.log
 
 if [ -z "$MAKE" ]; then
 	MAKE=make
 	which gmake >/dev/null && MAKE=gmake
 fi
 
-( $MAKE -f mkfile.1 $A 2>&1 || touch mk.failed ) |
+( $MAKE -f bkfile.1 $A 2>&1 || touch bk.failed ) |
 perl -ne '
 	BEGIN { $|=1; }
 	/Each undeclared identifier is reported only once/ ||
@@ -180,11 +180,11 @@ perl -ne '
 	print
 	 # || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
 ' |
-tee mk.log
+tee bk.log
 
-[ -e mk.failed ] && {
-	rm -f mk.failed
-	echo >&2 mk: failed
+[ -e bk.failed ] && {
+	rm -f bk.failed
+	echo >&2 bk: failed
 	exit 1
 }
 
@@ -205,7 +205,7 @@ exit 0
 #	fi
 #done
 #
-#if [ -n "$MK_HEADERS" ]; then
+#if [ -n "$BK_HEADERS" ]; then
 #	find -type f \( -name '*.bh' -o -name '*.bbh' \) |
 #	while read A; do
 #		ln -f "$A" ../"$A"

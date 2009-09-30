@@ -18,10 +18,10 @@ fi
 
 log="$d/.$b.log"
 if [ ! -e "$log" ]; then
-	if [ -e "$d/mk.log" ]; then
-		log="$d/mk.log"
-	elif [ -e "mk.log" ]; then
-		log="mk.log"
+	if [ -e "$d/bk.log" ]; then
+		log="$d/bk.log"
+	elif [ -e "bk.log" ]; then
+		log="bk.log"
 	fi
 fi
 

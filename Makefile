@@ -27,7 +27,7 @@ install: .build
 	cd .build/exe ; $(MAKE) install
 	cd .build/lib ; $(MAKE) install
 	install -d "$(libdir)" "$(perldir)"
-	install -m 644 lib/mk "$(libdir)"/mk
+	install -m 644 lib/bk "$(libdir)"/bk
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE)
 	cp -pR perl/* "$(perldir)"
@@ -36,7 +36,7 @@ install: .build
 uninstall:
 	cd .build/exe ; $(MAKE) uninstall
 	cd .build/lib ; $(MAKE) uninstall
-	rm -f '$(libdir)'/mk
+	rm -f '$(libdir)'/bk
 	for D in `ls perl`; do rm -rf '$(perldir)'/"$$D"; done  # XXX this could trash other Brace::* packages
 	rmdir '$(libdir)' '$(includedir)' '$(perldir)' '$(bindir)' '$(langdir)' '$(realprefix)' || true
 

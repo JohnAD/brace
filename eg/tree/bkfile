@@ -4,5 +4,5 @@ all: windy still
 still: still.o tree.o
 windy: windy.o tree.o
 clean:
-	mk-clean
-	rm -f *.pyc *.o mk.log *.bh dreamy/*.bh *.c still windy
+	bk-clean
+	rm -f *.pyc *.o bk.log *.bh dreamy/*.bh *.c still windy
