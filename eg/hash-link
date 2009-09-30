@@ -25,7 +25,7 @@ Main()
 	 eif opt("symname")
 		use_symlink = SYMLINK_NAME
 
-	Mkdir(hash_dir, 0777)
+	mkdir(hash_dir, 0777)
 
 	find_main(f, s)
 		if S_ISREG(s->st_mode)
