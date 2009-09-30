@@ -3,7 +3,7 @@ use openssl/sha.h
 use openssl/md5.h
 use b
 #link ssl
-#export LDLIBS="-lssl"
+# LDLIBS="-lssl" hash-link
 
 enum {SYMLINK_NO, SYMLINK_PATH, SYMLINK_NAME} use_symlink = SYMLINK_NO
 
