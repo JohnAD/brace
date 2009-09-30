@@ -5,28 +5,27 @@ use b
 #link ssl
 #export LDLIBS="-lssl"
 
-def block_size 4096
-
 enum {SYMLINK_NO, SYMLINK_PATH, SYMLINK_NAME} use_symlink = SYMLINK_NO
 
-Usage()
-	usage("[-s|-S] out-dir in-dir ...")
+cstr usage[] = { "[-s|-S] out-dir in-dir ...", NULL }
+
+opts *O
+
+cstr options[][3] =
+	{ "s", "sympath",   "" },
+	{ "S", "symname",   "" },
+	{ NULL, NULL, NULL }
 
 Main()
-	if !args
-		Usage()
-	if cstr_eq(arg[0], "-s")
-		use_symlink = SYMLINK_PATH
-		++arg ; --args
-	 eif cstr_eq(arg[0], "-S")
-		use_symlink = SYMLINK_NAME
-		++arg ; --args
-	if !args
-		Usage()
+	O = get_options(options)
+	args(cstr, hash_dir)
 
-	cstr hash_dir = arg[0]
-	++arg ; --args
-	mkdir(hash_dir, 0777)
+	if opt("sympath")
+		use_symlink = SYMLINK_PATH
+	 eif opt("symname")
+		use_symlink = SYMLINK_NAME
+
+	Mkdir(hash_dir, 0777)
 
 	find_main(f, s)
 		if S_ISREG(s->st_mode)
@@ -40,7 +39,7 @@ Main()
 
 			new(sha1, SHA_CTX)
 			new(md5, MD5_CTX)
-			fd = Open(f, O_RDONLY)
+			int fd = Open(f, O_RDONLY)
 			each_block(b, fd)
 				char *start = buffer_get_start(b)
 				size_t size = buffer_get_size(b)
@@ -76,6 +75,8 @@ Main()
 			Sayf("%s\t%s", hash_file, f)
 			Close(fd)
 
+# LIBB
+
 def each_block(b, fd)
 	new(b, buffer, block_size)
 	repeat
@@ -100,4 +101,3 @@ def final(o, type, a0)
 	type^^_final(o, a0)
 def final(o, type, a0, a1)
 	type^^_final(o, a0, a1)
-
