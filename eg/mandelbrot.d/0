@@ -1,15 +1,15 @@
 #!/lang/b
 use b
 
-Main()
+Main():
 	num outside = 16, ox = -0.5, oy = 0, r = 1.5
 	long i, max_i = 100, rb_i = 30
 	space()
 	long *px = pixel()
 	num d = 2*r/h, x0 = ox-d*w_2, y0 = oy+d*h_2
-	for(y, 0, h)
+	for(y, 0, h):
 		cmplx c = x0 + (y0-d*y)*I
-		repeat(w)
+		repeat(w):
 			cmplx w = c
 			for i=0; i < max_i && cabs(w) < outside; ++i
 				w = w*w + c
