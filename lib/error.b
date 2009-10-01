@@ -439,3 +439,31 @@ any vopt_err_do(opt_err opt, any value, any errcode, char *format, va_list ap)
 	OE_ERRCODE	return errcode
 	else	failed("vopt_err_do", "unknown opt_err option")
 	return errcode
+
+boolean is_verbose = 0
+
+def Verbose(a0)
+	if is_verbose
+		warn(a0)
+def Verbose(a0, a1)
+	if is_verbose
+		warn(a0, a1)
+def Verbose(a0, a1, a2)
+	if is_verbose
+		warn(a0, a1, a2)
+def Verbose(a0, a1, a2, a3)
+	if is_verbose
+		warn(a0, a1, a2, a3)
+def Verbose(a0, a1, a2, a3, a4)
+	if is_verbose
+		warn(a0, a1, a2, a3, a4)
+def Verbose(a0, a1, a2, a3, a4, a5)
+	if is_verbose
+		warn(a0, a1, a2, a3, a4, a5)
+def Verbose(a0, a1, a2, a3, a4, a5, a6)
+	if is_verbose
+		warn(a0, a1, a2, a3, a4, a5, a6)
+def Verbose(a0, a1, a2, a3, a4, a5, a6, a7)
+	if is_verbose
+		warn(a0, a1, a2, a3, a4, a5, a6, a7)
+

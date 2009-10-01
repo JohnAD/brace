@@ -368,7 +368,7 @@ hold_term_open()
 	new(b, buffer)
 	Freadline(b, stdin)
 
-typedef struct utsname utsname
+#sunos doesn't like: typedef struct utsname utsname
 
 Uname(struct utsname *buf)
 	if !uname(buf)

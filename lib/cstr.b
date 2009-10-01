@@ -307,3 +307,95 @@ cstr make_name(cstr s)
 		if !isword(*i)
 			*i = '_'
 	return s
+
+size_t Strlcpy(char *dst, char *src, size_t size)
+	size_t rv
+	rv = strlcpy(dst, src, size)
+	if rv >= size
+		failed("strlcpy", "dst buffer too small")
+	return rv
+
+size_t Strlcat(char *dst, char *src, size_t size)
+	size_t rv
+	rv = strlcpy(dst, src, size)
+	if rv >= size
+		failed("strlcpy", "dst buffer too small")
+	return rv
+
+
+def strtol(s, base) strtol(s, NULL, base)
+def strtol(s) strtol(s, 10)
+def strtoll(s, base) strtoll(s, NULL, base)
+def strtoll(s) strtoll(s, 10)
+def strtod(s) strtod(s, NULL)
+def strtof(s) strtof(s, NULL)
+
+long int Strtol(const char *nptr, char **endptr, int base)
+	errno = 0
+	long int rv = strtol(nptr, endptr, base)
+	if errno
+		failed("strtol", nptr)
+	return rv
+def Strtol(nptr, base) Strtol(nptr, NULL, base)
+def Strtol(nptr) Strtol(nptr, 10)
+
+long long int Strtoll(const char *nptr, char **endptr, int base)
+	errno = 0
+	long long int rv = strtoll(nptr, endptr, base)
+	if errno
+		failed("strtoll", nptr)
+	return rv
+def Strtoll(nptr, base) Strtoll(nptr, NULL, base)
+def Strtoll(nptr) Strtoll(nptr, 10)
+
+double Strtod(const char *nptr, char **endptr)
+	errno = 0
+	double rv = strtod(nptr, endptr)
+	if errno
+		failed("strtod", nptr)
+	return rv
+def Strtod(nptr) Strtod(nptr, NULL)
+
+float Strtof(const char *nptr, char **endptr)
+	errno = 0
+	float rv = strtof(nptr, endptr)
+	if errno
+		failed("strtof", nptr)
+	return rv
+def Strtof(nptr) Strtof(nptr, NULL)
+
+long int STRTOL(const char *nptr, int base)
+	char *endptr
+	errno = 0
+	long int rv = strtol(nptr, &endptr, base)
+	if errno || *endptr
+		warn("strtol failed? %s %ld %p %p %p %d", nptr, rv, nptr, nptr+strlen(nptr), endptr, *endptr)
+		failed("strtol", nptr)
+	return rv
+def STRTOL(nptr) STRTOL(nptr, 10)
+
+long long int STRTOLL(const char *nptr, int base)
+	char *endptr
+	errno = 0
+	long long int rv = strtoll(nptr, &endptr, base)
+	if errno || *endptr
+		failed("strtoll", nptr)
+	return rv
+def STRTOLL(nptr) STRTOLL(nptr, 10)
+
+double STRTOD(const char *nptr)
+	char *endptr
+	errno = 0
+	double rv = strtod(nptr, &endptr)
+	if errno || *endptr
+		failed("strtod", nptr)
+	return rv
+
+float STRTOF(const char *nptr)
+	char *endptr
+	errno = 0
+	float rv = strtof(nptr, &endptr)
+	if errno || *endptr
+		failed("strtof", nptr)
+	return rv
+

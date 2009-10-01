@@ -1,12 +1,5 @@
 use cstr error
 
-size_t Strlcpy(char *dst, char *src, size_t size)
-	size_t rv
-	rv = strlcpy(dst, src, size)
-	if rv >= size
-		failed("strlcpy", "dst buffer too small")
-	return rv
-
 size_t strlcpy(char *dst, char *src, size_t size)
 	if size == 0
 		return strlen(src)
@@ -20,13 +13,6 @@ size_t strlcpy(char *dst, char *src, size_t size)
 		while *src++
 			.
 	return src - src0 - 1
-
-size_t Strlcat(char *dst, char *src, size_t size)
-	size_t rv
-	rv = strlcpy(dst, src, size)
-	if rv >= size
-		failed("strlcpy", "dst buffer too small")
-	return rv
 
 size_t strlcat(char *dst, char *src, size_t size)
 	if size == 0

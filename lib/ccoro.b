@@ -75,7 +75,8 @@ int yield_val(coro **c, int val)
 		return v
 	return coro_code_dead
 
-int yield(coro **c)
+def yield(c) ccoro_yield(c)
+int ccoro_yield(coro **c)
 	return yield_val(c, 1)
 
 noret new_coro_3(coro_func f, coro *caller)

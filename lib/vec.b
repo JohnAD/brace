@@ -143,8 +143,6 @@ def For(i, v, type)
 	for_vec(i, v, type)
 def For(i, v)
 	for_vec(i, v, cstr)
-def For(v)
-	for_vec(i, v)
 
 def for_vec(i, v)
 	state vec *my(v1) = v

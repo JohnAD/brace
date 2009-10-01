@@ -12,11 +12,10 @@ USER_LDLIBS="$LDLIBS" ; LDLIBS=""
 
 export USER_CFLAGS USER_LDFLAGS USER_LDLIBS
 
-CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
+CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS"
 
 which() {
 	# this unfortunately depends on the shell
-	local A
 	A=`type "$@" 2>/dev/null || true`
 	B="${A%: not found}"
 	if [ "$A" != "$B" ]; then
@@ -53,7 +52,7 @@ fi
 LDFLAGS="$LDFLAGS $BRACE_L_SO"
 if [ -z "$BRACE_USE" ]; then
 	if [ -n "$WINDIR" -o -n "$windir" ]; then
-		BRACE_USE="mingw nongnu nonbsd"
+		BRACE_USE="mingw nongnu nonbsd nonlinux"
 		BRACE_USE="$BRACE_USE io-select"
 		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
 		LDLIBS="$LDLIBS -lws2_32"
@@ -79,8 +78,9 @@ if [ -z "$BRACE_USE" ]; then
 		<.uname.1 read UNAME
 		rm .uname .uname.1  # coping with borken pipes in unxutils
 		case "$UNAME" in
-		*bsd*)
-			BRACE_USE="$BRACE_USE bsd" ;;
+		*bsd*|sunos)
+			BRACE_USE="$BRACE_USE bsd"
+			LDLIBS="$LDLIBS -lsendfile" ;;
 		*)
 			BRACE_USE="$BRACE_USE nonbsd" ;;
 		esac
@@ -98,7 +98,7 @@ if [ -z "$BRACE_USE" ]; then
 				BRACE_USE="$BRACE_USE io-select"
 			fi
 		else
-			BRACE_USE="$BRACE_USE io-select"
+			BRACE_USE="$BRACE_USE nonlinux io-select"
 		fi
 		if [ "$UNAME" != "linux" -a "$UNAME" != "hurd" -a "$UNAME" != "gnu" ]; then
 			BRACE_USE="$BRACE_USE nongnu"

@@ -1,4 +1,4 @@
-export unistd.h stdarg.h signal.h pwd.h shadow.h sched.h sys/wait.h sys/utsname.h
+export unistd.h stdarg.h signal.h pwd.h shadow.h sched.h sys/wait.h sys/utsname.h crypt.h
 use string.h
 export buffer types
 use error cstr vec util

@@ -1,4 +1,6 @@
-CC=gcc -pedantic -std=gnu99
+ifndef CC
+CC:=gcc -pedantic -std=gnu99
+endif
 
 DIR=$(PWD)
 #CFLAGS:=-Wall -Wextra -Werror -I. $(CFLAGS)
@@ -40,7 +42,13 @@ LDFLAGS += -s
 endif
 
 ifneq (0,$(OPTIMIZE))
+ifndef DEBUG
 CFLAGS += -O2
+else
+ifdef OPTIMIZE
+CFLAGS += -O2
+endif
+endif
 endif
 
 ifdef PROFILE

@@ -6,6 +6,6 @@ Main():
 		usage("< file")
 	let(lines, lines())
 	int n = lines->size
-	For(lines):
+	For(i, lines):
 		swap(*i, i[randi(n--)])
 		Say(*i)

@@ -1,5 +1,5 @@
 export buffer io types alloc list
-export stdarg.h string.h
+export stdarg.h string.h strings.h
 use m
 
 def my(a) skip(1, `my__prefix)^^a
@@ -532,16 +532,16 @@ my(ST)		.
 		if a == a1
 			break
 
-Def For(v)
-	For(v, v^^0, v^^1)
-
-Def For(v, ary)
-	For(v, ary^^0, ary^^1)
-
-def For(v, from, to)
-	v = from
-	let(my(end), to)
-	for ; v<my(end); ++v
+#Def For(v)
+#	For(v, v^^0, v^^1)
+#
+#Def For(v, ary)
+#	For(v, ary^^0, ary^^1)
+#
+#def For(v, from, to)
+#	v = from
+#	let(my(end), to)
+#	for ; v<my(end); ++v
 
 #def use(v) v=v
 def use(v) (void)v

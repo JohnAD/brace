@@ -263,13 +263,16 @@ gr__change_hook()
 def thin()
 	width(0)
 
-def triangle(x1, y1, x2, y2, x3, y3)
-	move2(x1, y1, x2, y2)
-	triangle(x3, y3)
+def triangle(x0, y0, x1, y1, x2, y2)
+	move1(x0, y0, x1, y1)
+	triangle(x2, y2)
 
-def quad(x1, y1, x2, y2, x3, y3, x4, y4)
-	move2(x1, y1, x2, y2)
-	quad(x3, y3, x4, y4)
+def quad(x0, y0, x1, y1, x2, y2, x3, y3)
+	move1(x0, y0, x1, y1)
+	quad(x2, y2, x3, y3)
+
+def quad(x2, y2, x3, y3)
+	quadrilateral(x2, y2, x3, y3)
 
 gr_fast()
 	autopaint(0)

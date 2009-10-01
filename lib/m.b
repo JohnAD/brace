@@ -109,17 +109,19 @@ def randi() random()
 def randi(max) (int)(max*Rand())
 def randi(min, max) randi(max-min)+min
 
-def RAND_TOP (unsigned int)RAND_MAX+1
-def RANDL_TOP (unsigned long long int)RAND_TOP*RAND_TOP
-def RANDL_MAX (unsigned int)RANDL_TOP-1
+def RANDOM_MAX (1UL<<31)-1
+def RANDI_MAX RANDOM_MAX
+def RANDI_TOP RANDI_MAX+1
+def RANDL_TOP (unsigned long long int)RANDI_TOP*RANDI_TOP
+def RANDL_MAX (unsigned long)RANDL_TOP-1
 
-def randl() (long long int)random()*RAND_TOP+random()
+def randl() (long long int)random()*RANDI_TOP+random()
 
 def Rand() (num)((long double)randl()/RANDL_TOP)
 def Rand(max) Rand()*max
 def Rand(min, max) Rand(max-min)+min
 #def toss() Rand()>0.5
-def toss() random() > RAND_MAX/2
+def toss() randi() > RANDI_MAX/2
 # TODO speed up some other rand functions like with toss
 
 seed()

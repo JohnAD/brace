@@ -1,5 +1,6 @@
 export proc shuttle sched net io alloc
 use sock
+export stdint.h
 
 struct sock
 	int fd
@@ -23,7 +24,7 @@ sock_free(sock *s)
 in_addr sock_in_addr(sock *s)
 	return ((sockaddr_in*)s->sa)->sin_addr
 
-u_int16_t sock_in_port(sock *s)
+uint16_t sock_in_port(sock *s)
 	return ntohs(((sockaddr_in*)s->sa)->sin_port)
 
 struct shuttle_buffer

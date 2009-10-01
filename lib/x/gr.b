@@ -463,7 +463,7 @@ def xpoint_set(xpoint, X, Y)
 	xpoint.x = SX(X)
 	xpoint.y = SY(Y)
 
-quad(num x2, num y2, num x3, num y3)
+quadrilateral(num x2, num y2, num x3, num y3)
 	XPoint p[4]
 	xpoint_set(p[0], lx2, ly2)
 	xpoint_set(p[1], lx, ly)

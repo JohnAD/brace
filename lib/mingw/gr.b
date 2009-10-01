@@ -358,7 +358,7 @@ triangle(num x2, num y2)
 	move2(lx, ly, x2, y2)
 	# TODO make faster; don't use polygon ?
 
-quad(num x2, num y2, num x3, num y3)
+quadrilateral(num x2, num y2, num x3, num y3)
 	polygon p
 	polygon_start(&p, 4)
 	polygon_point(&p, lx2, ly2)

@@ -29,15 +29,6 @@ def Poll(fds, nfds) Poll(fds, nfds, -1)
 #		failed("ppoll")
 #	return rv
 
-nonblock(int fd, int nb)
-	if ioctl(fd, FIONBIO, &nb) == -1
-		failed("ioctl")
-
-#nonblock(int fd)
-#	Fcntl_setfl(fd, Fcntl_getfl(fd) | O_NONBLOCK)
-#nonblock_off(int fd)
-#	Fcntl_setfl(fd, Fcntl_getfl(fd) & ~O_NONBLOCK)
-
 int fcntl_flock(int fd, int cmd, short type, short whence, off_t start, off_t len)
 	struct flock fl
 	fl.l_type = type

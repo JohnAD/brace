@@ -14,12 +14,12 @@ all: $(SONAME) $(PLAIN_SONAME) b.h b_plain.h $(DEBUG_SONAME) $(PLAIN_DEBUG_SONAM
 
 $(SONAME): $(BOBJ)
 	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
-	strip --strip-unneeded $@
+#	strip --strip-unneeded $@     # XXX borks on sunos/gcc
 	chmod -x $@
 
 $(PLAIN_SONAME): $(BOBJ_PLAIN)
 	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(PLAIN_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
-	strip --strip-unneeded $@
+#	strip --strip-unneeded $@     # XXX borks on sunos/gcc
 	chmod -x $@
 
 $(DEBUG_SONAME): $(BOBJ)
