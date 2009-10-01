@@ -1,5 +1,6 @@
 #!/lang/b
 use b
+
 cstr version = "1.0"
 
 cstr description = "install - Sam Watkins, 2009"

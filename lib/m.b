@@ -105,17 +105,19 @@ def sqr(x) x*x
 num notpot(num hypotenuse, num x)
 	return sqrt(sqr(hypotenuse) - sqr(x))
 
-def randi() random()
+def randi() (long)(random() & 0x7fffffff)
 def randi(max) (int)(max*Rand())
 def randi(min, max) randi(max-min)+min
 
-def RANDOM_MAX (1UL<<31)-1
+def RANDOM_TOP (1UL<<31)
+def RANDOM_MAX RANDOM_TOP-1
+def RANDI_TOP RANDOM_TOP
 def RANDI_MAX RANDOM_MAX
-def RANDI_TOP RANDI_MAX+1
 def RANDL_TOP (unsigned long long int)RANDI_TOP*RANDI_TOP
 def RANDL_MAX (unsigned long)RANDL_TOP-1
 
 def randl() (long long int)random()*RANDI_TOP+random()
+  # not full 64 bit positive, only 62 bits!
 
 def Rand() (num)((long double)randl()/RANDL_TOP)
 def Rand(max) Rand()*max

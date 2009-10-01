@@ -1,10 +1,28 @@
 #!/lang/b
 use main util io
 
+cstr version = "1.0"
+
+cstr description = "types - Sam Watkins, 2009"
+
+cstr usage[] =
+	"[--follow] < files.ls",
+	"--help",
+	NULL
+
+cstr options[][3] =
+	{ "V", "version",   "" },
+	{ "f", "follow",    "follow symlinks" },
+	{ NULL, NULL, NULL }
+
+opts *O
+
 Main()
+	O = get_options(options)
+	boolean follow = opt("follow") && 1
 	decl(s, struct stat)
 	eachline(f)
-		if Stat(f, s)
+		if follow ? Stat(f, s) : Lstat(f, s)
 			let(m, s->st_mode)
 			if S_ISREG(m)
 				Print("file")
