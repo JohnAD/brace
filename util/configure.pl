@@ -40,12 +40,12 @@ BRACE_LIB=\$(srcdir)${sep}lib
 End
 unless ($mingw) {
 	print <<End;
-LIBB_LDFLAGS=
-LIBB_CFLAGS=-fpic
-LIBB_SONAME=libb.so
-LIBB_PLAIN_SONAME=libb_plain.so
-LIBB_DEBUG_SONAME=libb_debug.so
-LIBB_PLAIN_DEBUG_SONAME=libb_plain_debug.so
+SO_LDFLAGS=
+SO_CFLAGS=-fpic
+SONAME=libb.so
+PLAIN_SONAME=libb_plain.so
+DEBUG_SONAME=libb_debug.so
+PLAIN_DEBUG_SONAME=libb_plain_debug.so
 PERL5LIB:=\$(srcdir)${sep}perl:\$(srcdir)${sep}cpan
 EXE=
 PATH:=\$(srcdir)${sep}exe:\$(srcdir)${sep}util:$path

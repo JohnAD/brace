@@ -22,3 +22,4 @@ PROFILE=
 CC=gcc -pedantic -std=gnu99
 CFLAGS:=-Wall -I'$(srcdir)/lib' $(CFLAGS)
 LDFLAGS:=-L'$(srcdir)/lib' $(LDFLAGS) -s
+
