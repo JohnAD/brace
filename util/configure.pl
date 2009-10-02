@@ -72,6 +72,7 @@ LIBB_PLAIN_DEBUG_SONAME=libb_plain_debug.so
 PERL5LIB:=\$(srcdir)${sep}perl:\$(srcdir)${sep}cpan
 EXE=
 PATH:=\$(srcdir)${sep}exe:\$(srcdir)${sep}util:$path
+LD_LIBRARY_PATH:=$(BRACE_SO)
 End
 	if ($prefix eq "/usr" && -d "/usr/share/perl5") {
 		print <<End
