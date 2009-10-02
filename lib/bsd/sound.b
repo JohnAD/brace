@@ -8,3 +8,4 @@ def play(s)
 	.
 def dsp_sync()
 	.
+int bsd_sound = 1

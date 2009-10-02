@@ -20,6 +20,5 @@ OPTIMIZE=1
 DEBUG=1
 PROFILE=
 CC=gcc -pedantic -std=gnu99
-CFLAGS:=-Wall -I'$(srcdir)/lib' $(CFLAGS)
-LDFLAGS:=-L'$(srcdir)/lib' $(LDFLAGS) -s
-
+EXE_CFLAGS:=-Wall -I'$(srcdir)/lib' $(CFLAGS)
+EXE_LDFLAGS:=-L'$(srcdir)/lib' $(LDFLAGS) -s

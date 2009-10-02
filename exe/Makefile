@@ -1,5 +1,8 @@
-export
 include ../.Make.conf
+
+CFLAGS=$(EXE_CFLAGS)
+LDFLAGS=$(EXE_LDFLAGS)
+LDLIBS=$(EXE_LDLIBS)
 
 # - for win32; can assume there was nothing needful in PERL5LIB  :)
 

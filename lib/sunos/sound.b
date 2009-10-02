@@ -1,4 +1,5 @@
-# solaris audio driver
+# bsd "/dev/audio" audio driver
+# 44100 Hz 16 bit mono native byte order
 
 # not written yet :)
 
@@ -7,3 +8,4 @@ def play(s)
 	.
 def dsp_sync()
 	.
+int sunos_sound = 1
