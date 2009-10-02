@@ -222,6 +222,12 @@ num bm_start = 0
 num bm_end = 0
 boolean bm_enabled = 1
 
+def bm_block(msg)
+	post(my(x))
+		bm(msg)
+	pre(my(x))
+		bm_start()
+
 def bm_start()
 	if bm_enabled
 		bm_start = rtime()
