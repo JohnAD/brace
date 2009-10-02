@@ -1,1 +1,6 @@
-/home/sam/brace-sunos/./lib/sunos/env.b
+use env
+
+int clearenv()
+	environ = NULL
+	return 0
+
