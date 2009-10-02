@@ -2,40 +2,37 @@ include ../.Make.conf
 
 # - for win32; can assume there was nothing needful in PERL5LIB  :)
 
-CFLAGS:=-Wall -I'$(srcdir)/lib' $(CFLAGS)
-LDFLAGS:=-L'$(srcdir)/lib' $(LDFLAGS) -s
-
 build: boot bx$(EXE) bbx$(EXE) b1$(EXE) bb1$(EXE)
 boot: brace$(EXE) .mk_foo_stamp .mk_bar_stamp .mk_baz_stamp
 
 brace.c: brace.b
-	<brace.b PERL5LIB="$(PERL5LIB)" b2b0 | BRACE_LIB="$(BRACE_LIB)" PERL5LIB="$(PERL5LIB)" b02b1 | brace >brace.c
+	<brace.b b2b0 | b02b1 | brace >brace.c
 brace$(EXE): brace.o
 	echo $(PERL5LIB)
 	echo $(BRACE_LIB)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o brace brace.o $(LDLIBS)
-	@<brace.b PERL5LIB="$(PERL5LIB)" b2b0 | BRACE_LIB="$(BRACE_LIB)" PERL5LIB="$(PERL5LIB)" b02b1 | brace >.brace.test.c
+	@<brace.b b2b0 | b02b1 | brace >.brace.test.c
 	@../util/vd brace.c .brace.test.c || . ../util/fail "TEST FAILED! brace is broken!"
 	@echo "brace works ok"
 
 bx$(EXE): bx.b $(BRACE_SO)/$(LIBB_SONAME)
-	PATH="$(PATH)" PERL5LIB='$(PERL5LIB)' BRACE_SO='$(BRACE_SO)' BRACE_LIB='$(BRACE_LIB)' BRACE_USE='$(BRACE_USE)' CC='$(CC)' br bx.b bx$(EXE)
+	br bx.b bx$(EXE)
 bbx$(EXE): bx$(EXE)
 	ln -sf bx$(EXE) bbx$(EXE) || cp bx$(EXE) bbx$(EXE)
 
 b1$(EXE): b1.b $(BRACE_SO)/$(LIBB_SONAME)
-	PATH="$(PATH)" PERL5LIB='$(PERL5LIB)' BRACE_SO='$(BRACE_SO)' BRACE_LIB='$(BRACE_LIB)' BRACE_USE='$(BRACE_USE)' CC='$(CC)' br b1.b b1$(EXE)
+	br b1.b b1$(EXE)
 bb1$(EXE): b1$(EXE)
 	ln -sf b1$(EXE) bb1$(EXE) || cp b1$(EXE) bb1$(EXE)
 
 .mk_foo_stamp: brace_foo
-	PATH="$(PATH)" PERL5LIB="$(PERL5LIB)" brace_mk_exes brace_foo
+	brace_mk_exes brace_foo
 	touch .mk_foo_stamp
 .mk_bar_stamp: brace_bar
-	PATH="$(PATH)" PERL5LIB="$(PERL5LIB)" brace_mk_exes brace_bar
+	brace_mk_exes brace_bar
 	touch .mk_bar_stamp
 .mk_baz_stamp: brace_baz
-	PATH="$(PATH)" PERL5LIB="$(PERL5LIB)" brace_mk_exes brace_baz
+	brace_mk_exes brace_baz
 	touch .mk_baz_stamp
 
 clean:

@@ -2,7 +2,7 @@
 
 include .Make.conf
 
-export BRACE_STANDALONE=
+BRACE_STANDALONE=
 
 all: dotbuild
 

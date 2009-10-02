@@ -1,5 +1,8 @@
 include ../.Make.conf
 
+BRACE_LANGUAGE=C
+BH_NO_MACROS=1
+
 finder=find . $(BRACE_USE) -maxdepth 1 -name
 grep_plain=grep -v -w -e b -e gr -e colours -e turtle -e sound -e music -e key -e tty -e cgi_png -e sprite
 BOBJ=$(shell $(finder) "*.b" | perl -pe 's/\\/\//g; s/\.b$$/.o/')
@@ -49,7 +52,7 @@ $(PLAIN_DEBUG_SONAME): $(BOBJ_PLAIN)
 # TODO a program to export the headers like this..?
 
 b.h: $(BHEADERS)
-	export BRACE_LANGUAGE=C ; cat $(BHEADERS) | BH_NO_MACROS=1 b2bh | b2b1 | brace_header_export "" b_h | brace > b.h
+	cat $(BHEADERS) | b2bh | b2b1 | brace_header_export "" b_h | brace > b.h
 
 b_plain.h: $(BHEADERS_PLAIN)
-	export BRACE_LANGUAGE=C ; cat $(BHEADERS_PLAIN) | BH_NO_MACROS=1 b2bh | b2b1 | brace_header_export "" b_plain_h | brace > b_plain.h
+	cat $(BHEADERS_PLAIN) | b2bh | b2b1 | brace_header_export "" b_plain_h | brace > b_plain.h

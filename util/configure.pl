@@ -38,7 +38,29 @@ print <<End;
 BRACE_SO=\$(srcdir)${sep}lib
 BRACE_LIB=\$(srcdir)${sep}lib
 End
-if ($mingw) {
+unless ($mingw) {
+	print <<End;
+LIBB_LDFLAGS=
+LIBB_CFLAGS=-fpic
+LIBB_SONAME=libb.so
+LIBB_PLAIN_SONAME=libb_plain.so
+LIBB_DEBUG_SONAME=libb_debug.so
+LIBB_PLAIN_DEBUG_SONAME=libb_plain_debug.so
+PERL5LIB:=\$(srcdir)${sep}perl:\$(srcdir)${sep}cpan
+EXE=
+PATH:=\$(srcdir)${sep}exe:\$(srcdir)${sep}util:$path
+LD_LIBRARY_PATH:=\$(BRACE_SO)${sep}\$(LD_LIBRARY_PATH)
+End
+	if ($prefix eq "/usr" && -d "/usr/share/perl5") {
+		print <<End
+perldir:=\$\(prefix\)/share/perl5
+End
+	} elsif ($prefix eq "/usr/local") {
+		print <<End
+perldir:=\$\(prefix\)/lib/site_perl
+End
+	}
+} else { # if ($mingw)
 	print <<End;
 LIBB_SONAME=libb.dll
 LIBB_PLAIN_SONAME=libb_plain.dll
@@ -61,28 +83,6 @@ End
 	print <<End;
 perldir:=$perldir
 End
-} else {
-	print <<End;
-LIBB_LDFLAGS=
-LIBB_CFLAGS=-fpic
-LIBB_SONAME=libb.so
-LIBB_PLAIN_SONAME=libb_plain.so
-LIBB_DEBUG_SONAME=libb_debug.so
-LIBB_PLAIN_DEBUG_SONAME=libb_plain_debug.so
-PERL5LIB:=\$(srcdir)${sep}perl:\$(srcdir)${sep}cpan
-EXE=
-PATH:=\$(srcdir)${sep}exe:\$(srcdir)${sep}util:$path
-LD_LIBRARY_PATH:=$(BRACE_SO)
-End
-	if ($prefix eq "/usr" && -d "/usr/share/perl5") {
-		print <<End
-perldir:=\$\(prefix\)/share/perl5
-End
-	} elsif ($prefix eq "/usr/local") {
-		print <<End
-perldir:=\$\(prefix\)/lib/site_perl
-End
-	}
 }
 
 sub fix_path {
