@@ -1,3 +1,4 @@
+export
 include ../.Make.conf
 
 # - for win32; can assume there was nothing needful in PERL5LIB  :)
