@@ -7,7 +7,7 @@ Main()
 	num a[11]
 	for(i, 0, 11)
 		a[i] = atof(rl())
-	back(i, 10, -1)  # FIXME
+	back(i, 11)
 		num y = f(a[i])
 		if y > 400
 			warn("%d TOO LARGE", i)

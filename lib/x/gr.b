@@ -148,6 +148,8 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	XSelectInput(display, window, ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask|KeyReleaseMask|StructureNotifyMask)
 	XMapWindow(display, window)
 
+	sprite_screen(screen)
+
 	clear()
 	Paint()
 

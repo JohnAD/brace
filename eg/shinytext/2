@@ -51,7 +51,7 @@ def shiny(pixel_type)
 		px += 2
 	clear()
 
-	back(r, r1, -1)
+	back(r, r1+1)
 		font("helvetica-medium", fs)
 		hsv((r*16) % 360, 1, r*1.0/r1)
 		for_vec(i, v, XPoint)

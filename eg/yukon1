@@ -1,0 +1,44 @@
+#!/lang/b
+use b
+
+def N 52
+def packs 1
+sprite card_sprites[N]
+pointn2 card_pos[N*packs], card_vel[N*packs]
+int cardw, cardh
+
+Main()
+	space() ; gr_fast()
+	load_cards()
+	plot_cards_test()
+
+load_cards()
+	char file[32] = ""
+	cd_block("cards")
+		for(i, 0, N)
+			int card = i / 4 * 4 + (i+1) % 4  # CSHD -> SHDC!
+			snprintf(file, sizeof(file), "%02d.png", card+1)
+			sprite_load_png(file, &card_sprites[i])
+	cardw = card_sprites[0].width ; cardh = card_sprites[0].height
+
+plot_cards_test()
+	for(i, 0, N*packs)
+		card_pos[i] = (pointn2){{Rand(0, w-cardw), Rand(0, h-cardh)}}
+		card_vel[i] = (pointn2){{Rand(-5, 5), Rand(-5, 5)}}
+
+	let(reps, 500)
+	bm_block("cards", N*packs*reps)
+		repeat(reps)
+			pix_clear()
+			back(i, N*packs)   # high cards on top
+				pointn2 *p = &card_pos[i], *v = &card_vel[i]
+				sprite_put(screen, &card_sprites[i%N], p->x[0], p->x[1])
+				each(a, 0, 1)
+					p->x[a] += v->x[a]
+				bounce(p->x[1], v->x[1], h-cardh, >, 0.8)
+				bounce(p->x[0], v->x[0], w-cardw, >, 0.8)
+				bounce(p->x[0], v->x[0], 0, <, 0.8)
+				v->x[1] += 0.1
+			Paint()
+
+# LIBB

@@ -93,9 +93,9 @@ def shiny(pixel_type)
 					px[-w-1] = px[randi(-4, 5) + randi(-4, 5)*w]
 				++px
 			px += 2
-		back(y, h-2, 0)
+		back(y, h-1, 1)
 			px -= 2
-			back(x, w-2, 0)
+			back(x, w-1, 1)
 				--px
 				*px = px[-w-1]
 

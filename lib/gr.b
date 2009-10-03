@@ -1,6 +1,7 @@
 export types
 export stdarg.h
 use m
+export sprite
 export gr
 
 int root_w, root_h
@@ -9,6 +10,7 @@ int w_2, h_2
 num ox, oy, sc
 int _xflip = 0
 int _yflip = 0
+sprite struct__screen, *screen = &struct__screen
 
 int _deco = 1
 gr_deco(int _d)

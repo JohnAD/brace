@@ -39,7 +39,7 @@ def shiny(pixel_type)
 		px += 2
 	clear()
 
-	back(r, r1, -1)
+	back(r, r1+1)
 #		Sayf("%d", r)
 		font("helvetica-medium", fs)
 		hsv((r*16) % 360, 1, r*1.0/r1)

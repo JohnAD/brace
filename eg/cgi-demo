@@ -7,7 +7,7 @@ Main()
 
 	# draw a rainbow
 	let(phase, Rand(360)) # rand_angle
-	back(r, R, 0)
+	back(r, R)
 		rainbow(r/R * 360 + phase)
 		circle_fill(0, 0, r)
 

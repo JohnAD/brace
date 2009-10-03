@@ -228,6 +228,12 @@ def bm_block(msg)
 	pre(my(x))
 		bm_start()
 
+def bm_block(msg, reps)
+	post(my(x))
+		bm_ps(msg, reps)
+	pre(my(x))
+		bm_start()
+
 def bm_start()
 	if bm_enabled
 		bm_start = rtime()

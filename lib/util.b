@@ -92,16 +92,19 @@ def repeat(n)
 	for(my(i), 0, n)
 		use(my(i))
 
+def back(v, from)
+	back(v, from, 0)
+
 def back(v, from, to)
-	let(my(end), to)
-	let(my(v1), from)
+	let(my(end), to-1)
+	let(my(v1), from-1)
 	for ; my(v1)>my(end); --my(v1)
 		let(v, my(v1))
 
 def back(v, from, to, step)
-	let(my(end), to)
+	let(my(end), to-1)
 	let(my(st), step)
-	let(my(v1), from)
+	let(my(v1), from-1)
 	for ; my(v1)>my(end); my(v1)-=my(st)
 		let(v, my(v1))
 
@@ -1505,3 +1508,9 @@ def tmpnul(p)
 		*p = my(tmp)
 	pre(x)
 		my(tmp) = *p ; *p = '\0'
+
+def bounce(x, vx, wall, cmp, vfac)
+	if x cmp wall
+		x = 2*wall - x
+		vx = -vx*vfac
+ # TODO angular bounce!

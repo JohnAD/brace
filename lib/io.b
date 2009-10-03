@@ -1210,7 +1210,7 @@ insert_hole(cstr file, off_t offset, off_t size)
 		int temp_fd = Temp(temp_name, "hole_", ".tmp")
 		off_t n = (old_size - end + block_size - 1) / block_size
 
-		back(i, n-1, -1)
+		back(i, n, 0)
 			off_t from = end + i * block_size
 			off_t l = block_size
 			if from+l > old_size
