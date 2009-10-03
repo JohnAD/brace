@@ -1,7 +1,7 @@
-export unistd.h stdarg.h signal.h pwd.h shadow.h sched.h sys/wait.h sys/utsname.h crypt.h
+export unistd.h stdarg.h signal.h pwd.h grp.h shadow.h sched.h sys/wait.h sys/utsname.h crypt.h
 use string.h
 export buffer types
-use error cstr vec util
+use error cstr vec util sym
 
 use process
 
@@ -101,7 +101,9 @@ int mygid = -1
 def Getuid() (uid_t)(myuid != -1 ? myuid : (myuid = getuid()))
 def Getgid() (gid_t)(mygid != -1 ? mygid : (mygid = getgid()))
 
-int auth(passwd *pw, cstr pass)
+int auth(user *u, cstr pass)
+	return auth_((passwd *)u, pass)
+int auth_pw(passwd *pw, cstr pass)
 	char *x = pw->pw_passwd
 	char salt[64]
 	char *dollar = strrchr(x, '$')
@@ -153,44 +155,140 @@ def Setuidgid_via_root(pw)
 	Seteuidgid_root()
 	Setuidgid(pw)
 
+def Setgroups(user)
+	Setgroups(user->n_groups, user->gids)
+
+Setgroups(size_t size, const gid_t *list)
+	if setgroups(size, list)
+		failed("setgroups")
+
+def Setuser(user)
+	Setgroups(user)
+	Seteuidgid(user)
+
+def Setuser_root()
+	Seteuidgid_root()
+	Setgroups(0,NULL)
+def Setuser_via_root(user)
+	Setuser_root()
+	Setuser(user)
 
 typedef struct passwd passwd
 typedef struct spwd spwd
+typedef struct group group
+
+struct user
+	char *pw_name
+	char *pw_passwd
+	uid_t pw_uid
+	gid_t pw_gid
+	char *pw_gecos
+	char *pw_dir
+	char *pw_shell
+	long n_groups
+	char **groups
+	gid_t *gids
+	long n_members
+	char **members
+	uid_t *mids
 
 int passwd_n_buckets = 1009
 
-hashtable *load_passwd()
+hashtable *load_users()
+	sym_init()
 	New(ht, hashtable, cstr_hash, cstr_eq, passwd_n_buckets)
 	passwd *p
 	while (p = Getpwent())
-		p = passwd_dup(p)
-		put(ht, p->pw_name, p)
-	endpwent()
+		user *u = passwd_to_user(p)
+		put(ht, u->pw_name, u)
 	spwd *s
 	while (s = Getspent())
-		passwd *p = get(ht, s->sp_namp)
-		Free(p->pw_passwd)
-		p->pw_passwd = Strdup(s->sp_pwdp)
+		user *u = get(ht, s->sp_namp)
+		Free(u->pw_passwd)
+		u->pw_passwd = Strdup(s->sp_pwdp)
 	endspent()
+	group *g
+	while (g = Getgrent())
+		user *u = get(ht, g->gr_name)
+		if !u  # there must be a user for each group
+			continue
+		char **p = g->gr_mem
+		while *p
+			++u->n_members
+			++p
+		u->members = Nalloc(char *, u->n_members)
+		u->mids = Nalloc(uid_t, u->n_members)
+		char **member = u->members
+		gid_t *mid = u->mids
+		p = g->gr_mem
+		while *p
+			user *m = get(ht, *p)
+			++m->n_groups
+			*member++ = sym(*p)
+			*mid++ = m->pw_uid
+			++p
+	endgrent()
+	setpwent()
+	while (p = Getpwent())
+		user *u = get(ht, p->pw_name)
+		u->groups = Nalloc(char *, u->n_groups)
+		u->gids = Nalloc(gid_t, u->n_groups)
+		u->n_groups = 0
+	setpwent()
+	while (p = Getpwent())
+		user *u = get(ht, p->pw_name)
+		int i = 0
+		for ; i<u->n_members ; ++i
+			user *m = get(ht, u->members[i])
+			m->groups[m->n_groups] = u->pw_name
+			m->gids[m->n_groups] = u->pw_gid
+			++m->n_groups
+	endpwent()
 	return ht
 
-passwd *passwd_dup(passwd *_p)
-	passwd *p = Talloc(passwd)
-	*p = *_p
-	p->pw_name = Strdup(p->pw_name)
-	p->pw_passwd = Strdup(p->pw_passwd)
-	p->pw_gecos = Strdup(p->pw_gecos)
-	p->pw_dir = Strdup(p->pw_dir)
-	p->pw_shell = Strdup(p->pw_shell)
-	return p
+#passwd *passwd_dup(passwd *_p)
+#	passwd *p = Talloc(passwd)
+#	*p = *_p
+#	p->pw_name = Strdup(p->pw_name)
+#	p->pw_passwd = Strdup(p->pw_passwd)
+#	p->pw_gecos = Strdup(p->pw_gecos)
+#	p->pw_dir = Strdup(p->pw_dir)
+#	p->pw_shell = Strdup(p->pw_shell)
+#	return p
 
-passwd_free(passwd *p)
-	Free(p->pw_name)
-	Free(p->pw_passwd)
-	Free(p->pw_gecos)
-	Free(p->pw_dir)
-	Free(p->pw_shell)
-	Free(p)
+#passwd_free(passwd *p)
+#	Free(p->pw_name)
+#	Free(p->pw_passwd)
+#	Free(p->pw_gecos)
+#	Free(p->pw_dir)
+#	Free(p->pw_shell)
+#	Free(p)
+
+user *passwd_to_user(passwd *p)
+	user *u = Talloc(user)
+	*(passwd*)u = *p
+	u->pw_name = sym(p->pw_name)
+	u->pw_passwd = Strdup(p->pw_passwd)
+	u->pw_gecos = Strdup(p->pw_gecos)
+	u->pw_dir = Strdup(p->pw_dir)
+	u->pw_shell = sym(p->pw_shell)
+	u->n_groups = 0
+	u->groups = NULL
+	u->gids = NULL
+	u->n_members = 0
+	u->members = NULL
+	u->mids = NULL
+	return u
+
+user_free(user *u)
+#	Free(u->pw_name)
+	Free(u->pw_passwd)
+	Free(u->pw_gecos)
+	Free(u->pw_dir)
+#	Free(u->pw_shell)
+	Free(u->members)
+	Free(u->mids)
+	Free(u)
 
 struct passwd *Getpwent()
 	struct passwd *rv
@@ -214,6 +312,14 @@ struct passwd *Getpwuid(uid_t uid)
 	rv = getpwuid(uid)
 	if !rv && errno
 		failed("getpwuid")
+	return rv
+
+struct group *Getgrent()
+	struct group *rv
+	errno = 0
+	rv = getgrent()
+	if !rv && errno
+		failed("getgrent")
 	return rv
 
 struct spwd *Getspent()

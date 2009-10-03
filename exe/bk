@@ -142,9 +142,9 @@ if [ -z "$BRACE_HEADER_GUARD_PREFIX" ]; then
 fi
 echo "BRACE_HEADER_GUARD_PREFIX=$BRACE_HEADER_GUARD_PREFIX" >&2
 
-export A="$*"
+export TARGET="$*"
 
-if [ "$A" != clean ]; then
+if [ "$TARGET" != clean ]; then
 	brace_update_headers
 fi
 
@@ -161,7 +161,7 @@ echo 'include bkfile_cc' >>bkfile.1
 
 rm -f bk.failed
 
-#( make -f bkfile.1 $A 2>&1 || touch bk.failed ) |
+#( make -f bkfile.1 $TARGET 2>&1 || touch bk.failed ) |
 #grep --line-buffered -ve 'Each undeclared identifier is reported only once' \
 #  -e 'for each function it appears in' |
 #sed -u 's,^[^.:]*\.\(c\|cc\):,.build/&,' |
@@ -172,7 +172,7 @@ if [ -z "$MAKE" ]; then
 	which gmake >/dev/null && MAKE=gmake
 fi
 
-( $MAKE -f bkfile.1 $A 2>&1 || touch bk.failed ) |
+( $MAKE -f bkfile.1 $TARGET 2>&1 || touch bk.failed ) |
 perl -ne '
 	BEGIN { $|=1; }
 	/Each undeclared identifier is reported only once/ ||

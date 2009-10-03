@@ -347,7 +347,7 @@ sprite *sprite_load_png_stream(FILE *in, sprite *s)
 	return s
 
 # TODO jpeg
-# sprite_put_behind ...
+# TODO sprite_put_behind ...
 
 use png.h
 export types
