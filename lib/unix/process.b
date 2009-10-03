@@ -102,7 +102,7 @@ def Getuid() (uid_t)(myuid != -1 ? myuid : (myuid = getuid()))
 def Getgid() (gid_t)(mygid != -1 ? mygid : (mygid = getgid()))
 
 int auth(user *u, cstr pass)
-	return auth_((passwd *)u, pass)
+	return auth_pw((passwd *)u, pass)
 int auth_pw(passwd *pw, cstr pass)
 	char *x = pw->pw_passwd
 	char salt[64]
