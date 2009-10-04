@@ -13,6 +13,9 @@ char *program_dir
 char **arg
 char *main_dir
 
+boolean args_literal = 0
+boolean args_list = 0
+
 def Main()
 	main(int main__argc, char *main__argv[])
 		main__init(main__argc, main__argv)
@@ -116,6 +119,7 @@ opts *get_options(cstr options[][3])
 			++p
 			while *p
 				*out++ = *p++
+			args_literal = 1
 			break
 
 		opt *o = vec_push(&O->v)
@@ -175,6 +179,9 @@ opts *get_options(cstr options[][3])
 	*out = NULL
 
 	args = out - arg
+
+	if args_literal || args
+		args_list = 1
 
 	return O
 
