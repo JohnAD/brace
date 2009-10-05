@@ -51,6 +51,7 @@ Main():
 	slides_file = base
 
 	gr_exit = 1
+	fullscreen_grab_keyboard = 0  # for now, uses terminal
 	space()
 	gprint_anchor(-1, 1)
 	csleep(smooth_delay)

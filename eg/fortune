@@ -1,7 +1,7 @@
 #!/lang/b
 use b
 
-Main():
+Main:
 	let(n, 1)
 	cstr choice = NULL
 	eachline(l):

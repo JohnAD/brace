@@ -43,7 +43,7 @@ event_loop()
 
 handle_events()
 	gr_call_need_delay_callbacks()
-	while handle_event_maybe()
+	while !gr_exit && handle_event_maybe()
 
 # this is to hack around dodgy X auto-repeat -----------------
 

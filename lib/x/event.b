@@ -8,9 +8,11 @@ use event
 XEvent x_event
 
 boolean handle_event_maybe()
-	boolean n = XEventsQueued(display, QueuedAlready)
+	boolean n = XEventsQueued(display, QueuedAfterReading) #QueuedAlready
 	if n
 		handle_event()
+	 else
+		gr_flush()
 	return n
 
 #handle_event()
@@ -84,9 +86,18 @@ key_handlers_init()
 	for(i, key_handlers, key_handlers+n_keys)
 		*i = thunk()
 	key_down = Zalloc(char, n_keys)
+	set_key_handler("Escape", thunk(quit))
+
+void *quit(void *obj, void *a0, void *event)
+	use(obj, a0, event)
+	gr_exit(0)
+	return thunk_yes
 
 def set_key_handler(key_str, handler)
 	set_key_handler_keysym(XStringToKeysym(key_str), handler)
+
+def clear_key_handler(key_str)
+	set_key_handler(key_str, thunk())
 
 set_key_handler_keysym(KeySym keysym, thunk handler)
 	int keycode = XKeysymToKeycode(display, keysym)
@@ -103,7 +114,7 @@ void *keyboard_handler(void *obj, void *a0, void *event)
 	which e->type
 	KeyRelease	.
 		if !key_down[e->which-key_first]
-			debug("ignoring KeyRelease - key not down %s", key_string(e->which))
+			bad_key("ignoring %s - key not down: %s", e)
 			ignore = 1
 		boolean push_callback = 0
 		if gr_key_auto_repeat == 0
@@ -148,7 +159,7 @@ void *keyboard_handler(void *obj, void *a0, void *event)
 		  e->time - last_release_time <= (int)gr_key_auto_repeat_avoidance_delay
 			ignore = 1
 		 eif key_down[e->which-key_first]
-			debug("ignoring KeyPress - key already down %s", key_string(e->which))
+			bad_key("ignoring %s - key already down: %s", e)
 			ignore = 1
 		if !ignore
 #			debug("setting key down %s", key_string(e->which))
@@ -161,8 +172,16 @@ void *keyboard_handler(void *obj, void *a0, void *event)
 	thunk *handler = &key_handlers[e->which-key_first]
 	void *rv = thunk_call(handler, e)
 	if !rv
-		debug("unhandled %s: %s", event_type_name(e->type), event_key_string(e))
+		bad_key("unhandled %s: %s", e)
 	return rv
+
+bad_key(cstr format, gr_event *e)
+	cstr key_string = event_key_string(e)
+	if key_string != NULL  # ignore unmapped keys
+		debug(format, event_type_name(e->type), key_string)
+
+# TODO allow programs to handle all keys (or all typing keys, etc)
+# with a single handler function, not one for each key!  and same for mouse
 
 # mouse handler ---------------------------------------------
 

@@ -45,6 +45,7 @@ font(cstr name, int size)
 #
 #gr_
 
+boolean fullscreen_grab_keyboard = 1
 boolean gr_alloced = 0
 
 gr_init()
@@ -95,19 +96,24 @@ gr_init()
 
 	rainbow_init()
 
-	Atexit(gr_free)
-	if !gr_exit
-		Atexit(event_loop)
+	Atexit(gr_at_exit)
 
 	event_handler_init()
 
 	gr_alloced = 1
+
+gr_at_exit()
+	if !gr_exit
+		Paint()
+		event_loop()
+	gr_free()
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	if width
 		w = width ; h = height
 	 else
 		w = root_w ; h = root_h
+
 	bg_col = _bg_col ; fg_col = _fg_col
 	w_2 = w/2 ; h_2 = h/2
 	ox = oy = 0
@@ -154,6 +160,9 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	XSelectInput(display, window, ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask|KeyReleaseMask|StructureNotifyMask)
 	XMapWindow(display, window)
 
+	if fullscreen && fullscreen_grab_keyboard
+		XGrabKeyboard(display, window, True, GrabModeAsync, GrabModeAsync, CurrentTime)
+
 	sprite_screen(screen)
 
 	clear()
@@ -161,6 +170,8 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 
 gr_free()
 	if gr_alloced
+		if fullscreen && fullscreen_grab_keyboard
+			XUngrabKeyboard(display, CurrentTime)
 		if visual_info
 			XFree(visual_info)
 		if shmseginfo
@@ -423,15 +434,22 @@ paint()
 	# through shm!
 
 	XFlush(display)
+	if paint_handle_events
+		handle_events()
 
 # this one waits for the paint to complete, in case you are poking the shm pixmap thing
 Paint()
 	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
 #	XClearWindow(display, window)
 	gr_sync()
+	if paint_handle_events
+		handle_events()
 
 gr_sync()
 	XSync(display, False)
+
+gr_flush()
+	XFlush(display)
 
 clear()
 	colour fg = fg_col

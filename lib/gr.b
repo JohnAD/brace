@@ -12,9 +12,14 @@ int _xflip = 0
 int _yflip = 0
 sprite struct__screen, *screen = &struct__screen
 
-int _deco = 1
+boolean fullscreen = 0
+boolean _deco = 1
 gr_deco(int _d)
 	_deco = _d
+
+gr_fullscreen()
+	gr_deco(0)
+	fullscreen = 1
 
 # last x and y position
 num lx = 0, ly = 0   # current pos
@@ -22,6 +27,8 @@ num lx2 = 0, ly2 = 0 # prev pos
 
 boolean _autopaint = 0
 num _delay = 0
+
+boolean paint_handle_events = 1
 
 num text_origin_x, text_origin_y, text_wrap_sx
 int text_at_col0 = 1
@@ -49,7 +56,7 @@ def paper(w, h, bg, fg)
 def paper()
 	paper(white)
 def paper(bg)
-	gr_deco(0)
+	gr_fullscreen()
 	paper(0, 0, bg)
 
 def space(w, h)
