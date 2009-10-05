@@ -3,7 +3,6 @@
 # export OPTIMIZE=1
 
 Main()
-	gr_fast()
 	space()
 #	space(1280, 800)
 

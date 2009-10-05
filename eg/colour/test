@@ -12,8 +12,6 @@ Main()
 	num x1 = -Cos(A)/5  # are cos and sin misnamed (cos,integration primary?)
 	num y1 = Sin(A)/2
 
-	gr_fast()
-
 	repeat
 		clear()
 		

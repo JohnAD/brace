@@ -42,7 +42,6 @@ num c[3][10] =
 
 main()
 	space()
-	gr_fast()
 	yflip()
 
 	for rot = 0; rot <= 360; ++rot

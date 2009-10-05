@@ -11,8 +11,6 @@ Main()
 	space(400, 400)
 	zoom(190)
 
-	gr_fast()
-	
 	repeat
 		plot()
 		paint()

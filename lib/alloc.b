@@ -13,7 +13,7 @@ int memlog_on = 0
 def Malloc(size) alloc_type^^_Malloc(size)
 def Free(ptr) alloc_type^^_Free(ptr), ptr = NULL
 def Realloc(ptr, size) ptr = alloc_type^^_Realloc(ptr, size)
-def Calloc(ptr, size) alloc_type^^_Calloc(ptr, size)
+def Calloc(nmemb, size) alloc_type^^_Calloc(nmemb, size)
 def Strdup(s) alloc_type^^_Strdup(s)
 def Strndup(s, n) alloc_type^^_Strndup(s, n)
 
@@ -38,9 +38,10 @@ void *normal_Calloc(size_t nmemb, size_t size)
 		failed("calloc")
 	return ptr
 
-def Talloc(type) (type *)Malloc(sizeof(type))
-
+def Talloc(type) Nalloc(type, 1)
 def Nalloc(type, nmemb) (type *)Malloc(nmemb * sizeof(type))
+def Zalloc(type) Zalloc(type, 1)
+def Zalloc(type, nmemb) (type *)Calloc(nmemb, sizeof(type))
 
 def Renalloc(ptr, type, nmemb) Realloc(ptr, nmemb * sizeof(type))
 

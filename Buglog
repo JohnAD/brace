@@ -1,3 +1,6 @@
+struct foo bar -> typedef foo bar foo bar!!! wtf
+
+
 tries to include files from cwd instead of directory where src is:
   
   $ cd brace/lib

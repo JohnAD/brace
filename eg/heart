@@ -15,8 +15,6 @@ Main()
 	paper(blue)
 	rb_green_power = 1
 
-	gr_fast()
-
 	heart(0, 0, 150)
 
 heart(num x, num y, num r)

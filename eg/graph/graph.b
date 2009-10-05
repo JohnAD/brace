@@ -253,29 +253,25 @@ event_loop()
 	uint button = 0
 	while 1
 		XNextEvent(display, &event)
-		switch event.type
+		which event.type
 			Expose	.
 				Sayf("expose event - count: %d", event.xexpose.count)
 				if event.xexpose.count == 0
 					redraw(True, True)
-				break
 			ConfigureNotify	.
 				configure_notify()
-				break
 			ButtonPress	.
 				if button != 0
 					warn("press %d then press %d - latter ignored\n", button, event.xbutton.button)
 				else
 					button = event.xbutton.button
 					button_event(button, 0, event.xbutton.x, event.xbutton.y)
-				break
 			MotionNotify	.
 				# We skip all but the most recent motion event.
 				# This might be a bit dodgy, we could skip past a
 				# release/press pair...
 				while XCheckTypedEvent(display, MotionNotify, &event)
 				button_event(button, 1, event.xmotion.x, event.xmotion.y)
-				break
 			ButtonRelease	.
 				if button == 0
 					warn("no press then release b%d - release ignored", button, event.xbutton.button)
@@ -284,17 +280,13 @@ event_loop()
 				else
 					button_event(button, 2, event.xbutton.x, event.xbutton.y)
 					button = 0
-				break
 			KeyPress	.
 				(*controller->keyboard)(event.xkey.keycode, event.xkey.state)
-				break
 			MapNotify	.
 			UnmapNotify	.
 			ReparentNotify	.
-				break
 			else	.
 				warn("unhandled event, type: 0x%04x\n", event.type)
-				break
 	# this is unreachable
 
 # redrawing --------------------------------------------------

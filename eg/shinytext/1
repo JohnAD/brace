@@ -9,7 +9,6 @@ Main()
 
 #	space(640, 480)
 	space()
-	gr_fast()
 	gprint_anchor(0, 0)
 
 	cstr s = fortune()

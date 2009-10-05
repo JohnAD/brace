@@ -14,8 +14,6 @@ Main()
 	
 	num r = h_2 - 10
 
-	gr_fast()
-	
 	clear()
 	num a = -5.5
 	move(X, Y)

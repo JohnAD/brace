@@ -2,7 +2,6 @@
 
 Main()
 	paper(640, 480)
-	gr_fast()
 
 	dt = angle2rad(1)
 

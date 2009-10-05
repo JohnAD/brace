@@ -6,8 +6,6 @@ Main()
 	zoom(3.0/6.0)
 	line_width(8)
 
-	gr_fast()
-
 	int n1, n2, n3, n4
 
 	which args

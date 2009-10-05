@@ -2,7 +2,6 @@
 
 Main()
 	paper(1280, 800, black)
-	gr_fast()
 
 	colour rb[360]
 	for(i, 0, 360)

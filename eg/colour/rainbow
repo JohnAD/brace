@@ -3,7 +3,6 @@
 Main()
 	paper(640, 480)
 #	rb_green_power = 1
-	gr_fast()
 
 	dt = angle2rad(1)
 

@@ -239,16 +239,16 @@ sprite_circle_aa(sprite *s)
 			++p
 		p += s->stride - w
 
-def sprite_load_png(filename) sprite_load_png(filename, Talloc(sprite))
+def sprite_load_png(filename) sprite_load_png(Talloc(sprite), filename)
 
-sprite *sprite_load_png(cstr filename, sprite *s)
+sprite *sprite_load_png(sprite *s, cstr filename)
 	fopen_close(fp, filename)
-		sprite_load_png_stream(fp, s)
+		sprite_load_png_stream(s, fp)
 	return s
 
-def sprite_load_png_stream(in) sprite_load_png_stream(in, Talloc(sprite))
+def sprite_load_png_stream(in) sprite_load_png_stream(Talloc(sprite), in)
 
-sprite *sprite_load_png_stream(FILE *in, sprite *s)
+sprite *sprite_load_png_stream(sprite *s, FILE *in)
 #	unsigned char header[8]
 #	Fread_all(header, 1, 8, in)
 #	if png_sig_cmp(header, 0, 8)

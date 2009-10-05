@@ -5,7 +5,6 @@ num rt3
 Main()
 	space(midnightblue)
 	gprint_anchor(0, 0)
-	gr_fast()
 	zoom(40)
 	rt3 = sqrt(3.0)
 

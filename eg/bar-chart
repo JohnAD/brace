@@ -3,7 +3,6 @@ use b
 
 Main()
 	space(800, 600)
-#	gr_fast()
 	origin(w_2, h_2)
 	new(v, vec, int, 4096)
 	int bars = w

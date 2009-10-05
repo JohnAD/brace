@@ -2,7 +2,6 @@
 use b
 Main()
 	space(600, 600)
-	gr_fast()
 	for(x, -300, 300, 1)
 		int o = (x % 16) / 2
 		for(y, -300+o, 300+o, 1)

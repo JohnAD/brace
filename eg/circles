@@ -2,7 +2,6 @@
 use b
 Main()
 	space()
-	gr_fast()
 	int mr = hypot(w_2, h_2)
 	int count = 0
 	repeat

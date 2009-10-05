@@ -18,8 +18,6 @@ Main()
 
 	space(size, size)
 	
-	gr_fast()
-
 	num r = min(w_2, h_2) - 10
 
 	for(x, -w_2, w_2)

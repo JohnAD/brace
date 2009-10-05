@@ -30,7 +30,7 @@ cgi_png(int w, int h, num scale)
 	Systemf(SH_QUIET "tightvncserver -kill %s; tightvncserver %s -geometry %dx%d -depth 16 ; xsetroot -solid black", cgi_png_display1, cgi_png_display1, w, h)
 	# FIXME set resolution based on paper size!
 
-	gr_fast()
+#	gr_fast()
 	gr_exit = 1
 
 	Atexit(cgi_png_done)

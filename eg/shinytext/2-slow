@@ -7,7 +7,6 @@ Main()
 	paper()
 #	space(640, 480)
 #	space(320, 240)
-	gr_fast()
 	gprint_anchor(0, 0)
 	font("helvetica-medium", 200)
 	cstr s = args ? join(' ', arg) : "Hello World!"

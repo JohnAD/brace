@@ -15,8 +15,6 @@ Main()
 
 	space()
 
-	gr_fast()
-
 	for(o, 0.0, 360, 0.5)
 		clear()
 		for(i, 0, 360, 6)

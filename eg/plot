@@ -14,7 +14,6 @@ Main()
 	dt = 2*pi / xres
 
 	paper(xres, yres, coln("tan"))
-	gr_fast()
 
 	for(x, -300, 300)
 		rainbow(x*dt)

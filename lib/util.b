@@ -508,7 +508,7 @@ def readtsv(v, stream)
 
 def bzero(ptr) bzero(ptr, sizeof(*ptr))
 
-def zero(start, end) bzero(start, end-start)
+def zero(start, end) bzero(start, end-start)  # may be a hazard!
 def zero(ptr) bzero(ptr)
 
 def Map(a, b)
@@ -547,7 +547,16 @@ my(ST)		.
 #	for ; v<my(end); ++v
 
 #def use(v) v=v
-def use(v) (void)v
+def use(v)
+	(void)v
+def use()
+	.
+def use(v0, v1)
+	use(v0) ; use(v1)
+def use(v0, v1, v2)
+	use(v0, v1) ; use(v2)
+def use(v0, v1, v2, v3)
+	use(v0, v1, v2) ; use(v3)
 
 ## this defines print and say functions for type foo in terms of fprint_foo
 #Def prints_and_says(type)
@@ -1477,6 +1486,18 @@ struct cstr2cstr
 	cstr k
 	cstr v
 
+struct long2cstr
+	long k
+	cstr v
+
+struct cstr2long
+	cstr k
+	long v
+
+struct cstr2long
+	cstr k
+	long v
+
 struct node_kv
 	list l
 	key_value kv
@@ -1514,3 +1535,9 @@ def bounce(x, vx, wall, cmp, vfac)
 		x = 2*wall - x
 		vx = -vx*vfac
  # TODO angular bounce!
+
+def NULL(p)
+	*p = NULL
+def NULL(p, n)
+	for(my(i), p, p+n)
+		NULL(my(i))

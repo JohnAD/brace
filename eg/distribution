@@ -3,7 +3,6 @@
 use b
 Main()
 	paper(800,600)
-	gr_fast()
 	origin(w_2,h_2)
 	num logbase = log(1.05)
 	int bars = w

@@ -15,7 +15,6 @@ Main()
 #	int n = 7
 	sprite *back = Nalloc(sprite, n)
 	space()
-	gr_fast()
 	decl(screen, sprite)
 	decl(source, sprite)
 	decl(target, sprite)

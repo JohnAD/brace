@@ -15,8 +15,6 @@ Main()
 
 	space(size, size)
 
-	gr_fast()
-
 	repeat
 		clear()
 

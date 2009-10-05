@@ -1,12 +1,17 @@
 export deq
 use util
 
-typedef void *(*thunk_func)(void *obj, void *common_arg, void *specific_arg)
+typedef void *thunk_func(void *obj, void *common_arg, void *specific_arg)
 
 struct thunk
-	thunk_func func
+	thunk_func *func
 	void *obj
 	void *common_arg
+
+def thunk() (thunk){ thunk_void, NULL, NULL }
+def thunk(f) (thunk){ f, NULL, NULL }
+def thunk(f, o) (thunk){ f, o, NULL }
+def thunk(f, o, a) (thunk){ f, o, a }
 
 def thunk_init(t, func, obj, common_arg)
 	t->func = func

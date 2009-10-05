@@ -52,7 +52,6 @@ Main():
 
 	gr_exit = 1
 	space()
-	gr_fast()
 	gprint_anchor(-1, 1)
 	csleep(smooth_delay)
 

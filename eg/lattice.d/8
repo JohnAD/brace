@@ -3,7 +3,6 @@ use b
 
 Main()
 	space(midnightblue)
-	gr_fast()
 #	gr_delay(0.5)
 
 	num a

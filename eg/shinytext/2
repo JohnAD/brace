@@ -7,7 +7,6 @@ Main()
 	paper()
 #	space(640, 480)
 #	space(320, 240)
-	gr_fast()
 	gprint_anchor(0, 0)
 
 	cstr s = fortune()

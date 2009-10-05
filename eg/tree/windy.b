@@ -19,8 +19,6 @@ Main()
 
 	num m0 = .77, m1 = .80
 
-	gr_fast()
-
 	boolean limit = 0
 
 	repeat

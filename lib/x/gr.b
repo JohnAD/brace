@@ -8,7 +8,7 @@ use string.h
 use stdio.h
 #ld -L/usr/X11R6/lib -lX11 -lXext ??
 
-export types colours
+export types colours event
 use error alloc time vec io m util process
 
 use gr
@@ -27,7 +27,6 @@ XGCValues gcvalues
 XFontStruct *_font = NULL
 XColor color
 int screen_number
-XEvent x_event
 XShmSegmentInfo *shmseginfo = NULL
 
 font(cstr name, int size)
@@ -45,6 +44,8 @@ font(cstr name, int size)
 #	vec_pop(gr__stack)
 #
 #gr_
+
+boolean gr_alloced = 0
 
 gr_init()
 #	vec_init(gr__stack, sizeof(GC), 8)
@@ -94,8 +95,13 @@ gr_init()
 
 	rainbow_init()
 
+	Atexit(gr_free)
 	if !gr_exit
-		Atexit(event_loop_at_exit)
+		Atexit(event_loop)
+
+	event_handler_init()
+
+	gr_alloced = 1
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	if width
@@ -154,18 +160,20 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	Paint()
 
 gr_free()
-	if visual_info
-		XFree(visual_info)
-	if shmseginfo
-		XShmDetach(display, shmseginfo)
-	XFreePixmap(display, gr_buf)
-	if shmseginfo
-		shmdt(shmseginfo->shmaddr)
-		shmctl(shmseginfo->shmid, IPC_RMID, NULL)
-		Free(shmseginfo)
-	XFreeGC(display, gc)
-	XDestroyWindow(display, window)
-	XCloseDisplay(display)
+	if gr_alloced
+		if visual_info
+			XFree(visual_info)
+		if shmseginfo
+			XShmDetach(display, shmseginfo)
+		XFreePixmap(display, gr_buf)
+		if shmseginfo
+			shmdt(shmseginfo->shmaddr)
+			shmctl(shmseginfo->shmid, IPC_RMID, NULL)
+			Free(shmseginfo)
+#		XFreeGC(display, gc)
+		XDestroyWindow(display, window)
+		XCloseDisplay(display)
+		gr_alloced = 0
 
 xfont(const char *font_name)
 #	gnl()
@@ -433,26 +441,6 @@ clear()
 	gr__change_hook()
 	# need to call paint also to update the actual window
 
-#def done() event_loop()
-event_loop()
-	repeat
-		handle_event()
-
-handle_event()
-	XNextEvent(display, &x_event)
-	which x_event.type
-	Expose	if x_event.xexpose.count == 0
-			paint()
-
-handle_events()
-#	int i = XEventsQueued(display, QueuedAlready)
-#	warn("XEventsQueued: %d", i)
-	while XEventsQueued(display, QueuedAlready)
-		XNextEvent(display, &x_event)
-		which x_event.type
-		Expose	if x_event.xexpose.count == 0
-				Paint()
-
 triangle(num x2, num y2)
 	XPoint p[3]
 	xpoint_set(p[0], lx2, ly2)
@@ -526,3 +514,4 @@ def with_pixel_type(macro)
 		macro(char)
 	 else
 		error("unsupported video depth: %d", depth)
+

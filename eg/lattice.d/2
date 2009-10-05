@@ -3,7 +3,6 @@ use b
 
 Main()
 	space(midnightblue)
-	gr_fast()
 	zoom(40)
 
 	num a

@@ -16,7 +16,7 @@ def timeout_init(timeout, time, func)
 def timeout_init(timeout, time, func, obj)
 	timeout_init(timeout, time, func, obj, NULL)
 
-timeout_init(timeout *timeout, num time, thunk_func func, void *obj, void *common_arg)
+timeout_init(timeout *timeout, num time, thunk_func *func, void *obj, void *common_arg)
 	new(th, thunk, func, obj, common_arg)
 	timeout_init_thunk(timeout, time, th)
 

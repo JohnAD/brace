@@ -3,7 +3,6 @@ use b
 Main()
 	gr_exit = 1
 	space()
-	gr_fast()
 	with_pixel_type(test_x11_poke)
 
 def test_x11_poke(pixel_type)

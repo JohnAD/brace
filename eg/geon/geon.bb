@@ -58,7 +58,6 @@ Main()
 	
 #	paper(window_width, window_height)
 	paper()
-	gr_fast()
 	window_radius = hypot(window_width/2, window_height/2)
 	load_palette("data/palette")
 	zoom(r*zm)

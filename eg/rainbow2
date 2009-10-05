@@ -3,7 +3,6 @@
 Main()
 	space()
 #	paper(640, 480, black)
-	gr_fast()
 	qmath_init()
 
 	let(dt, angle2rad(1))

@@ -1,7 +1,7 @@
 export types
 export stdarg.h
 use m
-export sprite
+export sprite event
 export gr
 
 int root_w, root_h
@@ -20,7 +20,7 @@ gr_deco(int _d)
 num lx = 0, ly = 0   # current pos
 num lx2 = 0, ly2 = 0 # prev pos
 
-boolean _autopaint = 1
+boolean _autopaint = 0
 num _delay = 0
 
 num text_origin_x, text_origin_y, text_wrap_sx
@@ -66,6 +66,10 @@ def space(bg)
 num a_pixel = 1
 
 boolean gr_exit = 0
+
+def gr_exit(status)
+	gr_exit = 1
+	exit(status)
 
 origin(num _ox, num _oy)
 	ox = _ox ; oy = _oy
@@ -283,7 +287,9 @@ gr_fast()
 autopaint(boolean ap)
 	_autopaint = ap
 
+def gr_delay() gr_delay(0)
 gr_delay(num delay)
+	autopaint(1)
 	_delay = delay
 
 num
@@ -356,10 +362,6 @@ curve(num x, num y)
 		curve_at_start = 0
 	 else
 	 	draw(x, y)
-
-event_loop_at_exit()
-	if !gr_exit
-		event_loop()
 
 def for_pixels(px)
 	pixel_type *px = pixel()
