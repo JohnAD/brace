@@ -1,8 +1,0 @@
-export BRACE_LANGUAGE=C++
-OBJFILES=clip_and_draw.o clip_and_fill.o clip_region_to_sector.o debug.o draw_basic.o draw_clipped_arcs.o draw_sectors.o geon.o palette.o points.o poly.o regions.o round_angle.o sectors.o sphere.o
-all: geon
-geon: $(OBJFILES)
-#split_regions_among_sectors.o
-clean:
-	mk-clean
-	rm -f geon *.bbh *.cc .*.cc *.o *.bb1

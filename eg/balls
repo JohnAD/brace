@@ -13,7 +13,7 @@ ball_init(ball *b)
 	b->vx = Rand(-12, 12) ; b->vy = Rand(-12, 12)
 
 Main()
-	space(700, 500)
+	space()
 
 	int n = 5
 	new(v, vec, ball, n)
