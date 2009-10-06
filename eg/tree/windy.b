@@ -24,7 +24,7 @@ Main()
 	repeat
 		clear()
 		tree(forks, 0, -200, 100, 90, a0, a1, m0, m1)
-		paint()
+		Paint()
 
 		a0 += da0 ; a1 += da1
 		da0 += Rand(-speed, speed) ; da1 += Rand(-speed, speed)

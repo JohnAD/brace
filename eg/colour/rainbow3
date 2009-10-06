@@ -42,7 +42,7 @@ def spectrum()
 		a+=0.5
 		triangle(X, Y)
 		a+=0.5
-	paint()
+	Paint()
 	Sleep(0.01)
 
 num dt

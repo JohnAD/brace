@@ -28,13 +28,13 @@ Main()
 
 	int first = 1
 	wheel()
-	paint()
+	Paint()
 	Sleep(3)
 	first = 0
 
 	repeat
 		wheel()
-		paint()
+		Paint()
 		#spin()
 		#da -= 5
 		da -= 8

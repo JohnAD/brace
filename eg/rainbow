@@ -31,7 +31,7 @@ def spectrum()
 		rainbow(a+0.5)
 		move(0, 0)
 		triangle(X, Y)
-	paint()
+	Paint()
 	Sleep(0.01)
 
 num dt

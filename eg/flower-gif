@@ -43,7 +43,7 @@ Main()
 				forward(d)
 				da = da*1.1
 				d = d * 0.9
-		paint()
+		Paint()
 		gr_sync()
 
 		cstr file = format("flower-%06d.gif", count++)

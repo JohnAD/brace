@@ -41,6 +41,6 @@ Main()
 #			b->s *= 0.98
 #			b->v *= 0.98
 		csleep(1.0/100)
-		paint()
+		Paint()
 
 use b

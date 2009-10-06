@@ -12,4 +12,4 @@ Main()
 #		col(rb[Randint(360)])
 		circle(x, y, r)
 		if ++count % 100 == 0
-			paint()
+			Paint()

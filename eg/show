@@ -163,7 +163,7 @@ def effect(pixel_type):
 		for int i=0; ; ++i:
 			circle(randi(-w_2, w_2), randi(-h_2, h_2), randi(h_2))
 			if i % 10 == 0:
-				paint()
+				Paint()
 			if i % 100 == 0:
 				hsv(i/3000.0 * 360 * 2, Sin(180*i/3000.0)/2, 0)
 			effect_stop()
@@ -183,7 +183,7 @@ def effect(pixel_type):
 			hsv(i/100.0 * 360, 1-(i/100.0), 0)
 			circle_fill(randi(w)-w_2, randi(h)-h_2, randi(10, 100))
 			if i % 3 == 0
-				paint()
+				Paint()
 			effect_stop()
 
 run_demo(cstr file)

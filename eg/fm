@@ -20,5 +20,5 @@ Main()
 		integral_m += m * dt   # simplest numerical integration
 		num y = cos(2*pi*(Fc*t + Fd*integral_m))
 		curve(t * w/t1 - w_2, y * h_2 / 2)
-	paint()
+	Paint()
 

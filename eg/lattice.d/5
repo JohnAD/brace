@@ -12,7 +12,7 @@ Main()
 		rt(a)
 		clear()
 		draw_lattice()
-		paint()
+		Paint()
 #		Sleep(100)
 
 def draw_lattice()

@@ -38,7 +38,7 @@ Main()
 			a += 15
 			triangle(X, Y)
 
-		paint()
+		Paint()
 		
 		Sleep(0.2)
 

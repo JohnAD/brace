@@ -121,7 +121,7 @@ Main()
 		#circle(-pixel, 0, 1)
 		#circle(pixel, 0, 1)
 		
-		paint()
+		Paint()
 		
 		if delay < 0
 			break

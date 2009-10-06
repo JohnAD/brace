@@ -12,7 +12,7 @@ Main()
 		rt(a)
 		clear()
 		draw_lattice()
-		paint()
+		Paint()
 
 def draw_lattice()
 #	Printf("%f ", rtime())

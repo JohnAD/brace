@@ -178,7 +178,7 @@ Main()
 			int i = earth
 			planet()
 
-			paint()
+			Paint()
 			Sleep(0.01)
 			#Sleep(1)
 			if !anim

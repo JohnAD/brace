@@ -31,7 +31,7 @@ Main()
 		triangle(X, Y)
 		a+=0.5
 	
-	paint()
+	Paint()
 
 def rainbow(a) rainbow_(a)  # rad2lun(angle2rad(a))
 colour rainbow_(num a)

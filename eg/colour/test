@@ -23,7 +23,7 @@ Main()
 			Sayf("%f %f", x*x0 + y*x1, x*y0 + y*y1)
 			dot(x*x0 + y*x1, x*y0 + y*y1, 4*a_pixel)
 
-		paint()
+		Paint()
 
 		x0 += rand(-1, 1) * a_pixel
 		y0 += rand(-1, 1) * a_pixel

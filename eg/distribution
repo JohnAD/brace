@@ -21,7 +21,7 @@ Main()
 			grey(1-(num)l/lm)
 			clear()
 			draw_graph()
-			paint()
+			Paint()
 			ol = l
 	int heading_size = 24
 	font("helvetica-bold", 24)
@@ -31,7 +31,7 @@ Main()
 	 else
 		msg = "print rand rand rand 1, '\\n'; # interesting distribution"
 	draw_msg(msg)
-	paint()
+	Paint()
 	Sleep(2)
 	repeat
 		move(randi(w), randi(h))
@@ -44,7 +44,7 @@ Main()
 		font("helvetica-bold", 24)
 		gprint_anchor(-1, 1)
 		draw_msg(msg)
-		paint()
+		Paint()
 		++heading_size
 
 def draw_graph()

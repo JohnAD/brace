@@ -14,6 +14,6 @@ Main()
 
 			col(rb[a])
 			point(x, y)
-		paint()
+		Paint()
 
 use b

@@ -13,7 +13,7 @@ Main()
 
 	repeat
 		plot()
-		paint()
+		Paint()
 		motion()
 
 def plot()

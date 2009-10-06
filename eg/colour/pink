@@ -30,7 +30,7 @@ Main()
 			hsv(a, s, v)
 		
 			point(x, y)
-		paint()
+		Paint()
 
 Def trig_unit lun
  # todo, make it angle_unit ?

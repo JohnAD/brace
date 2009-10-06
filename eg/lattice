@@ -20,7 +20,7 @@ Main()
 		clear()
 		draw_lattice()
 		csleep(1.0/70.0)
-		paint()
+		Paint()
 		da *= 1.0005
 
 num rt3

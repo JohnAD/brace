@@ -18,7 +18,7 @@ Main()
 		rt(a)
 		clear()
 		draw_lattice()
-		paint()
+		Paint()
 		a += da
 		if a > 0
 			dda = -0.01

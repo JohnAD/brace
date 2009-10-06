@@ -1,6 +1,6 @@
 #!/lang/b
 
-use gr m util
+use b
 
 rose(int x, int y, int r0, int a0, int da0, int petals, num cola, num red0, num redr, num reda, num green0, num greenr, num greena, num blue0, num bluer, num bluea)
 	num a, ca, pr, r
@@ -31,7 +31,7 @@ roses()
 		x = 225*Sin(a)
 		y = 225*Cos(a)
 		rose(x, y, 30, -60+a + rot*5, 37, 6, c[j][0], c[j][1], c[j][2], c[j][3], c[j][4], c[j][5], c[j][6], c[j][7], c[j][8], c[j][9])
-	paint()
+	Paint()
 
 num c[3][10] =
 		180,  .9, .1, 0,  .5, .1, 0,  .4, .1, 180
@@ -46,4 +46,4 @@ main()
 
 	for rot = 0; rot <= 360; ++rot
 		roses()
-		paint()
+		Paint()

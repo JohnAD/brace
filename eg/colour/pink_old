@@ -32,7 +32,7 @@ Main()
 			hsv(a, s, v)
 		
 			point(x, y)
-		paint()
+		Paint()
  # todo, make it angle_unit ?
 
 

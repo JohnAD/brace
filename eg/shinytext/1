@@ -66,7 +66,7 @@ def shiny(pixel_type)
 			font("helvetica-medium", fs/randi(2, 5))
 			move(randi(-w_2, w_2), randi(-h_2, h_2))
 			gsayf(s)
-			paint()
+			Paint()
 		if m == 0 || m == 50
 			s = fortune()
 			fs = font_size_to_fit(s)

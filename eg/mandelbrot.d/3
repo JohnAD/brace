@@ -126,7 +126,7 @@ def fill(p)
 #	*px = i < max_i ? rb[i*359 / rb_i % 360] : black
 	if paint_as_you_go && payg && counter++ > (n-i+s) % s * payg
 		counter = 0
-		paint()
+		Paint()
 
 def smooth_init()
 	int smooth_n = 8 # 32
