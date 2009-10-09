@@ -3,10 +3,10 @@ use b
 
 def N 52
 def packs 1
-sprite background, card_back_sprite, card_sprites[N]
+sprite background, card_back_sprite, card_sprites[N], stacks[4]
 pointn2 card_pos[N*packs], card_vel[N*packs]
 int cardw, cardh
-def gap 12
+def gap 15
 def y_step 25
 
 struct card_state
@@ -31,6 +31,10 @@ load_sprites:
 			int card = i / 4 * 4 + (i+1) % 4  # CSHD -> SHDC!
 			snprintf(file, sizeof(file), "%02d.png", card+1)
 			sprite_load_png(&card_sprites[i], file)
+		for(i, 0, 4):
+			int suit = (i+1) % 4  # CSHD -> SHDC!
+			snprintf(file, sizeof(file), "stack%02d.png", suit+1)
+			sprite_load_png(&stacks[i], file)
 		sprite_load_png(&card_back_sprite, "b02fv.png")
 		sprite_load_png(&background, "greenbackground.png")
 	cardw = card_back_sprite.width ; cardh = card_back_sprite.height
@@ -62,6 +66,9 @@ shuffle:
 
 plot_cards:
 	sprite_put(screen, &background, 0, 0)
+	for(suit, 0, 4):
+		pointn2 p = card_point(7, suit)
+		sprite_put_transp(screen, &stacks[suit], p.x[0], p.x[1])
 	int row = 0
 	int some
 	do:
@@ -71,7 +78,7 @@ plot_cards:
 				some = 1
 				int c = *(int*)v(&cols[col], row)
 				card_state *C = &card[c]
-				pointn2 p = card_point(c)
+				pointn2 p = card_point(C->col, C->row)
 				sprite *s = C->face_up ? &card_sprites[C->n] : &card_back_sprite
 				sprite_put(screen, s, p.x[0], p.x[1])
 #				Paint()
@@ -80,11 +87,10 @@ plot_cards:
 	 while some
 	Paint()
 
-pointn2 card_point(int c)
+pointn2 card_point(int col, int row)
 	pointn2 pos
-	card_state *C = &card[c]
-	pos.x[0] = gap + C->col * ((w-gap) / 8)
-	pos.x[1] = gap + C->row * (C->col < 7 ? y_step : cardh + gap)
+	pos.x[0] = gap + col * ((w-gap) / 8)
+	pos.x[1] = gap + row * (col < 7 ? y_step : cardh + gap)
 	return pos
 
 int suit(int n)
