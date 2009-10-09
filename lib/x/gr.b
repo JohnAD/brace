@@ -9,7 +9,7 @@ use stdio.h
 #ld -L/usr/X11R6/lib -lX11 -lXext ??
 
 export types colours event
-use error alloc time vec io m util process
+use error alloc time vec io m util process main
 
 use gr
 
@@ -28,6 +28,7 @@ XFontStruct *_font = NULL
 XColor color
 int screen_number
 XShmSegmentInfo *shmseginfo = NULL
+Atom wm_protocols, wm_delete
 
 font(cstr name, int size)
 	let(xfontname, format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
@@ -156,6 +157,23 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 		gr_buf = XCreatePixmap(display, window, w, h, depth)
 
 #	XSetWindowBackgroundPixmap(display, window, gr_buf)
+
+	XSizeHints *normal_hints ; XWMHints *wm_hints ; XClassHint  *class_hints
+	normal_hints = XAllocSizeHints()
+	wm_hints = XAllocWMHints()
+	class_hints = XAllocClassHint()
+	normal_hints->flags = PPosition | PSize
+	wm_hints->initial_state = NormalState
+	wm_hints->input = True
+	wm_hints->flags = StateHint | InputHint
+	class_hints->res_name = program ; class_hints->res_class = program
+
+	XTextProperty xtp_name
+	XStringListToTextProperty(&program, 1, &xtp_name)
+	XSetWMProperties(display, window, &xtp_name, &xtp_name, argv, argc, normal_hints, wm_hints, class_hints)
+	wm_protocols = XInternAtom(display, "WM_PROTOCOLS", False)
+	wm_delete = XInternAtom(display, "WM_DELETE_WINDOW", False)
+	XSetWMProtocols(display, window, &wm_delete, 1)
 
 	XSelectInput(display, window, ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask|KeyReleaseMask|StructureNotifyMask)
 	XMapWindow(display, window)

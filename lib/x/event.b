@@ -26,6 +26,12 @@ handle_event()
 #	if x_event.type != NoExpose
 #		debug("handling event: %s", event_type_name(x_event.type))
 	switch x_event.type
+	ClientMessage	.
+		if x_event.xclient.message_type == wm_protocols && x_event.xclient.format == 32 && (Atom)x_event.xclient.data.l[0] == wm_delete
+			quit(NULL, NULL, &x_event)
+		 else
+			debug("unhandled %s event: %s", event_type_name(x_event.type), XGetAtomName(display, x_event.xclient.message_type))
+		break
 	ConfigureNotify	.
 		skip_to_last_event(x_event, ConfigureNotify)
 		configure_notify()

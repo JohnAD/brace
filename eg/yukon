@@ -7,24 +7,21 @@ sprite background, card_back_sprite, card_sprites[N]
 pointn2 card_pos[N*packs], card_vel[N*packs]
 int cardw, cardh
 def gap 12
-def y_step 22
+def y_step 25
 
 struct card_state
 	int n
 	int col
 	int row
-	pointn2 pos
 	boolean face_up
 
 card_state card[N]
-
-int col_depth[8]
+vec cols[8]
 
 Main:
 	load_sprites()
 	space(background.width, background.height)
-	intro()
-	card_state_init() ; shuffle() ; plot_cards()
+	init() ; shuffle() ; plot_cards()
 #	plot_cards_test()
 
 load_sprites:
@@ -38,41 +35,23 @@ load_sprites:
 		sprite_load_png(&background, "greenbackground.png")
 	cardw = card_back_sprite.width ; cardh = card_back_sprite.height
 
-intro:
-	for(i, 0, N*packs):
-		card_pos[i] = (pointn2){{Rand(0, w-cardw), Rand(0, h-cardh)}}
-		card_vel[i] = (pointn2){{Rand(-5, 5), Rand(-5, 5)}}
-
-	repeat(500):
-		sprite_put(screen, &background, 0, 0)
-		back(i, N*packs):   # high cards on top
-			pointn2 *p = &card_pos[i], *v = &card_vel[i]
-			sprite_put(screen, &card_sprites[i%N], p->x[0], p->x[1])
-			each(a, 0, 1):
-				p->x[a] += v->x[a]
-			bounce(p->x[0], v->x[0], w-cardw, >, 0.8)
-			bounce(p->x[0], v->x[0], 0, <, 0.8)
-			bounce(p->x[1], v->x[1], h-cardh, >, 0.8)
-			bounce(p->x[1], v->x[1], 0, <, 0.8)
-#				v->x[1] += 0.1
-		Paint()
-
-card_state_init:
-	int col = 0, row = 0
+init:
 	for(i, 0, 8)
-		col_depth[i] = 0
+		init(&cols[i], vec, int, 16)
+
+	int col = 0, row = 0
 	for(c, 0, N):
-		++col_depth[col]
 		card_state *C = &card[c]
+		vec_push(&cols[col], c)
 		C->n = c
 		C->col = col
 		C->row = row
-		C->face_up = col_depth[col] > col
+		C->face_up = veclen(&cols[col]) > col
 		++col
 		if col == 7
 			++row
 			col = 1
-			while col_depth[col] == col+5
+			while veclen(&cols[col]) == col+5
 				++col
 
 shuffle:
@@ -83,13 +62,23 @@ shuffle:
 
 plot_cards:
 	sprite_put(screen, &background, 0, 0)
-	for(c, 0, N):
-		card_state *C = &card[c]
-		pointn2 p = card_point(c)
-		sprite *s = C->face_up ? &card_sprites[C->n] : &card_back_sprite
-		sprite_put(screen, s, p.x[0], p.x[1])
-		Paint()
-		Sleep(0.05)
+	int row = 0
+	int some
+	do:
+		some = 0
+		for(col, 0, 8):
+			if veclen(&cols[col]) > row
+				some = 1
+				int c = *(int*)v(&cols[col], row)
+				card_state *C = &card[c]
+				pointn2 p = card_point(c)
+				sprite *s = C->face_up ? &card_sprites[C->n] : &card_back_sprite
+				sprite_put(screen, s, p.x[0], p.x[1])
+#				Paint()
+#				Sleep(0.01)
+		++row
+	 while some
+	Paint()
 
 pointn2 card_point(int c)
 	pointn2 pos
