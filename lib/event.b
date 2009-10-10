@@ -31,6 +31,14 @@ control_init()
 	key_handlers_init()
 	mouse_handlers_init()
 
+control_default:
+	key_handlers_default()
+	mouse_handlers_default()
+
+control_ignore:
+	key_handlers_ignore()
+	mouse_handlers_ignore()
+
 # event handler ----------------------------------------------
 
 event_handler_init()
@@ -38,12 +46,12 @@ event_handler_init()
 	control_init()
 
 event_loop()
-	while !gr_exit
+	while !gr_done
 		handle_events()
 
 handle_events()
 	gr_call_need_delay_callbacks()
-	while !gr_exit && handle_event_maybe()
+	while !gr_done && handle_event_maybe()
 
 # this is to hack around dodgy X auto-repeat -----------------
 

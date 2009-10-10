@@ -104,7 +104,7 @@ gr_init()
 	gr_alloced = 1
 
 gr_at_exit()
-	if !gr_exit
+	if !gr_done
 		Paint()
 		event_loop()
 	gr_free()

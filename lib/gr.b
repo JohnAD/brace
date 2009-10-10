@@ -72,10 +72,10 @@ def space(bg)
 
 num a_pixel = 1
 
-boolean gr_exit = 0
+boolean gr_done = 0
 
 def gr_exit(status)
-	gr_exit = 1
+	gr_done = 1
 	exit(status)
 
 origin(num _ox, num _oy)

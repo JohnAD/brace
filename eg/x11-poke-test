@@ -1,7 +1,6 @@
 #!/lang/b
 use b
 Main()
-	gr_exit = 1
 	space()
 	with_pixel_type(test_x11_poke)
 
@@ -18,3 +17,4 @@ def test_x11_poke(pixel_type)
 			*px++ = 123456 #point(x, y)
 	bm_ps("poked pixels")
 	Paint()
+	gr_done = 1

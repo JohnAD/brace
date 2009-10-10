@@ -17,7 +17,7 @@ gl_size(GLsizei width, GLsizei height)
 	gluOrtho2D( 0, width, 0, height )
 
 gr_init()
-	if !gr_exit
+	if !gr_done
 		Atexit(event_loop)
 
 	colours_init()

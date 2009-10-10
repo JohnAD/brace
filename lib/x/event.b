@@ -84,15 +84,23 @@ num gr_key_auto_repeat_avoidance_delay = 1.99   # XXX X is evil
 int key_first, key_last
 thunk *key_handlers
 char *key_down
+thunk key_handler_default
+def gr_n_keys key_last-key_first+1
 
 key_handlers_init()
 	XDisplayKeycodes(display, &key_first, &key_last)
-	int n_keys = key_last-key_first+1
-	key_handlers = Nalloc(thunk, n_keys)
-	for(i, key_handlers, key_handlers+n_keys)
-		*i = thunk()
-	key_down = Zalloc(char, n_keys)
+	key_handlers = Nalloc(thunk, gr_n_keys)
+	key_down = Zalloc(char, gr_n_keys)
+	key_handlers_default()
+
+key_handlers_default()
+	key_handlers_ignore()
 	set_key_handler("Escape", thunk(quit))
+
+key_handlers_ignore()
+	for(i, key_handlers, key_handlers+gr_n_keys)
+		*i = thunk()
+	key_handler_default = thunk()
 
 void *quit(void *obj, void *a0, void *event)
 	use(obj, a0, event)
@@ -101,9 +109,12 @@ void *quit(void *obj, void *a0, void *event)
 
 def set_key_handler(key_str, handler)
 	set_key_handler_keysym(XStringToKeysym(key_str), handler)
-
 def clear_key_handler(key_str)
 	set_key_handler(key_str, thunk())
+set_key_handler_default(thunk handler)
+	key_handler_default = handler
+def clear_key_handler_default()
+	set_key_handler_default(thunk())
 
 set_key_handler_keysym(KeySym keysym, thunk handler)
 	int keycode = XKeysymToKeycode(display, keysym)
@@ -178,6 +189,8 @@ void *keyboard_handler(void *obj, void *a0, void *event)
 	thunk *handler = &key_handlers[e->which-key_first]
 	void *rv = thunk_call(handler, e)
 	if !rv
+		rv = thunk_call(&key_handler_default, e)
+	if !rv
 		bad_key("unhandled %s: %s", e)
 	return rv
 
@@ -191,14 +204,33 @@ bad_key(cstr format, gr_event *e)
 
 # mouse handler ---------------------------------------------
 
+# TODO move part to main event.b
+
 def mouse_first 1
 def mouse_last 3
-def mouse_buttons mouse_last-mouse_first+1
-thunk mouse_handlers[mouse_buttons]
+def gr_n_mouse_buttons mouse_last-mouse_first+1
+thunk mouse_handlers[gr_n_mouse_buttons]
+thunk mouse_handler_default
 
 mouse_handlers_init()
-	for(i, mouse_handlers+0, mouse_handlers+mouse_buttons)
-		*i = thunk()
+	mouse_handlers_default()
+
+mouse_handlers_default()
+	mouse_handlers_ignore()
+
+mouse_handlers_ignore()
+	for(i, mouse_first, mouse_last+1)
+		clear_mouse_handler(i)
+	clear_mouse_handler_default()
+
+set_mouse_handler(int button, thunk handler)
+	mouse_handlers[button-mouse_first] = handler
+def clear_mouse_handler(button)
+	set_mouse_handler(button, thunk())
+set_mouse_handler_default(thunk handler)
+	mouse_handler_default = handler
+def clear_mouse_handler_default()
+	set_mouse_handler_default(thunk())
 
 void *mouse_handler(void *obj, void *a0, void *event)
 	use(obj);use(a0)
@@ -233,6 +265,8 @@ void *mouse_handler(void *obj, void *a0, void *event)
 	if ok
 		thunk *handler = &mouse_handlers[e->which-mouse_first]
 		void *rv = thunk_call(handler, e)
+		if !rv
+			rv = thunk_call(&mouse_handler_default, e)
 		if !rv
 			debug("unhandled %s: b%d", event_type_name(e->type), e->which)
 		return rv

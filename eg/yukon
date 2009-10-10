@@ -8,6 +8,7 @@ pointn2 card_pos[N*packs], card_vel[N*packs]
 int cardw, cardh
 def gap 15
 def y_step 25
+num plot_slow = 0.01
 
 struct card_state
 	int n
@@ -21,8 +22,12 @@ vec cols[8]
 Main:
 	load_sprites()
 	space(background.width, background.height)
-	init() ; shuffle() ; plot_cards()
-#	plot_cards_test()
+	init()
+	repeat:
+		control_default()
+		new_game()
+		control_play()
+		event_loop()
 
 load_sprites:
 	char file[32] = ""
@@ -40,14 +45,30 @@ load_sprites:
 	cardw = card_back_sprite.width ; cardh = card_back_sprite.height
 
 init:
-	for(i, 0, 8)
+	for(i, 0, 8):
 		init(&cols[i], vec, int, 16)
 
+new_game:
+	shuffle()
+	deal()
+	plot_cards()
+
+shuffle:
+	for(c, 0, N):
+		card_state *C = &card[c]
+		C->n = c
+	for(c, 0, N):
+		int c2 = randi(c, N)
+		card_state *C = &card[c], *C2 = &card[c2]
+		swap(C->n, C2->n)
+
+deal:
+	for(i, 0, 8):
+		vecclr(&cols[i])
 	int col = 0, row = 0
 	for(c, 0, N):
 		card_state *C = &card[c]
 		vec_push(&cols[col], c)
-		C->n = c
 		C->col = col
 		C->row = row
 		C->face_up = veclen(&cols[col]) > col
@@ -57,12 +78,6 @@ init:
 			col = 1
 			while veclen(&cols[col]) == col+5
 				++col
-
-shuffle:
-	for(c, 0, N):
-		int c2 = randi(c, N)
-		card_state *C = &card[c], *C2 = &card[c2]
-		swap(C->n, C2->n)
 
 plot_cards:
 	sprite_put(screen, &background, 0, 0)
@@ -81,8 +96,9 @@ plot_cards:
 				pointn2 p = card_point(C->col, C->row)
 				sprite *s = C->face_up ? &card_sprites[C->n] : &card_back_sprite
 				sprite_put(screen, s, p.x[0], p.x[1])
-#				Paint()
-#				Sleep(0.01)
+				if plot_slow
+					Paint()
+					Sleep(plot_slow)
 		++row
 	 while some
 	Paint()
@@ -98,5 +114,29 @@ int suit(int n)
 
 int value(int n)
 	return n / 4 + 1
+
+control_play:
+	set_key_handler_default(thunk(key_input))
+	set_mouse_handler(1, thunk(move_cards))
+	set_mouse_handler(3, thunk(stack_cards))
+	# TODO
+
+void *key_input(void *obj, void *a0, void *event)
+	use(obj, a0)
+	gr_event *e = event
+	bad_key("key input ignored: %s: %s", e)
+	return thunk_yes
+
+void *move_cards(void *obj, void *a0, void *event)
+	use(obj, a0)
+	gr_event *e = event
+	debug("move cards ignored: %s: b%d", event_type_name(e->type), e->which)
+	return thunk_yes
+
+void *stack_cards(void *obj, void *a0, void *event)
+	use(obj, a0)
+	gr_event *e = event
+	debug("stack cards ignored: %s: b%d", event_type_name(e->type), e->which)
+	return thunk_yes
 
 # LIBB:
