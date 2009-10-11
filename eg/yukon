@@ -3,16 +3,15 @@ use b
 use X11/cursorfont.h
 
 def N 52
-def packs 1
 sprite background, card_back_sprite, card_sprites[N], stack_bases[4]
-pointn2 card_pos[N*packs], card_vel[N*packs]
 int card_w, card_h
 def gap 15
 def col_w (w-gap)/8
-def row_h 13
+def row_h 18 # 13 25
 num plot_slow_new_game = 0.01
 num plot_slow_stack = 0.05
 int moves
+def intro_fps 100
 
 struct card_state:
 	int n
@@ -28,6 +27,7 @@ Main:
 	load_sprites()
 	space(background.width, background.height)
 #	XDefineCursor(display, window, XCreateFontCursor(display, XC_crosshair))
+	intro()
 	init()
 	repeat:
 		new_game()
@@ -55,6 +55,38 @@ init:
 	for(i, 0, 8):
 		init(&cols[i], vec, int, 16)
 	init(cards_in_motion, vec, int, 16)
+
+boolean stop_intro = 0
+
+intro:
+	int packs=1
+	pointn2 card_pos[N*packs], card_vel[N*packs]
+
+	for(i, 0, N*packs):
+		card_pos[i] = (pointn2){{Rand(0, w-card_w), Rand(0, h-card_h)}}
+		card_vel[i] = (pointn2){{Rand(-5, 5), Rand(-5, 5)}}
+
+	set_key_handler_default(thunk(intro_stop))
+
+	while !stop_intro:
+		sprite_put(screen, &background, 0, 0)
+		back(i, N*packs):   # high cards on top
+			pointn2 *p = &card_pos[i], *v = &card_vel[i]
+			sprite_put(screen, &card_sprites[i%N], p->x[0], p->x[1])
+			each(a, 0, 1):
+				p->x[a] += v->x[a]
+			bounce(p->x[0], v->x[0], w-card_w, >, 0.8)
+			bounce(p->x[0], v->x[0], 0, <, 0.8)
+			bounce(p->x[1], v->x[1], h-card_h, >, 0.8)
+			bounce(p->x[1], v->x[1], 0, <, 0.8)
+#				v->x[1] += 0.1
+		Paint()
+		csleep(1.0/intro_fps)
+
+void *intro_stop(void *obj, void *a0, void *event):
+	use(obj, a0, event)
+	stop_intro = 1
+	return thunk_yes
 
 new_game:
 	moves = 0
@@ -226,14 +258,14 @@ void *move_cards_start(void *obj, void *a0, void *event):
 			move_card_drag_offset = (pointi2){{p.x[0] - e->x, p.x[1] - e->y}}
 			move_card_drag = (pointi2){{e->x, e->y}}
 			plot_cards()
-			debug("move cards start %d %d", col, row)
+#			debug("move cards start %d %d", col, row)
 	return thunk_yes
 
 void *move_cards_drag(void *obj, void *a0, void *event):
 	use(obj, a0)
 	gr_event *e = event
 	if moving_cards:
-		debug("move cards drag")
+#		debug("move cards drag")
 		move_card_drag = (pointi2){{e->x, e->y}}
 		plot_cards()
 	return thunk_yes
@@ -247,7 +279,7 @@ void *move_cards_stop(void *obj, void *a0, void *event):
 			move_cards(col)
 		 else:
 			move_cards_abort()
-		debug("move cards stop %d", col)
+#		debug("move cards stop %d", col)
 	return thunk_yes
 
 move_cards_abort():
@@ -294,7 +326,7 @@ void *stack_cards(void *obj, void *a0, void *event)
 		back(r, veclen(column), row):
 			if stack_card(col, r):
 				break
-		debug("stack cards %d %d", col, row)
+#		debug("stack cards %d %d", col, row)
 	return thunk_yes
 
 int stack_card(int col, int row):
