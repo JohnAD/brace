@@ -130,6 +130,7 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 		valuemask |= CWOverrideRedirect
 		attributes.override_redirect = True
 	window = XCreateWindow(display, root_window, 0, 0, w, h, 0, CopyFromParent, InputOutput, CopyFromParent, valuemask, &attributes)
+#	XSetWindowBorderWidth(display, window, 0)
 
 	int shm_major, shm_minor
 	Bool shm_pixmaps

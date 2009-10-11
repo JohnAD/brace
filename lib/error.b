@@ -52,6 +52,8 @@ vserror(const char *format, va_list ap)
 
 warn(const char *format, ...)
 	collect_void(vwarn, format)
+def warn()
+	warn("")
 
 vwarn(const char *format, va_list ap)
 	format_add_nl(format1, format)
@@ -466,4 +468,3 @@ def Verbose(a0, a1, a2, a3, a4, a5, a6)
 def Verbose(a0, a1, a2, a3, a4, a5, a6, a7)
 	if is_verbose
 		warn(a0, a1, a2, a3, a4, a5, a6, a7)
-

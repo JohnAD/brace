@@ -81,15 +81,16 @@ def skip_to_last_event(x_event, type)
 
 num gr_key_auto_repeat_avoidance_delay = 1.99   # XXX X is evil
 
+def n_key_events 2
 int key_first, key_last
-thunk *key_handlers
+thunk (*key_handlers)[n_key_events]
 char *key_down
 thunk key_handler_default
 def gr_n_keys key_last-key_first+1
 
 key_handlers_init()
 	XDisplayKeycodes(display, &key_first, &key_last)
-	key_handlers = Nalloc(thunk, gr_n_keys)
+	key_handlers = (void*)Nalloc(thunk, gr_n_keys*n_key_events)
 	key_down = Zalloc(char, gr_n_keys)
 	key_handlers_default()
 
@@ -98,9 +99,10 @@ key_handlers_default()
 	set_key_handler("Escape", thunk(quit))
 
 key_handlers_ignore()
-	for(i, key_handlers, key_handlers+gr_n_keys)
-		*i = thunk()
-	key_handler_default = thunk()
+	for(i, 0, gr_n_keys)
+		for(j, 0, n_key_events)
+			key_handlers[i][j] = thunk()
+	clear_key_handler_default()
 
 void *quit(void *obj, void *a0, void *event)
 	use(obj, a0, event)
@@ -108,17 +110,37 @@ void *quit(void *obj, void *a0, void *event)
 	return thunk_yes
 
 def set_key_handler(key_str, handler)
-	set_key_handler_keysym(XStringToKeysym(key_str), handler)
+	set_key_handler_(key_str, handler)
+def set_key_handler_(key_str, handler)
+	set_key_handler_keysym_(XStringToKeysym(key_str), handler)
+set_key_handler_keysym_(KeySym keysym, thunk handler)
+	each(event_type, KeyPress, KeyRelease)
+		set_key_handler_keysym(keysym, event_type, handler)
+def set_key_handler(key_str, event_type, handler)
+	set_key_handler_keysym(XStringToKeysym(key_str), event_type, handler)
 def clear_key_handler(key_str)
 	set_key_handler(key_str, thunk())
+def clear_key_handler(key_str, event_type)
+	set_key_handler(key_str, event_type, thunk())
+def clear_key_handler_keysym(keysym)
+	set_key_handler_keysym(keysym, thunk())
+def clear_key_handler_keysym(key_str, event_type)
+	set_key_handler_keysym(key_str, event_type, thunk())
+
 set_key_handler_default(thunk handler)
 	key_handler_default = handler
 def clear_key_handler_default()
 	set_key_handler_default(thunk())
 
-set_key_handler_keysym(KeySym keysym, thunk handler)
+def set_key_handler_keysym(keysym, handler)
+	set_key_handler_keysym_(keysym, handler)
+set_key_handler_keysym(KeySym keysym, int event_type, thunk handler)
+	which event_type
+	KeyPress	event_type = 0
+	KeyRelease	event_type = 1
+	# TODO key repeat = 2  ?
 	int keycode = XKeysymToKeycode(display, keysym)
-	key_handlers[keycode - key_first] = handler
+	key_handlers[keycode - key_first][event_type] = handler
 
 void *keyboard_handler(void *obj, void *a0, void *event)
 	use(obj);use(a0)
@@ -127,11 +149,26 @@ void *keyboard_handler(void *obj, void *a0, void *event)
 	int is_callback = p2i(a0)
 	gr_event *e = event
 	boolean ignore = 0
+	int event_type = 0
 
 	which e->type
+	KeyPress	.
+		event_type = 0
+		if gr_key_auto_repeat == 0 && last_release_key == e->which &&
+		  e->time - last_release_time <= (int)gr_key_auto_repeat_avoidance_delay
+			ignore = 1
+		 eif key_down[e->which-key_first]
+			key_event_debug("ignoring %s - key already down: %s", e)
+			ignore = 1
+		if !ignore
+#			debug("setting key down %s", key_string(e->which))
+			key_down[e->which-key_first] = 1
+		last_release_key = -1
+
 	KeyRelease	.
+		event_type = 1
 		if !key_down[e->which-key_first]
-			bad_key("ignoring %s - key not down: %s", e)
+			key_event_debug("ignoring %s - key not down: %s", e)
 			ignore = 1
 		boolean push_callback = 0
 		if gr_key_auto_repeat == 0
@@ -171,30 +208,18 @@ void *keyboard_handler(void *obj, void *a0, void *event)
 		if gr_key_ignore_release
 			ignore = 1
 
-	KeyPress	.
-		if gr_key_auto_repeat == 0 && last_release_key == e->which &&
-		  e->time - last_release_time <= (int)gr_key_auto_repeat_avoidance_delay
-			ignore = 1
-		 eif key_down[e->which-key_first]
-			bad_key("ignoring %s - key already down: %s", e)
-			ignore = 1
-		if !ignore
-#			debug("setting key down %s", key_string(e->which))
-			key_down[e->which-key_first] = 1
-		last_release_key = -1
-
 	if ignore
 		return thunk_yes
 
-	thunk *handler = &key_handlers[e->which-key_first]
+	thunk *handler = &key_handlers[e->which-key_first][event_type]
 	void *rv = thunk_call(handler, e)
 	if !rv
 		rv = thunk_call(&key_handler_default, e)
 	if !rv
-		bad_key("unhandled %s: %s", e)
+		key_event_debug("unhandled %s: %s", e)
 	return rv
 
-bad_key(cstr format, gr_event *e)
+key_event_debug(cstr format, gr_event *e)
 	cstr key_string = event_key_string(e)
 	if key_string != NULL  # ignore unmapped keys
 		debug(format, event_type_name(e->type), key_string)
@@ -202,14 +227,16 @@ bad_key(cstr format, gr_event *e)
 # TODO allow programs to handle all keys (or all typing keys, etc)
 # with a single handler function, not one for each key!  and same for mouse
 
-# mouse handler ---------------------------------------------
+
+# mouse handlers --------------------------------------------
 
 # TODO move part to main event.b
 
+def n_mouse_events 3
 def mouse_first 1
 def mouse_last 3
 def gr_n_mouse_buttons mouse_last-mouse_first+1
-thunk mouse_handlers[gr_n_mouse_buttons]
+thunk mouse_handlers[gr_n_mouse_buttons][n_mouse_events]
 thunk mouse_handler_default
 
 mouse_handlers_init()
@@ -223,10 +250,22 @@ mouse_handlers_ignore()
 		clear_mouse_handler(i)
 	clear_mouse_handler_default()
 
-set_mouse_handler(int button, thunk handler)
-	mouse_handlers[button-mouse_first] = handler
+def set_mouse_handler(button, handler)
+	set_mouse_handler_(button, handler)
+set_mouse_handler_(int button, thunk handler)
+	each(event_type, ButtonPress, MotionNotify, ButtonRelease)
+		set_mouse_handler(button, event_type, handler)
+set_mouse_handler(int button, int event_type, thunk handler)
+	which event_type
+	ButtonPress	event_type = 0
+	ButtonRelease	event_type = 1
+	MotionNotify	event_type = 2
+	mouse_handlers[button-mouse_first][event_type] = handler
 def clear_mouse_handler(button)
 	set_mouse_handler(button, thunk())
+def clear_mouse_handler(button, event_type)
+	set_mouse_handler(button, event_type, thunk())
+
 set_mouse_handler_default(thunk handler)
 	mouse_handler_default = handler
 def clear_mouse_handler_default()
@@ -237,8 +276,10 @@ void *mouse_handler(void *obj, void *a0, void *event)
 	static int button = 0
 	gr_event *e = event
 	boolean ok = 0
+	int event_type = 0
 	which e->type
 	ButtonPress	.
+		event_type = 0
 		if button != 0
 			debug("press %d then press %d - reset", button, e->which)
 			button = 0
@@ -246,6 +287,7 @@ void *mouse_handler(void *obj, void *a0, void *event)
 			button = e->which
 			ok = 1
 	ButtonRelease	.
+		event_type = 1
 		if button == 0
 			debug("no press then release b%d - reset", e->which)
 		 eif e->which != button
@@ -254,6 +296,7 @@ void *mouse_handler(void *obj, void *a0, void *event)
 			ok = 1
 		button = 0
 	MotionNotify	.
+		event_type = 2
 		if button == 0
 			debug("no press then drag b%d - reset", e->which)
 		 else
@@ -263,7 +306,7 @@ void *mouse_handler(void *obj, void *a0, void *event)
 		debug("unhandled %s: b%d unknown", event_type_name(e->type), e->which)
 		return thunk_no
 	if ok
-		thunk *handler = &mouse_handlers[e->which-mouse_first]
+		thunk *handler = &mouse_handlers[e->which-mouse_first][event_type]
 		void *rv = thunk_call(handler, e)
 		if !rv
 			rv = thunk_call(&mouse_handler_default, e)
@@ -272,6 +315,7 @@ void *mouse_handler(void *obj, void *a0, void *event)
 		return rv
 			
 	return thunk_yes  # ignored ~= handled
+
 
 # recentering when the window is resized ---------------------
 

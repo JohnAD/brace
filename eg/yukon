@@ -1,16 +1,20 @@
 #!/lang/b
 use b
+use X11/cursorfont.h
 
 def N 52
 def packs 1
-sprite background, card_back_sprite, card_sprites[N], stacks[4]
+sprite background, card_back_sprite, card_sprites[N], stack_bases[4]
 pointn2 card_pos[N*packs], card_vel[N*packs]
-int cardw, cardh
+int card_w, card_h
 def gap 15
-def y_step 25
-num plot_slow = 0.01
+def col_w (w-gap)/8
+def row_h 13
+num plot_slow_new_game = 0.01
+num plot_slow_stack = 0.05
+int moves
 
-struct card_state
+struct card_state:
 	int n
 	int col
 	int row
@@ -18,40 +22,54 @@ struct card_state
 
 card_state card[N]
 vec cols[8]
+int stacks[4]
 
 Main:
 	load_sprites()
 	space(background.width, background.height)
+#	XDefineCursor(display, window, XCreateFontCursor(display, XC_crosshair))
 	init()
 	repeat:
-		control_default()
 		new_game()
-		control_play()
 		event_loop()
 
 load_sprites:
 	char file[32] = ""
 	cd_block("cards"):
 		for(i, 0, N):
-			int card = i / 4 * 4 + (i+1) % 4  # CSHD -> SHDC!
+			int suit = (i+1) % 4  # CSHD -> SHDC
+			int rank = i / 4
+			rank = rank == 0 ? 0 : 13-rank # A K Q J 10 ... -> A 2 3 4 5 ...
+			int card = rank * 4 + suit
 			snprintf(file, sizeof(file), "%02d.png", card+1)
 			sprite_load_png(&card_sprites[i], file)
 		for(i, 0, 4):
 			int suit = (i+1) % 4  # CSHD -> SHDC!
 			snprintf(file, sizeof(file), "stack%02d.png", suit+1)
-			sprite_load_png(&stacks[i], file)
+			sprite_load_png(&stack_bases[i], file)
 		sprite_load_png(&card_back_sprite, "b02fv.png")
 		sprite_load_png(&background, "greenbackground.png")
-	cardw = card_back_sprite.width ; cardh = card_back_sprite.height
+	card_w = card_sprites[0].width ; card_h = card_sprites[0].height
 
 init:
 	for(i, 0, 8):
 		init(&cols[i], vec, int, 16)
+	init(cards_in_motion, vec, int, 16)
 
 new_game:
+	moves = 0
 	shuffle()
 	deal()
-	plot_cards()
+	control_default()
+	plot_cards(plot_slow_new_game)
+	control_play()
+
+void *quit_game(void *obj, void *a0, void *event):
+	use(obj, a0, event)
+	if moving_cards:
+		move_cards_abort()
+	new_game()
+	return thunk_yes
 
 shuffle:
 	for(c, 0, N):
@@ -78,12 +96,19 @@ deal:
 			col = 1
 			while veclen(&cols[col]) == col+5
 				++col
+	for(i, 0, 4):
+		stacks[i] = 0
 
-plot_cards:
+def plot_cards():
+	plot_cards(0)
+plot_cards(num plot_slow):
 	sprite_put(screen, &background, 0, 0)
 	for(suit, 0, 4):
-		pointn2 p = card_point(7, suit)
-		sprite_put_transp(screen, &stacks[suit], p.x[0], p.x[1])
+		pointi2 p = card_point(7, suit)
+		if stacks[suit]:
+			sprite_put(screen, &card_sprites[card_n(suit, stacks[suit])], p.x[0], p.x[1])
+		 else:
+			sprite_put_transp(screen, &stack_bases[suit], p.x[0], p.x[1])
 	int row = 0
 	int some
 	do:
@@ -93,7 +118,7 @@ plot_cards:
 				some = 1
 				int c = *(int*)v(&cols[col], row)
 				card_state *C = &card[c]
-				pointn2 p = card_point(C->col, C->row)
+				pointi2 p = card_point(C->col, C->row)
 				sprite *s = C->face_up ? &card_sprites[C->n] : &card_back_sprite
 				sprite_put(screen, s, p.x[0], p.x[1])
 				if plot_slow
@@ -101,42 +126,193 @@ plot_cards:
 					Sleep(plot_slow)
 		++row
 	 while some
+	if moving_cards
+		int x = move_card_drag_offset.x[0]+move_card_drag.x[0]
+		int y = move_card_drag_offset.x[1]+move_card_drag.x[1]
+		for_vec(i, cards_in_motion, int):
+			card_state *C = &card[*i]
+			sprite_put(screen, &card_sprites[C->n], x, y)
+			y += row_h
 	Paint()
 
-pointn2 card_point(int col, int row)
-	pointn2 pos
-	pos.x[0] = gap + col * ((w-gap) / 8)
-	pos.x[1] = gap + row * (col < 7 ? y_step : cardh + gap)
-	return pos
-
-int suit(int n)
+int suit(int n):
 	return n % 4
 
-int value(int n)
+int value(int n):
 	return n / 4 + 1
 
+int card_n(int suit, int value):
+	return (value - 1)*4 + suit
+
+int card_color(int n):
+	int s = suit(n)
+	return among(s, 1, 2)
+
+pointi2 card_point(int col, int row):
+	pointi2 pos
+	pos.x[0] = gap + col * col_w
+	pos.x[1] = gap + row * (col < 7 ? row_h : card_h + gap)
+	return pos
+
+int which_card(int *col, int *row, int x, int y):
+	*col = which_col(x)
+	*row = which_row(y)
+	if *col < 0 || *row < 0:
+		return -1
+	int n = veclen(&cols[*col])
+	if *row >= n:
+		*row = n-1
+		if y >= card_point(*col, *row).x[1]+card_h:
+			return -1
+	return 0
+
+int which_col(int x):
+	x -= gap
+	if x<0:
+		return -1
+	int col = x / col_w
+	int rem = x % col_w
+	if rem >= card_w:
+		return -1
+	return col
+
+int which_row(int y):
+	y -= gap
+	if y<0:
+		return -1
+	int row = y / row_h
+	return row
+
+int which_stack(int x, int y):
+	use(x, y)
+	# TODO
+	return -1
+
 control_play:
+	set_key_handler("q", thunk(quit_game))
 	set_key_handler_default(thunk(key_input))
-	set_mouse_handler(1, thunk(move_cards))
-	set_mouse_handler(3, thunk(stack_cards))
+	set_mouse_handler(1, ButtonPress, thunk(move_cards_start))
+	set_mouse_handler(1, MotionNotify, thunk(move_cards_drag))
+	set_mouse_handler(1, ButtonRelease, thunk(move_cards_stop))
+	set_mouse_handler(3, ButtonPress, thunk(stack_cards))
 	# TODO
 
-void *key_input(void *obj, void *a0, void *event)
+void *key_input(void *obj, void *a0, void *event):
 	use(obj, a0)
 	gr_event *e = event
-	bad_key("key input ignored: %s: %s", e)
+	key_event_debug("key input ignored: %s: %s", e)
 	return thunk_yes
 
-void *move_cards(void *obj, void *a0, void *event)
+boolean moving_cards = 0
+int move_card_from_col, move_card_from_row
+pointi2 move_card_drag_offset, move_card_drag
+vec struct__cards_in_motion, *cards_in_motion = &struct__cards_in_motion
+
+void *move_cards_start(void *obj, void *a0, void *event):
 	use(obj, a0)
 	gr_event *e = event
-	debug("move cards ignored: %s: b%d", event_type_name(e->type), e->which)
+	int col, row
+	if which_card(&col, &row, e->x, e->y) == 0:
+		int c = *(int*)v(&cols[col], row)
+		if card[c].face_up:
+			if moving_cards:
+				move_cards_abort()
+			moving_cards = 1
+			move_card_from_col = col ; move_card_from_row = row
+			int n_cards = veclen(&cols[col]) - row
+			vec_append(cards_in_motion, v(&cols[col], row), n_cards)
+			vec_set_size(&cols[col], row)
+			pointi2 p = card_point(col, row)
+			move_card_drag_offset = (pointi2){{p.x[0] - e->x, p.x[1] - e->y}}
+			move_card_drag = (pointi2){{e->x, e->y}}
+			plot_cards()
+			debug("move cards start %d %d", col, row)
 	return thunk_yes
+
+void *move_cards_drag(void *obj, void *a0, void *event):
+	use(obj, a0)
+	gr_event *e = event
+	if moving_cards:
+		debug("move cards drag")
+		move_card_drag = (pointi2){{e->x, e->y}}
+		plot_cards()
+	return thunk_yes
+
+void *move_cards_stop(void *obj, void *a0, void *event):
+	use(obj, a0)
+	gr_event *e = event
+	if moving_cards:
+		int col = which_col(e->x)
+		if col >= 0 && cards_can_land(col):
+			move_cards(col)
+		 else:
+			move_cards_abort()
+		debug("move cards stop %d", col)
+	return thunk_yes
+
+move_cards_abort():
+	move_cards(move_card_from_col)
+
+boolean cards_can_land(int col):
+	vec *column = &cols[col]
+	int card_floating = *(int*)vec0(cards_in_motion)
+	if !veclen(column)
+		return value(card[card_floating].n) == 13  # king
+	int card_base = *(int*)vec_top(column)
+	return card_can_go_on_card(card[card_floating].n, card[card_base].n)
+
+boolean card_can_go_on_card(int floating, int base):
+	return card_color(floating) != card_color(base) &&
+	 value(floating) == value(base) - 1
+
+move_cards(int col):
+	vec *column = &cols[col]
+	int n = veclen(column)
+	for_vec(i, cards_in_motion, int):
+		card[*i].col = col
+		card[*i].row = n++
+	vec_append(column, cards_in_motion)
+	vecclr(cards_in_motion)
+	moving_cards = 0
+	if col != move_card_from_col
+		++moves
+		show_top_card(move_card_from_col)
+	plot_cards()
+
+show_top_card(int col):
+	vec *column = &cols[col]
+	int n = veclen(column)
+	if n:
+		card[*(int*)vec_top(column)].face_up = 1
 
 void *stack_cards(void *obj, void *a0, void *event)
 	use(obj, a0)
 	gr_event *e = event
-	debug("stack cards ignored: %s: b%d", event_type_name(e->type), e->which)
+	int col, row
+	if which_card(&col, &row, e->x, e->y) == 0
+		vec *column = &cols[col]
+		back(r, veclen(column), row):
+			if stack_card(col, r):
+				break
+		debug("stack cards %d %d", col, row)
 	return thunk_yes
 
-# LIBB:
+int stack_card(int col, int row):
+	int done
+	vec *column = &cols[col]
+	int c = *(int*)v(column, row)
+	int n = card[c].n
+	if !card[c].face_up || stacks[suit(n)] + 1 != value(n):
+		done = -1
+	 else:
+		++stacks[suit(n)]
+		card[c].col = 7
+		card[c].row = suit(n)
+		vec_pop(column)
+		show_top_card(col)
+		done = 0
+	plot_cards()
+	Sleep(plot_slow_stack)
+	return done
+
+# LIBB

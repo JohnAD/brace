@@ -116,27 +116,35 @@ int auth_pw(passwd *pw, cstr pass)
 #	Sayf("%s %s %s", x, salt, crypt(pass, salt))
 	return cstr_eq(x, crypt(pass, salt)) && !cstr_eq(pw->pw_shell, "/bin/false")
 
-def Become(user)
-	Become(user, my(p))
-def Become(user, p)
-	passwd *p = Getpwnam(user)
-	if !p
+def become(user)
+	become_(user, my(pw), my(groups))
+def become_(user, pw, groups)
+	passwd *pw = Getpwnam(user)
+	if !pw
 		error("user not found: %s", user)
-	become(p)
+	new(groups, vec, gid_t, 32)
+	Getgrouplist(user, pw->pw_gid, groups)
+	become(pw->pw_uid, pw->pw_gid, groups, 1)
+
+def become(pw, groups)
+	become(pw->pw_uid, pw->pw_gid, groups)
 		.
 
-def become(pw)
-	become(pw->pw_uid, pw->pw_gid)
-		.
-
-def become(uid, gid)
+def become(uid, gid, groups)
+	become(uid, gid, groups, 0)
+def become(uid, gid, groups, free_groups)
 	post(my(x))
 		Seteuid(0)
 		Setegid(0)
+		Cleargroups()
+		if free_groups
+			vec_free(groups)
 	pre(my(x))
+		Setgroups(veclen(groups), (gid_t*)vec0(groups))
 		Setegid(gid)
 		Seteuid(uid)
 		.
+
 
 def Seteuidgid(pw)
 	Seteuidgid(pw->pw_uid, pw->pw_gid)
@@ -161,6 +169,9 @@ def Setgroups(user)
 Setgroups(size_t size, const gid_t *list)
 	if setgroups(size, list)
 		failed("setgroups")
+
+def Cleargroups()
+	Setgroups(0, NULL)
 
 def Setuser(user)
 	Setgroups(user)
@@ -195,6 +206,8 @@ struct user
 int passwd_n_buckets = 1009
 
 hashtable *load_users()
+	# warning: this caches the password/shadow/group databases
+	# if the databases are changed, you would need to call load_users again.
 	sym_init()
 	New(ht, hashtable, cstr_hash, cstr_eq, passwd_n_buckets)
 	passwd *p
@@ -210,7 +223,7 @@ hashtable *load_users()
 	group *g
 	while (g = Getgrent())
 		user *u = get(ht, g->gr_name)
-		if !u  # there must be a user for each group
+		if !u  # XXX FIXME there must be a user for each group
 			continue
 		char **p = g->gr_mem
 		while *p
@@ -451,3 +464,15 @@ def set_child_handler(sigchld_handler)
 	Sigact(SIGCHLD, sigchld_handler)
 
 def nochldwait(signum) signum == SIGCHLD ? SA_NOCLDSTOP : 0
+
+int Getgrouplist(const char *user, gid_t group, vec *groups)
+	int ngroups = veclen(groups)
+	int rv
+	int count = 0
+	do
+		rv = getgrouplist(user, group, (gid_t*)vec0(groups), &ngroups)
+		vec_set_size(groups, ngroups)
+	 while rv < 0 && !count++
+	if rv < 0
+		failed("getgrouplist")
+	return ngroups
