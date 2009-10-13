@@ -1,9 +1,12 @@
 # event handler ----------------------------------------------
 
-use gr
-export types thunk
-use alloc time error
-use event
+# XXX crappy hack to get around ordering bug
+struct thunk
+	thunk_func *func
+	void *obj
+	void *common_arg
+
+export types thunk error alloc time gr event
 
 XEvent x_event
 

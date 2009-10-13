@@ -1,9 +1,15 @@
+# XXX crappy hack to get around ordering bug
+struct thunk
+	thunk_func *func
+	void *obj
+	void *common_arg
+
 export errno.h setjmp.h
 use stdio.h stdarg.h stdlib.h
+export thunk vec hash types
 use main buffer util path env
-export vec hash thunk types
 
-export error
+use error
 
 def debug warn
 #def debug void

@@ -1,6 +1,4 @@
-use gr
-export types thunk
-export event
+export types error thunk gr event
 
 struct gr_event
 	int type  # KeyPress, ButtonPress, ButtonRelease, MotionNotify
