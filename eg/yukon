@@ -66,7 +66,7 @@ intro:
 		card_pos[i] = (pointn2){{Rand(0, w-card_w), Rand(0, h-card_h)}}
 		card_vel[i] = (pointn2){{Rand(-5, 5), Rand(-5, 5)}}
 
-	set_key_handler_default(thunk(intro_stop))
+	key_handler_default = mouse_handler_default = thunk(intro_stop)
 
 	while !stop_intro:
 		sprite_put(screen, &background, 0, 0)
@@ -215,19 +215,14 @@ int which_row(int y):
 	int row = y / row_h
 	return row
 
-int which_stack(int x, int y):
-	use(x, y)
-	# TODO
-	return -1
-
 control_play:
-	set_key_handler("q", thunk(quit_game))
-	set_key_handler_default(thunk(key_input))
-	set_mouse_handler(1, ButtonPress, thunk(move_cards_start))
-	set_mouse_handler(1, MotionNotify, thunk(move_cards_drag))
-	set_mouse_handler(1, ButtonRelease, thunk(move_cards_stop))
-	set_mouse_handler(3, ButtonPress, thunk(stack_cards))
-	# TODO
+	key_handler("q", KeyPress) = thunk(quit_game)
+	key_handler_default = thunk(key_input)  # TODO
+	mouse_handler(1, ButtonPress) = thunk(move_cards_start)
+	mouse_handler(1, MotionNotify) = thunk(move_cards_drag)
+	mouse_handler(1, ButtonRelease) = thunk(move_cards_stop)
+	mouse_handler(3, ButtonPress) = thunk(stack_cards)
+	# TODO hints and stuff
 
 void *key_input(void *obj, void *a0, void *event):
 	use(obj, a0)
@@ -346,5 +341,10 @@ int stack_card(int col, int row):
 	plot_cards()
 	Sleep(plot_slow_stack)
 	return done
+
+int which_stack(int x, int y):
+	use(x, y)
+	# TODO
+	return -1
 
 # LIBB

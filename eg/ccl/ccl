@@ -13,12 +13,13 @@ Main()
 	sprite_clear(components, -1)
 
 	space()
+	autopaint(1)
 	decl(screen, sprite)
 
 	sprite_screen(screen)
 
 	sprite_put(screen, image, 0, 0)
-	Readline()
+	gr_getc()
 
 	new(seeds, deq, pointi2, (image->width+image->height)*2)
 	pix_t *i0 = image->pixels
@@ -39,10 +40,10 @@ Main()
 
 	repeat
 		sprite_put(screen, components, 0, 0)
-		Readline()
+		gr_getc()
 
 		sprite_put(screen, image, 0, 0)
-		Readline()
+		gr_getc()
 
 # def flood_lines_4(v_seeds, h_seeds
 

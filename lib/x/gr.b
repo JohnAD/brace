@@ -29,6 +29,7 @@ XColor color
 int screen_number
 XShmSegmentInfo *shmseginfo = NULL
 Atom wm_protocols, wm_delete
+int x11_fd
 
 font(cstr name, int size)
 	let(xfontname, format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
@@ -54,7 +55,9 @@ gr_init()
 	
 	if (display = XOpenDisplay(NULL)) == NULL
 		error("cannot open display")
-	
+
+	x11_fd = ConnectionNumber(display)
+
 	screen_number = DefaultScreen(display)
 	visual = DefaultVisual(display, screen_number)
 
@@ -444,6 +447,12 @@ num font_height()
 # TODO bbox function for fonts / text
 
 paint()
+	paint_sync(1)
+
+Paint()
+	paint_sync(2)
+
+paint_sync(int syncage)
 	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
 #	XClearWindow(display, window)
 
@@ -452,17 +461,13 @@ paint()
 	# pixmap or the window since it was last painted.  but I changed it
 	# through shm!
 
-	XFlush(display)
-	if paint_handle_events
+	which syncage
+	2	gr_sync()
+	1	XFlush(display)
+
+	if paint_handle_events || veclen(gr_need_delay_callbacks)
 		handle_events()
 
-# this one waits for the paint to complete, in case you are poking the shm pixmap thing
-Paint()
-	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
-#	XClearWindow(display, window)
-	gr_sync()
-	if paint_handle_events
-		handle_events()
 
 gr_sync()
 	XSync(display, False)
@@ -544,11 +549,11 @@ def dump_img(type, file)
 
 def with_pixel_type(macro)
 	if depth > 16
-		macro(long)
+		macro(ulong)
 	 eif depth == 16
-		macro(short)
+		macro(ushort)
 	 eif depth == 8
-		macro(char)
+		macro(uchar)
 	 else
 		error("unsupported video depth: %d", depth)
 

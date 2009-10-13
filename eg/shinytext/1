@@ -92,9 +92,9 @@ def shiny(pixel_type)
 					px[-w-1] = px[randi(-4, 5) + randi(-4, 5)*w]
 				++px
 			px += 2
-		back(y, h-1, 1)
+		repeat(h-2)
 			px -= 2
-			back(x, w-1, 1)
+			repeat(w-2)
 				--px
 				*px = px[-w-1]
 
@@ -104,11 +104,11 @@ def shiny(pixel_type)
 		Paint()
 
 # assuming 32 bit colour again:
-def r(x) x >> 16 & 0xFF
-def g(x) x >> 8 & 0xFF
-def b(x) x & 0xFF
+def r(x) pix_r(x)
+def g(x) pix_g(x)
+def b(x) pix_b(x)
 
-def fastrgb32(r0, g0, b0) (long)r0<<16 | (long)g0<<8 | (long)b0
+def fastrgb32(r0, g0, b0) pix_rgb(r0, g0, b0)
 
 def fnp 3
 #def fn(o, x0, x1, x2, x3) iclamp(pow(avg(pow(o, fnp), pow(x0, fnp), pow(x1, fnp), pow(x2, fnp), pow(x3, fnp)), 1.0/fnp)*1.001, 0, 255)

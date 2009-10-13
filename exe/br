@@ -212,11 +212,15 @@ if [ -n "$X" -a "$X" = "${X#-}" ]; then
 	shift
 	X="${X%$EXE}$EXE"
 else
-	X="$B$EXE"
-	[ "$X" = "$B" ] &&
-		fail "please specify a name for the executable"
+	if [ -x "$B" ]; then
+		X="$dirname/.$basename$EXE"
+	else
+		X="$B$EXE"
+		[ "$X" = "$B" ] &&
+			fail "please specify a name for the executable"
+	fi
 fi
-XBAK="$dirname/.${basename}.xbak$EXE"
+XBAK="$dirname/.$basename.xbak$EXE"
 #C=`tempfile -s .c`
 B1="$dirname/.$basename.${b}1"
 C="$dirname/.$basename.$c"

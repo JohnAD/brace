@@ -965,9 +965,8 @@ def select_wrap(fd, read_fds, write_fds, except_fds, timeout)
 	if !tmp_fd_set
 		global(tmp_fd_set, fd_set)
 	timeval tv
-	rtime_to_timeval(timeout, &tv)
 	fd_set(fd, tmp_fd_set)
-	int n_ready = select(fd+1, read_fds, write_fds, except_fds, &tv)
+	int n_ready = select(fd+1, read_fds, write_fds, except_fds, delay_to_timeval(timeout, &tv))
 	fd_clr(fd, tmp_fd_set)
 	if n_ready == -1
 		failed("select")
@@ -1516,7 +1515,7 @@ cstr is_scan_space(cstr s)
 		return isspace(*s) ? s+1 : NULL
 
 do_delay(num t)
-	if t
+	if t != time_forever
 		if can_read(STDIN_FILENO, t)
 			Readline()
 	 else

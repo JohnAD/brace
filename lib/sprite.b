@@ -9,22 +9,28 @@ def pix_g(p) p>>8 & 0xFF
 def pix_b(p) p & 0xFF
 def pix_a(p) p>>24 & 0xFF
 
-def pix_rgb(r, g, b) r<<16 | g<<8 | b
-def pix_rgb_safe(r, g, b) (r&0xFF)<<16 | (g&0xFF)<<8 | (b&0xFF)
+def pix_rgb(r, g, b) (pix_t)r<<16 | (pix_t)g<<8 | (pix_t)b
+def pix_rgb_safish(r, g, b) pix_rgb(byte_clamp_top(r), byte_clamp_top(g), byte_clamp_top(b))
+  # does not handle negatives
+def pix_rgb_safe(r, g, b) pix_rgb(byte_clamp(r), byte_clamp(g), byte_clamp(b))
 
-def pix_rgba(r, g, b, a) a<<24 | r<<16 | g<<8 | b
-def pix_rgba_safe(r, g, b) (a&0xFF)<<24 | (r&0xFF)<<16 | (g&0xFF)<<8 | (b&0xFF)
+def pix_rgba(r, g, b, a) (pix_t)a<<24 | pix_rgb(r, g, b)
+def pix_rgba_safish(r, g, b, a) pix_rgba(byte_clamp_top(r), byte_clamp_top(g), byte_clamp_top(b), byte_clamp_top(a))
+  # does not handle negatives
+def pix_rgba_safe(r, g, b) pix_rgba(byte_clamp(r), byte_clamp(g), byte_clamp(b), byte_clamp(a))
 
 def pixn_r(p) pix_r(p) / 256.0
 def pixn_g(p) pix_g(p) / 256.0
 def pixn_b(p) pix_b(p) / 256.0
 def pixn_a(p) pix_a(p) / 256.0
 
-def pixn_rgb(r, g, b) pix_rgb((int)(r*256), (int)(g*256), (int)(b*256))
-def pixn_rgb_safe(r, g, b) pix_rgb(iclamp((int)(r*256), 0, 255), iclamp((int)(g*256), 0, 255), iclamp((int)(b*256), 0, 255))
+def pixn_rgb(r, g, b) pix_rgb(r*256, g*256, b*256)
+def pixn_rgb_safish(r, g, b) pix_rgb(n_to_byte_top(r), n_to_byte_top(g), n_to_byte_top(b))
+def pixn_rgb_safe(r, g, b) pix_rgb(n_to_byte(r), n_to_byte(g), n_to_byte(b))
 
-def pixn_rgba(r, g, b, a) pix_rgb(r*256, g*256, b*256, a*256)
-def pixn_rgba_safe(r, g, b, a) pix_rgb(iclamp((int)(r*256), 0, 255), iclamp((int)(g*256), 0, 255), iclamp((int)(b*256), 0, 255), iclamp((int)(a*256), 0, 255))
+def pixn_rgba(r, g, b, a) pix_rgba(r*256, g*256, b*256, a*256)
+def pixn_rgba_safish(r, g, b, a) pix_rgba(n_to_byte_top(r), n_to_byte_top(g), n_to_byte_top(b), n_to_byte_top(a))
+def pixn_rgba_safe(r, g, b, a) pix_rgba(n_to_byte(r), n_to_byte(g), n_to_byte(b), n_to_byte(a))
 
 
 struct sprite

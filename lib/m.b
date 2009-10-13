@@ -244,6 +244,14 @@ num clamp(num x, num min, num max)
 int iclamp(int x, int min, int max)
 	return x < min ? min : x > max ? max : x
 
+long lclamp(long x, long min, long max)
+	return x < min ? min : x > max ? max : x
+
+def byte_clamp(x) iclamp(x, 0, 255)
+def byte_clamp_top(x) x&0xFF
+def n_to_byte(x) byte_clamp((int)x*256)
+def n_to_byte_top(x) (int)(x*256)&0xFF
+
 def Floor(x) (int)(x+tinynum)
 
 def num_eq(a, b) fabs(b-a)<tinynum

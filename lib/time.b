@@ -10,7 +10,7 @@ export buffer
 use error util m env process
 use time
 
-def time_forever -1
+def time_forever -1e100
 
 # datetime:
 #
