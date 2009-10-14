@@ -1566,3 +1566,40 @@ def cd_block(dir)
 	pre(my(x))
 		Chdir(dir)
 
+
+# I don't know about this file_type thing, might be too complicated and different for no good reason.
+# the idea was to be able to return info on the file type, and also if it exists, if it was a link,
+# if it is some sort of file (not a dir).
+
+typedef enum { FT_REG=1, FT_DIR=2, FT_CHR=3, FT_BLK=4, FT_FIFO=5, FT_SOCK=6, FT_EXISTS=8, FT_FILE=16, FT_LINK=32, FT_TYPE_MASK=7 } filetype_t
+
+filetype_t file_type(const char *file_name)
+	filetype_t type = 0
+	mode_t ft = lstat_ft(file_name)
+	if ft == S_IFLNK
+		type |= FT_LINK
+		ft = stat_ft(file_name)
+		if !ft
+			return type
+	type |= FT_EXISTS
+	if ft == S_IFDIR
+		type |= FT_DIR
+	 else
+		type |= FT_FILE
+		which ft
+		S_IFREG	type |= FT_REG
+		S_IFIFO	type |= FT_FIFO
+		S_IFSOCK	type |= FT_SOCK
+		S_IFCHR	type |= FT_CHR
+		S_IFBLK	type |= FT_BLK
+	return type
+
+
+mode_t stat_ft(const char *file_name)
+	struct stat buf
+	return Stat(file_name, &buf) ? buf.st_mode & S_IFMT : 0
+
+mode_t lstat_ft(const char *file_name)
+	struct stat buf
+	return Lstat(file_name, &buf) ? buf.st_mode & S_IFMT : 0
+
