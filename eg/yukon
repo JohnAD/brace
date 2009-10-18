@@ -3,12 +3,13 @@ use b
 use X11/cursorfont.h
 
 def N 52
-sprite background, card_back_sprite, card_sprites[N], stack_bases[4]
+sprite background, card_back_sprite, show_hint, card_sprites[N], stack_bases[4]
 int card_w, card_h
+int show_hint_x, show_hint_y
 def gap 15
 def col_w (w-gap)/8
 def row_h 18 # 13 25
-num plot_slow_new_game = 0.01
+num plot_slow_new_game = 0 # 0.01
 num plot_slow_stack = 0.05
 int moves
 def intro_fps 100
@@ -49,12 +50,14 @@ load_sprites:
 			sprite_load_png(&stack_bases[i], file)
 		sprite_load_png(&card_back_sprite, "b02fv.png")
 		sprite_load_png(&background, "greenbackground.png")
+		sprite_load_png(&show_hint, "showhint.png")
 	card_w = card_sprites[0].width ; card_h = card_sprites[0].height
 
 init:
 	for(i, 0, 8):
 		init(&cols[i], vec, int, 16)
 	init(cards_in_motion, vec, int, 16)
+	show_hint_x = w-gap-show_hint.width ; show_hint_y = h-gap-show_hint.height
 
 boolean stop_intro = 0
 
@@ -135,6 +138,7 @@ def plot_cards():
 	plot_cards(0)
 plot_cards(num plot_slow):
 	sprite_put(screen, &background, 0, 0)
+	sprite_put_transl(screen, &show_hint, show_hint_x, show_hint_y)
 	for(suit, 0, 4):
 		pointi2 p = card_point(7, suit)
 		if stacks[suit]:
