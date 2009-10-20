@@ -352,6 +352,13 @@ sprite *sprite_load_png_stream(sprite *s, FILE *in)
 	
 	return s
 
+pix_t pix_transp = pix_rgba(0, 0, 0, 255)
+
+pix_t sprite_at(sprite *s, long x, long y):
+	if x < 0 || y < 0 || x >= s->width || y >= s->height:
+		return pix_transp
+	return s->pixels[y*s->stride + x]
+
 # TODO jpeg
 # TODO sprite_put_behind ...
 

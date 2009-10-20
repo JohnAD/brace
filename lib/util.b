@@ -95,6 +95,7 @@ def repeat(n)
 def back(v, from)
 	back(v, from, 0)
 
+# FIXME? make back(i, 0, 7) count 6,5,4,3,2,1,0  instead of back(i, 7, 0)  DANGER be very careful to change all uses!
 def back(v, from, to)
 	let(my(end), to-1)
 	let(my(v1), from-1)

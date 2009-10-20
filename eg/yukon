@@ -3,16 +3,26 @@ use b
 use X11/cursorfont.h
 
 def N 52
-sprite background, card_back_sprite, show_hint, card_sprites[N], stack_bases[4]
+sprite background_sprite, card_back_sprite, show_hint_sprite, card_sprites[N], stack_base_sprites[4]
 int card_w, card_h
 int show_hint_x, show_hint_y
 def gap 15
 def col_w (w-gap)/8
 def row_h 18 # 13 25
-num plot_slow_new_game = 0 # 0.01
+#num plot_slow_new_game = 0.005 # 0.01
+num plot_slow_new_game = 0.00005 # 0.01
 num plot_slow_stack = 0.05
+num plot_slow_stack_all = 0.01
 int moves
-def intro_fps 100
+num intro_fps = 100
+num hint_fps = 50
+#num hint_secs = 0.5
+#num hint_wait = 0.3
+num hint_secs = 0.0
+num hint_wait = 0.0
+int unstacked
+int uncleared
+boolean auto_pilot = 0
 
 struct card_state:
 	int n
@@ -26,7 +36,7 @@ int stacks[4]
 
 Main:
 	load_sprites()
-	space(background.width, background.height)
+	space(background_sprite.width, background_sprite.height)
 #	XDefineCursor(display, window, XCreateFontCursor(display, XC_crosshair))
 	intro()
 	init()
@@ -47,17 +57,18 @@ load_sprites:
 		for(i, 0, 4):
 			int suit = (i+1) % 4  # CSHD -> SHDC!
 			snprintf(file, sizeof(file), "stack%02d.png", suit+1)
-			sprite_load_png(&stack_bases[i], file)
+			sprite_load_png(&stack_base_sprites[i], file)
 		sprite_load_png(&card_back_sprite, "b02fv.png")
-		sprite_load_png(&background, "greenbackground.png")
-		sprite_load_png(&show_hint, "showhint.png")
+		sprite_load_png(&background_sprite, "greenbackground.png")
+		sprite_load_png(&show_hint_sprite, "showhint.png")
 	card_w = card_sprites[0].width ; card_h = card_sprites[0].height
 
 init:
 	for(i, 0, 8):
 		init(&cols[i], vec, int, 16)
 	init(cards_in_motion, vec, int, 16)
-	show_hint_x = w-gap-show_hint.width ; show_hint_y = h-gap-show_hint.height
+	show_hint_x = w-gap-show_hint_sprite.width ; show_hint_y = h-gap-show_hint_sprite.height
+	NEW(hints, vec, hint, 32)
 
 boolean stop_intro = 0
 
@@ -72,7 +83,7 @@ intro:
 	key_handler_default = mouse_handler_default = thunk(intro_stop)
 
 	while !stop_intro:
-		sprite_put(screen, &background, 0, 0)
+		sprite_put(screen, &background_sprite, 0, 0)
 		back(i, N*packs):   # high cards on top
 			pointn2 *p = &card_pos[i], *v = &card_vel[i]
 			sprite_put(screen, &card_sprites[i%N], p->x[0], p->x[1])
@@ -98,12 +109,22 @@ new_game:
 	control_default()
 	plot_cards(plot_slow_new_game)
 	control_play()
+	auto_pilot = 0
 
 void *quit_game(void *obj, void *a0, void *event):
 	use(obj, a0, event)
 	if moving_cards:
 		move_cards_abort()
 	new_game()
+	return thunk_yes
+
+void *toggle_auto_pilot(void *obj, void *a0, void *event):
+	use(obj, a0, event)
+	auto_pilot = !auto_pilot
+	while auto_pilot && unstacked:
+		show_hint(1)
+		handle_events()
+	auto_pilot = 0
 	return thunk_yes
 
 shuffle:
@@ -116,6 +137,8 @@ shuffle:
 		swap(C->n, C2->n)
 
 deal:
+	uncleared = 0
+	unstacked = N
 	for(i, 0, 8):
 		vecclr(&cols[i])
 	int col = 0, row = 0
@@ -125,6 +148,8 @@ deal:
 		C->col = col
 		C->row = row
 		C->face_up = veclen(&cols[col]) > col
+		if !C->face_up:
+			++uncleared
 		++col
 		if col == 7
 			++row
@@ -133,18 +158,19 @@ deal:
 				++col
 	for(i, 0, 4):
 		stacks[i] = 0
+	cards_moved()
 
 def plot_cards():
 	plot_cards(0)
 plot_cards(num plot_slow):
-	sprite_put(screen, &background, 0, 0)
-	sprite_put_transl(screen, &show_hint, show_hint_x, show_hint_y)
+	sprite_put(screen, &background_sprite, 0, 0)
+	sprite_put_transl(screen, &show_hint_sprite, show_hint_x, show_hint_y)
 	for(suit, 0, 4):
 		pointi2 p = card_point(7, suit)
 		if stacks[suit]:
 			sprite_put(screen, &card_sprites[card_n(suit, stacks[suit])], p.x[0], p.x[1])
 		 else:
-			sprite_put_transp(screen, &stack_bases[suit], p.x[0], p.x[1])
+			sprite_put_transp(screen, &stack_base_sprites[suit], p.x[0], p.x[1])
 	int row = 0
 	int some
 	do:
@@ -221,6 +247,7 @@ int which_row(int y):
 
 control_play:
 	key_handler("q", KeyPress) = thunk(quit_game)
+	key_handler("a", KeyPress) = thunk(toggle_auto_pilot)
 	key_handler_default = thunk(key_input)  # TODO
 	mouse_handler(1, ButtonPress) = thunk(move_cards_start)
 	mouse_handler(1, MotionNotify) = thunk(move_cards_drag)
@@ -246,19 +273,25 @@ void *move_cards_start(void *obj, void *a0, void *event):
 	if which_card(&col, &row, e->x, e->y) == 0:
 		int c = *(int*)v(&cols[col], row)
 		if card[c].face_up:
-			if moving_cards:
-				move_cards_abort()
-			moving_cards = 1
-			move_card_from_col = col ; move_card_from_row = row
-			int n_cards = veclen(&cols[col]) - row
-			vec_append(cards_in_motion, v(&cols[col], row), n_cards)
-			vec_set_size(&cols[col], row)
+			move_start(col, row)
 			pointi2 p = card_point(col, row)
 			move_card_drag_offset = (pointi2){{p.x[0] - e->x, p.x[1] - e->y}}
 			move_card_drag = (pointi2){{e->x, e->y}}
 			plot_cards()
 #			debug("move cards start %d %d", col, row)
+	 eif !pix_a(sprite_at(&show_hint_sprite, e->x-show_hint_x, e->y-show_hint_y))
+		show_hint(0)
 	return thunk_yes
+
+move_start(int col, int row)
+	if moving_cards:
+		move_cards_abort()
+		plot_cards()
+	moving_cards = 1
+	move_card_from_col = col ; move_card_from_row = row
+	int n_cards = veclen(&cols[col]) - row
+	vec_append(cards_in_motion, v(&cols[col], row), n_cards)
+	vec_set_size(&cols[col], row)
 
 void *move_cards_drag(void *obj, void *a0, void *event):
 	use(obj, a0)
@@ -274,20 +307,25 @@ void *move_cards_stop(void *obj, void *a0, void *event):
 	gr_event *e = event
 	if moving_cards:
 		int col = which_col(e->x)
-		if col >= 0 && cards_can_land(col):
+		int card_floating = *(int*)vec0(cards_in_motion)
+		int from_col = move_card_from_col
+		if col == 7 && veclen(cards_in_motion) == 1 && can_stack(card_floating):
+			move_cards_abort()
+			stack_card(from_col, veclen(&cols[from_col])-1)
+		 eif tween(col, 0, 6) && cards_can_land(card_floating, col):
 			move_cards(col)
 		 else:
 			move_cards_abort()
+		plot_cards()
 #		debug("move cards stop %d", col)
 	return thunk_yes
 
 move_cards_abort():
 	move_cards(move_card_from_col)
 
-boolean cards_can_land(int col):
+boolean cards_can_land(int card_floating, int col):
 	vec *column = &cols[col]
-	int card_floating = *(int*)vec0(cards_in_motion)
-	if !veclen(column)
+	if !veclen(column):
 		return value(card[card_floating].n) == 13  # king
 	int card_base = *(int*)vec_top(column)
 	return card_can_go_on_card(card[card_floating].n, card[card_base].n)
@@ -308,47 +346,355 @@ move_cards(int col):
 	if col != move_card_from_col
 		++moves
 		show_top_card(move_card_from_col)
-	plot_cards()
+		cards_moved()
 
 show_top_card(int col):
 	vec *column = &cols[col]
 	int n = veclen(column)
 	if n:
-		card[*(int*)vec_top(column)].face_up = 1
+		card_state *C = &card[*(int*)vec_top(column)]
+		if !C->face_up:
+			C->face_up = 1
+			--uncleared
 
-void *stack_cards(void *obj, void *a0, void *event)
+void *stack_cards(void *obj, void *a0, void *event):
 	use(obj, a0)
 	gr_event *e = event
 	int col, row
-	if which_card(&col, &row, e->x, e->y) == 0
+	if which_card(&col, &row, e->x, e->y) == 0:
 		vec *column = &cols[col]
-		back(r, veclen(column), row):
-			if stack_card(col, r):
-				break
-#		debug("stack cards %d %d", col, row)
+		int c = *(int*)v(column, row)
+		int n = card[c].n
+		if value(n) == 13 && (row != veclen(column)-1 || !can_stack(c)):
+			stack_all_cards()
+		 else:
+			paint_handle_events = 0
+			back(r, veclen(column), row):
+				if !stack_card(col, r):
+					break
+				plot_cards()
+				Sleep(plot_slow_stack)
+			paint_handle_events = 1
+	#		debug("stack cards %d %d", col, row)
+	 eif !pix_a(sprite_at(&show_hint_sprite, e->x-show_hint_x, e->y-show_hint_y)):
+		show_hint(1)
 	return thunk_yes
 
 int stack_card(int col, int row):
-	int done
 	vec *column = &cols[col]
 	int c = *(int*)v(column, row)
 	int n = card[c].n
-	if !card[c].face_up || stacks[suit(n)] + 1 != value(n):
-		done = -1
+	if !can_stack(c):
+		return 0
 	 else:
 		++stacks[suit(n)]
+		--unstacked
 		card[c].col = 7
 		card[c].row = suit(n)
 		vec_pop(column)
 		show_top_card(col)
-		done = 0
-	plot_cards()
-	Sleep(plot_slow_stack)
-	return done
+		cards_moved()
+		return 1
+
+stack_all_cards()
+	paint_handle_events = 0
+	int done = 0
+	while !done:
+		done = 1
+		for(col, 0, 7):
+			vec *column = &cols[col]
+			int row = veclen(column)-1
+			if row >= 0:
+				if stack_card(col, row):
+					done = 0
+					plot_cards()
+					Sleep(plot_slow_stack_all)
+	paint_handle_events = 1
+
+boolean can_stack(int c):
+	int n = card[c].n
+	return card[c].face_up && stacks[suit(n)] + 1 == value(n)
 
 int which_stack(int x, int y):
 	use(x, y)
 	# TODO
 	return -1
+
+int show_hint_ix = 0
+
+struct hint
+	int col, row
+	int to_col # 7 means stack it
+
+vec struct__hints, *hints = &struct__hints
+boolean need_calc_hints = 1
+int hint_ix = 0
+
+cards_moved():
+	vecclr(hints)
+	need_calc_hints = 1
+	hint_ix = 0
+
+show_hint(boolean doit):
+	# cycles through possible moves
+	if need_calc_hints:
+		calc_hints()
+		need_calc_hints = 0
+	 eif doit:
+		--hint_ix
+		if hint_ix < 0:
+			hint_ix += veclen(hints)
+	if !veclen(hints):
+		warn("there are no moves!")  # TODO
+	 else:
+		hint *h = v(hints, hint_ix)
+		suggest_move(h->col, h->row, h->to_col, doit)
+		if ++hint_ix >= veclen(hints):
+			hint_ix = 0
+
+calc_hints():
+	for(col, 0, 7):
+		vec *column = &cols[col]
+		for(row, 0, veclen(column)):
+			int c = *(int*)v(column, row)
+			if !card[c].face_up:
+				continue
+			int n = card[c].n
+			boolean king_at_base = value(n) == 13 && row == 0
+			if king_at_base:
+				continue
+			for(to_col, 0, 7):
+				if to_col == col:
+					continue
+				if cards_can_land(c, to_col):
+					vec_push(hints, (hint){col, row, to_col})
+	for(col, 0, 7):
+		vec *column = &cols[col]
+		int row = veclen(column)-1
+		if row >= 0:
+			int c = *(int*)v(column, row)
+			if can_stack(c):
+				vec_push(hints, (hint){col, row, 7})
+	if veclen(hints):
+		choose_best_hint()
+
+choose_best_hint():
+	hint *best_hint = NULL
+	best_hint = choose_best_hint_stack_lowest()
+	if uncleared:
+		if !best_hint:
+			best_hint = choose_best_hint_clearing_move(0)
+		if !best_hint:
+			best_hint = choose_best_hint_clearing_move(1)
+		if !best_hint:
+			warn("there is no way to clear more cards")  # TODO
+	if !best_hint:
+		best_hint = choose_best_stacking_move()
+	if !best_hint:
+		best_hint = choose_non_trivial_move()
+	if !best_hint:
+		warn("only trivial moves left!")
+		best_hint = v(hints, randi(veclen(hints)))
+	if best_hint:
+		let(tmp, *best_hint)
+		vec_cut(hints, best_hint-(hint*)vec0(hints))
+		vec_unshift(hints, &tmp)
+		warn("found a best hint")
+
+hint *choose_best_hint_stack_lowest():
+	warn("choose_best_hint_stack_lowest")
+	int min_stack = 13
+	for(i, 0, 4):
+		if stacks[i] < min_stack:
+			min_stack = stacks[i]
+	for_vec(h, hints, hint):
+		if h->to_col == 7:
+			vec *column = &cols[h->col]
+			int c = *(int*)v(column, h->row)
+			if value(card[c].n) == min_stack+1:
+				return h
+	return NULL
+
+boolean stopped_for_depth
+
+hint *choose_best_hint_clearing_move(boolean may_stack):
+	warn("choose_best_hint_clearing_move %d", may_stack)
+	char already[N]
+	bzero(already, sizeof(already))
+	for(col, 0, 7):
+		int depth = 1
+		repeat:
+			stopped_for_depth = 0
+			vec *column = &cols[col]
+			back(row, veclen(column), 0):
+				int c = *(int*)v(column, row)
+				if !card[c].face_up:
+					hint *h = try_move(col, row+1, may_stack, already, depth):
+					if h:
+						return h
+					break
+			if !stopped_for_depth:
+				break
+			++depth
+	return NULL
+
+hint *choose_best_stacking_move()
+	warn("choose_best_stacking_move")
+	char already[N]
+	bzero(already, sizeof(already))
+	int depth = 1
+	repeat:
+		stopped_for_depth = 0
+		for(col, 0, 7):
+			vec *column = &cols[col]
+			int l = veclen(column)
+			for(row, 0, l):
+				int c = *(int*)v(column, row)
+				if can_stack(c):
+					if row == l-1:
+						return find_hint(col, row, 7)
+					 else:
+						hint *h = try_move(col, row+1, 1, already, depth)
+						if h:
+							return h
+		if !stopped_for_depth:
+			break
+		++depth
+	return NULL
+
+hint *choose_non_trivial_move()
+	warn("choose_non_trivial_move")
+	for_vec(h, hints, hint):
+		vec *column = &cols[h->col]
+		if h->to_col == 7:
+			fault("choose_non_trivial_move called but direct stacking move available")
+		vec *to_column = &cols[h->to_col]
+		int l_to = veclen(to_column)
+		if !l_to:
+			warn("chose non-trivial move for king")
+			return h
+		int c_up = *(int*)v(column, h->row-1)
+		int n_up = card[c_up].n
+		int c_up_to = *(int*)v(to_column, l_to-1)
+		int n_up_to = card[c_up_to].n
+		if value(n_up) != value(n_up_to) || card_color(n_up) != card_color(n_up_to):
+			warn("chose non-trivial move")
+			return h
+	return NULL
+
+hint *try_move(int col, int row, int may_stack, char *already, int depth):
+	if depth == 0:
+		stopped_for_depth = 1
+		return NULL
+	warn("try_move %d %d", col, row)
+	# try_move - how can we move this card?
+	# * keep a record of each card we try to unbury, and don't loop
+	# * if we fail to unbury a card, record that fact, to shortcut future searches
+	vec *column = &cols[col]
+
+	# 0. we can stack the cards above it - do it
+	if may_stack && can_stack_all_from(col, row):
+		return find_hint(col, veclen(column)-1, 7)
+	int c = *(int*)v(column, row)
+	int n = card[c].n
+	if already[c]:
+		return NULL
+	already[c] = 1
+
+	# 1. we can already move it to a column (possibly if we stack some cards first) - do it
+	# 2. we can find a card buried in another column to move it to - try to unbury any such cards recursively
+	# 3. we can find a card in this column to move it to - split this column by trying to unbury each card between them
+	for(to_col, 0, 7):
+		vec *to_column = &cols[to_col]
+		int l = veclen(to_column)
+		back(to_row, l+1, 0):
+			if to_col == col && to_row == row:
+				continue
+			if to_row < l && !card[*(int*)v(to_column, to_row)].face_up:
+				break
+			if might_move(n, row, to_col, to_row):
+				if to_col == col && to_row > row:
+					for(r1, row+1, to_row-1):
+						Fprintf(stderr, " ")
+						hint *h = try_move(col, r1, may_stack, already, depth-1)
+						if h:
+							return h
+				 eif to_row == l:
+					return find_hint(col, row, to_col)
+				 eif may_stack && can_stack_all_from(to_col, to_row):
+					return find_hint(to_col, l-1, 7)
+				 else:
+					Fprintf(stderr, " ")
+					hint *h = try_move(to_col, to_row, may_stack, already, depth-1)
+					if h:
+						return h
+
+	Fprintf(stderr, ".")
+	return NULL
+
+boolean might_move(int n, int row, int to_col, int to_row):
+	if value(n) == 13:
+		return to_row == 0 && row != 0
+	 eif to_row > 0:
+		vec *to_column = &cols[to_col]
+		int ct = *(int*)v(to_column, to_row-1)
+		int nt = card[ct].n
+		return value(nt) == value(n)+1 && card_color(nt) != card_color(n)
+	return 0
+
+hint *find_hint(int col, int row, int to_col):
+	for_vec(h, hints, hint):
+		if h->col == col && h->row == row && h->to_col == to_col:
+			return h
+	fault("find_hint failed %d %d %d", col, row, to_col)
+	return NULL
+
+boolean can_stack_all_from(int col, int row1):
+	vec *column = &cols[col]
+	int test_stacks[4]
+	for(i, 0, 4):
+		test_stacks[i] = stacks[i]
+	back(row, veclen(column), row1):
+		int c = *(int*)v(column, row)
+		int n = card[c].n
+		if value(n) != test_stacks[suit(n)] + 1:
+			return 0
+		++test_stacks[suit(n)]
+	return 1
+
+suggest_move(int col, int row, int to_col, boolean doit):
+	vec *column = &cols[col]
+	int c = *(int*)v(column, row)
+	int n = card[c].n
+	warn("hint: move col %d row %d to col %d", col, row, to_col)
+	move_start(col, row)
+	move_card_drag_offset = (pointi2){{0, 0}}
+	pointi2 p0 = card_point(col, row)
+	pointi2 p1
+	if to_col < 7:
+		p1 = card_point(to_col, veclen(&cols[to_col]))
+	 else
+		p1 = card_point(to_col, suit(n))
+	int x0 = p0.x[0], y0 = p0.x[1]
+	int x1 = p1.x[0], y1 = p1.x[1]
+	paint_handle_events = 0
+	int hint_frames = hint_fps*hint_secs
+	for(i, 0, hint_frames+1):
+		num n = i/(num)hint_frames
+		n = - spow(Cos(180*n), 0.8) / 2 + 0.5
+		move_card_drag = (pointi2){{(x1-x0)*n + x0, (y1-y0)*n + y0}}
+		plot_cards()
+		csleep(1.0/hint_fps)
+	if doit:
+		if to_col == 7:
+			move_cards_abort()
+			stack_card(col, row)
+		 else:
+			move_cards(to_col)
+	 else:
+		csleep(hint_wait)
+		move_cards_abort()
+	plot_cards()
+	paint_handle_events = 1
 
 # LIBB

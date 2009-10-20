@@ -206,12 +206,14 @@ vec_splice(vec *v, ssize_t i, ssize_t cut, void *in, ssize_t ins)
 def vec_append(v, in, n) vec_insert(v, veclen(v), in, n)
 
 def vec_cut(v, i, n) vec_splice(v, i, n, NULL, 0)
+def vec_cut(v, i) vec_cut(v, i, 1)
 
 def vec_grow_at(v, i, n) vec_splice(v, i, 0, NULL, n)
 
 def vec_insert(v, i, in, n) vec_splice(v, i, 0, in, n)
 
 def vec_unshift(v, in, n) vec_insert(v, 0, in, n)
+def vec_unshift(v, in) vec_unshift(v, in, 1)
 
 def vec_shift(v, n) vec_cut(v, 0, n)
 def vec_shift(v) vec_shift(v, 1)
