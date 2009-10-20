@@ -446,6 +446,7 @@ show_hint(boolean doit):
 			hint_ix += veclen(hints)
 	if !veclen(hints):
 		warn("there are no moves!")  # TODO
+		auto_pilot = 0
 	 else:
 		hint *h = v(hints, hint_ix)
 		suggest_move(h->col, h->row, h->to_col, doit)
@@ -495,6 +496,7 @@ choose_best_hint():
 	if !best_hint:
 		warn("only trivial moves left!")
 		best_hint = v(hints, randi(veclen(hints)))
+		auto_pilot = 0
 	if best_hint:
 		let(tmp, *best_hint)
 		vec_cut(hints, best_hint-(hint*)vec0(hints))
@@ -567,7 +569,8 @@ hint *choose_non_trivial_move()
 	for_vec(h, hints, hint):
 		vec *column = &cols[h->col]
 		if h->to_col == 7:
-			fault("choose_non_trivial_move called but direct stacking move available")
+			continue
+#			fault("choose_non_trivial_move called but direct stacking move available")
 		vec *to_column = &cols[h->to_col]
 		int l_to = veclen(to_column)
 		if !l_to:
