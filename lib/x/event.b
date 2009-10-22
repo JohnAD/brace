@@ -1,22 +1,31 @@
 # event handler ----------------------------------------------
 
-# XXX crappy hack to get around ordering bug
-struct thunk
-	thunk_func *func
-	void *obj
-	void *common_arg
-
-export types thunk error alloc time gr event
+use gr
+export types thunk
+use alloc time error
+use event
 
 XEvent x_event
 
-int events_queued()
+int events_queued(boolean wait_for_event)
 #	return XEventsQueued(display, QueuedAfterReading)
-	return XEventsQueued(display, can_read(x11_fd) ? QueuedAfterReading : QueuedAlready)
-	  # is can_read necessary?
+#	warn("events_queued: wait_for_event = %d", wait_for_event)
+#	int n = XEventsQueued(display, wait_for_event||can_read(x11_fd) ? QueuedAfterReading : QueuedAlready)
+	int n = XEventsQueued(display, QueuedAlready)
+#	warn("	n = %d", n)
+	if !QueuedAlready:
+#		warn("	selecting...")
+		num timeout = wait_for_event&&!veclen(gr_need_delay_callbacks) ? time_forever : 0
+		gr_flush()
+		if can_read(x11_fd, timeout):
+#			warn("	reading...")
+			n = XEventsQueued(display, QueuedAfterReading)
+#			warn("	n = %d", n)
+	return n
+		# is can_read necessary?
 
-boolean handle_event_maybe()
-	boolean n = events_queued()
+boolean handle_event_maybe(boolean wait_for_event)
+	boolean n = events_queued(wait_for_event)
 	if n
 		handle_event()
 	 else
@@ -215,6 +224,7 @@ void *key_handler_main(void *obj, void *a0, void *event)
 	return rv
 
 key_event_debug(cstr format, gr_event *e)
+	use(format)
 	cstr key_string = event_key_string(e)
 	if key_string != NULL  # ignore unmapped keys
 		debug(format, event_type_name(e->type), key_string)

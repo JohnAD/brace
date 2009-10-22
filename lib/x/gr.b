@@ -466,7 +466,7 @@ paint_sync(int syncage)
 	1	XFlush(display)
 
 	if paint_handle_events || veclen(gr_need_delay_callbacks)
-		handle_events()
+		handle_events(0)
 
 
 gr_sync()

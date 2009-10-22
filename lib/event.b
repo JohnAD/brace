@@ -42,15 +42,15 @@ event_handler_init()
 
 event_loop()
 	while !gr_done
-		handle_events()
+		handle_events(1)
 		# FIXME it's busy waiting at the moment!  whoops.
 		# select for next event / other IO events / timeout
 		# include need_delay_callbacks in timeouts
 		# allow to work with scheduler / coros, but don't depend on coros..?
 
-int handle_events()
+int handle_events(boolean wait_for_event)
 	int n = gr_call_need_delay_callbacks()
-	while !gr_done && handle_event_maybe()
+	while !gr_done && handle_event_maybe(wait_for_event)
 		++n
 	return n
 
@@ -82,7 +82,7 @@ int gr_getc()
 	thunk old_handler = key_handler_default
 	key_handler_default = thunk(gr_getc_handler)
 	while gr_getc_char < 0
-		handle_events()
+		handle_events(1)
 	key_handler_default = old_handler
 	return gr_getc_char
 

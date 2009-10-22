@@ -344,6 +344,7 @@ debug_errors()
 
 debug_errors_keep()
 	for_vec(e, errors, err)
+		use(e)
 		debug("%s", e->msg)
 
 def fault(format)
