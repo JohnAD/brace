@@ -12,20 +12,20 @@ int events_queued(boolean wait_for_event)
 #	warn("events_queued: wait_for_event = %d", wait_for_event)
 #	int n = XEventsQueued(display, wait_for_event||can_read(x11_fd) ? QueuedAfterReading : QueuedAlready)
 	int n = XEventsQueued(display, QueuedAlready)
-#	warn("	n = %d", n)
-	if !QueuedAlready:
-#		warn("	selecting...")
-		num timeout = wait_for_event&&!veclen(gr_need_delay_callbacks) ? time_forever : 0
+#	warn("   = %d", n)
+	if !n:
+#		warn("  selecting...")
+		num timeout = wait_for_event && !veclen(gr_need_delay_callbacks) ? time_forever : 0
 		gr_flush()
 		if can_read(x11_fd, timeout):
-#			warn("	reading...")
+#			warn("  reading...")
 			n = XEventsQueued(display, QueuedAfterReading)
-#			warn("	n = %d", n)
+#			warn("  n = %d", n)
 	return n
 		# is can_read necessary?
 
 boolean handle_event_maybe(boolean wait_for_event)
-	boolean n = events_queued(wait_for_event)
+	int n = events_queued(wait_for_event)
 	if n
 		handle_event()
 	 else

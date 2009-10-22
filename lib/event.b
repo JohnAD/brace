@@ -43,15 +43,18 @@ event_handler_init()
 event_loop()
 	while !gr_done
 		handle_events(1)
-		# FIXME it's busy waiting at the moment!  whoops.
+		# FIXME it was busy waiting!  whoops.  (fixed)
 		# select for next event / other IO events / timeout
 		# include need_delay_callbacks in timeouts
 		# allow to work with scheduler / coros, but don't depend on coros..?
+
+# FIXME maybe have a wait_for_events() function instead of that boolean?  or a config variable?
 
 int handle_events(boolean wait_for_event)
 	int n = gr_call_need_delay_callbacks()
 	while !gr_done && handle_event_maybe(wait_for_event)
 		++n
+		wait_for_event = 0
 	return n
 
 # this is to hack around dodgy X auto-repeat -----------------

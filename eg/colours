@@ -5,4 +5,4 @@ Main()
 	repeat
 		each(x, red, green, blue, yellow, white, black, grey, purple, pink, brown, orange)
 			clear(x) ; Paint()
-			Readline()
+			gr_getc()

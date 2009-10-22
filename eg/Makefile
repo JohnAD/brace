@@ -3,7 +3,7 @@
 include ../.Make.conf
 
 build:
-	@echo examples are not built yet
+	@echo examples can be run directly, no need to run make
 clean:
 	bk-clean
 #	find . -type f \( -perm -u+x -o -perm -g+x -o -perm -o+x \) | xargs file | grep ELF | sed 's/:.*//' | xargs rm -f

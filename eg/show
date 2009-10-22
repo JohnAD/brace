@@ -52,7 +52,8 @@ Main():
 	Chdir(dir)
 	slides_file = base
 
-	space(800, 600)
+	space()
+#	space(800, 600)
 	gprint_anchor(-1, 1)
 	csleep(smooth_delay)
 
@@ -144,7 +145,6 @@ draw_lines(vec *lines, num y, num font_size, num height)
 		gsayf(*l)
 		y -= height
 	Paint()
-	warn("draw_lines done")
 
 effect():
 	with_pixel_type(effect)
@@ -215,156 +215,65 @@ def effect_stop():
 	if i % 10 && rtime() > time+effect_duration:
 		break
 
-boolean gr_do_delay_done
-gr_do_delay(num dt)
-	gr_do_delay_done = 0
-	thunk old_handler = key_handler_default
-	key_handler_default = thunk(gr_do_delay_handler)
-	if dt == time_forever
-		while !gr_do_delay_done
-			handle_events_1()
-	 else
-		num t = rtime()
-		num t1 = t + dt
-		while t < t1 && !gr_do_delay_done
-			if events_queued() || veclen(gr_need_delay_callbacks) || can_read(x11_fd, t1-t)
-				handle_events_1()
-			t = rtime()
-	key_handler_default = old_handler
+# LIBB
 
-int handle_events_1()
-	int n = 0
-	while !events_queued()
-		if n || gr_done
-			return n
-		num dt = veclen(gr_need_delay_callbacks) ? gr_need_delay_callbacks_sleep : time_forever
-		warn("selecting on x11_fd, for %f", dt)
-		can_read(x11_fd, dt)
-		if veclen(gr_need_delay_callbacks)
-			n += gr_call_need_delay_callbacks()
-	if n || gr_done
-		return n
-	handle_event()
-	++n
-	gr_flush()
-	return n
-
-void *gr_do_delay_handler(void *obj, void *a0, void *event)
-	use(obj, a0)
-	gr_event *e = event
-	if e->type == KeyRelease
-		gr_do_delay_done = 1
-	return thunk_yes
-
-paint_sync(int syncage)
-	if !paint_sync_count++
-		warn("in paint sync")
-	if paint_handle_events || veclen(gr_need_delay_callbacks)
-		handle_events()
-
-	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
-#	XClearWindow(display, window)
-
-	# XClearWindow doesn't work to render the pixmap, I think the X server
-	# was trying to be clever and remembered that it hadn't changed the
-	# pixmap or the window since it was last painted.  but I changed it
-	# through shm!
-
-	which syncage
-	2	gr_sync()
-	1	XFlush(display)
-
-	if paint_handle_events || veclen(gr_need_delay_callbacks)
-		handle_events()
-
-
-char *key_release_postponed 
-
-key_handlers_init()
-	XDisplayKeycodes(display, &key_first, &key_last)
-	key_handlers = (void*)Nalloc(thunk, gr_n_keys*n_key_events)
-	key_down = Zalloc(char, gr_n_keys)
-	key_release_postponed = Zalloc(char, gr_n_keys)
-	key_handlers_default()
-
-void *key_handler_main(void *obj, void *a0, void *event)
-	use(obj);use(a0)
-	static int last_release_key = -1, last_release_time = -1
-	static num last_release_time_real = -1
-	int is_callback = p2i(a0)
-	gr_event *e = event
-	boolean ignore = 0
-	int event_type = 0
-
-	which e->type
-	KeyPress	.
-		event_type = 0
-		if gr_key_auto_repeat == 0 && last_release_key == e->which &&
-		  e->time - last_release_time <= (int)gr_key_auto_repeat_avoidance_delay
-			ignore = 1
-		 eif key_down[e->which-key_first]
-			key_event_debug("ignoring %s - key already down: %s", e)
-			ignore = 1
-		if !ignore
-			debug("setting key down %s", key_string(e->which))
-			key_down[e->which-key_first] = 1
-		last_release_key = -1
-
-	KeyRelease	.
-		event_type = 1
-		if !key_down[e->which-key_first]
-			key_event_debug("ignoring %s - key not down: %s", e)
-			ignore = 1
-		boolean push_callback = 0
-		if gr_key_auto_repeat == 0
-#			debug("gr_key_auto_repeat is off - good!")
-			# this is ugly, silly X.
-			# XXX it is still not 100% reliable if many keys pressed at once.
-			# maybe check KeyRelease with XQueryKeymap :(
-			# http://www.ypass.net/blog/2009/06/detecting-xlibs-keyboard-auto-repeat-functionality-and-how-to-fix-it/
-			if is_callback
-				debug("key_handler_main in callback %s %s", key_string(last_release_key), key_string(e->which))
-				if last_release_key == -1
-					ignore = 1
-				 eif rtime()-last_release_time_real <= gr_key_auto_repeat_avoidance_delay/1000.0
-					debug("callback came too soon - will push callback again")
-					push_callback = 1
-			 else
-				push_callback = 1
-
-			if push_callback
-				debug("pushing callback")
-				if !is_callback
-					last_release_time_real = rtime()
-				gr_event_callback *cb = Talloc(gr_event_callback)
-				cb->t = thunk(key_handler_main, NULL, i2p(1))
-				cb->e = *e
-				cb->time = rtime()
-				vec_push(gr_need_delay_callbacks, *cb)
-				ignore = 1
-		if !ignore
-			key_down[e->which-key_first] = 0
-			debug("clearing key down %s", key_string(e->which))
-		if !ignore || push_callback
-			last_release_key = e->which
-			last_release_time = e->time
-		 else
-			debug("ignoring KeyRelease")
-		if gr_key_ignore_release
-			ignore = 1
-
-	if !ignore && XKeycodeToKeysym(display, e->which, e->state & ShiftMask && 1) == NoSymbol
-		ignore = 1
-
-	if ignore
-		return thunk_yes
-
-	thunk *handler = &key_handlers[e->which-key_first][event_type]
-	void *rv = thunk_call(handler, e)
-	key_event_debug("key event %s: %s", e)
-	if !rv
-		rv = thunk_call(&key_handler_default, e)
-	if !rv
-		key_event_debug("unhandled %s: %s", e)
-	return rv
-
+# LIBB already
+#
+#boolean gr_do_delay_done
+#gr_do_delay(num dt)
+#	gr_do_delay_done = 0
+#	thunk old_handler = key_handler_default
+#	key_handler_default = thunk(gr_do_delay_handler)
+#	if dt == time_forever
+#		while !gr_do_delay_done
+##			warn("gr_do_delay forever looping calling handle_events: veclen(gr_need_delay_callbacks) = %d", veclen(gr_need_delay_callbacks))
+#			int n = handle_events(1)
+##			warn("  %d", n)
+#	 else
+#		num t = rtime()
+#		num t1 = t + dt
+#		while t < t1 && !gr_do_delay_done
+#			if events_queued(0) || veclen(gr_need_delay_callbacks) || can_read(x11_fd, t1-t)
+##				warn("gr_do_delay %f looping calling handle_events", dt)
+#				handle_events(0)
+#			t = rtime()
+#	key_handler_default = old_handler
+#
+#void *gr_do_delay_handler(void *obj, void *a0, void *event)
+#	use(obj, a0)
+#	gr_event *e = event
+#	if e->type == KeyPress:
+#		gr_do_delay_done = 1
+#	return thunk_yes
+#
+#int handle_events(boolean wait_for_event)
+#	int n = gr_call_need_delay_callbacks()
+#	while !gr_done && handle_event_maybe(wait_for_event)
+#		++n
+#		wait_for_event = 0
+#	return n
+#
+#int events_queued(boolean wait_for_event)
+##	return XEventsQueued(display, QueuedAfterReading)
+##	warn("events_queued: wait_for_event = %d", wait_for_event)
+##	int n = XEventsQueued(display, wait_for_event||can_read(x11_fd) ? QueuedAfterReading : QueuedAlready)
+#	int n = XEventsQueued(display, QueuedAlready)
+##	warn("  n = %d", n)
+#	if !n:
+##		warn("  selecting...")
+#		num timeout = wait_for_event && !veclen(gr_need_delay_callbacks) ? time_forever : 0
+#		gr_flush()
+#		if can_read(x11_fd, timeout):
+##			warn("  reading...")
+#			n = XEventsQueued(display, QueuedAfterReading)
+##			warn("  n = %d", n)
+#	return n
+#		# is can_read necessary?
+#
+#boolean handle_event_maybe(boolean wait_for_event)
+#	int n = events_queued(wait_for_event)
+#	if n
+#		handle_event()
+#	 else
+#		gr_flush()
+#	return n

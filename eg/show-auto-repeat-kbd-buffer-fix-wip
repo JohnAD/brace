@@ -1,0 +1,370 @@
+#!/lang/b
+use b
+
+num margins = 40
+int font_ref = 200
+num effect_duration = 1
+boolean step_by_step = 1
+boolean effects = 1
+num delay = 0, delay_demo = 0, delay_page = 0
+cstr demos_dir = "."
+boolean loop = 0
+boolean smooth = 1
+int smooth_steps = 30
+int smooth_dur = 0.50
+def smooth_delay smooth_dur / smooth_steps
+num x_expose_delay = 0.2
+
+num old_y, old_font_size, old_height
+boolean start_of_page = 1
+
+int page = 0
+
+def usage()
+	usage("slides_file [start_page]")
+
+Main():
+	Atexit(kill_demo_child)
+	paint_handle_events = 0
+
+	int start_page = 0
+
+	if *Getenv("quick")
+		step_by_step = 0
+	if *Getenv("nofx")
+		effects = 0
+	if *Getenv("nosmooth")
+		smooth = 0
+	demos_dir = Getenv("demos", demos_dir)
+	delay = atof(Getenv("delay", "0"))
+	delay_demo = atof(Getenv("delay_demo", "0"))
+	delay_page = atof(Getenv("delay_page", "0"))
+	eachp(d, delay_demo, delay_page, delay)
+		if !*d
+			*d = delay ? delay * 4 : time_forever
+	if *Getenv("loop")
+		loop = 0
+
+	args(cstr, slides_file)
+	getargs(int, start_page)
+
+	dirbasename(slides_file, dir, base)
+	Chdir(dir)
+	slides_file = base
+
+	space(800, 600)
+	gprint_anchor(-1, 1)
+	csleep(smooth_delay)
+
+	new(lines, vec, cstr, 16)
+
+	repeat
+		vec_clear(lines)
+		tofree_block()
+			F_in(slides_file):
+				warn("%d", page)
+				show_slides(lines, start_page)
+		if !loop
+			break
+	gr_done = 1
+
+show_slides(vec *lines, int start_page)
+	eachline(l):
+		boolean show = page >= start_page
+		boolean end_of_page = *l == ''
+
+		if *l == '!'
+			if show
+				run_demo(l+1)
+		 eif *l == '<'
+			F_in(tofree(format("%s/%s", demos_dir, l+1)))
+				show_slides(lines, start_page)
+		 else
+		 	if !end_of_page
+				vec_push(lines, Strdup(l))
+
+			if show
+				if end_of_page
+					if !step_by_step
+						show_slide(lines)
+					gr_do_delay(delay_page)
+					if effects
+						effect()
+				 eif (step_by_step && *l)
+					show_slide(lines)
+					gr_do_delay(delay)
+
+			if end_of_page
+				++page
+				warn("%d", page)
+				vec_clear(lines)
+				start_of_page = 1
+
+int paint_sync_count = 0
+
+show_slide(vec *lines):
+	int n = veclen(lines)
+	font("helvetica-medium", font_ref)
+	num height = font_height()
+	num max_width = 0
+	for_vec(l, lines, cstr):
+		max_width = nmax(max_width, text_width(*l))
+	num x_scale = (w - margins) / max_width
+	num y_scale = (h - margins) / (height * n)
+	num scale = nmin(x_scale, y_scale)
+	num font_size = font_ref * scale
+	height *= scale
+	
+	num y = height * n / 2
+
+	paint_sync_count = 0
+
+	if smooth && !start_of_page
+		for(i, 0.0, 1.0, 1.0/smooth_steps)
+			num y1 = blend(i, old_y, y)
+			num font_size1 = blend(i, old_font_size, font_size)
+			num height1 = blend(i, old_height, height)
+			draw_lines(lines, y1, font_size1, height1)
+			csleep(smooth_delay)
+
+	draw_lines(lines, y, font_size, height)
+
+	old_y = y
+	old_font_size = font_size
+	old_height = height
+
+	start_of_page = 0
+
+draw_lines(vec *lines, num y, num font_size, num height)
+	font("helvetica-medium", font_size)
+	clear()
+	white()
+	for_vec(l, lines, cstr):
+		move(-w_2 + margins/2, y)
+		gsayf(*l)
+		y -= height
+	Paint()
+	warn("draw_lines done")
+
+effect():
+	with_pixel_type(effect)
+
+def effect(pixel_type):
+	num time = rtime()
+	which page % 4:
+	0	for int i=0; ; ++i:
+			pixel_type *px = pixel()
+			long x, y
+			for y=-h_2; y<h_2; ++y:
+				for x=-w_2; x<w_2; ++x:
+					if toss() && x>-w_2 && x<w_2-1 && y>-h_2+1 && y<h_2-1:
+						*px = px[toss()*2-1 + toss()*3*w-2*w]
+						if *px:
+							*px -= 0x0202
+					++px
+			if i % 10:
+				Paint()
+			effect_stop()
+	1	black()
+		for int i=0; ; ++i:
+			circle(randi(-w_2, w_2), randi(-h_2, h_2), randi(h_2))
+			if i % 10 == 0:
+				Paint()
+			if i % 100 == 0:
+				hsv(i/3000.0 * 360 * 2, Sin(180*i/3000.0)/2, 0)
+			effect_stop()
+	2	for int i=0; ; ++i:
+			pixel_type *px = pixel()
+			long x, y
+			colour c = hsv(i/100.0 * 360, 1-(i/100.0), 1-(i/100.0))
+			for y=-h_2; y<h_2; ++y:
+				for x=-w_2; x<w_2; ++x:
+					if *px
+						*px = c
+					++px
+			Paint()
+			effect_stop()
+	3	black()
+		for int i=0; ; ++i
+			hsv(i/100.0 * 360, 1-(i/100.0), 0)
+			circle_fill(randi(w)-w_2, randi(h)-h_2, randi(10, 100))
+			if i % 3 == 0
+				Paint()
+			effect_stop()
+
+int demo_child = 0
+run_demo(cstr file)
+	demo_child = Fork()
+	if demo_child == 0
+		Close(3)
+		Execl(format("%s/%s", demos_dir, file), NULL)
+	gr_do_delay(delay_demo)
+	kill(demo_child, SIGTERM)
+	Child_wait()
+	demo_child = 0
+	Sleep(x_expose_delay)
+#	handle_events()
+
+kill_demo_child:
+	if demo_child
+		kill(demo_child, SIGTERM)
+		Child_wait()
+		demo_child = 0
+
+def effect_stop():
+	if i % 10 && rtime() > time+effect_duration:
+		break
+
+boolean gr_do_delay_done
+gr_do_delay(num dt)
+	gr_do_delay_done = 0
+	thunk old_handler = key_handler_default
+	key_handler_default = thunk(gr_do_delay_handler)
+	if dt == time_forever
+		while !gr_do_delay_done
+			handle_events_1()
+	 else
+		num t = rtime()
+		num t1 = t + dt
+		while t < t1 && !gr_do_delay_done
+			if events_queued() || veclen(gr_need_delay_callbacks) || can_read(x11_fd, t1-t)
+				handle_events_1()
+			t = rtime()
+	key_handler_default = old_handler
+
+int handle_events_1()
+	int n = 0
+	while !events_queued()
+		if n || gr_done
+			return n
+		num dt = veclen(gr_need_delay_callbacks) ? gr_need_delay_callbacks_sleep : time_forever
+		warn("selecting on x11_fd, for %f", dt)
+		can_read(x11_fd, dt)
+		if veclen(gr_need_delay_callbacks)
+			n += gr_call_need_delay_callbacks()
+	if n || gr_done
+		return n
+	handle_event()
+	++n
+	gr_flush()
+	return n
+
+void *gr_do_delay_handler(void *obj, void *a0, void *event)
+	use(obj, a0)
+	gr_event *e = event
+	if e->type == KeyRelease
+		gr_do_delay_done = 1
+	return thunk_yes
+
+paint_sync(int syncage)
+	if !paint_sync_count++
+		warn("in paint sync")
+	if paint_handle_events || veclen(gr_need_delay_callbacks)
+		handle_events()
+
+	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
+#	XClearWindow(display, window)
+
+	# XClearWindow doesn't work to render the pixmap, I think the X server
+	# was trying to be clever and remembered that it hadn't changed the
+	# pixmap or the window since it was last painted.  but I changed it
+	# through shm!
+
+	which syncage
+	2	gr_sync()
+	1	XFlush(display)
+
+	if paint_handle_events || veclen(gr_need_delay_callbacks)
+		handle_events()
+
+
+char *key_release_postponed
+
+key_handlers_init()
+	XDisplayKeycodes(display, &key_first, &key_last)
+	key_handlers = (void*)Nalloc(thunk, gr_n_keys*n_key_events)
+	key_down = Zalloc(char, gr_n_keys)
+	key_release_postponed = Zalloc(char, gr_n_keys)
+	key_handlers_default()
+
+void *key_handler_main(void *obj, void *a0, void *event)
+	use(obj);use(a0)
+	static int last_release_key = -1, last_release_time = -1
+	static num last_release_time_real = -1
+	int is_callback = p2i(a0)
+	gr_event *e = event
+	boolean ignore = 0
+	int event_type = 0
+
+	which e->type
+	KeyPress	.
+		event_type = 0
+		if gr_key_auto_repeat == 0 && last_release_key == e->which &&
+		  e->time - last_release_time <= (int)gr_key_auto_repeat_avoidance_delay
+			ignore = 1
+		 eif key_down[e->which-key_first]
+			key_event_debug("ignoring %s - key already down: %s", e)
+			ignore = 1
+		if !ignore
+			debug("setting key down %s", key_string(e->which))
+			key_down[e->which-key_first] = 1
+		last_release_key = -1
+
+	KeyRelease	.
+		event_type = 1
+		if !key_down[e->which-key_first]
+			key_event_debug("ignoring %s - key not down: %s", e)
+			ignore = 1
+		boolean push_callback = 0
+		if gr_key_auto_repeat == 0
+#			debug("gr_key_auto_repeat is off - good!")
+			# this is ugly, silly X.
+			# XXX it is still not 100% reliable if many keys pressed at once.
+			# maybe check KeyRelease with XQueryKeymap :(
+			# http://www.ypass.net/blog/2009/06/detecting-xlibs-keyboard-auto-repeat-functionality-and-how-to-fix-it/
+			if is_callback
+				debug("key_handler_main in callback %s %s", key_string(last_release_key), key_string(e->which))
+				if last_release_key == -1
+					ignore = 1
+				 eif rtime()-last_release_time_real <= gr_key_auto_repeat_avoidance_delay/1000.0
+					debug("callback came too soon - will push callback again")
+					push_callback = 1
+			 else
+				push_callback = 1
+
+			if push_callback
+				debug("pushing callback")
+				if !is_callback
+					last_release_time_real = rtime()
+				gr_event_callback *cb = Talloc(gr_event_callback)
+				cb->t = thunk(key_handler_main, NULL, i2p(1))
+				cb->e = *e
+				cb->time = rtime()
+				vec_push(gr_need_delay_callbacks, *cb)
+				ignore = 1
+		if !ignore
+			key_down[e->which-key_first] = 0
+			debug("clearing key down %s", key_string(e->which))
+		if !ignore || push_callback
+			last_release_key = e->which
+			last_release_time = e->time
+		 else
+			debug("ignoring KeyRelease")
+		if gr_key_ignore_release
+			ignore = 1
+
+	if !ignore && XKeycodeToKeysym(display, e->which, e->state & ShiftMask && 1) == NoSymbol
+		ignore = 1
+
+	if ignore
+		return thunk_yes
+
+	thunk *handler = &key_handlers[e->which-key_first][event_type]
+	void *rv = thunk_call(handler, e)
+	key_event_debug("key event %s: %s", e)
+	if !rv
+		rv = thunk_call(&key_handler_default, e)
+	if !rv
+		key_event_debug("unhandled %s: %s", e)
+	return rv
+

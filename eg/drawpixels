@@ -1,0 +1,31 @@
+#!/lang/b
+use b
+Main():
+	space()
+	with_pixel_type(animate)
+
+int frame = 0
+unsigned char r=0, g=0, b=0
+num last_time = 0
+
+# for the GL pixel backend, I will need to use -ve stride and make sure
+# the demos do use the stride not just keep incrementing px...
+
+def animate(pixel_type):
+	repeat:
+		pixel_type *px = pixel()
+		for(y, 0, h):
+			for(x, 0, w):
+#				*px = 7654321
+#				*px = pix_rgb((x+frame)&255,(y+frame)&255,(x+y-frame)&255)
+				*px++ = pix_rgb(r++, g, b++)
+			g++ ; b++
+		r++ ; g++ ; b--
+		if frame % 100 == 0:
+			double t = rtime()
+			if last_time != 0:
+				double fps = 100.0/(t - last_time)
+				warn("fps: %f", fps)
+			last_time = t
+		++frame
+		Paint()

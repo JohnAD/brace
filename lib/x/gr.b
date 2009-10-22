@@ -557,3 +557,30 @@ def with_pixel_type(macro)
 	 else
 		error("unsupported video depth: %d", depth)
 
+boolean gr_do_delay_done
+gr_do_delay(num dt)
+	gr_do_delay_done = 0
+	thunk old_handler = key_handler_default
+	key_handler_default = thunk(gr_do_delay_handler)
+	if dt == time_forever
+		while !gr_do_delay_done
+#			warn("gr_do_delay forever looping calling handle_events: veclen(gr_need_delay_callbacks) = %d", veclen(gr_need_delay_callbacks))
+			handle_events(1)
+#			int n = handle_events(1)
+#			warn("  %d", n)
+	 else
+		num t = rtime()
+		num t1 = t + dt
+		while t < t1 && !gr_do_delay_done
+			if events_queued(0) || veclen(gr_need_delay_callbacks) || can_read(x11_fd, t1-t)
+#				warn("gr_do_delay %f looping calling handle_events", dt)
+				handle_events(0)
+			t = rtime()
+	key_handler_default = old_handler
+
+void *gr_do_delay_handler(void *obj, void *a0, void *event)
+	use(obj, a0)
+	gr_event *e = event
+	if e->type == KeyPress:
+		gr_do_delay_done = 1
+	return thunk_yes
