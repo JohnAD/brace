@@ -9,11 +9,12 @@ all: dotbuild
 tgz: dotbuild
 	tgz+ .
 
-dotbuild:
+dotbuild: cp
+	cd .build ; $(MAKE) build
+cp:
 	mkdir -p .build
 	cp -alf .Make.conf .sh.conf * .build/
-	mkdir -p .build/lib/debug
-	cd .build ; $(MAKE) build
+#	mkdir -p .build/lib/debug
 build:
 	cd exe ; $(MAKE) boot
 	cd lib ; $(MAKE)
