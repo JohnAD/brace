@@ -46,6 +46,7 @@ clean:
 install: build
 	install -d '$(bindir)' "$(langdir)"
 	install `../util/lsx .` '$(bindir)'
+	install -m=644 brace_env '$(bindir)'
 	ln -sf '$(bindir)/br' '$(bindir)/bbr' || cp '$(bindir)/br' '$(bindir)/bbr'
 	ln -sf bx$(EXE) '$(bindir)/bbx$(EXE)' || cp bx$(EXE) '$(bindir)/bbx$(EXE)'
 	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)

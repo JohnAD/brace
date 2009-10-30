@@ -1,7 +1,5 @@
 #!/lang/b
 
-# export OPTIMIZE=1
-
 Main()
 	space()
 #	space(1280, 800)

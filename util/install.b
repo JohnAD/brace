@@ -6,7 +6,7 @@ cstr version = "1.0"
 cstr description = "install - Sam Watkins, 2009"
 
 cstr usage[] =
-	"[-m mode] [file...] directory",
+	"[-m=mode] [file...] directory",
 	"--help",
 	NULL
 

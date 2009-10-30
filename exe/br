@@ -9,6 +9,7 @@
 #  BRACE_LINE_NUMBERS
 #  BR_CLEAN
 #  BRACE_PLAIN
+#  OPTIMIZE    (set to desired -O level)
 
 fail() {
 	echo fatal: "$@" >&2
@@ -26,150 +27,26 @@ log_fix_exit() {
 	exit 1
 }
 
-# basename is broken in unxutils
-#basename() {
-#	local d="`dirname "$1"`"
-#	echo "${1#$d?}"
-#}
-
 export LDFLAGS LDLIBS CFLAGS CC BRACE_LANGUAGE
 
-MINGW=
-EXE=
-if [ -n "$WINDIR" -o -n "$windir" ]; then
-	MINGW=1
-	EXE=.exe
-fi
 
-USER_CFLAGS="$CFLAGS" ; CFLAGS=""
-USER_LDFLAGS="$LDFLAGS" ; LDFLAGS=""
-USER_LDLIBS="$LDLIBS" ; LDLIBS=""
-
-CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS"
-
-# msys which is a shell script which for some reason won't run from here :/
-# this should be a bit faster anyway
-which() {
-	# this unfortunately depends on the shell
-	A=`type "$@" 2>/dev/null || true`
-	B="${A%: not found}"
-	if [ "$A" != "$B" ]; then
-		A=""
-	fi
-	if [ -n "$A" ]; then
-		A="/${A#*/}"
-		echo "$A"
-	else
-		return 1
-	fi
-}
-
-BRACE_DIR=`which brace$EXE`
-BRACE_DIR=`dirname "$BRACE_DIR"`
-BRACE_DIR=`dirname "$BRACE_DIR"`
-if [ -z "$BRACE_SO" ]; then
-	BRACE_SO="$BRACE_DIR/lib"
-fi
-BRACE_L_SO="-L\"$BRACE_SO\""
-if [ -z "$BRACE_LIB" ]; then
-	BRACE_LIB="$BRACE_DIR/include"
-	if [ \! -d "$BRACE_LIB" ]; then
-		BRACE_LIB="$BRACE_SO"
-	fi
-fi
-if [ -z "$BRACE_STANDALONE" ]; then
-	if [ -n "$BRACE_PLAIN" ]; then
-		if [ -n "$DEBUG" ]; then
-			LDLIBS="$LDLIBS -lb_plain_debug"
-		else
-			LDLIBS="$LDLIBS -lb_plain"
-		fi
-	else
-		if [ -n "$DEBUG" ]; then
-			LDLIBS="$LDLIBS -lb_debug"
-		else
-			LDLIBS="$LDLIBS -lb"
-		fi
-	fi
-else
-	BRACE_L_SO=
-fi
-if [ -z "$BRACE_USE" ]; then
-	if [ -n "$MINGW" ]; then
-		BRACE_USE="mingw nongnu nonbsd nonlinux"
-		BRACE_USE="$BRACE_USE io-select"
-		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
-		LDLIBS="$LDLIBS -lws2_32"
-		LDLIBS_FANCY="$LDLIBS_FANCY -lopengl32 -lglu32 -lgdi32"
-	else
-		BRACE_USE="unix nonmingw"
-		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h ]; then
-			BRACE_USE="$BRACE_USE x"
-			LDLIBS_FANCY="$LDLIBS_FANCY -L/usr/X11R6/lib -lX11 -lXext"
-			CFLAGS="$CFLAGS -I/usr/X11R6/include"
-		else
-			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
-		fi
-		LDLIBS="$LDLIBS -lcrypt"
-		LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
-#		uname > .uname.$$
-#		<.uname.$$ tr 'A-Z' 'a-z' >.uname.$$.1
-		UNAME=`uname | tr 'A-Z' 'a-z'`
-#		<.uname.$$.1 read UNAME
-#		rm .uname.$$ .uname.$$.1  # coping with borken pipes in unxutils
-		case "$UNAME" in
-		*bsd*|sunos)
-			BRACE_USE="$BRACE_USE bsd"
-			LDLIBS="$LDLIBS -lsendfile" ;;
-		*)
-			BRACE_USE="$BRACE_USE nonbsd" ;;
-		esac
-		BRACE_USE="$BRACE_USE $UNAME"
-		if [ "$UNAME" = "linux" ]; then
-			V=`uname -r`
-			V="${V%%-*}"
-			major="${V%.*}"
-			minor="${V##*.}"
-			if [ "$major" = 2.6 -a "$minor" -ge 20 ]; then
-				# allegedly this is included in 2.6.19,
-				# but not in knoppix, perhaps glibc was too old
-				BRACE_USE="$BRACE_USE io-epoll"
-			else
-				BRACE_USE="$BRACE_USE io-select"
-			fi
-		else
-			BRACE_USE="$BRACE_USE nonlinux io-select"
-		fi
-		if [ "$UNAME" != "linux" -a "$UNAME" != "hurd" -a "$UNAME" != "gnu" ]; then
-			BRACE_USE="$BRACE_USE nongnu"
-		fi
-#		elif echo $UNAME | grep -i linux >/dev/null; then
-#			BRACE_USE="$BRACE_USE linux"
-#		fi
-	fi
-	BU=""
-	for A in $BRACE_USE; do
-		[ -e "$BRACE_LIB/$A" ] && BU="$BU $A"
-	done
-	BRACE_USE="${BU# }"
-fi
-export BRACE_LIB BRACE_USE
-if [ -n "$BR_DEBUG" ]; then echo "BRACE_USE=$BRACE_USE"; fi
-
-BRACE_LANGUAGE=C
-b=b
-if [ "-bb" = "$1" -o "bbr" = "`basename "$0"`" ]; then
+PROG=`basename "$0"`
+if [ "$PROG" = "br" -o "$1" = "-b" ]; then
+	BRACE_LANGUAGE=C
+	b=b
+elif [ "$PROG" = "bbr" -o "$1" = "-bb" ]; then
 	BRACE_LANGUAGE=C++
 	b=bb
 fi
-if [ "-bb" = "$1" -o "-b" = "$1" ]; then
+if [ "$1" = "-b" -o "$1" = "-bb" ]; then
 	shift
 fi
+if [ "$BRACE_LANGUAGE" = C ]; then b=b; else b=bb; fi
 
 [ -n "$1" ] || fail "syntax: ${b}r [-b|-bb] foo.$b [foo [cc/ld flags]]"
 
 B="$1"
-if [ -n "$WINDIR" ]; then
+if [ "$MINGW" = 1 ]; then
 	B=`echo "$B" | perl -pe 's{^([a-z]):(\\\\|/)?}{/$1/}i; s{\\\\}{/}g;'`
 fi
 shift
@@ -179,32 +56,9 @@ if perl -ne 'exit !m{^#!/lang/bb$}' "$B"; then
 	BRACE_LANGUAGE=C++
 fi
 
-if [ "$BRACE_LANGUAGE" = C++ ]; then
-	c=cc
-	if [ -z "$CXX" ]; then
-		for CC in g++ c++ gcc tcc cc; do
-			if [ -n "`which $CC$EXE`" ]; then
-				break
-			fi
-		done
-	else
-		CC="$CXX"
-	fi
-	USER_CFLAGS="$USER_CFLAGS $CXXFLAGS"
-	CFLAGS="$CFLAGS -Weffc++"
-else
-	c=c
-	if [ -z "$CC" ]; then
-		for CC in gcc tcc cc; do
-			if [ -n "`which $CC$EXE`" ]; then
-				break
-			fi
-		done
-		if [ "$CC" = gcc ]; then
-			CC="$CC -pedantic -std=gnu99"
-		fi
-	fi
-fi
+
+. brace_env
+
 
 dirname="`dirname "$B"`"
 basename="`basename "$B"`"
@@ -221,45 +75,18 @@ else
 	fi
 fi
 XBAK="$dirname/.$basename.xbak$EXE"
-#C=`tempfile -s .c`
 B1="$dirname/.$basename.${b}1"
 C="$dirname/.$basename.$c"
 BBAK="$dirname/.$basename.bak"
 BBAK2="$dirname/.$basename.bak2"
 LOG="$dirname/.$basename.log"
 rm -f "$B1" "$C" "$LOG"
+if [ -n "$BR_DEBUG" ]; then echo "BRACE_USE=$BRACE_USE"; fi
 if [ -n "$BR_DEBUG" ]; then echo \< "$B" brace_number_lines \| b2b1 \> "$B1"; fi
 <"$B" brace_number_lines "$B" | b2b1 2>"$LOG" >"$B1" || log_fix_exit
 if [ -n "$BR_DEBUG" ]; then echo \< "$B1" brace \> "$C"; fi
 <"$B1" brace 2>>"$LOG" >"$C" || log_fix_exit
-LDLIBS="$BRACE_L_SO $LDLIBS"
-LDLIBS="$LDLIBS -lm"
-LDLIBS_PLAIN="$LDLIBS"
-LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
-CFLAGS="-Wall -Wextra $CFLAGS"  # -I. -Werror
-CINCLUDE="-I\"$BRACE_LIB\""
-if [ -n "$DEBUG" ]; then
-	CFLAGS="$CFLAGS -ggdb"
-#	CFLAGS="$CFLAGS -g"
-fi
-if [ "$OPTIMIZE" != "0" ] && [ -z "$DEBUG" -o -n "$OPTIMIZE" ]; then
-	CFLAGS="$CFLAGS -O2"
-fi
-if [ -n "$PROFILE" ]; then
-	CFLAGS="$CFLAGS -pg"
-	LDFLAGS="$LDFLAGS -pg"
-fi
-CFLAGS="${CFLAGS## }"
-LDFLAGS="${LDFLAGS## }"
-LDLIBS="${LDLIBS## }"
-LDLIBS_PLAIN="${LDLIBS_PLAIN## }"
-if [ -n "$BRACE_PLAIN" ]; then
-	LDLIBS="$LDLIBS_PLAIN"
-fi
 
-CFLAGS="$CFLAGS $USER_CFLAGS"
-LDFLAGS="$LDFLAGS $USER_LDFLAGS"
-LDLIBS="$LDLIBS $USER_LDLIBS"
 
 if [ -z "$BRACE_STANDALONE" ]; then
 	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CINCLUDE $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
@@ -276,6 +103,7 @@ else
 		BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
 	' >>"$LOG"
 fi
+
 if [ -e .cc_failed.$PID ]; then
 	rm .cc_failed.$PID
 	log_fix_exit
@@ -283,9 +111,9 @@ elif [ -s "$LOG" ]; then
 	cat "$LOG"
 fi
 if [ \! -s "$LOG" ]; then rm "$LOG"; fi
-if [ -z "$DEBUG" ]; then
-	strip -s "$X"
-fi
+#if [ -z "$DEBUG" ]; then
+#	strip -s "$X"
+#fi
 if [ -n "$BR_CLEAN" ]; then
 	rm "$C" "$B1"
 else
@@ -296,5 +124,5 @@ else
 	fi
 	cp -a "$B" "$BBAK"
 fi
-#rm "$C"
+
 exit 0

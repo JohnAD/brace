@@ -1,4 +1,3 @@
-# generic Make.conf.in
 export
 MAJOR=0
 VERSION=0.0
@@ -16,7 +15,7 @@ datadir=$(prefix)/share
 langdir=$(destdir)/lang
 srcdir=.
 
-OPTIMIZE=1
+OPTIMIZE=2
 DEBUG=1
 PROFILE=
 CC=gcc -pedantic -std=gnu99

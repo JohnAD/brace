@@ -3,6 +3,7 @@
 use b
 
 Main()
+	asleep_small = 0.03
 	do_test(1.0, 4)
 	do_test(0.1, 4)
 	do_test(0.01, 4)

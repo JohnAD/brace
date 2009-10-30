@@ -1523,6 +1523,9 @@ def delimit(p, s, c)
 	p = strchr(s, c)
 	if p
 		*p++ = '\0'
+def delimit(s, c)
+	cstr my(p)
+	delimit(my(p), s, c)
 
 def tmpnul(p)
 	char my(tmp)

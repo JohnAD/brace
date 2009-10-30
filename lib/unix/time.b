@@ -32,4 +32,4 @@ Ualarm(num dt)
 	v.it_interval.tv_sec = v.it_interval.tv_usec = 0
 	Setitimer(ITIMER_REAL, &v, NULL)
 
-long double asleep_small = 0.0001
+long double asleep_small = 0.03  # 0.0001

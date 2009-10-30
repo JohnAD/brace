@@ -7,7 +7,7 @@ destdir=$(CURDIR)/debian/$(package)
 DEBUG = 
 
 ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-  OPTIMIZE = 1
+  OPTIMIZE = 2
 endif
 
 #export DH_VERBOSE=1

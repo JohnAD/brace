@@ -1,65 +1,8 @@
-ifndef CC
-CC:=gcc -pedantic -std=gnu99
-endif
-
 DIR=$(PWD)
-#CFLAGS:=-Wall -Wextra -Werror -I. $(CFLAGS)
-CFLAGS:=-Wall -Wextra $(CFLAGS)
 
-ifndef BRACE_STANDALONE
-ifndef LIBB_BUILD
-ifeq ($(BRACE_LANGUAGE),C++)
-LDLIBS:=$(LDLIBS) -lstdc++
-endif
-ifndef BRACE_PLAIN
-ifndef DEBUG
-LDLIBS:=$(LDLIBS) -lb
-else
-LDLIBS:=$(LDLIBS) -lb_debug
-endif
-else
-ifndef DEBUG
-LDLIBS:=$(LDLIBS) -lb_plain
-else
-LDLIBS:=$(LDLIBS) -lb_plain_debug
-endif
-endif
-endif
-endif
-LDLIBS:=$(LDLIBS) -lm
-
-ifeq ($(BRACE_LANGUAGE),C++)
-LDLIBS:=$(LDLIBS) -lstdc++
-CFLAGS:=$(CFLAGS) -Weffc++
-else
-CFLAGS:=$(CFLAGS)
-endif
-
-ifdef DEBUG
-CFLAGS += -ggdb
-else
-LDFLAGS += -s
-endif
-
-ifneq (0,$(OPTIMIZE))
-ifndef DEBUG
-CFLAGS += -O2
-else
-ifdef OPTIMIZE
-CFLAGS += -O2
-endif
-endif
-endif
-
-ifdef PROFILE
-CFLAGS += -pg
-LDFLAGS += -pg
-endif
-
-CFLAGS:=$(CFLAGS) $(USER_CFLAGS)
-LDFLAGS:=$(LDFLAGS) $(USER_LDFLAGS)
-LDLIBS:=$(LDLIBS) $(USER_LDLIBS)
-CXXFLAGS:=$(CFLAGS) $(CXXFLAGS)
+#ifndef DEBUG
+#LDFLAGS += -s
+#endif
 
 # TODO redefine the %.o: %.c and %.o: %.cc patterns?
 
