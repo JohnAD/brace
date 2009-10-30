@@ -78,13 +78,15 @@ pid_t Child_done()
 
 def nochldwait(signum) 0
 
+def _UTSNAME_LENGTH 65
+
 struct utsname
-	char sysname[]
-	char nodename[]
-	char release[]
-	char version[]
-	char machine[]
-	char domainname[]
+	char sysname[_UTSNAME_LENGTH]
+	char nodename[_UTSNAME_LENGTH]
+	char release[_UTSNAME_LENGTH]
+	char version[_UTSNAME_LENGTH]
+	char machine[_UTSNAME_LENGTH]
+#	char domainname[_UTSNAME_LENGTH]
 
 int uname(struct utsname *buf)
 	buf->sysname = "mingw32"
