@@ -1,126 +1,19 @@
 #!/bin/sh -e
 
 # TODO remove .b files etc from .build if they are no-longer in the source dir
-# TODO use a gcc option to make warnings fatal ??
+# TODO use a gcc option -Werror to make warnings fatal ??
+
+
+. brace_env
+
 
 #BK_LIB=`readlink -f \`dirname "$0"\`/../include/bk`
 BK_LIB="`dirname "$0"`/../lib/bk"
+D="$PWD"
+export BK_LIB D
 
-USER_CFLAGS="$CFLAGS" ; CFLAGS=""
-USER_LDFLAGS="$LDFLAGS" ; LDFLAGS=""
-USER_LDLIBS="$LDLIBS" ; LDLIBS=""
-
-export USER_CFLAGS USER_LDFLAGS USER_LDLIBS
-
-CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS"
-
-which() {
-	# this unfortunately depends on the shell
-	A=`type "$@" 2>/dev/null || true`
-	B="${A%: not found}"
-	if [ "$A" != "$B" ]; then
-		A=""
-	fi
-	if [ -n "$A" ]; then
-		A="/${A#*/}"
-		echo "$A"
-	else
-		return 1
-	fi
-}
-
-MINGW=
-EXE=
-if [ -n "$WINDIR" -o -n "$windir" ]; then
-	MINGW=1
-	EXE=.exe
-fi
-
-BRACE_DIR=`which brace$EXE`
-BRACE_DIR=`dirname "$BRACE_DIR"`
-BRACE_DIR=`dirname "$BRACE_DIR"`
-if [ -z "$BRACE_SO" ]; then
-	BRACE_SO="$BRACE_DIR/lib"
-fi
-BRACE_L_SO="-L\"$BRACE_SO\""
-if [ -z "$BRACE_LIB" ]; then
-	BRACE_LIB="$BRACE_DIR/include"
-	if [ \! -d "$BRACE_LIB" ]; then
-		BRACE_LIB="$BRACE_SO"
-	fi
-fi
-LDFLAGS="$LDFLAGS $BRACE_L_SO"
-if [ -z "$BRACE_USE" ]; then
-	if [ -n "$WINDIR" -o -n "$windir" ]; then
-		BRACE_USE="mingw nongnu nonbsd nonlinux"
-		BRACE_USE="$BRACE_USE io-select"
-		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
-		LDLIBS="$LDLIBS -lws2_32"
-		LDLIBS_FANCY="$LDLIBS_FANCY -lopengl32 -lglu32 -lgdi32"
-	else
-		BRACE_USE="unix nonmingw"
-		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h ]; then
-			BRACE_USE="$BRACE_USE x"
-			LDLIBS_FANCY="$LDLIBS_FANCY -L/usr/X11R6/lib -lX11 -lXext"
-			CFLAGS="$CFLAGS -I/usr/X11R6/include"
-		else
-			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
-		fi
-		LDLIBS="$LDLIBS -lcrypt"
-		LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
-#		if [ -e /usr/include/curses.h ]; then          
-#			BRACE_USE="$BRACE_USE curses"
-#			LDFLAGS="$LDFLAGS -lncurses"
-#		fi
-		uname > .uname
-		<.uname tr 'A-Z' 'a-z' >.uname.1
-#		UNAME=`uname | tr 'A-Z' 'a-z'`
-		<.uname.1 read UNAME
-		rm .uname .uname.1  # coping with borken pipes in unxutils
-		case "$UNAME" in
-		*bsd*|sunos)
-			BRACE_USE="$BRACE_USE bsd"
-			LDLIBS="$LDLIBS -lsendfile" ;;
-		*)
-			BRACE_USE="$BRACE_USE nonbsd" ;;
-		esac
-		BRACE_USE="$BRACE_USE $UNAME"
-		if [ "$UNAME" = "linux" ]; then
-			V=`uname -r`
-			V="${V%%-*}"
-			major="${V%.*}"
-			minor="${V##*.}"
-			if [ "$major" = 2.6 -a "$minor" -ge 20 ]; then
-				# allegedly this is included in 2.6.19,
-				# but not in knoppix, perhaps glibc was too old
-				BRACE_USE="$BRACE_USE io-epoll"
-			else
-				BRACE_USE="$BRACE_USE io-select"
-			fi
-		else
-			BRACE_USE="$BRACE_USE nonlinux io-select"
-		fi
-		if [ "$UNAME" != "linux" -a "$UNAME" != "hurd" -a "$UNAME" != "gnu" ]; then
-			BRACE_USE="$BRACE_USE nongnu"
-		fi
-#		elif echo $UNAME | grep -i linux >/dev/null; then
-#			BRACE_USE="$BRACE_USE linux"
-#		fi
-		BU=""
-		for A in $BRACE_USE; do
-			[ -e "$BRACE_LIB/$A" ] && BU="$BU $A"
-		done
-		BRACE_USE="${BU## }"
-		echo "BRACE_USE: $BRACE_USE"
-	fi
-fi
-export BK_LIB BRACE_LIB BRACE_USE CFLAGS LDFLAGS LDLIBS LDLIBS_PLAIN
-
-LDLIBS_PLAIN="$LDLIBS"
-LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
 
 #mkdir -p .build
-export D="$PWD"
 #find . -mindepth 1 -type d \! \( -name '.build' -or -path '*/.build/*' -or -name '_darcs' -or -path '*/_darcs/*' \) |
 #while read A; do
 #	mkdir -p .build/"$A"
