@@ -142,3 +142,8 @@ def cloexec_off(fd)
 int Pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, num timeout, const sigset_t *sigmask)
 	use(sigmask)
 	Select(nfds, readfds, writefds, exceptfds, timeout)
+
+
+# these are fake as mingw does not have symlinks or sockets
+def S_IFLNK 0xa000
+def S_IFSOCK 0xc000

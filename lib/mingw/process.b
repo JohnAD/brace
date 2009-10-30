@@ -89,13 +89,13 @@ struct utsname
 #	char domainname[_UTSNAME_LENGTH]
 
 int uname(struct utsname *buf)
-	buf->sysname = "mingw32"
+	strcpy(buf->sysname, "mingw32")
 	# TODO fill in the rest!
-	buf->nodename = NULL
-	buf->release = NULL
-	buf->version = NULL
-	buf->machine = NULL
-	buf->domainname = NULL
+	buf->nodename[0] = '\0'
+	buf->release[0] = '\0'
+	buf->version[0] = '\0'
+	buf->machine[0] = '\0'
+#	buf->domainname[0] = '\0'
 	return 0
 
 # TODO
