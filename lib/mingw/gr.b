@@ -1,4 +1,5 @@
 use gr
+use main
 export gl/gl.h gl/glu.h
 use error alloc m process
 export colours
@@ -9,12 +10,12 @@ GLUquadric *gl_quad
 GLUtesselator *gl_tess
 
 gl_size(GLsizei width, GLsizei height)
-	glViewport( 0, 0, width, height )
+	glViewport(0, 0, width, height)
 	
-	glMatrixMode( GL_PROJECTION )
+	glMatrixMode(GL_PROJECTION)
 	glLoadIdentity()
 	
-	gluOrtho2D( 0, width, 0, height )
+	gluOrtho2D(0, width, 0, height)
 
 gr_init()
 	if !gr_done
@@ -36,6 +37,13 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	text_wrap_sx = width
 	
 	_win_init()
+
+	# speed up GL for 2d
+	glDisable(GL_DEPTH_TEST)
+	glDepthMask(GL_FALSE)
+	glMatrixMode(GL_MODELVIEW)
+	glLoadIdentity()
+
 	gl_size(width, height)
 
 	gl_quad = gluNewQuadric()
@@ -45,6 +53,10 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	gluTessCallback(gl_tess, GLU_TESS_END, glEnd)
 #	gluTessCallback(gl_tess, GLU_TESS_COMBINE_DATA, (_GLUfuncptr)myCombine)   # this was causing crashes! dunno why
 
+	depth = 32
+	pixel_size = 4
+	pixel_size_i = 4
+
 	clear()
 	paint()
 
@@ -52,7 +64,8 @@ gr_free()
 	# XXX does nothing yet - I guess it should!
 
 gr_sync()
-	# does nothing on windows
+	glFlush()
+	# does not actually sync on windows (yet)
 
 def SXR(x) SX(x)+0.5
 def SYR(x) SY(x)+0.5
@@ -87,7 +100,7 @@ colour _colour
 
 colour col(colour c)
 	fg_col = c
-	glColor3f( c.r, c.g, c.b )
+	glColor3f(c.r, c.g, c.b)
 	return c
 
 colour coln(char *name)
@@ -107,7 +120,7 @@ circle(double x, double y, double r)
 	gluDisk(gl_quad, r1-1, r1, steps, 1)
 	glPopMatrix()
 	gr__change_hook()
-	#char buf[1024] ; sprintf(buf, "%lf %lf %d %lf %lf", sx(x), sy(y), steps, r1-1, r1) ; MessageBox( NULL, buf, "circle", MB_OK | MB_ICONINFORMATION )
+	#char buf[1024] ; sprintf(buf, "%lf %lf %d %lf %lf", sx(x), sy(y), steps, r1-1, r1) ; MessageBox(NULL, buf, "circle", MB_OK | MB_ICONINFORMATION)
 	# there should be a better way?
 
 circle_fill(double x, double y, double r)
@@ -117,11 +130,11 @@ circle_fill(double x, double y, double r)
 	int steps = 2*pi*r1 / 4
 	gluDisk(gl_quad, 0, r1, steps, 1)
 	glPopMatrix()
-	#char buf[1024] ; sprintf(buf, "%lf %lf %d %lf %lf", sx(x), sy(y), steps, 0.0, r1) ; MessageBox( NULL, buf, "circle_fill", MB_OK | MB_ICONINFORMATION )
+	#char buf[1024] ; sprintf(buf, "%lf %lf %d %lf %lf", sx(x), sy(y), steps, 0.0, r1) ; MessageBox(NULL, buf, "circle_fill", MB_OK | MB_ICONINFORMATION)
 	gr__change_hook()
 
 rect_fill(double x, double y, double w, double h)
-	glRectd( SXR(x), SYR(y), SXR(x+w), SYR(y+h) )
+	glRectd(SXR(x), SYR(y), SXR(x+w), SYR(y+h))
 	gr__change_hook()
 
 line(double x0, double y0, double x1, double y1)
@@ -133,7 +146,7 @@ line(double x0, double y0, double x1, double y1)
 	gr__change_hook()
 
 point(double x, double y)
-	#char buf[1024] ; sprintf(buf, "%lf %lf", sx(x), sy(y)) ; MessageBox( NULL, buf, "point", MB_OK | MB_ICONINFORMATION )
+	#char buf[1024] ; sprintf(buf, "%lf %lf", sx(x), sy(y)) ; MessageBox(NULL, buf, "point", MB_OK | MB_ICONINFORMATION)
 	glBegin(GL_POINTS)
 	glVertex2d(SXR(x), SYR(y))
 	glEnd()
@@ -182,7 +195,7 @@ polygon_draw(struct polygon *p)
 	gr__change_hook()
 
 polygon_fill(struct polygon *p)
-	# TODO should use instead: glBegin( GL_POLYGON )  ..  glEnd()
+	# TODO should use instead: glBegin(GL_POLYGON)  ..  glEnd()
 	gluTessBeginPolygon(gl_tess, p)
 	gluTessBeginContour(gl_tess)
 	int i = p->n_points
@@ -206,8 +219,8 @@ polygon_end(struct polygon *p)
 clear()
 	colour fg = fg_col
 	col(bg_col)
-	glClearColor( fg_col.r, fg_col.g, fg_col.b, 0 )
-	glClear( GL_COLOR_BUFFER_BIT )
+	glClearColor(fg_col.r, fg_col.g, fg_col.b, 0)
+	glClear(GL_COLOR_BUFFER_BIT)
 	col(fg)
 	gr__change_hook()
 	# TODO simplify this, no need to change with col()  ?
@@ -228,8 +241,12 @@ num font_height()
 export windows.h
 
 paint()
-	SwapBuffers( hDC )
-	SwapBuffers( hDC )  # XXX I don't know why, but apparently it's necessary to do this twice in order to get something to display!
+	if vid:
+		# TODO invert or something !@#!@#%!
+		glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, vid)
+	SwapBuffers(hDC)
+#	glFlush()  XXX do this instead of SwapBuffers again?
+	SwapBuffers(hDC)  # XXX XXX I don't know why, but apparently it's necessary to do this twice in order to get something to display!
 
 HWND hWnd
 HDC hDC
@@ -256,12 +273,12 @@ _win_init()
 	wc.cbClsExtra = 0
 	wc.cbWndExtra = 0
 	wc.hInstance = hInstance
-	wc.hIcon = LoadIcon( NULL, IDI_APPLICATION )
-	wc.hCursor = LoadCursor( NULL, IDC_ARROW )
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION)
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW)
 	wc.hbrBackground = NULL
 	wc.lpszMenuName = NULL
-	wc.lpszClassName = "gr"  # Main: program?
-	RegisterClass( &wc )
+	wc.lpszClassName = program
+	RegisterClass(&wc)
 	
 	dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE
 	dwStyle = WS_OVERLAPPEDWINDOW | WS_VISIBLE
@@ -269,19 +286,15 @@ _win_init()
 	AdjustWindowRectEx(&rect, dwStyle, FALSE, dwExStyle)
 	
 	#char buf[1024]
-	#sprintf( buf, "Rect: %ld %ld %ld %ld\n", rect.left, rect.right, rect.top, rect.bottom )
-	#MessageBox( NULL, buf, "Window Outside Rectangle", MB_OK | MB_ICONINFORMATION );
-	hWnd = CreateWindowEx( \
-		dwExStyle, "gr", "gr", \
-		dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, \
-		0, 0, rect.right-rect.left, rect.bottom-rect.top, \
-		NULL, NULL, hInstance, NULL )
+	#sprintf(buf, "Rect: %ld %ld %ld %ld\n", rect.left, rect.right, rect.top, rect.bottom)
+	#MessageBox(NULL, buf, "Window Outside Rectangle", MB_OK | MB_ICONINFORMATION);
+	hWnd = CreateWindowEx(dwExStyle, program, program, dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0, 0, rect.right-rect.left, rect.bottom-rect.top, NULL, NULL, hInstance, NULL)
 	
-	EnableOpenGL( hWnd, &hDC, &hRC )
+	EnableOpenGL(hWnd, &hDC, &hRC)
 
 int _win_destroy()
-	DisableOpenGL( hWnd, hDC, hRC )
-	DestroyWindow( hWnd )
+	DisableOpenGL(hWnd, hDC, hRC)
+	DestroyWindow(hWnd)
 	return msg.wParam
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -290,7 +303,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	WM_CREATE	
 		return 0
 	WM_CLOSE	
-		PostQuitMessage( 0 )
+		PostQuitMessage(0)
 		return 0
 	WM_DESTROY	
 		return 0
@@ -301,20 +314,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return 0
 		return 0
 #	WM_SIZE	
-#		gl_size( LOWORD(lParam), HIWORD(lParam) )
+#		gl_size(LOWORD(lParam), HIWORD(lParam))
 # TODO fix & add more, e.g. & especially repaint!
 	else	
-		return DefWindowProc( hWnd, message, wParam, lParam )
+		return DefWindowProc(hWnd, message, wParam, lParam)
 
 EnableOpenGL(HWND hWnd, HDC * hDC, HGLRC * hRC)
 	PIXELFORMATDESCRIPTOR pfd
 	int format
 	
-	*hDC = GetDC( hWnd )
+	*hDC = GetDC(hWnd)
 	
 	# set the pixel format for the DC
-	ZeroMemory( &pfd, sizeof( pfd ) )
-	pfd.nSize = sizeof( pfd )
+	ZeroMemory(&pfd, sizeof(pfd))
+	pfd.nSize = sizeof(pfd)
 	pfd.nVersion = 1
 	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER
 	pfd.iPixelType = PFD_TYPE_RGBA
@@ -323,27 +336,27 @@ EnableOpenGL(HWND hWnd, HDC * hDC, HGLRC * hRC)
 	#pfd.cColorBits = 24
 	#pfd.cDepthBits = 16
 	pfd.iLayerType = PFD_MAIN_PLANE
-	format = ChoosePixelFormat( *hDC, &pfd )
-	SetPixelFormat( *hDC, format, &pfd )
+	format = ChoosePixelFormat(*hDC, &pfd)
+	SetPixelFormat(*hDC, format, &pfd)
 	
-	*hRC = wglCreateContext( *hDC )
-	wglMakeCurrent( *hDC, *hRC )
+	*hRC = wglCreateContext(*hDC)
+	wglMakeCurrent(*hDC, *hRC)
 
 DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
-	wglMakeCurrent( NULL, NULL )
-	wglDeleteContext( hRC )
-	ReleaseDC( hWnd, hDC )
+	wglMakeCurrent(NULL, NULL)
+	wglDeleteContext(hRC)
+	ReleaseDC(hWnd, hDC)
 
 #def done() event_loop()
 event_loop()
 	# XXX FIXME XXX this is BAD as it is a busy-wait loop...
 	while !quit
-		if  PeekMessage( &msg, NULL, 0, 0, PM_REMOVE )
-			if ( msg.message == WM_QUIT )
+		if PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)
+			if msg.message == WM_QUIT
 				quit = TRUE
 			else
-				TranslateMessage( &msg )
-				DispatchMessage( &msg )
+				TranslateMessage(&msg)
+				DispatchMessage(&msg)
 		else
 			.
 
@@ -369,3 +382,14 @@ quadrilateral(num x2, num y2, num x3, num y3)
 	polygon_end(&p)
 	move2(x2, y2, x3, y3)
 	# TODO make faster; don't use polygon ?
+
+def with_pixel_type(macro)
+	# assuming 24/32 bpp
+	macro(ulong)
+
+def pixel(vid, X, Y) (vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
+
+vid_init()
+	vid = Malloc(w*h*pixel_size_i)
+	bzero(vid, w*h*pixel_size_i)
+	  # XXX clears to black, not to background color

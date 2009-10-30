@@ -11,6 +11,9 @@ num ox, oy, sc
 int _xflip = 0
 int _yflip = 0
 sprite struct__screen, *screen = &struct__screen
+int depth
+num pixel_size
+int pixel_size_i
 
 boolean fullscreen = 0
 boolean _deco = 1
@@ -259,12 +262,13 @@ Clear(colour c)
 def pix_clear() pix_clear(bg_col)
 pix_clear(colour c)
 	bg(c)
+	pix_t cp = colour_to_pix(c)
 	with_pixel_type(pix_clear_1)
 
 def pix_clear_1(pixel_type)
 	pixel_type *px = pixel()
 	repeat(w*h)
-		*px++ = c
+		*px++ = cp
 
 # change this to a macro?
 gr__change_hook()
@@ -375,3 +379,8 @@ def for_pixels(px)
 	pixel_type *my(end) = px + w*h
 	for ; px != my(end) ; ++px
 		.
+
+def pixel(X, Y) pixel(vid, X, Y)
+def pixel() pixel(0, 0)
+def pixel(pixmap) pixel(pixmap, 0, 0)
+def pixelq(vid, X, Y) (void *)(((char *)vid) + ((int)Y*w + (int)X) * pixel_size_i)

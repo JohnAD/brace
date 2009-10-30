@@ -3,7 +3,7 @@ use cstr error
 size_t strlcpy(char *dst, const char *src, size_t size)
 	if size == 0
 		return strlen(src)
-	char *src0 = src
+	const char *src0 = src
 	do
 		if (*dst++ = *src++) == 0
 			break

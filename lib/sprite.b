@@ -1,5 +1,7 @@
 # TODO make these xpm compatible!
 
+use sprite
+
 ldef debug void
 
 typedef unsigned long pix_t
@@ -151,7 +153,11 @@ def sprite_put_x(plottype, to, from, x, y, source, target)
 sprite_gradient(sprite *s, colour c00, colour c10, colour c01, colour c11)
 	sprite_gradient_angle(s, c00, c10, c01, c11, 0)
 
-sprite_gradient_angle(sprite *s, colour c00, colour c10, colour c01, colour c11, num angle)
+sprite_gradient_angle(sprite *s, colour _c00, colour _c10, colour _c01, colour _c11, num angle)
+	pix_t c00 = colour_to_pix(_c00)
+	pix_t c10 = colour_to_pix(_c10)
+	pix_t c01 = colour_to_pix(_c01)
+	pix_t c11 = colour_to_pix(_c11)
 	pix_t *p = s->pixels
 	long w = s->width
 	long h = s->height

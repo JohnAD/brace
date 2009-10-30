@@ -17,9 +17,6 @@ Display *display
 Window root_window, window
 Visual *visual
 XVisualInfo *visual_info
-int depth
-num pixel_size
-int pixel_size_i
 Pixmap gr_buf
 Colormap colormap
 GC gc
@@ -504,11 +501,6 @@ quadrilateral(num x2, num y2, num x3, num y3)
 	XFillPolygon(display, gr_buf, gc, p, 4, Convex, CoordModeOrigin)
 	move2(x2, y2, x3, y3)
 
-def pixel(X, Y) pixel(vid, X, Y)
-def pixel(vid, X, Y) (void *)(((char *)vid) + ((int)Y*w + (int)X) * pixel_size_i)
-def pixel() pixel(0, 0)
-def pixel(pixmap) pixel(pixmap, 0, 0)
-
 # type can be png, gif, jpeg ...
 
 
@@ -584,3 +576,5 @@ void *gr_do_delay_handler(void *obj, void *a0, void *event)
 	if e->type == KeyPress:
 		gr_do_delay_done = 1
 	return thunk_yes
+
+def pixel(vid, X, Y) pixelq(vid, X, Y)
