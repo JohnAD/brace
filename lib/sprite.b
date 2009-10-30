@@ -1,7 +1,5 @@
 # TODO make these xpm compatible!
 
-use sprite
-
 ldef debug void
 
 typedef unsigned long pix_t
@@ -369,5 +367,6 @@ pix_t sprite_at(sprite *s, long x, long y):
 # TODO sprite_put_behind ...
 
 use png.h
-export types
-use m gr
+use sprite
+export types io
+use m gr error
