@@ -1,6 +1,6 @@
 use cstr error
 
-size_t strlcpy(char *dst, char *src, size_t size)
+size_t strlcpy(char *dst, const char *src, size_t size)
 	if size == 0
 		return strlen(src)
 	char *src0 = src
@@ -14,7 +14,7 @@ size_t strlcpy(char *dst, char *src, size_t size)
 			.
 	return src - src0 - 1
 
-size_t strlcat(char *dst, char *src, size_t size)
+size_t strlcat(char *dst, const char *src, size_t size)
 	if size == 0
 		return strlen(dst)+strlen(src)
 	char *dst0 = dst
