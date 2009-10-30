@@ -11,7 +11,7 @@ tgz: dotbuild
 
 dotbuild:
 	mkdir -p .build
-	cp -alf .Make.conf * .build/
+	cp -alf .Make.conf .sh.conf * .build/
 	mkdir -p .build/lib/debug
 	cd .build ; $(MAKE) build
 build:
@@ -43,6 +43,6 @@ uninstall:
 	rmdir '$(libdir)' '$(includedir)' '$(perldir)' '$(bindir)' '$(langdir)' '$(realprefix)' || true
 
 distclean: clean
-	rm .Make.conf
+	rm .Make.conf .sh.conf
 
 .PHONY: dotbuild build clean install distclean

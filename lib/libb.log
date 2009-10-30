@@ -1,2 +1,0 @@
-gcc -pedantic -std=gnu99 -o libb.so -Wall -Wextra -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS -I/usr/X11R6/include -ggdb -O2 -shared -fpic -Wl,-soname,libb.so all.c -lcrypt -lm -L/usr/X11R6/lib -lX11 -lXext -lpng
-all.c:8111:27: warning: imaginary constants are a GCC extension
