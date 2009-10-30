@@ -1,4 +1,8 @@
 #!/bin/bash
+v() {
+	echo "$@" >&2
+	"$@"
+}
 LIBB_BUILD=1
 . ../sh.conf
 . brace_env
