@@ -151,3 +151,11 @@ def Socketpair(sv[2]) Socketpair(AF_UNIX, SOCK_STREAM, 0, sv)
 Socketpair(int d, int type, int protocol, int sv[2])
 	if socketpair(d, type, protocol, sv) != 0
 		failed("socketpair")
+
+def nonblock(fd, nb) nonblock_fcntl(fd, nb)
+
+nonblock_fcntl(int fd, int nb)
+	if nb
+		Fcntl_setfl(fd, Fcntl_getfl(fd) | O_NONBLOCK)
+	 else
+		Fcntl_setfl(fd, Fcntl_getfl(fd) & ~O_NONBLOCK)
