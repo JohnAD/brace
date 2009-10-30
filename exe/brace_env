@@ -24,6 +24,7 @@ USER_LDFLAGS="$LDFLAGS" ; LDFLAGS=""
 USER_LDLIBS="$LDLIBS" ; LDLIBS=""
 
 CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS"
+CFLAGS="$CFLAGS -I/usr/local/include"
 
 # msys 'which' is a shell script which for some reason won't run from here :/
 # this should be a bit faster anyway
