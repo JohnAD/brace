@@ -92,8 +92,9 @@ def lock(lockfile)
 def lock(lockfile, fd, x)
 	Lock(lockfile, fd, x)
 
-nonblock(int fd, u_long nb)
-	if ioctlsocket(fd_to_socket(fd), FIONBIO, &nb) == -1
+nonblock(int fd, int nb)
+	u_long _nb = nb
+	if ioctlsocket(fd_to_socket(fd), FIONBIO, &_nb) == -1
 		failed("ioctlsocket")
 
 def fd_full(new_fd, set) set->fd_count >= FD_SETSIZE
