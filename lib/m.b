@@ -105,9 +105,15 @@ def sqr(x) x*x
 num notpot(num hypotenuse, num x)
 	return sqrt(sqr(hypotenuse) - sqr(x))
 
-def randi() (long)(random() & 0x7fffffff)
+#def randi() (long)(random() & 0x7fffffff)
+def randi() random()
 def randi(max) (int)(max*Rand())
 def randi(min, max) randi(max-min)+min
+
+long Randi(long min, long max)
+	return random() / ((1U<<31) / (max - min)) + min
+def Randi(long max) Randi(0, max)
+def Randi() randi()
 
 def RANDOM_TOP (1UL<<31)
 def RANDOM_MAX RANDOM_TOP-1
