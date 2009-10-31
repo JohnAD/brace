@@ -4,7 +4,7 @@ export b_plain
 
 export sound music
 export key
-export gr turtle sprite event
+export gr turtle sprite #event
 export cgi_png
 
 # export tty
