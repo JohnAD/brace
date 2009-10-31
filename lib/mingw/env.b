@@ -1,6 +1,6 @@
 use stdlib.h
 
-use error util alloc cstr
+use error util alloc cstr path
 export types
 use env
 

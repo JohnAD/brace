@@ -307,7 +307,6 @@ cstr rl_0()
 		return buffer_to_cstr(b)
 	 else
 		buffer_free(b)
-		Free(b)
 		return NULL
 
 def fl() vs_flush()

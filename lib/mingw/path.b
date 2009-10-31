@@ -1,4 +1,5 @@
 export types
+use cstr
 
 def path__sep '\\'
 def path__is_sep(c) c == '\\' || c == '/'

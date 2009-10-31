@@ -64,6 +64,9 @@ gr_free()
 	# XXX does nothing yet - I guess it should!
 
 gr_sync()
+	gr_flush()
+
+gr_flush()
 	glFlush()
 	# does not actually sync on windows (yet)
 
@@ -252,7 +255,6 @@ HWND hWnd
 HDC hDC
 HGLRC hRC
 MSG msg
-BOOL quit = FALSE
 
 #int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
 
@@ -346,19 +348,6 @@ DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
 	wglMakeCurrent(NULL, NULL)
 	wglDeleteContext(hRC)
 	ReleaseDC(hWnd, hDC)
-
-#def done() event_loop()
-event_loop()
-	# XXX FIXME XXX this is BAD as it is a busy-wait loop...
-	while !quit
-		if PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)
-			if msg.message == WM_QUIT
-				quit = TRUE
-			else
-				TranslateMessage(&msg)
-				DispatchMessage(&msg)
-		else
-			.
 
 triangle(num x2, num y2)
 	polygon p

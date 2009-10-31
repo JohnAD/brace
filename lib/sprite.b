@@ -368,5 +368,5 @@ pix_t sprite_at(sprite *s, long x, long y):
 
 use png.h
 use sprite
-export types io
-use m gr error
+export types io m
+use gr error

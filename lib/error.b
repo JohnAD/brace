@@ -6,7 +6,7 @@ struct thunk
 
 export errno.h setjmp.h
 use stdio.h stdarg.h stdlib.h
-export thunk vec hash types
+export thunk vec hash types process
 use main buffer util path env
 
 use error

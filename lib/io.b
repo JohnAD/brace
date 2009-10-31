@@ -1466,14 +1466,18 @@ cstr scan_int(int *a, cstr l)
 cstr scan_short(short *a, cstr l)
 	scan_x(short, "%hd", a, l)
 
-# NOTE scan_char reads an integer like 123, not a character like %
+# NOTE scan_char reads an integer like 123, not a character like %c does
 cstr scan_char(char *a, cstr l)
-	scan_x(signed_char, "%hhd", (signed char *)a, l)
+#	scan_x(signed_char, "%hhd", (signed char *)a, l)
+	Sc(short, l, i)
+	*a = (char)i
+	return scan_skip(l)
 
 cstr scan_long(long *a, cstr l)
 	scan_x(long, "%ld", a, l)
 
 cstr scan_long_long(long long *a, cstr l)
+	# XXX mingw doesn't like this
 	scan_x(long long, "%lld", a, l)
 
 cstr scan_num(num *a, cstr l)
@@ -1486,6 +1490,7 @@ cstr scan_float(float *a, cstr l)
 	scan_x(float, "%f", a, l)
 
 cstr scan_long_double(long double *a, cstr l)
+	# XXX mingw doesn't like this
 	scan_x(double, "%Lf", a, l)
 
 cstr scan_skip(cstr l)
