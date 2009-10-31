@@ -16,6 +16,8 @@ def debug warn
 
 def verbose warn
 
+boolean debugging = 0
+
 int exit__error = 125
 int exit__fault = 124
 
@@ -475,3 +477,16 @@ def Verbose(a0, a1, a2, a3, a4, a5, a6)
 def Verbose(a0, a1, a2, a3, a4, a5, a6, a7)
 	if is_verbose
 		warn(a0, a1, a2, a3, a4, a5, a6, a7)
+
+Debug(cstr format, ...)
+	collect_void(vDebug, format)
+
+vDebug(cstr format, va_list ap)
+	if debugging
+		vwarn(format, ap)
+
+void Debug_errors(void)
+	if debugging
+		warn_errors()
+	else
+		clear_errors()

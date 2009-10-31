@@ -11,7 +11,7 @@ BBHEADERS=$(shell $(finder) "*.bb" | perl -pe 's/\.bb$$/.bbh/')
 BOBJ_PLAIN=$(shell $(finder) "*.b" | perl -pe 's/\\/\//g; s/\.b$$/.o/' | $(grep_plain))
 BHEADERS_PLAIN=$(shell $(finder) "*.b" | perl -pe 's/\.b$$/.bh/' | $(grep_plain))
 
-all: $(SONAME) $(PLAIN_SONAME) b.h b_plain.h $(DEBUG_SONAME) $(PLAIN_DEBUG_SONAME) # libb.a libb_plain.a libb_debug.a libb_plain_debug.a
+all: $(SONAME) $(PLAIN_SONAME) b.h b_plain.h $(DEBUG_SONAME) $(PLAIN_DEBUG_SONAME) libb.a libb_plain.a libb_debug.a libb_plain_debug.a
  # libb.so.$(MAJOR) libb.so.$(MINOR)
 
 $(SONAME): $(BOBJ)
@@ -32,21 +32,21 @@ $(PLAIN_DEBUG_SONAME): $(BOBJ_PLAIN)
 	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(PLAIN_DEBUG_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
 	chmod -x $@
 
-#libb.a: libb_debug.a
-#	cp -a $< $@
-#	strip --strip-unneeded $@
-#
-#libb_plain.a: libb_plain_debug.a
-#	cp -a $< $@
-#	strip --strip-unneeded $@
-#
-#libb_debug.a: $(BOBJ)
-#	rm -f $@
-#	ar rcs $@ $(BOBJ)
-#
-#libb_plain_debug.a: $(BOBJ_PLAIN)
-#	rm -f $@
-#	ar rcs $@ $(BOBJ_PLAIN)
+libb.a: libb_debug.a
+	cp -a $< $@
+	strip --strip-unneeded $@
+
+libb_plain.a: libb_plain_debug.a
+	cp -a $< $@
+	strip --strip-unneeded $@
+
+libb_debug.a: $(BOBJ)
+	rm -f $@
+	ar rcs $@ $(BOBJ)
+
+libb_plain_debug.a: $(BOBJ_PLAIN)
+	rm -f $@
+	ar rcs $@ $(BOBJ_PLAIN)
 
 # TODO a program to export the headers like this..?
 
