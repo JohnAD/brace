@@ -1,8 +1,7 @@
 #!/lang/b
 use b
 Main()
-	repeat(5):
-		Pr(long, randi())
-		Pr(long long, randl())
-		Pr(num, Rand())
-#		Pr(long, randi(0, 10))
+	repeat(10):
+		repeat(10):
+			pr(long, randi(0, 10))
+		nl()
