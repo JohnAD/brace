@@ -1,0 +1,45 @@
+#!/lang/b
+
+def usage()
+	usage("[n1 n2 n3 n4]  e.g. 10 5 5 10")
+
+Main()
+	int n1, n2, n3, n4
+	if args
+		Getargs(int, n1, n2, n3, n4)
+	 else
+		eachp(x, n1, n2, n3, n4)
+			*x = randi(1,13)
+
+	Pr(int, n1, n2, n3, n4)
+
+	space(600, 600)
+
+	for(o, 0.0, 360, 0.5)
+		clear()
+		for(i, 0, 360, 6)
+			hsv(i, Cos(o*13)*0.15+0.85, Sin(o*7)*0.5+0.5)
+			move(0,0)
+			turn_to(o)
+			right(i)
+			move()
+			forward(20)
+			draw()
+			forward(80)
+
+			forward(100)
+
+			let(da, Sin(o*n1+i*n2)*10)
+			let(d, Cos(o*n3+i*n4)*10+12)
+			repeat(20)
+				left(da)
+				forward(d)
+				da = da*1.1
+				d = d * 0.9
+		Paint()
+		Sleep(0.01)
+
+def Paint()
+	paint()
+
+use b
