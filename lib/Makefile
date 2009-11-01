@@ -15,19 +15,25 @@ BK_HEADERS=1
 DEBUG=1
 
 build:
-	bk
+#	bk
+	./build-libb.sh
+	cp $(LIBB_SONAME) $(LIBB_PLAIN_SONAME)
+	cp $(LIBB_SONAME) $(LIBB_DEBUG_SONAME)
+	cp $(LIBB_SONAME) $(LIBB_PLAIN_DEBUG_SONAME)
 
 clean:
 	bk-clean
 	rm -f `find . -name '*.so.*' -or -name '*.so' -or -name '*.dll' -or -name '*.bh' -or -name '*.bbh' -or -name '*.b1' -or -name '*.c' -or -name '*.h' -or -name '*.o' -or -name '*.a'`
 	echo done
 
+#		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' -or -name '*.c' -or -name '*.cc' \) | while read F; do \
+
 install:
 	install -d '$(libdir)'
 	find . -path '*/.*' -prune -or -type d -print | while read D; do \
 		install -v -d '$(includedir)'/"$$D"; \
 		find "$$D" -maxdepth 1 -type f \
-		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' -or -name '*.c' -or -name '*.cc' \) | while read F; do \
+		 \( -name '*.bh' -or -name '*.bbh' \) | while read F; do \
 			install -v -m=644 "$$F" '$(includedir)'/"$$D"; \
 		done; \
 	done

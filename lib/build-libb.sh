@@ -24,5 +24,5 @@ time (
 	time v b2c < .all.b >.all.c
 	time v $CC -o $LIBB_SONAME $CFLAGS -shared -fpic -Wl,-soname,$LIBB_SONAME $LDFLAGS .all.c $LDLIBS 2>&1 | tee libb.log
 	chmod -x $LIBB_SONAME
-	rm .all.b .all.c
+#	rm .all.b .all.c
 )

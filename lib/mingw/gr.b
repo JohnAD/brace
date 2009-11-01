@@ -28,7 +28,10 @@ gr_init()
 	rainbow_init()
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
-	w = width ; h = height
+	if width
+		w = width ; h = height
+	 else
+		w = 800 ; h = 600
 	bg_col = _bg_col ; fg_col = _fg_col
 	w_2 = w/2 ; h_2 = h/2
 	ox = oy = 0
