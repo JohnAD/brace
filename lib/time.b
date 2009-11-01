@@ -28,9 +28,9 @@ def time_forever -1e100
 
 export types
 
-def Sleep(time) Rsleep(time)
-  # to be consistent, this should really be like sleep(int time)
-  # - but rsleep(num time) behaves the same given an int arguement.
+#def Rsleep(time) Rsleep(time)
+#  # to be consistent, this should really be like sleep(int time)
+#  # - but rsleep(num time) behaves the same given an int arguement.
 
 Rsleep(num time)
 	repeat
@@ -53,7 +53,7 @@ num rsleep(num time)
 
 def Sleep_forever()
 	repeat
-		Sleep(1e6)
+		Rsleep(1e6)
 
 # it would be good to have a "cached time" function that only
 # calls gettimeofday(2) if the process has blocked since the
@@ -183,7 +183,7 @@ def xsleep(dt, t, use_asleep)
 	if use_asleep
 		asleep(dt, t)
 	 else
-		Sleep(dt)
+		Rsleep(dt)
 
 # this asleep (accurate sleep) is still a bit dodgy,
 # e.g. asleep_small probably should vary by machine
@@ -330,7 +330,7 @@ char *date_rfc1123(time_t t)
 #
 #num delay_loop_init(num secs)
 ##	set_priority(getpid(), sched_get_priority_max(SCHED_FIFO))
-##	Sleep(0.1)
+##	Rsleep(0.1)
 #	sighandler_t sigh_old = Sigact(SIGALRM, catch_signal_delay_loop_init)
 #	num t0 = rtime()
 #	Ualarm(secs)

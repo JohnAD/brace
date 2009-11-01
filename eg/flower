@@ -37,6 +37,6 @@ Main()
 				da = da*1.1
 				d = d * 0.9
 		Paint()
-		Sleep(0.01)
+		Rsleep(0.01)
 
 use b

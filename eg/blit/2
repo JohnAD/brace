@@ -70,7 +70,7 @@ Main()
 		sprite_clip(target, source, screen, image, xi - image->width/2 + w/2, h/2 - yi - image->height/2)
 		sprite_blit(target, image_back)
 #		Readline()
-#		Sleep(0.01)
+#		Rsleep(0.01)
 		a += 0.2
 		++xi
 		++yi

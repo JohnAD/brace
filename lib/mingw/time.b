@@ -51,4 +51,4 @@ struct tm *localtime_r(const time_t *timep, struct tm *result)
 	return result
 
 long double asleep_small = 0.3
-def lsleep(dt) Sleep(dt)
+def lsleep(dt) Rsleep(dt)

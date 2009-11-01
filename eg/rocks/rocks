@@ -1028,7 +1028,7 @@ gprint(char *p)
 #	XDrawString(display, doublebuffer, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5), p, len)
 	XDrawString(display, doublebuffer, gc, lx, ly+_font->ascent, p, len)
 	move(lx, ly + font_height())
-#	Sleep(1)
+#	Rsleep(1)
 
 font(cstr name, int size)
 	let(xfontname, format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))

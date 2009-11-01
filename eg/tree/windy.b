@@ -40,6 +40,6 @@ Main()
 		
 			da0 *= drag ; da1 *= drag
 
-		Sleep(0.02)
+		Rsleep(0.02)
 
 use headers

@@ -158,8 +158,8 @@ Main()
 			planet()
 
 			Paint()
-			Sleep(0.01)
-			#Sleep(1)
+			Rsleep(0.01)
+			#Rsleep(1)
 			if !anim
 				switch key()
 				27	.

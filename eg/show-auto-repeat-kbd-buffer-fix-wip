@@ -202,7 +202,7 @@ run_demo(cstr file)
 	kill(demo_child, SIGTERM)
 	Child_wait()
 	demo_child = 0
-	Sleep(x_expose_delay)
+	Rsleep(x_expose_delay)
 #	handle_events()
 
 kill_demo_child:

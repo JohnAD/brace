@@ -40,7 +40,7 @@ Main()
 
 		Paint()
 		
-		Sleep(0.2)
+		Rsleep(0.2)
 
 def X Sin(a)*r
 def Y Cos(a)*r

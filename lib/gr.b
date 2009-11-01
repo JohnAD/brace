@@ -275,7 +275,7 @@ gr__change_hook()
 	if _autopaint
 		paint()
 	if _delay
-		Sleep(_delay)
+		Rsleep(_delay)
 
 paint()
 	paint_sync(1)

@@ -17,10 +17,10 @@ Main()
 
 	warn("parent sleeping for 4")
 
-	# apparently sleep() is never automatically restarted, but my Sleep is.
+	# apparently sleep() is never automatically restarted, but my Rsleep is.
 
 #	int rv = sleep(4)
-	Sleep(4)
+	Rsleep(4)
 
 #	warn("parent done sleeping for 4, sleep returned %d, allowing sigchld to come in now", rv)
 	warn("parent done sleeping for 4, allowing sigchld to come in now")

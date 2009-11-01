@@ -32,7 +32,7 @@ def spectrum()
 		move(0, 0)
 		triangle(X, Y)
 	Paint()
-	Sleep(0.01)
+	Rsleep(0.01)
 
 num dt
 

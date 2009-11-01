@@ -13,7 +13,7 @@ Main()
 		clear()
 		draw_lattice()
 		Paint()
-#		Sleep(100)
+#		Rsleep(100)
 
 def draw_lattice()
 #	Printf("%f ", rtime())

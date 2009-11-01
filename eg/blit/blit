@@ -61,6 +61,6 @@ Main()
 			sprite_clip(target, source, screen, s, x - s->width/2 + w/2, h/2 - y - s->height/2)
 			sprite_blit(target, back+i)
 #		Readline()
-#		Sleep(0.01)
+#		Rsleep(0.01)
 		a += 0.2
 		bm_ps("fps")
