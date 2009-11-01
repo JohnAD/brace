@@ -1,4 +1,5 @@
 #!/lang/b
+# XXX auto-repeat-kbd-buffer-fix-wip
 use b
 
 num margins = 40
