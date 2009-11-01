@@ -25,6 +25,7 @@ USER_LDLIBS="$LDLIBS" ; LDLIBS=""
 
 CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS"
 CFLAGS="$CFLAGS -I/usr/local/include"
+LDLIBS="$LDLIBS -L/usr/local/lib"
 
 # msys 'which' is a shell script which for some reason won't run from here :/
 # this should be a bit faster anyway
@@ -68,7 +69,10 @@ if [ -z "$BRACE_STANDALONE" -a -z "$LIBB_BUILD" ]; then
 else
 	BRACE_L_SO=
 fi
+
 if [ -z "$BRACE_USE" ]; then
+	LDLIBS="$LDLIBS -lm"
+	LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
 	if [ -n "$MINGW" ]; then
 		BRACE_USE="mingw nongnu nonbsd nonlinux"
 		BRACE_USE="$BRACE_USE io-select"
@@ -85,7 +89,6 @@ if [ -z "$BRACE_USE" ]; then
 			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
 		fi
 		LDLIBS="$LDLIBS -lcrypt"
-		LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
 		UNAME=`uname | tr 'A-Z' 'a-z'`
 		case "$UNAME" in
 		*bsd*|sunos)
@@ -153,7 +156,6 @@ fi
 
 
 LDLIBS="$BRACE_L_SO $LDLIBS"
-LDLIBS="$LDLIBS -lm"
 LDLIBS_PLAIN="$LDLIBS"
 LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
 CFLAGS="-Wall -Wextra $CFLAGS"  # -I. -Werror
