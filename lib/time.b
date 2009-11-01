@@ -28,7 +28,7 @@ def time_forever -1e100
 
 export types
 
-#def Rsleep(time) Rsleep(time)
+#def Sleep(time) Rsleep(time)
 #  # to be consistent, this should really be like sleep(int time)
 #  # - but rsleep(num time) behaves the same given an int arguement.
 
