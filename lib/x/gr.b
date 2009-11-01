@@ -443,12 +443,6 @@ num font_height()
 
 # TODO bbox function for fonts / text
 
-paint()
-	paint_sync(1)
-
-Paint()
-	paint_sync(2)
-
 paint_sync(int syncage)
 	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
 #	XClearWindow(display, window)

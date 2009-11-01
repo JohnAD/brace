@@ -243,12 +243,14 @@ num font_height()
 ^define WIN32_LEAN_AND_MEAN
 export windows.h
 
-paint()
+paint_sync(int syncage)
+	use(syncage)
 	if vid:
 		# TODO invert or something !@#!@#%!
 		glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, vid)
 	SwapBuffers(hDC)
-#	glFlush()  XXX do this instead of SwapBuffers again?
+#	if syncage
+#		glFlush()  XXX do this instead of SwapBuffers again?
 	SwapBuffers(hDC)  # XXX XXX I don't know why, but apparently it's necessary to do this twice in order to get something to display!
 
 HWND hWnd
