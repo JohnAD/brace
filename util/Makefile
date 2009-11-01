@@ -6,7 +6,7 @@ LDLIBS=$(EXE_LDLIBS)
 
 build: install$(EXE)
 
-install$(EXE): install.b $(BRACE_SO)/$(LIBB_SONAME)
+install$(EXE): install.b $(BRACE_SO)/$(SONAME)
 	br install.b install$(EXE)
 
 clean:

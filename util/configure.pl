@@ -64,10 +64,10 @@ End
 
 } else { # if ($mingw)
 	print <<End;
-LIBB_SONAME=libb.dll
-LIBB_PLAIN_SONAME=libb_plain.dll
-LIBB_DEBUG_SONAME=libb_debug.dll
-LIBB_PLAIN_DEBUG_SONAME=libb_plain_debug.dll
+SONAME=libb.dll
+PLAIN_SONAME=libb_plain.dll
+DEBUG_SONAME=libb_debug.dll
+PLAIN_DEBUG_SONAME=libb_plain_debug.dll
 PERL5LIB:=\$(srcdir)${sep}perl$pathsep\$(srcdir)${sep}cpan
 EXE=.exe
 PATH:=\$(srcdir)${sep}exe$pathsep\$(srcdir)${sep}util$pathsep$path
