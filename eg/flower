@@ -13,7 +13,8 @@ Main()
 
 	Pr(int, n1, n2, n3, n4)
 
-	space()
+#	space()
+	space(300, 300) ; zoom(0.5)
 
 	for(o, 0.0, 360, 0.5)
 		clear()
@@ -36,7 +37,13 @@ Main()
 				forward(d)
 				da = da*1.1
 				d = d * 0.9
+		handle_event()
 		Paint()
-		Rsleep(0.01)
+	warn("about to sleep")
+	Rsleep(5)
+	warn("done sleep - event loop")
+	event_loop()
+	warn("event_loop returned?")
+#		Rsleep(0.01)
 
 use b
