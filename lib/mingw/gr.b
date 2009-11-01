@@ -37,7 +37,7 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	ox = oy = 0
 	sc = 1
 	text_origin(-w_2, h_2)
-	text_wrap_sx = width
+	text_wrap_sx = w
 	
 	_win_init()
 
@@ -47,7 +47,7 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	glMatrixMode(GL_MODELVIEW)
 	glLoadIdentity()
 
-	gl_size(width, height)
+	gl_size(w, h)
 
 	gl_quad = gluNewQuadric()
 	gl_tess = gluNewTess()
@@ -241,11 +241,6 @@ num font_height()
 	error("sorry, no text in GL version (yet)")
 	return 0
 
-# here's the Windoze stuff:
-
-^define WIN32_LEAN_AND_MEAN
-export windows.h
-
 paint_sync(int syncage)
 	use(syncage)
 	if vid:
@@ -255,6 +250,11 @@ paint_sync(int syncage)
 #	if syncage
 #		glFlush()  XXX do this instead of SwapBuffers again?
 	SwapBuffers(hDC)  # XXX XXX I don't know why, but apparently it's necessary to do this twice in order to get something to display!
+
+# here's the Windoze stuff:
+
+^define WIN32_LEAN_AND_MEAN
+export windows.h
 
 HWND hWnd
 HDC hDC
