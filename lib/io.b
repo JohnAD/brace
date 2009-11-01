@@ -10,7 +10,7 @@ size_t block_size = 1024
 # todo split io and fs
 
 int Open(const char *pathname, int flags, mode_t mode)
-	int fd = open(pathname, flags, mode)
+	int fd = open(pathname, flags, mode|O_BINARY)
 	if fd == -1
 		char msg[8]
 		cstr how = ""
@@ -28,7 +28,7 @@ def openin(pathname) Open(pathname, O_RDONLY)
 def openout(pathname, mode) Open(pathname, O_WRONLY|O_CREAT, mode)
 def openout(pathname) openout(pathname, 0666)
 def Open(pathname) openin(pathname)
-def open(pathname) open(pathname, O_RDONLY)
+def open(pathname) open(pathname, O_RDONLY|O_BINARY)
 
 # FIXME many uses of openout would want O_TRUNC
 
@@ -975,6 +975,8 @@ def select_wrap(fd, read_fds, write_fds, except_fds, timeout)
 def dir1rest(path, d, b)
 	let(d, path)
 	let(b, path)
+	if mingw && isalpha(*b) && b[1] == ':'
+		b+=2
 	while path__is_sep(*b)
 		++b
 	while *b != '\0' && !path__is_sep(*b)

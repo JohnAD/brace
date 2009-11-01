@@ -24,10 +24,12 @@ clean:
 
 install:
 	install -d '$(libdir)'
-	for D in `find . -path '*/.*' -prune -or -type d -print`; do \
-		install -d '$(includedir)'/"$$D"; \
-		needargs 4 install -m=644 -p `find "$$D" -maxdepth 1 -type f \
-		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' -or -name '*.c' -or -name '*.cc' \)` '$(includedir)'/"$$D"; \
+	find . -path '*/.*' -prune -or -type d -print | while read D; do \
+		install -v -d '$(includedir)'/"$$D"; \
+		find "$$D" -maxdepth 1 -type f \
+		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' -or -name '*.c' -or -name '*.cc' \) | while read F; do \
+			install -v -m=644 "$$F" '$(includedir)'/"$$D"; \
+		done; \
 	done
 #	install -m=644 *.b *.bb *.bh *.bbh $(includedir)
 	install -m=644 $(LIBB_SONAME) '$(libdir)'
