@@ -22,12 +22,12 @@ brace$(EXE): brace.o
 bx$(EXE): bx.b $(BRACE_SO)/$(LIBB_SONAME)
 	br bx.b bx$(EXE)
 bbx$(EXE): bx$(EXE)
-	ln -sf bx$(EXE) bbx$(EXE) || cp bx$(EXE) bbx$(EXE)
+	lnorcp bx$(EXE) bbx$(EXE)
 
 b1$(EXE): b1.b $(BRACE_SO)/$(LIBB_SONAME)
 	br b1.b b1$(EXE)
 bb1$(EXE): b1$(EXE)
-	ln -sf b1$(EXE) bb1$(EXE) || cp b1$(EXE) bb1$(EXE)
+	lnorcp b1$(EXE) bb1$(EXE)
 
 .mk_foo_stamp: brace_foo
 	brace_mk_exes brace_foo
@@ -47,11 +47,11 @@ install: build
 	install -d '$(bindir)' "$(langdir)"
 	install `../util/lsx .` '$(bindir)'
 	install -m=644 brace_env '$(bindir)'
-	ln -sf '$(bindir)/br' '$(bindir)/bbr' || cp '$(bindir)/br' '$(bindir)/bbr'
-	ln -sf bx$(EXE) '$(bindir)/bbx$(EXE)' || cp bx$(EXE) '$(bindir)/bbx$(EXE)'
-	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
-	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE)
-	ln -sf b1$(EXE) '$(bindir)/bb1$(EXE)' || cp 'b1$(EXE)' '$(bindir)/bb1$(EXE)'
+	lnorcp '$(bindir)/br' '$(bindir)/bbr'
+	lnorcp bx$(EXE) '$(bindir)/bbx$(EXE)'
+	lnorcp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
+	lnorcp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE)
+	lnorcp b1$(EXE) '$(bindir)/bb1$(EXE)'
 
 uninstall:
 	for F in `../util/lsx`; do rm -f '$(bindir)'/"$$F" ; done

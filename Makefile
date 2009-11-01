@@ -31,8 +31,6 @@ install: .build
 	cd .build/lib ; $(MAKE) install
 	install -d "$(libdir)" "$(perldir)"
 	install -m=644 lib/bk "$(libdir)"
-	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
-	ln -sf "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE) || cp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE)
 	cp -pR perl/* "$(perldir)"
 	perl -MIO::String -e '' 2>/dev/null || cp -pR cpan/IO "$(perldir)"
 

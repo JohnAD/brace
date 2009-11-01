@@ -10,7 +10,7 @@ size_t block_size = 1024
 # todo split io and fs
 
 int Open(const char *pathname, int flags, mode_t mode)
-	int fd = open(pathname, flags, mode|O_BINARY)
+	int fd = open(pathname, flags|O_BINARY, mode)
 	if fd == -1
 		char msg[8]
 		cstr how = ""
