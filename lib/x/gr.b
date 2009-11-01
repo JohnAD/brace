@@ -120,7 +120,7 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	ox = oy = 0
 	sc = 1
 	text_origin(-w_2, h_2)
-	text_wrap_sx = width
+	text_wrap_sx = w
 
 	#window = XCreateSimpleWindow(display, root_window, 0, 0, w, h, 0, white, black)
 
