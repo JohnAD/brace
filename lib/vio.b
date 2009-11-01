@@ -290,8 +290,10 @@ int rl(buffer *b)
 		len += strlen(b->start+len)
 		if b->start[len-1] == '\n'
 			# chomp it - XXX should we do this?
-			b->start[len-1] = '\0'
+			if len>1 && b->start[len-2] == '\r':
+				--len
 			--len
+			b->start[len] = '\0'
 			break
 		if len < buffer_get_space(b) - 1
 			break
