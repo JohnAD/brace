@@ -1,7 +1,7 @@
 export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
 export str error buffer types net vec vio
-use m alloc util path env process
+use m alloc util path env process main
 
 use io
 
