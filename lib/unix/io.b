@@ -159,3 +159,5 @@ nonblock_fcntl(int fd, int nb)
 		Fcntl_setfl(fd, Fcntl_getfl(fd) | O_NONBLOCK)
 	 else
 		Fcntl_setfl(fd, Fcntl_getfl(fd) & ~O_NONBLOCK)
+
+def O_BINARY 0

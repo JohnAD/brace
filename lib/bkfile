@@ -11,25 +11,25 @@ BBHEADERS=$(shell $(finder) "*.bb" | perl -pe 's/\.bb$$/.bbh/')
 BOBJ_PLAIN=$(shell $(finder) "*.b" | perl -pe 's/\\/\//g; s/\.b$$/.o/' | $(grep_plain))
 BHEADERS_PLAIN=$(shell $(finder) "*.b" | perl -pe 's/\.b$$/.bh/' | $(grep_plain))
 
-all: $(SONAME) $(PLAIN_SONAME) b.h b_plain.h $(DEBUG_SONAME) $(PLAIN_DEBUG_SONAME) libb.a libb_plain.a libb_debug.a libb_plain_debug.a
+all: $(LIBB_SONAME) $(LIBB_PLAIN_SONAME) b.h b_plain.h $(LIBB_DEBUG_SONAME) $(LIBB_PLAIN_DEBUG_SONAME) libb.a libb_plain.a libb_debug.a libb_plain_debug.a
  # libb.so.$(MAJOR) libb.so.$(MINOR)
 
-$(SONAME): $(BOBJ)
-	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
+$(LIBB_SONAME): $(BOBJ)
+	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(LIBB_SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
 #	strip --strip-unneeded $@     # XXX borks on sunos/gcc
 	chmod -x $@
 
-$(PLAIN_SONAME): $(BOBJ_PLAIN)
-	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(PLAIN_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
+$(LIBB_PLAIN_SONAME): $(BOBJ_PLAIN)
+	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(LIBB_PLAIN_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
 #	strip --strip-unneeded $@     # XXX borks on sunos/gcc
 	chmod -x $@
 
-$(DEBUG_SONAME): $(BOBJ)
-	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(DEBUG_SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
+$(LIBB_DEBUG_SONAME): $(BOBJ)
+	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(LIBB_DEBUG_SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
 	chmod -x $@
 
-$(PLAIN_DEBUG_SONAME): $(BOBJ_PLAIN)
-	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(PLAIN_DEBUG_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
+$(LIBB_PLAIN_DEBUG_SONAME): $(BOBJ_PLAIN)
+	$(CC) -o$@ $(CFLAGS) -shared -fpic -Wl,-soname,$(LIBB_PLAIN_DEBUG_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
 	chmod -x $@
 
 libb.a: libb_debug.a

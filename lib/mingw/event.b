@@ -9,6 +9,7 @@ def ButtonRelease 5
 def MotionNotify 6
 
 int events_queued(boolean wait_for_event)
+	use(wait_for_event)
 	return 1  # FIXME
 
 ##	return XEventsQueued(display, QueuedAfterReading)
@@ -147,3 +148,16 @@ void *mouse_handler_main(void *obj, void *a0, void *event)
 	# TODO
 	return thunk_yes
 
+
+cstr event_type_name(int type)
+	foraryp(i, event_type_names)
+		if i->k == type
+			return i->v
+	return NULL
+
+long2cstr event_type_names[] =
+	{ KeyPress, "KeyPress" },
+	{ KeyRelease, "KeyRelease" },
+	{ ButtonPress, "ButtonPress" },
+	{ ButtonRelease, "ButtonRelease" },
+	{ MotionNotify, "MotionNotify" },
