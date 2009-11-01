@@ -27,6 +27,7 @@ clean:
 	cd util ; $(MAKE) clean
 	rm -rf .build
 install: .build
+	cp .build/lib/$(SONAME) .build/util
 	cd .build/exe ; $(MAKE) install
 	cd .build/lib ; $(MAKE) install
 	install -d "$(libdir)" "$(perldir)"

@@ -46,10 +46,10 @@ install:
 #	install -m=644 libb_plain.a '$(libdir)'
 #	install -m=644 libb_plain_debug.a '$(libdir)'
 #	install -m=644 libb_debug.a '$(libdir)'
-	if [ -n '$(libdir2)' ]; then install -m=644 $(SONAME) '$(libdir2)'; fi
-	if [ -n '$(libdir2)' ]; then install -m=644 $(PLAIN_SONAME) '$(libdir2)'; fi
-	if [ -n '$(libdir2)' ]; then install -m=644 $(DEBUG_SONAME) '$(libdir2)'; fi
-	if [ -n '$(libdir2)' ]; then install -m=644 $(PLAIN_DEBUG_SONAME) '$(libdir2)'; fi
+	if [ -n '$(libdir2)' ]; then cp $(SONAME) '$(libdir2)'; fi
+	if [ -n '$(libdir2)' ]; then cp $(PLAIN_SONAME) '$(libdir2)'; fi
+	if [ -n '$(libdir2)' ]; then cp $(DEBUG_SONAME) '$(libdir2)'; fi
+	if [ -n '$(libdir2)' ]; then cp $(PLAIN_DEBUG_SONAME) '$(libdir2)'; fi
 #	install -m=644 libb.so.$(VERSION) '$(libdir)'
 ##	install -m=644 libbb.so.$(VERSION) '$(libdir)'
 #	ln -sf libb.so.$(VERSION) '$(libdir)'/libb.so.$(MAJOR)
