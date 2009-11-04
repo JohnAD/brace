@@ -7,7 +7,7 @@ cstr usage[] = { "x y r max_i rb_i payg w h", NULL }
 
 def blank_colour 1
 
-def paint_as_you_go 1
+def paint_as_you_go 0
 int payg = 5
 
 Main()
@@ -34,7 +34,7 @@ Main()
 	bm(program)
 
 
-typedef long pixel_type  # the nested macros lose expansions
+typedef uint32_t pixel_type  # the nested macros lose expansions
 
 def mandelbrot(pixel_type)
 	int counter = 0

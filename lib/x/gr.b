@@ -223,6 +223,8 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	sprite_screen(screen)
 
 	clear()
+	if gr_buf_image
+		pix_clear()
 	Paint()
 
 int gr__mitshm_fault_h(Display *d, XErrorEvent *e)

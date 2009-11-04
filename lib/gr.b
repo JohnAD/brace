@@ -266,7 +266,7 @@ pix_clear(colour c)
 	with_pixel_type(pix_clear_1)
 
 def pix_clear_1(pixel_type)
-	pixel_type *px = pixel()
+	pixel_type *px = pixelq()
 	repeat(w*h)
 		*px++ = cp
 
@@ -390,3 +390,4 @@ def pixel(X, Y) pixel(vid, X, Y)
 def pixel() pixel(0, 0)
 def pixel(pixmap) pixel(pixmap, 0, 0)
 def pixelq(vid, X, Y) (void *)(((char *)vid) + ((int)Y*w + (int)X) * pixel_size_i)
+def pixelq() pixelq(vid, 0, 0)
