@@ -13,6 +13,8 @@ use alloc time vec io m util process main
 
 use gr
 
+typedef int gr__x_error_handler(Display *, XErrorEvent *)
+
 Display *display
 Window root_window, window
 Visual *visual
@@ -117,10 +119,16 @@ gr_at_exit()
 	gr_free()
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
-	if width
-		w = width ; h = height
+	cstr geom = Getenv("GEOM", NULL)
+	if geom && *geom
+		cstr delim = geom+strspn(geom, "0123456789")
+		if !*delim || !delim[1] || delim == geom
+			error("invalid GEOM %s", geom)
+		w = atoi(geom) ; h = atoi(delim+1)
+	 eif !width || (geom && !*geom)
+		gr_fullscreen()
 	 else
-		w = root_w ; h = root_h
+		w = width ; h = height
 
 	bg_col = _bg_col ; fg_col = _fg_col
 	w_2 = w/2 ; h_2 = h/2
@@ -158,8 +166,14 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 			failed("shmat")
 		shmseginfo->readOnly = False
 
-		if !XShmAttach(display, shmseginfo)
-			failed("XShmAttach")
+		gr__x_error_handler *old_h = XSetErrorHandler(gr__mitshm_fault_h)
+		int attach_ok = XShmAttach(display, shmseginfo)
+		gr_sync()
+		if !(attach_ok && shm_version)
+			shm_version = 0 ; shm_pixmaps = 0 ; vid = NULL
+			if shmseginfo
+				free_shmseg()
+		XSetErrorHandler(old_h)
 	 else
 		debug("no shm extension")
 
@@ -211,6 +225,13 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	clear()
 	Paint()
 
+int gr__mitshm_fault_h(Display *d, XErrorEvent *e)
+	debug("gr__mitshm_fault_h: display %d error_code %d request_code %d minor_code %d", display, e->error_code, e->request_code, e->minor_code)
+	if d == display && e->error_code == BadAccess && e->request_code == 139 /* MIT-SHM */ && e->minor_code == X_ShmAttach
+		debug("shared memory attach failed - disabling")
+		shm_version = 0
+	return 0
+
 gr_free()
 	if gr_alloced
 		if fullscreen && fullscreen_grab_keyboard
@@ -223,13 +244,16 @@ gr_free()
 		if gr_buf_image
 			XDestroyImage(gr_buf_image)   # frees vid
 		if shmseginfo
-			shmdt(shmseginfo->shmaddr)
-			shmctl(shmseginfo->shmid, IPC_RMID, NULL)
-			Free(shmseginfo)
+			free_shmseg()
 #		XFreeGC(display, gc)
 		XDestroyWindow(display, window)
 		XCloseDisplay(display)
 		gr_alloced = 0
+
+free_shmseg()
+	shmdt(shmseginfo->shmaddr)
+	shmctl(shmseginfo->shmid, IPC_RMID, NULL)
+	Free(shmseginfo)
 
 xfont(const char *font_name)
 #	gnl()

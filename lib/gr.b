@@ -21,8 +21,9 @@ gr_deco(int _d)
 	_deco = _d
 
 gr_fullscreen()
-	gr_deco(0)
 	fullscreen = 1
+	w = root_w ; h = root_h
+	gr_deco(0)
 
 # last x and y position
 num lx = 0, ly = 0   # current pos
@@ -59,7 +60,6 @@ def paper(w, h, bg, fg)
 def paper()
 	paper(white)
 def paper(bg)
-	gr_fullscreen()
 	paper(0, 0, bg)
 
 def space(w, h)
