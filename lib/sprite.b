@@ -59,7 +59,7 @@ sprite_screen(sprite *s)
 	s->width = w
 	s->height = h
 	s->stride = w
-	s->pixels = (pix_t *)pixel(vid, 0, 0)
+	s->pixels = (pix_t *)pixelq(vid, 0, 0)
 
 sprite_clip(sprite *target, sprite *source, sprite *target_full, sprite *source_full, long x, long y)
 	*source = *source_full

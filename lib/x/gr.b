@@ -424,7 +424,7 @@ polygon_fill(struct polygon *p)
 polygon_end(struct polygon *p)
 	Free(p->points)
 
-def gprint_debug()
+def gprint_warn()
 	colour oldcol = fg_col
 	yellow()
 	XFillRectangle(display, gr_buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5)-_font->ascent, text_width, _font->ascent+_font->descent)
@@ -432,7 +432,7 @@ def gprint_debug()
 	XFillRectangle(display, gr_buf, gc, (int)(SX(lx)-text_width*(_xanc+1)/2.0+1), (int)(SY(ly)+_font->ascent*(_yanc+1)/2.0+0.5)-_font->ascent, text_width, _font->ascent)
 	col(oldcol)
 
-def gprint_debug()
+def gprint_warn()
 	void()
 
 num text_width(char *p)
@@ -447,7 +447,7 @@ num text_width(char *p)
 
 # this one doesn't do word wrapping but does do anchors!
 gprint(char *p)
-#	gprint_debug()
+#	gprint_warn()
 
 	# tab support, limited to indent for now!
 	while *p == '\t'
@@ -495,10 +495,13 @@ num font_height()
 
 paint_sync(int syncage)
 	if shm_pixmaps || !(use_vid || shm_version)
+		debug("painting pixmap with XCopyArea (on server / shared)")
 		XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
 	 eif shm_version
+		debug("painting image with XShmPutImage (shared)")
 		XShmPutImage(display, window, gc, gr_buf_image, 0, 0, 0, 0, w, h, False)
 	 eif use_vid
+		debug("painting image with XPutImage (client->server)  use_vid = %d", use_vid)
 		XPutImage(display, window, gc, gr_buf_image, 0, 0, 0, 0, w, h)
 
 	which syncage
@@ -599,16 +602,16 @@ gr_do_delay(num dt)
 	key_handler_default = thunk(gr_do_delay_handler)
 	if dt == time_forever
 		while !gr_do_delay_done
-#			warn("gr_do_delay forever looping calling handle_events: veclen(gr_need_delay_callbacks) = %d", veclen(gr_need_delay_callbacks))
+#			debug("gr_do_delay forever looping calling handle_events: veclen(gr_need_delay_callbacks) = %d", veclen(gr_need_delay_callbacks))
 			handle_events(1)
 #			int n = handle_events(1)
-#			warn("  %d", n)
+#			debug("  %d", n)
 	 else
 		num t = rtime()
 		num t1 = t + dt
 		while t < t1 && !gr_do_delay_done
 			if events_queued(0) || veclen(gr_need_delay_callbacks) || can_read(x11_fd, t1-t)
-#				warn("gr_do_delay %f looping calling handle_events", dt)
+#				debug("gr_do_delay %f looping calling handle_events", dt)
 				handle_events(0)
 			t = rtime()
 	key_handler_default = old_handler
@@ -620,8 +623,8 @@ void *gr_do_delay_handler(void *obj, void *a0, void *event)
 		gr_do_delay_done = 1
 	return thunk_yes
 
-# FIXME only do this for pixel()
 def pixel(vid, X, Y) (use_vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
 
 vid_init()
+	debug("vid_init: setting use_vid = 1")
 	use_vid = 1
