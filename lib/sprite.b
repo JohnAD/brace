@@ -2,7 +2,7 @@
 
 ldef debug void
 
-typedef unsigned long pix_t
+typedef uint32_t pix_t
 
 def pix_r(p) p>>16 & 0xFF
 def pix_g(p) p>>8 & 0xFF

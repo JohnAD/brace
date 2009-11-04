@@ -153,7 +153,7 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 		shm_version = 0 ; shm_pixmaps = 0
 
 	if shm_version
-		debug("shm_version = %d %d %d pixmaps %d", shm_version, shm_major, shm_minor, shm_pixmaps)
+		warn("shm_version = %d %d %d pixmaps %d", shm_version, shm_major, shm_minor, shm_pixmaps)
 		shmseginfo = Talloc(XShmSegmentInfo)
 		bzero(shmseginfo)
 
@@ -175,25 +175,25 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 				free_shmseg()
 		XSetErrorHandler(old_h)
 	 else
-		debug("no shm extension")
+		warn("no shm extension")
 
 	if shm_pixmaps && XShmPixmapFormat(display) == ZPixmap:
 		gr_buf = XShmCreatePixmap(display, window, vid, shmseginfo, w, h, depth)
-		debug("using XShmCreatePixmap")
+		warn("using XShmCreatePixmap")
 	 eif shm_version
 		gr_buf_image = XShmCreateImage(display, visual, depth, ZPixmap, vid, shmseginfo, w, h)
-		debug("using XShmCreateImage")
+		warn("using XShmCreateImage")
 	 else
 		vid = Malloc(w*h*pixel_size_i)
 		gr_buf_image = XCreateImage(display, visual, depth, ZPixmap, 0, vid, w, h, BitmapPad(display), 0)
-		debug("using XCreateImage")
+		warn("using XCreateImage")
 	if gr_buf_image
 		assert(w*h*pixel_size == gr_buf_image->bytes_per_line * gr_buf_image->height, "XShmCreateImage returned a strangely sized image")
 	 eif !shm_pixmaps
 		failed("XCreateImage")
 	if !shm_pixmaps
 		gr_buf = XCreatePixmap(display, window, w, h, depth)
-		debug("using XCreatePixmap")
+		warn("using XCreatePixmap")
 
 #	XSetWindowBackgroundPixmap(display, window, gr_buf)
 
@@ -228,9 +228,9 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	Paint()
 
 int gr__mitshm_fault_h(Display *d, XErrorEvent *e)
-	debug("gr__mitshm_fault_h: display %d error_code %d request_code %d minor_code %d", display, e->error_code, e->request_code, e->minor_code)
+	warn("gr__mitshm_fault_h: display %d error_code %d request_code %d minor_code %d", display, e->error_code, e->request_code, e->minor_code)
 	if d == display && e->error_code == BadAccess && e->request_code == 139 /* MIT-SHM */ && e->minor_code == X_ShmAttach
-		debug("shared memory attach failed - disabling")
+		warn("shared memory attach failed - disabling")
 		shm_version = 0
 	return 0
 
@@ -496,14 +496,14 @@ num font_height()
 # TODO bbox function for fonts / text
 
 paint_sync(int syncage)
-	if shm_pixmaps || !(use_vid || shm_version)
-		debug("painting pixmap with XCopyArea (on server / shared)")
+	if shm_pixmaps || !use_vid
+		warn("painting pixmap with XCopyArea (on server / shared)")
 		XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
 	 eif shm_version
-		debug("painting image with XShmPutImage (shared)")
+		warn("painting image with XShmPutImage (shared)")
 		XShmPutImage(display, window, gc, gr_buf_image, 0, 0, 0, 0, w, h, False)
-	 eif use_vid
-		debug("painting image with XPutImage (client->server)  use_vid = %d", use_vid)
+	 else
+		warn("painting image with XPutImage (client->server)")
 		XPutImage(display, window, gc, gr_buf_image, 0, 0, 0, 0, w, h)
 
 	which syncage
@@ -604,16 +604,16 @@ gr_do_delay(num dt)
 	key_handler_default = thunk(gr_do_delay_handler)
 	if dt == time_forever
 		while !gr_do_delay_done
-#			debug("gr_do_delay forever looping calling handle_events: veclen(gr_need_delay_callbacks) = %d", veclen(gr_need_delay_callbacks))
+#			warn("gr_do_delay forever looping calling handle_events: veclen(gr_need_delay_callbacks) = %d", veclen(gr_need_delay_callbacks))
 			handle_events(1)
 #			int n = handle_events(1)
-#			debug("  %d", n)
+#			warn("  %d", n)
 	 else
 		num t = rtime()
 		num t1 = t + dt
 		while t < t1 && !gr_do_delay_done
 			if events_queued(0) || veclen(gr_need_delay_callbacks) || can_read(x11_fd, t1-t)
-#				debug("gr_do_delay %f looping calling handle_events", dt)
+#				warn("gr_do_delay %f looping calling handle_events", dt)
 				handle_events(0)
 			t = rtime()
 	key_handler_default = old_handler
@@ -628,5 +628,5 @@ void *gr_do_delay_handler(void *obj, void *a0, void *event)
 def pixel(vid, X, Y) (use_vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
 
 vid_init()
-	debug("vid_init: setting use_vid = 1")
+	warn("vid_init: setting use_vid = 1")
 	use_vid = 1
