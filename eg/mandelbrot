@@ -3,6 +3,9 @@
 # ./mandelbrot -.743643135 .131825963 .0000054855 16000 400 5
 use b
 
+# CONFIGURE!
+typedef uint32_t pixel_type  # yuk, but the nested macros lose expansions
+
 cstr usage[] = { "x y r max_i rb_i payg w h", NULL }
 
 def blank_colour 1
@@ -33,8 +36,6 @@ Main()
 	Paint()
 	bm(program)
 
-
-typedef uint32_t pixel_type  # the nested macros lose expansions
 
 def mandelbrot(pixel_type)
 	int counter = 0

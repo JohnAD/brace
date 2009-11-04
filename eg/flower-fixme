@@ -37,7 +37,7 @@ Main()
 				forward(d)
 				da = da*1.1
 				d = d * 0.9
-		handle_event()
+		handle_event_maybe(0)
 		Paint()
 	warn("about to sleep")
 	Rsleep(5)

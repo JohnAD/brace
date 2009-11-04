@@ -2,6 +2,8 @@
 use b
 use X11/cursorfont.h
 
+# FIXME screen assumed to be 32bpp
+
 def N 52
 sprite background_sprite, card_back_sprite, show_hint_sprite, card_sprites[N], stack_base_sprites[4]
 int card_w, card_h
@@ -34,6 +36,7 @@ vec cols[8]
 int stacks[4]
 
 Main:
+	use_vid = 1
 	load_sprites()
 	space(background_sprite.width, background_sprite.height)
 #	XDefineCursor(display, window, XCreateFontCursor(display, XC_crosshair))

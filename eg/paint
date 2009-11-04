@@ -6,7 +6,7 @@ Main()
 	space()
 	long i = 0
 	repeat
-		unsigned long *px = pixel(vid, 1, 1)
+		uint32_t *px = pixel(vid, 1, 1)
 		for(y, 0, h-2)
 			for(x, 0, w-2)
 				if i==0

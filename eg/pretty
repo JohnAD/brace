@@ -9,7 +9,7 @@ Main()
 
 	qmath_init()
 
-	bm_enabled = 0
+	bm_enabled = 1
 
 	bm_start()
 
