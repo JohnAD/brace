@@ -7,8 +7,11 @@ Main()
 #	for(i, 0, n)
 #		lookup[i] = (long)sqrt(i)
 #	warn("done")
-	bm_enabled = 0
+	bm_enabled = 1
 	with_pixel_type(fps1)
+
+use sys/ipc.h
+use sys/shm.h
 
 def fps1(pixel_type)
 	repeat
@@ -22,7 +25,7 @@ def fps1(pixel_type)
 			for x=-w_2; x<w_2; ++x
 				*px++ += r2
 				r2 += 2*x + 1
-		csleep(1.0/30)
+#		csleep(1.0/30)
 		Paint()
 		bm_ps("painted")
 

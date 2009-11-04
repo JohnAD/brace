@@ -381,6 +381,7 @@ def with_pixel_type(macro)
 	# assuming 24/32 bpp
 	macro(ulong)
 
+# FIXME only do this for pixel()
 def pixel(vid, X, Y) (vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
 
 vid_init()

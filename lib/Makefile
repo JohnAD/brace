@@ -30,13 +30,15 @@ clean:
 
 install:
 	install -d '$(libdir)'
+	@echo -n 'install '; \
 	find . -path '*/.*' -prune -or -type d -print | while read D; do \
-		install -v -d '$(includedir)'/"$$D"; \
+		install -d '$(includedir)'/"$$D"; \
 		find "$$D" -maxdepth 1 -type f \
 		 \( -name '*.bh' -or -name '*.bbh' \) | while read F; do \
-			install -v -m=644 "$$F" '$(includedir)'/"$$D"; \
+			echo -n "$$F " ; install -m=644 "$$F" '$(includedir)'/"$$D"; \
 		done; \
-	done
+	done; \
+	echo
 #	install -m=644 *.b *.bb *.bh *.bbh $(includedir)
 	install -m=644 $(SONAME) '$(libdir)'
 	install -m=644 $(PLAIN_SONAME) '$(libdir)'

@@ -17,7 +17,7 @@ Display *display
 Window root_window, window
 Visual *visual
 XVisualInfo *visual_info
-Pixmap gr_buf
+
 Colormap colormap
 GC gc
 XGCValues gcvalues
@@ -27,6 +27,13 @@ int screen_number
 XShmSegmentInfo *shmseginfo = NULL
 Atom wm_protocols, wm_delete
 int x11_fd
+
+Pixmap gr_buf
+XImage *gr_buf_image = NULL
+int use_vid = 0
+int shm_major, shm_minor
+int shm_version
+Bool shm_pixmaps
 
 font(cstr name, int size)
 	let(xfontname, format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
@@ -132,12 +139,10 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	window = XCreateWindow(display, root_window, 0, 0, w, h, 0, CopyFromParent, InputOutput, CopyFromParent, valuemask, &attributes)
 #	XSetWindowBorderWidth(display, window, 0)
 
-	int shm_major, shm_minor
-	Bool shm_pixmaps
+	shm_version = XShmQueryVersion(display, &shm_major, &shm_minor, &shm_pixmaps)
+#	shm_version = 0 ; shm_pixmaps = 0    # for testing without shm
 
-	Bool shm_ok = XShmQueryVersion(display, &shm_major, &shm_minor, &shm_pixmaps) && shm_pixmaps ==True && XShmPixmapFormat(display) == ZPixmap
-
-	if shm_ok
+	if shm_version
 		shmseginfo = Talloc(XShmSegmentInfo)
 		bzero(shmseginfo)
 
@@ -153,9 +158,23 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 		if !XShmAttach(display, shmseginfo)
 			failed("XShmAttach")
 
+	if shm_pixmaps && XShmPixmapFormat(display) == ZPixmap:
 		gr_buf = XShmCreatePixmap(display, window, vid, shmseginfo, w, h, depth)
+		debug("using XShmCreatePixmap")
+	 eif shm_version
+		gr_buf_image = XShmCreateImage(display, visual, depth, ZPixmap, vid, shmseginfo, w, h)
+		debug("using XShmCreateImage")
 	 else
+		vid = Malloc(w*h*pixel_size_i)
+		gr_buf_image = XCreateImage(display, visual, depth, ZPixmap, 0, vid, w, h, BitmapPad(display), 0)
+		debug("using XCreateImage")
+	if gr_buf_image
+		assert(w*h*pixel_size == gr_buf_image->bytes_per_line * gr_buf_image->height, "XShmCreateImage returned a strangely sized image")
+	 eif !shm_pixmaps
+		failed("XCreateImage")
+	if !shm_pixmaps
 		gr_buf = XCreatePixmap(display, window, w, h, depth)
+		debug("using XCreatePixmap")
 
 #	XSetWindowBackgroundPixmap(display, window, gr_buf)
 
@@ -195,7 +214,11 @@ gr_free()
 			XFree(visual_info)
 		if shmseginfo
 			XShmDetach(display, shmseginfo)
+		 eif vid
+			Free(vid)
 		XFreePixmap(display, gr_buf)
+		if gr_buf_image
+			XDestroyImage(gr_buf_image)
 		if shmseginfo
 			shmdt(shmseginfo->shmaddr)
 			shmctl(shmseginfo->shmid, IPC_RMID, NULL)
@@ -444,13 +467,12 @@ num font_height()
 # TODO bbox function for fonts / text
 
 paint_sync(int syncage)
-	XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
-#	XClearWindow(display, window)
-
-	# XClearWindow doesn't work to render the pixmap, I think the X server
-	# was trying to be clever and remembered that it hadn't changed the
-	# pixmap or the window since it was last painted.  but I changed it
-	# through shm!
+	if shm_pixmaps || !(use_vid || shm_version)
+		XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
+	 eif shm_version
+		XShmPutImage(display, window, gc, gr_buf_image, 0, 0, 0, 0, w, h, False)
+	 eif use_vid
+		XPutImage(display, window, gc, gr_buf_image, 0, 0, 0, 0, w, h)
 
 	which syncage
 	2	gr_sync()
@@ -571,4 +593,8 @@ void *gr_do_delay_handler(void *obj, void *a0, void *event)
 		gr_do_delay_done = 1
 	return thunk_yes
 
-def pixel(vid, X, Y) pixelq(vid, X, Y)
+# FIXME only do this for pixel()
+def pixel(vid, X, Y) (use_vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
+
+vid_init()
+	use_vid = 1
