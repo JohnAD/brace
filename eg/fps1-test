@@ -1,0 +1,145 @@
+#!/lang/b
+use b
+Main()
+	space()
+#	long n = 1024*1024 * 2
+#	long *lookup = Nalloc(long, 1024*1024 * 2)
+#	for(i, 0, n)
+#		lookup[i] = (long)sqrt(i)
+#	warn("done")
+	bm_enabled = 1
+	with_pixel_type(fps1)
+
+use sys/ipc.h
+use sys/shm.h
+
+def fps1(pixel_type)
+	repeat
+		bm_start()
+		pixel_type *px = pixel()
+		long x, y, x2, y2, r2
+		for y=-h_2; y<h_2; ++y
+			y2 = y * y
+			x2 = w_2 * w_2
+			r2 = x2 + y2
+			for x=-w_2; x<w_2; ++x
+				*px++ += r2
+				r2 += 2*x + 1
+#		csleep(1.0/30)
+		Paint()
+		bm_ps("painted")
+
+#local int rv = 0
+#def r() rv = ((rv * 12345678) ^ rv) + (rv>>17) + 89356913, rv < 0
+
+
+_paper(int width, int height, colour _bg_col, colour _fg_col)
+	if width
+		w = width ; h = height
+	 else
+		w = root_w ; h = root_h
+
+	bg_col = _bg_col ; fg_col = _fg_col
+	w_2 = w/2 ; h_2 = h/2
+	ox = oy = 0
+	sc = 1
+	text_origin(-w_2, h_2)
+	text_wrap_sx = w
+
+	#window = XCreateSimpleWindow(display, root_window, 0, 0, w, h, 0, white, black)
+
+	unsigned long valuemask = 0
+	XSetWindowAttributes attributes
+	if !_deco
+		valuemask |= CWOverrideRedirect
+		attributes.override_redirect = True
+	window = XCreateWindow(display, root_window, 0, 0, w, h, 0, CopyFromParent, InputOutput, CopyFromParent, valuemask, &attributes)
+#	XSetWindowBorderWidth(display, window, 0)
+
+	shm_version = XShmQueryVersion(display, &shm_major, &shm_minor, &shm_pixmaps)
+#	shm_version = 0 ; shm_pixmaps = 0    # for testing without shm
+
+	if shm_version
+		shmseginfo = Talloc(XShmSegmentInfo)
+		bzero(shmseginfo)
+
+		shmseginfo->shmid = shmget(IPC_PRIVATE, w * h * pixel_size, IPC_CREAT|0777)
+		if shmseginfo->shmid < 0
+			failed("shmget")
+		shmseginfo->shmaddr = shmat(shmseginfo->shmid, NULL, 0)
+		vid = (char *)shmseginfo->shmaddr
+		if !vid
+			failed("shmat")
+		shmseginfo->readOnly = False
+
+		if !XShmAttach(display, shmseginfo)
+			failed("XShmAttach")
+
+	if shm_pixmaps && XShmPixmapFormat(display) == ZPixmap:
+		gr_buf = XShmCreatePixmap(display, window, vid, shmseginfo, w, h, depth)
+		debug("using XShmCreatePixmap")
+	 eif shm_version
+		gr_buf_image = XShmCreateImage(display, visual, depth, ZPixmap, vid, shmseginfo, w, h)
+		debug("using XShmCreateImage")
+	 else
+		vid = Malloc(w*h*pixel_size_i)
+		gr_buf_image = XCreateImage(display, visual, depth, ZPixmap, 0, vid, w, h, BitmapPad(display), 0)
+		debug("using XCreateImage")
+	if gr_buf_image
+		assert(w*h*pixel_size == gr_buf_image->bytes_per_line * gr_buf_image->height, "XShmCreateImage returned a strangely sized image")
+	 eif !shm_pixmaps
+		failed("XCreateImage")
+	if !shm_pixmaps
+		gr_buf = XCreatePixmap(display, window, w, h, depth)
+		debug("using XCreatePixmap")
+
+#	XSetWindowBackgroundPixmap(display, window, gr_buf)
+
+	XSizeHints *normal_hints ; XWMHints *wm_hints ; XClassHint  *class_hints
+	normal_hints = XAllocSizeHints()
+	wm_hints = XAllocWMHints()
+	class_hints = XAllocClassHint()
+	normal_hints->flags = PPosition | PSize
+	wm_hints->initial_state = NormalState
+	wm_hints->input = True
+	wm_hints->flags = StateHint | InputHint
+	class_hints->res_name = program ; class_hints->res_class = program
+
+	XTextProperty xtp_name
+	XStringListToTextProperty(&program, 1, &xtp_name)
+	XSetWMProperties(display, window, &xtp_name, &xtp_name, argv, argc, normal_hints, wm_hints, class_hints)
+	wm_protocols = XInternAtom(display, "WM_PROTOCOLS", False)
+	wm_delete = XInternAtom(display, "WM_DELETE_WINDOW", False)
+	XSetWMProtocols(display, window, &wm_delete, 1)
+
+	XSelectInput(display, window, ExposureMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask|KeyReleaseMask|StructureNotifyMask)
+	XMapWindow(display, window)
+
+	if fullscreen && fullscreen_grab_keyboard
+		XGrabKeyboard(display, window, True, GrabModeAsync, GrabModeAsync, CurrentTime)
+
+	sprite_screen(screen)
+
+	clear()
+	Paint()
+
+paint_sync(int syncage)
+	if shm_pixmaps || !(use_vid || shm_version)
+		XCopyArea(display, gr_buf, window, gc, 0, 0, w, h, 0, 0)
+	 eif shm_version
+		XShmPutImage(display, window, gc, gr_buf_image, 0, 0, 0, 0, w, h, False)
+	 eif use_vid
+		XPutImage(display, window, gc, gr_buf_image, 0, 0, 0, 0, w, h)
+
+	which syncage
+	2	gr_sync()
+	1	XFlush(display)
+
+	if paint_handle_events || veclen(gr_need_delay_callbacks)
+		handle_events(0)
+
+# FIXME only do this for pixel()  ?
+def pixel(vid, X, Y) (use_vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
+
+vid_init()
+	use_vid = 1
