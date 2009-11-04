@@ -10,9 +10,6 @@ Main()
 	bm_enabled = 1
 	with_pixel_type(fps1)
 
-use sys/ipc.h
-use sys/shm.h
-
 def fps1(pixel_type)
 	repeat
 		bm_start()
@@ -32,6 +29,10 @@ def fps1(pixel_type)
 #local int rv = 0
 #def r() rv = ((rv * 12345678) ^ rv) + (rv>>17) + 89356913, rv < 0
 
+# LIBB
+
+use sys/ipc.h
+use sys/shm.h
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	if width
