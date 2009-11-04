@@ -379,7 +379,7 @@ quadrilateral(num x2, num y2, num x3, num y3)
 
 def with_pixel_type(macro)
 	# assuming 24/32 bpp
-	macro(ulong)
+	macro(uint32_t)
 
 # FIXME only do this for pixel()
 def pixel(vid, X, Y) (vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)

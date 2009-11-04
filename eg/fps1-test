@@ -1,7 +1,7 @@
 #!/lang/b
 use b
 Main()
-	space()
+	space(100,100)
 #	long n = 1024*1024 * 2
 #	long *lookup = Nalloc(long, 1024*1024 * 2)
 #	for(i, 0, n)
@@ -56,10 +56,13 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	window = XCreateWindow(display, root_window, 0, 0, w, h, 0, CopyFromParent, InputOutput, CopyFromParent, valuemask, &attributes)
 #	XSetWindowBorderWidth(display, window, 0)
 
-	shm_version = XShmQueryVersion(display, &shm_major, &shm_minor, &shm_pixmaps)
-#	shm_version = 0 ; shm_pixmaps = 0    # for testing without shm
+	if atoi(Getenv("MITSHM", "1"))
+		shm_version = XShmQueryVersion(display, &shm_major, &shm_minor, &shm_pixmaps)
+	 else
+		shm_version = 0 ; shm_pixmaps = 0
 
 	if shm_version
+		warn("shm_version = %d %d %d pixmaps %d", shm_version, shm_major, shm_minor, shm_pixmaps)
 		shmseginfo = Talloc(XShmSegmentInfo)
 		bzero(shmseginfo)
 
@@ -74,24 +77,26 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 
 		if !XShmAttach(display, shmseginfo)
 			failed("XShmAttach")
+	 else
+		warn("no shm extension")
 
 	if shm_pixmaps && XShmPixmapFormat(display) == ZPixmap:
 		gr_buf = XShmCreatePixmap(display, window, vid, shmseginfo, w, h, depth)
-		debug("using XShmCreatePixmap")
+		warn("using XShmCreatePixmap")
 	 eif shm_version
 		gr_buf_image = XShmCreateImage(display, visual, depth, ZPixmap, vid, shmseginfo, w, h)
-		debug("using XShmCreateImage")
+		warn("using XShmCreateImage")
 	 else
 		vid = Malloc(w*h*pixel_size_i)
 		gr_buf_image = XCreateImage(display, visual, depth, ZPixmap, 0, vid, w, h, BitmapPad(display), 0)
-		debug("using XCreateImage")
+		warn("using XCreateImage")
 	if gr_buf_image
 		assert(w*h*pixel_size == gr_buf_image->bytes_per_line * gr_buf_image->height, "XShmCreateImage returned a strangely sized image")
 	 eif !shm_pixmaps
 		failed("XCreateImage")
 	if !shm_pixmaps
 		gr_buf = XCreatePixmap(display, window, w, h, depth)
-		debug("using XCreatePixmap")
+		warn("using XCreatePixmap")
 
 #	XSetWindowBackgroundPixmap(display, window, gr_buf)
 

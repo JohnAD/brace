@@ -139,10 +139,13 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	window = XCreateWindow(display, root_window, 0, 0, w, h, 0, CopyFromParent, InputOutput, CopyFromParent, valuemask, &attributes)
 #	XSetWindowBorderWidth(display, window, 0)
 
-	shm_version = XShmQueryVersion(display, &shm_major, &shm_minor, &shm_pixmaps)
-#	shm_version = 0 ; shm_pixmaps = 0    # for testing without shm
+	if atoi(Getenv("MITSHM", "1"))
+		shm_version = XShmQueryVersion(display, &shm_major, &shm_minor, &shm_pixmaps)
+	 else
+		shm_version = 0 ; shm_pixmaps = 0
 
 	if shm_version
+		debug("shm_version = %d %d %d pixmaps %d", shm_version, shm_major, shm_minor, shm_pixmaps)
 		shmseginfo = Talloc(XShmSegmentInfo)
 		bzero(shmseginfo)
 
@@ -157,6 +160,8 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 
 		if !XShmAttach(display, shmseginfo)
 			failed("XShmAttach")
+	 else
+		debug("no shm extension")
 
 	if shm_pixmaps && XShmPixmapFormat(display) == ZPixmap:
 		gr_buf = XShmCreatePixmap(display, window, vid, shmseginfo, w, h, depth)
@@ -214,11 +219,9 @@ gr_free()
 			XFree(visual_info)
 		if shmseginfo
 			XShmDetach(display, shmseginfo)
-		 eif vid
-			Free(vid)
 		XFreePixmap(display, gr_buf)
 		if gr_buf_image
-			XDestroyImage(gr_buf_image)
+			XDestroyImage(gr_buf_image)   # frees vid
 		if shmseginfo
 			shmdt(shmseginfo->shmaddr)
 			shmctl(shmseginfo->shmid, IPC_RMID, NULL)
@@ -557,11 +560,11 @@ def dump_img(type, file)
 
 def with_pixel_type(macro)
 	if depth > 16
-		macro(ulong)
+		macro(uint32_t)
 	 eif depth == 16
-		macro(ushort)
+		macro(uint16_t)
 	 eif depth == 8
-		macro(uchar)
+		macro(uint8_t)
 	 else
 		error("unsupported video depth: %d", depth)
 

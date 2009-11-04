@@ -22,7 +22,8 @@ time (
 		( echo "use png.h" ; v cat $files | grep -v '^\(use\|export\) [^\.]*$' ) > .all.b
 	)
 	time v b2c < .all.b >.all.c
-	time v $CC -o $SONAME $CFLAGS -shared -fpic -Wl,-soname,$SONAME $LDFLAGS .all.c $LDLIBS 2>&1 | tee libb.log
+	( time v $CC -o $SONAME $CFLAGS -shared -fpic -Wl,-soname,$SONAME $LDFLAGS .all.c $LDLIBS 2>&1 || echo "FAILED" ) | tee libb.log
+	grep 'FAILED' < libb.log && exit 1
 	chmod -x $SONAME
 #	rm .all.b .all.c
 )
