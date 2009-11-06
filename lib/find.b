@@ -52,6 +52,12 @@ export path deq
 
 # XXX TODO should free the deq q !
 
+# FIXME find should be like ls, should start with one directory and continue
+# listing the directory, it should not start a list of entries which might be
+# files.  or, two mutually recursive parts to make up find.
+
+# relevant to tach, when find starts from a hidden dir but excludes hidden files
+
 def find(root, f, s)
 	find_x(normal, root, f, s)
 		.

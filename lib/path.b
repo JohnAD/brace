@@ -8,9 +8,15 @@ use path  # slight hack?  for the specifics path__sep etc
 # That's a bug in unix!
 # path_cat fixes that
 
-def path_cat(a, b) cstr_cat(cstr_eq(a, path__root) ? path__root_before_sep : a, path__sep_cstr, b)
-def path_cat(a, b, c) cstr_cat(cstr_eq(a, path__root) ? path__root_before_sep : a, path__sep_cstr, b, path__sep_cstr, c)
-def path_cat(a, b, c, d) cstr_cat(cstr_eq(a, path__root) ? path__root_before_sep : a, path__sep_cstr, b, path__sep_cstr, c, path__sep_cstr, d)
+cstr path_cat(cstr a, cstr b)
+	if cstr_ends_with(a, path__sep_cstr)
+		return cstr_cat(a, b)
+	if cstr_eq(a, path__root)
+		return cstr_cat(path__root_before_sep, path__sep_cstr, b)
+	return cstr_cat(a, path__sep_cstr, b)
+
+def path_cat(a, b, c) path_cat(path_cat(a, b), c)
+def path_cat(a, b, c, d) path_cat(path_cat(a, b, c), d)
 
 # this splits a string into dir and base parts.  It modifies its argument.
 dirbase dirbasename(cstr path)
