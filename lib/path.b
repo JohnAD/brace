@@ -10,7 +10,10 @@ use path  # slight hack?  for the specifics path__sep etc
 
 cstr path_cat(cstr a, cstr b)
 	if cstr_ends_with(a, path__sep_cstr)
-		return cstr_cat(a, b)
+		if *b
+			return cstr_cat(a, b)
+		 else
+			return Strndup(a, strlen(a)-1)
 	if cstr_eq(a, path__root)
 		return cstr_cat(path__root_before_sep, path__sep_cstr, b)
 	return cstr_cat(a, path__sep_cstr, b)
