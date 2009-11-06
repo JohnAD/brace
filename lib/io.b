@@ -541,6 +541,8 @@ int Stat(const char *file_name, struct stat *buf)
 	# keep gcc happy
 	return 0
 
+# XXX perhaps these functions should never fail:
+
 int is_file(const char *file_name)
 	struct stat buf
 	return Stat(file_name, &buf) && S_ISREG(buf.st_mode)
@@ -772,7 +774,7 @@ cstr readlinks(cstr path, opt_err if_dead)
 
 	decl(stat_b, Stats)
 	repeat
-		if !Lstat(path, stat_b)
+		if lstat(path, stat_b)
 			return opt_err_do(if_dead, (any){.cs=path}, (any){.cs=NULL}, "file does not exist: %s", path).cs
 		if !S_ISLNK(stat_b->st_mode)
 			break
