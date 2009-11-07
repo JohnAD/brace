@@ -372,6 +372,7 @@ writedelim()
 	first_line_of_macro = 0
 
 int main()
+	writes("// brace: this C file was generated from brace source code; read that instead\n\n")
 	if readstmt()
 		writestmt()
 		while readstmt()

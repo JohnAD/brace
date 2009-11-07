@@ -8,6 +8,7 @@ all: dotbuild
 
 tgz: dotbuild
 	tgz+ .
+	chmod go+r .brace.tgz
 
 dotbuild: cp
 	cd .build ; $(MAKE) build

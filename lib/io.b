@@ -741,25 +741,36 @@ Ftruncate(int fd, off_t length)
 	if ret
 		failed("ftruncate")
 
-_Readlink(const char *path, buffer *b)
+int __readlink(const char *path, buffer *b)
 	repeat
 		let(len, readlink(path, buffer_get_end(b), buffer_get_free(b)))
 		if len == -1
 			if errno == ENAMETOOLONG
 				buffer_double(b)
 			 else
-				failed("readlink")
+				return -1
 		 else
 			buffer_grow(b, len)
-			return
+			return 0
+
+_Readlink(const char *path, buffer *b)
+	if __readlink(path, b) < 0
+		failed("readlink")
 
 def Readlink(path, b) _Readlink(path, b), buffer_to_cstr(b)
+def readlink(path, b) __readlink(path, b) < 0 ? (cstr)NULL : buffer_to_cstr(b)
 
 # this returns a malloc'd cstr
 
 cstr Readlink(const char *path)
 	new(b, buffer, 256)
 	return Readlink(path, b)
+
+cstr _readlink(const char *path)
+	new(b, buffer, 256)
+	return readlink(path, b)
+
+def readlink(path) _readlink(path)
 
 # readlinks must be called with a malloc'd string
 # i.e. use Strdup.
