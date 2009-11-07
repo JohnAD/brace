@@ -13,6 +13,3 @@ Main()
 			gsayf("http://sam.nipl.net/")
 			Paint()
 		gr_getc()
-
-colour colour_rand()
-	return rgb(Rand(), Rand(), Rand())

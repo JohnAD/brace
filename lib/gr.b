@@ -393,4 +393,4 @@ def pixelq(vid, X, Y) (void *)(((char *)vid) + ((int)Y*w + (int)X) * pixel_size_
 def pixelq() pixelq(vid, 0, 0)
 
 colour colour_rand()
-	return colour(Rand(), Rand(), Rand())
+	return rgb(Rand(), Rand(), Rand())
