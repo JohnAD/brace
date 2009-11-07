@@ -1,0 +1,18 @@
+#!/lang/b
+use b
+Main()
+	space()
+	repeat:
+		colour_rand()
+		for(size, 2, 100)
+			clear()
+			font("helvetica-medium", size)
+			text_home()
+			gsayf("Send me an email!")
+			gsayf("sam@nipl.net")
+			gsayf("http://sam.nipl.net/")
+			Paint()
+		gr_getc()
+
+colour colour_rand()
+	return rgb(Rand(), Rand(), Rand())
