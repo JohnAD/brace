@@ -1,3 +1,4 @@
+// brace: this C file was generated from brace source code; read that instead
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -588,6 +589,7 @@ void writedelim(void)
 
 int main(void)
 {
+	writes("// brace: this C file was generated from brace source code; read that instead\n\n");
 	if(readstmt())
 	{
 		writestmt();
