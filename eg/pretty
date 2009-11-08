@@ -4,22 +4,11 @@ use b
 Main()
 	space()
 #	space(1280, 800)
-
-	if !vid
-		error("xshm pixmaps are not working")
-
 	qmath_init()
-
 	bm_enabled = 1
-
 	bm_start()
-
-	bm("got image")
-
 	with_pixel_type(pretty)
-
 	gr_free()
-
 
 def pretty(pixel_type)
 	int da = 0
@@ -48,6 +37,5 @@ def pretty(pixel_type)
 #		csleep(0.15)
 		Paint()
 		bm("painted")
-		bm_start()
 
 def screen_trans fast

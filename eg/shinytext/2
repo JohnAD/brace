@@ -17,9 +17,6 @@ Main()
 	gsayf(s)
 	gr_sync()
 
-	if !vid
-		error("xshm pixmaps are not working")
-
 	with_pixel_type(shiny)
 
 cstr fortune()

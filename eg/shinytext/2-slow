@@ -18,9 +18,6 @@ Main()
 	gsayf(s)
 	Paint()
 
-	if !vid
-		error("xshm pixmaps are not working")
-
 	with_pixel_type(shiny)
 
 def shiny(pixel_type)

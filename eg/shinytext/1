@@ -25,9 +25,6 @@ Main()
 	move(0, 0)
 	gsayf(s)
 
-	if !vid
-		error("xshm pixmaps are not working")
-
 	if depth <= 16
 		warn("shinytext works best in true colour, not %d bit colour", depth)
 
