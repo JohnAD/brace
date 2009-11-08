@@ -6,7 +6,7 @@ BRACE_STANDALONE=
 
 all: dotbuild
 
-tgz: dotbuild
+tgz:
 	tgz+ .
 	chmod go+r .brace.tgz
 
