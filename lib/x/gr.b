@@ -15,10 +15,11 @@ use gr
 
 typedef int gr__x_error_handler(Display *, XErrorEvent *)
 
-Display *display
-Window root_window, window
+Display *display = NULL
+Window root_window
+Window window = 0
 Visual *visual
-XVisualInfo *visual_info
+XVisualInfo *visual_info = NULL
 
 Colormap colormap
 GC gc
@@ -30,7 +31,7 @@ XShmSegmentInfo *shmseginfo = NULL
 Atom wm_protocols, wm_delete
 int x11_fd
 
-Pixmap gr_buf
+Pixmap gr_buf = 0
 XImage *gr_buf_image = NULL
 int use_vid = 0
 int shm_major, shm_minor
@@ -57,6 +58,11 @@ boolean fullscreen_grab_keyboard = 1
 boolean gr_alloced = 0
 
 gr_init()
+	gr_alloced = 1
+
+	Atexit(gr_at_exit)
+	gr_cleanup_catch_signals()
+
 #	vec_init(gr__stack, sizeof(GC), 8)
 	
 	if (display = XOpenDisplay(NULL)) == NULL
@@ -106,13 +112,21 @@ gr_init()
 
 	rainbow_init()
 
-	Atexit(gr_at_exit)
-
 	event_handler_init()
 
-	gr_alloced = 1
+sighandler_t gr_cleanup_prev_handler[sig_top+1]
+
+gr_cleanup_catch_signals()
+	each(sig, SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, SIGBUS, SIGSYS, SIGTRAP, SIGXCPU, SIGXFSZ):
+		gr_cleanup_prev_handler[sig] = Sigact(sig, gr_cleanup_sig_handler)
+
+void gr_cleanup_sig_handler(int sig)
+	gr_free()
+	if sig <= sig_top:
+		call_sighandler(gr_cleanup_prev_handler[sig], sig)
 
 gr_at_exit()
+	gr_exiting = 1
 	if !gr_done
 		Paint()
 		event_loop()
@@ -225,6 +239,9 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	clear()
 	if gr_buf_image
 		pix_clear()
+
+	gr_done = 0
+
 	Paint()
 
 int gr__mitshm_fault_h(Display *d, XErrorEvent *e)
@@ -242,14 +259,17 @@ gr_free()
 			XFree(visual_info)
 		if shmseginfo
 			XShmDetach(display, shmseginfo)
-		XFreePixmap(display, gr_buf)
+		if gr_buf
+			XFreePixmap(display, gr_buf)
 		if gr_buf_image
 			XDestroyImage(gr_buf_image)   # frees vid
 		if shmseginfo
 			free_shmseg()
 #		XFreeGC(display, gc)
-		XDestroyWindow(display, window)
-		XCloseDisplay(display)
+		if window
+			XDestroyWindow(display, window)
+		if display
+			XCloseDisplay(display)
 		gr_alloced = 0
 
 free_shmseg()

@@ -3,6 +3,7 @@ exec perl -e '
 
 use strict; use warnings;
 
+$ENV{BRACE_LINE_NUMBERS} = 1 if !defined $ENV{BRACE_LINE_NUMBERS};
 unless ($ENV{BRACE_LINE_NUMBERS}) {
 	while (defined ($_=<STDIN>)) { print }
 	exit;

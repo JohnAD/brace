@@ -39,6 +39,13 @@ int text_at_col0 = 1
 
 char *vid = NULL
 
+num a_pixel = 1
+
+boolean gr_done = 1  # set to 0 after successful init
+boolean gr_exiting = 0
+
+colour bg_col, fg_col
+
 xflip()
 	_xflip = !_xflip
 	text_origin_x *= -1
@@ -47,8 +54,6 @@ yflip()
 	text_origin_y *= -1
 
 colour col(colour pixel)
-
-colour bg_col, fg_col
 
 def paper(w, h)
 	paper(w, h, white)
@@ -73,13 +78,10 @@ def space(bg)
 	paper(bg)
 	col(white)
 
-num a_pixel = 1
-
-boolean gr_done = 0
-
 def gr_exit(status)
 	gr_done = 1
-	exit(status)
+	if !gr_exiting
+		exit(status)
 
 origin(num _ox, num _oy)
 	ox = _ox ; oy = _oy

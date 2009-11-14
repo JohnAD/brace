@@ -317,6 +317,13 @@ sighandler_t Sigact(int signum, sighandler_t handler, int sa_flags)
 		failed("sigact")
 	return rv
 
+call_sighandler(sighandler_t h, int sig)
+	if h == SIG_DFL
+		Sigdfl(sig)
+		kill(getpid(), sig)
+	 eif h != SIG_IGN
+		h(sig)
+
 # Sigact with two args sets a signal handler, system calls will be restarted.
 # Sigintr sets a signal handler, system calls will be interrupted.
 # You probably want to use Sigintr for SIGALRM.

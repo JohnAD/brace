@@ -61,7 +61,10 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	pixel_size_i = 4
 
 	clear()
-	paint()
+
+	gr_done = 0
+
+	Paint()
 
 gr_free()
 	# XXX does nothing yet - I guess it should!
