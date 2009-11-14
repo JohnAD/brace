@@ -255,7 +255,7 @@ int gr__mitshm_fault_h(Display *d, XErrorEvent *e)
 gr_free()
 	if gr_done_signal
 		if shmseginfo
-			XShmDetach(display, shmseginfo)
+#			XShmDetach(display, shmseginfo)
 			free_shmseg()
 			shmseginfo = NULL
 		kill(getpid(), gr_done_signal)
