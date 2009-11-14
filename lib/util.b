@@ -1598,10 +1598,6 @@ struct cstr2long
 	cstr k
 	long v
 
-struct cstr2long
-	cstr k
-	long v
-
 struct node_kv
 	list l
 	key_value kv

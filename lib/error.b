@@ -1,8 +1,8 @@
 # XXX crappy hack to get around ordering bug
-struct thunk
-	thunk_func *func
-	void *obj
-	void *common_arg
+#struct thunk
+#	thunk_func *func
+#	void *obj
+#	void *common_arg
 
 export errno.h setjmp.h
 use stdio.h stdarg.h stdlib.h

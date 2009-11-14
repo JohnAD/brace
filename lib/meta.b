@@ -144,11 +144,6 @@ struct type__element
 #	short bits
 #	short offset_bit
 
-struct type__element
-	type *type
-	cstr name
-	long offset
-
 
 typedef enum { TYPE_VOID, TYPE_INT, TYPE_FLOAT, TYPE_POINT, TYPE_ARRAY, TYPE_STRUCT, TYPE_UNION, TYPE_FUNC, TYPE_DEF } type_t
 
@@ -168,13 +163,6 @@ type__size type__sizes[] =
 	{ sizeof(type__struct_union), sizeof(type__element) },
 	{ sizeof(type__func), sizeof(type *) },
 	{ sizeof(type__def), 0 }
-
-struct type__element
-	type *type
-	cstr name
-	long offset
-#	short bits
-#	short offset_bit
 
 struct type
 	type_t type

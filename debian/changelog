@@ -2,6 +2,8 @@ brace (0.9.9~wip) unstable; urgency=low
 
   * fixed problems with MIT-SHM cleanup, now it cleans up even if signalled
 
+ -- Sam Watkins <sam@nipl.net>  Sat, 14 Nov 2009 22:27:34 +1100
+
 brace (0.9.8) unstable; urgency=low
 
   * eg/tachyon httpd
