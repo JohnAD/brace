@@ -38,6 +38,12 @@ int shm_major, shm_minor
 int shm_version
 Bool shm_pixmaps
 
+boolean fullscreen_grab_keyboard = 1
+boolean gr_alloced = 0
+
+sighandler_t gr_cleanup_prev_handler[sig_top+1]
+int gr_done_signal = 0
+
 font(cstr name, int size)
 	let(xfontname, format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
 	xfont(xfontname)
@@ -53,9 +59,6 @@ font(cstr name, int size)
 #	vec_pop(gr__stack)
 #
 #gr_
-
-boolean fullscreen_grab_keyboard = 1
-boolean gr_alloced = 0
 
 gr_init()
 	gr_alloced = 1
@@ -114,16 +117,14 @@ gr_init()
 
 	event_handler_init()
 
-sighandler_t gr_cleanup_prev_handler[sig_top+1]
-
 gr_cleanup_catch_signals()
 	each(sig, SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, SIGBUS, SIGSYS, SIGTRAP, SIGXCPU, SIGXFSZ):
 		gr_cleanup_prev_handler[sig] = Sigact(sig, gr_cleanup_sig_handler)
 
 void gr_cleanup_sig_handler(int sig)
-	gr_free()
-	if sig <= sig_top:
-		call_sighandler(gr_cleanup_prev_handler[sig], sig)
+	gr_done_signal = sig
+	Sigact(sig, gr_cleanup_prev_handler[sig])
+	gr_exit(1)
 
 gr_at_exit()
 	gr_exiting = 1
@@ -252,6 +253,13 @@ int gr__mitshm_fault_h(Display *d, XErrorEvent *e)
 	return 0
 
 gr_free()
+	if gr_done_signal
+		if shmseginfo
+			XShmDetach(display, shmseginfo)
+			free_shmseg()
+			shmseginfo = NULL
+		kill(getpid(), gr_done_signal)
+		return
 	if gr_alloced
 		if fullscreen && fullscreen_grab_keyboard
 			XUngrabKeyboard(display, CurrentTime)
@@ -266,6 +274,8 @@ gr_free()
 		if shmseginfo
 			free_shmseg()
 #		XFreeGC(display, gc)
+			# gr_free can be called via exit in a signal handler
+			# XCloseDisplay does not like being called in a signal handler
 		if window
 			XDestroyWindow(display, window)
 		if display
