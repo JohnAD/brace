@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/sh -e
 v() {
 	echo "$@" >&2
 	"$@"

@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/sh -e
 P=$PWD
 for D; do
 	D1=`readlink1 -f "$D"`
