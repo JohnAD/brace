@@ -21,3 +21,4 @@ PROFILE=
 CC=gcc -pedantic -std=gnu99
 EXE_CFLAGS:=-Wall -I'$(srcdir)/lib' $(CFLAGS)
 EXE_LDFLAGS:=-L'$(srcdir)/lib' $(LDFLAGS) -s
+INSTALL=install

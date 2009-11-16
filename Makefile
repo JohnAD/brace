@@ -20,7 +20,7 @@ build:
 	cd exe ; $(MAKE) boot
 	cd lib ; $(MAKE)
 	cd exe ; $(MAKE)
-	cd util ; $(MAKE)
+#	cd util ; $(MAKE)
 clean:
 	cd exe ; $(MAKE) clean
 	cd lib ; $(MAKE) clean
@@ -31,10 +31,10 @@ install: .build
 	cp .build/lib/$(SONAME) .build/util
 	cd .build/exe ; $(MAKE) install
 	cd .build/lib ; $(MAKE) install
-	install -d "$(libdir)" "$(perldir)"
-	install -m=644 lib/bk "$(libdir)"
-	cp -pR perl/* "$(perldir)"
-	perl -MIO::String -e '' 2>/dev/null || cp -pR cpan/IO "$(perldir)"
+	$(INSTALL) -d "$(libdir)" "$(perldir)"
+	$(INSTALL) -m 644 lib/bk "$(libdir)"
+	cp -vpR perl/* "$(perldir)"
+	PERL5LIB= perl -MIO::String -e '' 2>/dev/null || cp -vpR cpan/IO "$(perldir)"
 
 uninstall:
 	cd .build/exe ; $(MAKE) uninstall

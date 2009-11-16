@@ -29,31 +29,31 @@ clean:
 #		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' -or -name '*.c' -or -name '*.cc' \) | while read F; do \
 
 install:
-	install -d '$(libdir)'
+	$(INSTALL) -d '$(libdir)'
 	@echo -n 'install '; \
 	find . -path '*/.*' -prune -or -type d -print | while read D; do \
-		install -d '$(includedir)'/"$$D"; \
+		$(INSTALL) -d '$(includedir)'/"$$D"; \
 		find "$$D" -maxdepth 1 -type f \
 		 \( -name '*.bh' -or -name '*.bbh' \) | while read F; do \
-			echo -n "$$F " ; install -m=644 "$$F" '$(includedir)'/"$$D"; \
+			echo -n "$$F " ; $(INSTALL) -m 644 "$$F" '$(includedir)'/"$$D"; \
 		done; \
 	done; \
 	echo
-#	install -m=644 *.b *.bb *.bh *.bbh $(includedir)
-	install -m=644 $(SONAME) '$(libdir)'
-	install -m=644 $(PLAIN_SONAME) '$(libdir)'
-	install -m=644 $(DEBUG_SONAME) '$(libdir)'
-	install -m=644 $(PLAIN_DEBUG_SONAME) '$(libdir)'
-#	install -m=644 libb.a '$(libdir)'
-#	install -m=644 libb_plain.a '$(libdir)'
-#	install -m=644 libb_plain_debug.a '$(libdir)'
-#	install -m=644 libb_debug.a '$(libdir)'
+#	$(INSTALL) -m 644 *.b *.bb *.bh *.bbh $(includedir)
+	$(INSTALL) -m 644 $(SONAME) '$(libdir)'
+	$(INSTALL) -m 644 $(PLAIN_SONAME) '$(libdir)'
+	$(INSTALL) -m 644 $(DEBUG_SONAME) '$(libdir)'
+	$(INSTALL) -m 644 $(PLAIN_DEBUG_SONAME) '$(libdir)'
+#	$(INSTALL) -m 644 libb.a '$(libdir)'
+#	$(INSTALL) -m 644 libb_plain.a '$(libdir)'
+#	$(INSTALL) -m 644 libb_plain_debug.a '$(libdir)'
+#	$(INSTALL) -m 644 libb_debug.a '$(libdir)'
 	if [ -n '$(libdir2)' ]; then cp $(SONAME) '$(libdir2)'; fi
 	if [ -n '$(libdir2)' ]; then cp $(PLAIN_SONAME) '$(libdir2)'; fi
 	if [ -n '$(libdir2)' ]; then cp $(DEBUG_SONAME) '$(libdir2)'; fi
 	if [ -n '$(libdir2)' ]; then cp $(PLAIN_DEBUG_SONAME) '$(libdir2)'; fi
-#	install -m=644 libb.so.$(VERSION) '$(libdir)'
-##	install -m=644 libbb.so.$(VERSION) '$(libdir)'
+#	$(INSTALL) -m 644 libb.so.$(VERSION) '$(libdir)'
+##	$(INSTALL) -m 644 libbb.so.$(VERSION) '$(libdir)'
 #	ln -sf libb.so.$(VERSION) '$(libdir)'/libb.so.$(MAJOR)
 ##	ln -sf libbb.so.$(VERSION) '$(libdir)'/libbb.so.$(MAJOR)
 #	ln -sf libb.so.$(MAJOR) '$(libdir)'/libb.so

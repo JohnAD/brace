@@ -6,7 +6,8 @@ if ($mingw) {
 	$msys = $ENV{MSYSTEM};
 	$pathsep = $msys ? ':' : ';';
 	$c = fix_path("C:");
-	$prefix = "$c${sep}Program Files${sep}brace";
+#	$prefix = "$c${sep}Program Files${sep}brace";
+	$prefix = "/usr/local";
 	$libdir2 = fix_path($mingw);
 } else {
 	$sep = '/';
@@ -21,11 +22,16 @@ for (@ARGV) {
 $pwd=fix_path($ENV{PWD});
 $build="$pwd/.build";
 $realprefix=$prefix;
+$install = "install";
+if (`which ginstall` ne "") {
+	$install = "ginstall";
+}
 
 
 while (defined ($_=<STDIN>)) {
 	s/^(srcdir=).*/$1$build/;
 	s/^(realprefix=).*/$1$realprefix/;
+	s/^(INSTALL=).*/$1$install/;
 	s{[\\/]}{$sep}g;
 	print;
 }
