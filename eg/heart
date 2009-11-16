@@ -13,6 +13,7 @@ Main()
 		hue_edge = atof(arg[1])
 
 	paper(blue)
+	zoom(h<400 ? h/400.0 : 1)
 	rb_green_power = 1
 
 	heart(0, 0, 150)

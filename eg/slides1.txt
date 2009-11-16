@@ -1,4 +1,4 @@
-CZ
+CZ / brace
 
 - a new dialect of C, "C easy"
 
