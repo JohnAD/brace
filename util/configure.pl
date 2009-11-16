@@ -83,11 +83,11 @@ End
 	$perlroot = dirname(dirname($perl));
 	if ($perlroot eq "/") { $perlroot = ""; }
 #	$perldir = "\$\(destdir\)$perlroot${sep}site${sep}lib";
-	if ($realprefix =~ m{local}) {
-		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}site_perl";
-	} else {
+#	if ($realprefix =~ m{local}) {
+#		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}site_perl";
+#	} else {
 		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}perl5${sep}site_perl";
-	}
+#	}
 	print <<End;
 perldir:=$perldir
 End

@@ -1,6 +1,9 @@
 brace (0.9.9~wip) unstable; urgency=low
 
   * fixed problems with MIT-SHM cleanup, now it cleans up even if signalled
+  * got it to compile on mingw again
+  * add line numbers by default now
+  * fixed parsing bug with ^line ... in Process / eg/wordwrap
 
  -- Sam Watkins <sam@nipl.net>  Sat, 14 Nov 2009 22:27:34 +1100
 

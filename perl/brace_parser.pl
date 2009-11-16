@@ -330,16 +330,19 @@ sub tokenize {
 	my ($text) = @_;
 	my $quote_token = 0;
 	my @tokens;
+	my $newline = 1;
 	for ($text) {
 		while ($_ ne "") {
 			# comment
 			s/^(#[^\n]*)//s or
+			# preprocessing: ^line etc
+			$newline && s/^(\^[^\n]*)//s or
 			# newline
-			s/^(\n)//s or
+			s/^(\n)//s && ($newline = 1) or
 			# tabs
 			s/^(\t+)//s or
 			# other whitespace
-			s/^(\s+)//s or
+			($newline = 0, s/^(\s+)//s) or
 			# hex int
 			s/^(0x[0-9a-f]+(u|l|ul|lu)?)//si or
 			# decimal floating-point
