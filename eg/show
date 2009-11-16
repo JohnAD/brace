@@ -199,17 +199,16 @@ run_demo(cstr file)
 		Close(3)
 		Execl(format("%s/%s", demos_dir, file), NULL)
 	gr_do_delay(delay_demo)
-	kill(demo_child, SIGTERM)
-	Child_wait()
-	demo_child = 0
+	kill_demo_child()
 	Rsleep(x_expose_delay)
 #	handle_events()
 
 kill_demo_child:
 	if demo_child
-		kill(demo_child, SIGTERM)
-		Child_wait()
+		int demo_child_ = demo_child
 		demo_child = 0
+		kill(demo_child_, SIGTERM)
+		Child_wait()
 
 def effect_stop():
 	if i % 10 && rtime() > time+effect_duration:
