@@ -979,12 +979,11 @@ int has_error(int fd, num timeout)
 def select_wrap(fd, read_fds, write_fds, except_fds, timeout)
 	if !tmp_fd_set
 		global(tmp_fd_set, fd_set)
-	timeval tv
 	fd_set(fd, tmp_fd_set)
-	int n_ready = select(fd+1, read_fds, write_fds, except_fds, delay_to_timeval(timeout, &tv))
+	int n_ready = Select(fd+1, read_fds, write_fds, except_fds, timeout)
 	fd_clr(fd, tmp_fd_set)
 	if n_ready == -1
-		failed("select")
+		n_ready = 0
 	return n_ready
 
 def dir1rest(path, d, b)
