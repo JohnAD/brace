@@ -106,3 +106,10 @@ int uname(struct utsname *buf)
 #	if *name == '\0'
 #		GetComputerName
 #	return *name == '\0' ? -1 : 0
+
+int kill(pid_t pid, int sig)
+	use(sig)
+	if pid == getpid()
+		Exit()   # a bit dodgy!
+	errno = EPERM
+	return -1
