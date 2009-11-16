@@ -192,7 +192,7 @@ def effect(pixel_type):
 				Paint()
 			effect_stop()
 
-int demo_child = 0
+pid_t demo_child = 0
 run_demo(cstr file)
 	demo_child = Fork()
 	if demo_child == 0
