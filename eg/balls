@@ -40,7 +40,7 @@ Main()
 			b->vy -= 0.5
 #			b->s *= 0.98
 #			b->v *= 0.98
-		csleep(1.0/100)
+#		csleep(1.0/100)
 		Paint()
 
 use b

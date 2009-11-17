@@ -49,4 +49,3 @@ main()
 		for rot = 0; rot <= 360; ++rot
 			roses()
 #			csleep(0.1)
-			Paint()

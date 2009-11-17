@@ -1,6 +1,6 @@
 use gr
 use main
-export gl/gl.h gl/glu.h
+export gl/gl.h gl/glext.h gl/glu.h
 use error alloc m process
 export colours
 
@@ -253,7 +253,8 @@ num font_height()
 paint_sync(int syncage)
 	if vid:
 		# TODO invert or something !@#!@#%!
-		glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, vid)
+#		glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, vid)
+		glDrawPixels(w, h, GL_BGRA, GL_UNSIGNED_BYTE, vid)
 	SwapBuffers(hDC)
 	if syncage
 		glFlush()  # XXX do this instead of SwapBuffers again?
