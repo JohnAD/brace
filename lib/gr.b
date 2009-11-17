@@ -396,3 +396,13 @@ def pixelq() pixelq(vid, 0, 0)
 
 colour colour_rand()
 	return rgb(Rand(), Rand(), Rand())
+
+gr_at_exit()
+#	warn("gr_at_exit done = %d", gr_done)
+	gr_exiting = 1
+	if !gr_done
+#		warn("Paint")
+		Paint()
+#		warn("event_loop")
+		event_loop()
+	gr_free()

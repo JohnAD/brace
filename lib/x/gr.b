@@ -127,14 +127,6 @@ void gr_cleanup_sig_handler(int sig)
 	Sigact(sig, gr_cleanup_prev_handler[sig])
 	gr_exit(1)
 
-gr_at_exit()
-	warn("gr_at_exit")
-	gr_exiting = 1
-	if !gr_done
-		Paint()
-		event_loop()
-	gr_free()
-
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	cstr geom = Getenv("GEOM", NULL)
 	if geom && *geom

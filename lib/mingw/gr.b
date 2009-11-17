@@ -4,6 +4,8 @@ export gl/gl.h gl/glu.h
 use error alloc m process
 export colours
 
+def gr_mingw_debug void
+
 # here's the GL stuff:
 
 GLUquadric *gl_quad
@@ -18,14 +20,16 @@ gl_size(GLsizei width, GLsizei height)
 	gluOrtho2D(0, width, 0, height)
 
 gr_init()
-	if !gr_done
-		Atexit(event_loop)
+#	if !gr_done
+	Atexit(gr_at_exit)
 
 	colours_init()
 
 	yflip()  # not ideal, means sx coords will differ between X and mingw/opengl
 
 	rainbow_init()
+
+	event_handler_init()
 
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	if width
@@ -67,12 +71,14 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	Paint()
 
 gr_free()
+	.
 	# XXX does nothing yet - I guess it should!
 
 gr_sync()
 	gr_flush()
 
 gr_flush()
+	gr_mingw_debug("gr_flush -> glFlush")
 	glFlush()
 	# does not actually sync on windows (yet)
 
@@ -245,14 +251,16 @@ num font_height()
 	return 0
 
 paint_sync(int syncage)
-	use(syncage)
 	if vid:
 		# TODO invert or something !@#!@#%!
 		glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, vid)
 	SwapBuffers(hDC)
-#	if syncage
-#		glFlush()  XXX do this instead of SwapBuffers again?
-	SwapBuffers(hDC)  # XXX XXX I don't know why, but apparently it's necessary to do this twice in order to get something to display!
+	if syncage
+		glFlush()  # XXX do this instead of SwapBuffers again?
+#	SwapBuffers(hDC)  # XXX XXX I don't know why, but apparently it's necessary to do this twice in order to get something to display!
+
+	if paint_handle_events || veclen(gr_need_delay_callbacks)
+		handle_events(0)
 
 # here's the Windoze stuff:
 
@@ -306,28 +314,6 @@ int _win_destroy()
 	DisableOpenGL(hWnd, hDC, hRC)
 	DestroyWindow(hWnd)
 	return msg.wParam
-
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-	# brace's switch / case syntax is pretty crap, ins't it?  :)
-	switch message
-	WM_CREATE	
-		return 0
-	WM_CLOSE	
-		PostQuitMessage(0)
-		return 0
-	WM_DESTROY	
-		return 0
-	WM_KEYDOWN	
-		switch  wParam
-		VK_ESCAPE	
-			PostQuitMessage(0)
-			return 0
-		return 0
-#	WM_SIZE	
-#		gl_size(LOWORD(lParam), HIWORD(lParam))
-# TODO fix & add more, e.g. & especially repaint!
-	else	
-		return DefWindowProc(hWnd, message, wParam, lParam)
 
 EnableOpenGL(HWND hWnd, HDC * hDC, HGLRC * hRC)
 	PIXELFORMATDESCRIPTOR pfd
