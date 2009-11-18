@@ -128,8 +128,8 @@ colour col(colour c)
 
 colour coln(char *name)
 	use(name)
-	error("sorry, no named colours in GL version (yet)")
-	return white
+	warn("sorry, no named colours in GL version (yet)")
+	return grey   # XXX FIXME
 
 colour rgb(double red, double green, double blue)
 	colour c = pixn_rgb_safe(red, green, blue)
@@ -254,11 +254,10 @@ clear()
 # I have no font / text support in GL yet
 
 gprint(cstr s)
-	error("sorry, no text in GL version (yet)")
-	use(s)
+	warn("gprint: %s", s)  # XXX FIXME sorry, no text in GL version (yet)
 num font_height()
-	error("sorry, no text in GL version (yet)")
-	return 0
+	warn("sorry, no text in GL version (yet)")
+	return isd(10)   # XXX FIXME
 
 paint_sync(int syncage)
 	if vid:

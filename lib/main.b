@@ -34,8 +34,8 @@ main__init(int _argc, char *_argv[])
 	dirbasename(Strdup(program_real), d, b)  # this is bogus!  need auto decl
 	program_dir = d
 	program = b
-	if mingw && cstr_ends_with(program, ".exe")
-		program[strlen(program)-4] = '\0'
+	if mingw && cstr_case_ends_with(program, ".exe")
+		cstr_chop(program, 4)
 	if program[0] == '.'
 		++program
 	arg = argv+1
