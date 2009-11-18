@@ -1,8 +1,17 @@
 # TODO make these xpm compatible!
 
+# TODO jpeg
+# TODO sprite_put_behind ...
+
 ldef debug void
 
 typedef uint32_t pix_t
+
+struct sprite
+	pix_t *pixels
+	long width
+	long height
+	long stride
 
 def pix_r(p) p>>16 & 0xFF
 def pix_g(p) p>>8 & 0xFF
@@ -24,7 +33,7 @@ def pixn_g(p) pix_g(p) / 256.0
 def pixn_b(p) pix_b(p) / 256.0
 def pixn_a(p) pix_a(p) / 256.0
 
-def pixn_rgb(r, g, b) pix_rgb(r*256, g*256, b*256)
+def pixn_rgb(r, g, b) pix_rgb((int)r*256, (int)g*256, (int)b*256)
 def pixn_rgb_safish(r, g, b) pix_rgb(n_to_byte_top(r), n_to_byte_top(g), n_to_byte_top(b))
 def pixn_rgb_safe(r, g, b) pix_rgb(n_to_byte(r), n_to_byte(g), n_to_byte(b))
 
@@ -32,12 +41,6 @@ def pixn_rgba(r, g, b, a) pix_rgba(r*256, g*256, b*256, a*256)
 def pixn_rgba_safish(r, g, b, a) pix_rgba(n_to_byte_top(r), n_to_byte_top(g), n_to_byte_top(b), n_to_byte_top(a))
 def pixn_rgba_safe(r, g, b, a) pix_rgba(n_to_byte(r), n_to_byte(g), n_to_byte(b), n_to_byte(a))
 
-
-struct sprite
-	pix_t *pixels
-	long width
-	long height
-	long stride
 
 sprite_init(sprite *s, long width, long height)
 	s->pixels = Nalloc(pix_t, width*height)
@@ -54,12 +57,6 @@ sprite_clear(sprite *s, pix_t c)
 		for long x=0; x<s->width; ++x
 			*p++ = c
 		p += s->stride - s->width
-
-sprite_screen(sprite *s)
-	s->width = w
-	s->height = h
-	s->stride = w
-	s->pixels = (pix_t *)pixelq(vid, 0, 0)
 
 sprite_clip(sprite *target, sprite *source, sprite *target_full, sprite *source_full, long x, long y)
 	*source = *source_full
@@ -363,8 +360,84 @@ pix_t sprite_at(sprite *s, long x, long y):
 		return pix_transp
 	return s->pixels[y*s->stride + x]
 
-# TODO jpeg
-# TODO sprite_put_behind ...
+pix_t colour_to_pix(colour c)
+#	if depth >= 24
+#		return c
+	# XXX FIXME for non 24-bit!
+	return c
+
+
+# hm eek @ for_sprite etc.!
+
+def for_sprite(px, spr):
+	for_sprite_(px, spr, my(d), my(end), my(endrow))
+
+def for_sprite_(px, spr, d, end, endrow)
+	pix_t *px, *end, *endrow
+	int d = spr->stride - spr->width
+	px = spr->pixels
+	end = px + spr->height * spr->stride
+	px -= d + 1
+	endrow = px + 1
+	repeat:
+		++px
+		if px == endrow:
+			px += d ; endrow += spr->stride
+			break(px == end)
+		.
+
+def for_sprite(px, spr, x, y):
+	for_sprite(px, spr, x, y, my(w), my(h))
+
+def for_sprite(px, spr, x, y, w, h):
+	for_sprite_(px, spr, x, y, w, h, my(d))
+
+def for_sprite_(px, spr, x, y, w, h, d):
+	int w = spr->width
+	int h = spr->height
+	int x=w-1, y=-1, d = spr->stride - spr->width
+	pix_t *px = spr->pixels - d - 1
+	repeat:
+		++x ; ++px
+		if x == w:
+			x = 0 ; ++y ; px += d
+			break(y == h)
+		.
+
+
+struct sprite_loop:
+	sprite *spr
+	pix_t *px
+	pix_t *end
+	pix_t *endrow
+	long d
+
+sprite_loop_init(sprite_loop *l, sprite *spr)
+	l->spr = spr
+	l->px = spr->pixels
+	l->end = l->px + spr->height * spr->stride
+	l->endrow = l->px + spr->width
+	l->d = spr->stride - spr->width
+
+def sprite_loop_done(l) l->px == l->end
+
+def sprite_loop_inc(l)
+	if ++l->px == l->endrow
+		sprite_loop_next_row(l)
+		.
+
+def sprite_loop_next_row(l)
+	l->px += l->d
+	l->endrow += l->spr->width
+
+def sl_done(l) sprite_loop_done(l)
+def sl_inc(l)
+	sprite_loop_inc(l)
+def sl_next_row(l)
+	sprite_loop_next_row(l)
+
+def sl_screen(l)
+	new(l, sprite_loop, screen)
 
 use png.h
 use sprite

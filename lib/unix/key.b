@@ -31,6 +31,7 @@ raw()
 	rv = tcsetattr(STDIN_FILENO, TCSANOW, &term)
 	if rv < 0
 		error("tcsetattr failed")
+	key_raw = 1
 
 cooked()
 	int rv
@@ -51,6 +52,11 @@ noecho()
 	rv = tcsetattr(STDIN_FILENO, TCSANOW, &term)
 	if rv < 0
 		error("tcsetattr failed")
+	key_noecho = 1
+
+echo()
+	# XXX FIXME
+	key_noecho = 0
 
 key_init()
 	raw()

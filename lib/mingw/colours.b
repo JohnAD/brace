@@ -16,6 +16,8 @@ colour magenta
 def magenta() col(magenta)
 colour cyan
 def cyan() col(cyan)
+colour grey
+def grey() col(cyan)
 colours_init()
 	black = rgb(0,0,0)
 	white = rgb(1,1,1)
@@ -26,9 +28,6 @@ colours_init()
 	blue = rgb(0,0,1)
 	magenta = rgb(1,0,1)
 	cyan = rgb(0,1,1)
-struct colour
-	float r
-	float g
-	float b
-typedef struct colour colour
+	grey = rgb(0.5,0.5,0.5)
+typedef uint32_t colour
 colour rgb(double red, double green, double blue)

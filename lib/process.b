@@ -3,6 +3,8 @@ export types buffer
 use error cstr vec
 use process
 
+def sig_top 64  # XXX it's probably lower on windows, should be 256?
+
 # maybe rename process.b -> system.b ?
 
 # magic exit code, semi-consistent with bash

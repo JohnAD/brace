@@ -88,21 +88,16 @@ if [ -n "$BR_DEBUG" ]; then echo \< "$B1" brace \> "$C"; fi
 <"$B1" brace 2>>"$LOG" >"$C" || log_fix_exit
 
 
+PID=$$
 if [ -z "$BRACE_STANDALONE" ]; then
 	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CINCLUDE $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
-	PID=$$
-	( eval $CC $CINCLUDE $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $BRACE_L_SO $LDLIBS || touch .cc_failed.$PID ) 2>&1 |
-	perl -ne '
-		BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
-	' >>"$LOG"
+	( eval $CC $CINCLUDE $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $BRACE_L_SO $LDLIBS || touch .cc_failed.$PID ) 2>&1
 else
 	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
-	PID=$$
-	( eval $CC $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $LDLIBS || touch .cc_failed.$PID ) 2>&1 |
-	perl -ne '
-		BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
-	' >>"$LOG"
-fi
+	( eval $CC $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $LDLIBS || touch .cc_failed.$PID ) 2>&1
+fi | perl -ne '
+	BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || /Info: resolving/ || /auto-importing has been activated/ || /This should work unless it involves constant data structures referencing/ || /^\s*$/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
+' >>"$LOG"
 
 if [ -e .cc_failed.$PID ]; then
 	rm .cc_failed.$PID

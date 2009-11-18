@@ -33,7 +33,6 @@ int x11_fd
 
 Pixmap gr_buf = 0
 XImage *gr_buf_image = NULL
-int use_vid = 0
 int shm_major, shm_minor
 int shm_version
 Bool shm_pixmaps
@@ -41,9 +40,7 @@ Bool shm_pixmaps
 boolean fullscreen_grab_keyboard = 1
 boolean gr_alloced = 0
 
-sighandler_t gr_cleanup_prev_handler[sig_top+1]
-int gr_done_signal = 0
-
+# TODO remember font name and size?
 font(cstr name, int size)
 	let(xfontname, format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
 	xfont(xfontname)
@@ -117,16 +114,6 @@ gr_init()
 
 	event_handler_init()
 
-gr_cleanup_catch_signals()
-	each(sig, SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, SIGBUS, SIGSYS, SIGTRAP, SIGXCPU, SIGXFSZ):
-		gr_cleanup_prev_handler[sig] = Sigact(sig, gr_cleanup_sig_handler)
-
-void gr_cleanup_sig_handler(int sig)
-	warn("gr_cleanup_sig_handler: got signal, exiting")
-	gr_done_signal = sig
-	Sigact(sig, gr_cleanup_prev_handler[sig])
-	gr_exit(1)
-
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	cstr geom = Getenv("GEOM", NULL)
 	if geom && *geom
@@ -139,7 +126,7 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	 else
 		w = width ; h = height
 
-	bg_col = _bg_col ; fg_col = _fg_col
+	bg_col_init = bg_col = _bg_col ; fg_col = _fg_col
 	w_2 = w/2 ; h_2 = h/2
 	ox = oy = 0
 	sc = 1
@@ -229,8 +216,10 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	if fullscreen && fullscreen_grab_keyboard
 		XGrabKeyboard(display, window, True, GrabModeAsync, GrabModeAsync, CurrentTime)
 
-	sprite_screen(screen)
+	if use_vid:
+		vid_init()
 
+	col(fg_col)
 	clear()
 	if gr_buf_image
 		pix_clear()
@@ -293,7 +282,7 @@ xfont(const char *font_name)
 	gcvalues.font = _font->fid
 	XChangeGC(display, gc, GCFont, &gcvalues)
 #	gnl(-1)
-def font(name) xfont(name)
+def font(name) xfont(name) # XXX bogus / inconsistent
 
 colour rgb(num red, num green, num blue)
 	colour c
@@ -327,8 +316,6 @@ line_width(num width)
 	int w = SD(width)
 	gcvalues.line_width = w
 	XChangeGC(display, gc, GCLineWidth, &gcvalues)
-def width(w) line_width(w)
-num _line_width = 0
 
 rect(num x, num y, num w, num h)
 	move(x, y)
@@ -653,8 +640,17 @@ void *gr_do_delay_handler(void *obj, void *a0, void *event)
 		gr_do_delay_done = 1
 	return thunk_yes
 
-def pixel(vid, X, Y) (use_vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
+def pixel(vid, X, Y) (screen ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
 
 vid_init()
-	debug("vid_init: setting use_vid = 1")
-	use_vid = 1
+	if !screen
+		debug("vid_init: setting use_vid = 1")
+		use_vid = 1
+		screen = &struct__screen
+		sprite_screen(screen)
+
+sprite_screen(sprite *s)
+	s->width = w
+	s->height = h
+	s->stride = w
+	s->pixels = (pix_t *)pixel(vid)

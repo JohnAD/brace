@@ -8,8 +8,6 @@ def ButtonPress 4
 def ButtonRelease 5
 def MotionNotify 6
 
-def gr_mingw_debug void
-
 int events_queued(boolean wait_for_event)
 	# XXX this gets the message and removes from the queue on mingw
 	gr_mingw_debug("events_queued")
@@ -189,3 +187,23 @@ long2cstr event_type_names[] =
 	{ ButtonPress, "ButtonPress" },
 	{ ButtonRelease, "ButtonRelease" },
 	{ MotionNotify, "MotionNotify" },
+
+cstr event_key_string(gr_event *e)
+#	int shift = e->state & ShiftMask && 1
+	int shift = 0
+	return key_string(e->which, shift)
+
+char key_string_static[2]  # XXX static
+def key_string(keycode) key_string(keycode, 0)
+cstr key_string(int keycode, boolean shift)
+	use(shift)
+	key_string_static[0] = keycode
+	key_string_static[1] = '\0'
+	return key_string_static
+	# FIXME I guess
+
+key_event_debug(cstr format, gr_event *e)
+	use(format)
+	cstr key_string = event_key_string(e)
+	if key_string != NULL  # ignore unmapped keys
+		debug(format, event_type_name(e->type), key_string)

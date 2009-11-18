@@ -6,3 +6,4 @@ Main:
 	repeat(100):
 		fd(200)
 		rt(153)
+	Paint()

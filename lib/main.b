@@ -31,7 +31,6 @@ main__init(int _argc, char *_argv[])
 		program_full = Which(program_full)
 		# this might fail if PATH was not exported :/
 	program_real = readlinks(Strdup(program_full))
-	# TODO readlinks?
 	dirbasename(Strdup(program_real), d, b)  # this is bogus!  need auto decl
 	program_dir = d
 	program = b
