@@ -95,13 +95,14 @@ int gr_key_last_release_key = -1, gr_key_last_release_time = -1
 num gr_key_last_release_time_real = -1
 
 boolean gr_key_avoid_auto_repeat_press(gr_event *e)
-	boolean ignore =  gr_key_auto_repeat == 0 && gr_key_avoid_auto_repeat_delay && last_release_key == e->which &&
-	  e->time - last_release_time <= (int)gr_key_avoid_auto_repeat_delay
-	last_release_key = -1
+	boolean ignore = gr_key_auto_repeat == 0 && gr_key_avoid_auto_repeat_delay && gr_key_last_release_key == e->which &&
+	  e->time - gr_key_last_release_time <= (int)gr_key_avoid_auto_repeat_delay
+	gr_key_last_release_key = -1
 	return ignore
 
 boolean gr_key_avoid_auto_repeat_release(gr_event *e, boolean is_callback)
 	boolean push_callback = 0
+	boolean ignore = 0
 	if gr_key_auto_repeat == 0 && gr_key_avoid_auto_repeat_delay
 #			debug("gr_key_auto_repeat is off - good!")
 		# this is ugly, silly X.
@@ -109,10 +110,10 @@ boolean gr_key_avoid_auto_repeat_release(gr_event *e, boolean is_callback)
 		# maybe check KeyRelease with XQueryKeymap :(
 		# http://www.ypass.net/blog/2009/06/detecting-xlibs-keyboard-auto-repeat-functionality-and-how-to-fix-it/
 		if is_callback
-#				debug("key_handler_main in callback %s %s", key_string(last_release_key), key_string(e->which))
-			if last_release_key == -1
+#				debug("key_handler_main in callback %s %s", key_string(gr_key_last_release_key), key_string(e->which))
+			if gr_key_last_release_key == -1
 				ignore = 1
-			 eif rtime()-last_release_time_real <= gr_key_avoid_auto_repeat_delay/1000.0
+			 eif rtime()-gr_key_last_release_time_real <= gr_key_avoid_auto_repeat_delay/1000.0
 #					debug("callback came too soon - will push callback again")
 				push_callback = 1
 		 else
@@ -121,7 +122,7 @@ boolean gr_key_avoid_auto_repeat_release(gr_event *e, boolean is_callback)
 		if push_callback
 #				debug("pushing callback")
 			if !is_callback
-				last_release_time_real = rtime()
+				gr_key_last_release_time_real = rtime()
 			gr_event_callback *cb = Talloc(gr_event_callback)
 			cb->t = thunk(key_handler_main, NULL, i2p(1))
 			cb->e = *e
@@ -129,9 +130,9 @@ boolean gr_key_avoid_auto_repeat_release(gr_event *e, boolean is_callback)
 			vec_push(gr_need_delay_callbacks, *cb)
 			ignore = 1
 		if !ignore || push_callback
-			last_release_key = e->which
-			last_release_time = e->time
-
+			gr_key_last_release_key = e->which
+			gr_key_last_release_time = e->time
+	return ignore
 
 # mouse handlers --------------------------------------------
 
