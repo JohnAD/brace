@@ -2,14 +2,18 @@ use event
 
 typedef int KeySym
 
+def NoSymbol -1   # XXX check this, is it 0 in X?
+
 def KeyPress 2
 def KeyRelease 3
 def ButtonPress 4
 def ButtonRelease 5
 def MotionNotify 6
 
+def ShiftMask 0  # XXX FIXME
+
 int events_queued(boolean wait_for_event)
-	# XXX this gets the message and removes from the queue on mingw
+	# XXX this gets the message and removes it from the queue on mingw
 	gr_mingw_debug("events_queued")
 	if wait_for_event && !veclen(gr_need_delay_callbacks)
 		gr_mingw_debug("GetMessage")
@@ -19,18 +23,8 @@ int events_queued(boolean wait_for_event)
 	gr_mingw_debug("PeekMessage = %d", n)
 	return n
 
-boolean handle_event_maybe(boolean wait_for_event)
-	gr_mingw_debug("handle_event_maybe")
-	int n = events_queued(wait_for_event)
-	if n
-		handle_event()
-	 else
-		gr_flush()
-	return n
-
 handle_event()
 	gr_mingw_debug("handle_event")
-	# XXX FIXME XXX this is BAD as it is a busy-wait loop...
 	if msg.message == WM_QUIT
 		gr_mingw_debug("WM_QUIT")
 		quit(NULL, NULL, NULL)
@@ -42,22 +36,48 @@ handle_event()
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	# brace's switch / case syntax is pretty bad, ins't it?  :)
 	gr_mingw_debug("WndProc")
-	which message
-	WM_CREATE	
+	int type
+	int but
+	switch message
+	WM_CREATE	.
 		gr_mingw_debug("WM_CREATE")
-		.
-	WM_CLOSE	
-		gr_mingw_debug("WM_CLOSE")
-		PostQuitMessage(0)
-	WM_DESTROY	
+		# TODO?
+		break
+	WM_CLOSE	.
+	WM_DESTROY	.
 		gr_mingw_debug("WM_DESTROY")
-		PostQuitMessage(0)   # XXX ? was not here before, just blank
-	WM_KEYDOWN	
-		gr_mingw_debug("WM_KEYDOWN")
-		which wParam
-		VK_ESCAPE	
-			PostQuitMessage(0)
-	WM_PAINT	
+		PostQuitMessage(0)
+		break
+	WM_KEYDOWN	type = KeyPress ; key
+	WM_KEYUP	type = KeyRelease ; key
+#	WM_CHAR	.   # XXX?
+key		gr_mingw_debug("WM_KEYDOWN")
+#		which wParam
+#		VK_ESCAPE	
+#			PostQuitMessage(0)
+		gr_event e =
+			type, wParam, -1, -1,
+			lParam, -1
+		thunk_call(&control->keyboard, &e)
+		break
+	WM_MOUSEMOVE	type = MotionNotify ; but = which_but(wParam)
+		if but:
+			mouse
+		break
+	WM_LBUTTONDOWN	type = ButtonPress ; but = 1 ; mouse
+	WM_LBUTTONUP	type = ButtonRelease ; but = 1 ; mouse
+	WM_MBUTTONDOWN	type = ButtonPress ; but = 2 ; mouse
+	WM_MBUTTONUP	type = ButtonRelease ; but = 2 ; mouse
+	WM_RBUTTONDOWN	type = ButtonPress ; but = 3 ; mouse
+	WM_RBUTTONUP	type = ButtonRelease ; but = 3 ; mouse
+mouse		.
+			gr_event e =
+				type, but,
+				(short)LOWORD(lParam), (short)HIWORD(lParam),
+				wParam, -1
+			thunk_call(&control->mouse, &e)
+		break
+	WM_PAINT	.
 		gr_mingw_debug("WM_PAINT")
 		PAINTSTRUCT ps
 		HDC hdc
@@ -67,119 +87,72 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		Paint()
 		paint_handle_events = paint_handle_events_old    # UGH!
 		EndPaint(hWnd, &ps)
-#	WM_SIZE	
+		break
+#	WM_SIZE	.
 #		gl_size(LOWORD(lParam), HIWORD(lParam))
 # TODO fix & add more, e.g. & especially repaint!
-	else	
-		gr_mingw_debug("unknown message type")
+		break
+	else	.
+		gr_mingw_debug("unknown message type %d", message)
 		return DefWindowProc(hWnd, message, wParam, lParam)
 	return 0
 
+def which_but(wParam) (wParam & MK_LBUTTON) ? 1 : (wParam & MK_MBUTTON) ? 2 : (wParam & MK_RBUTTON) ? 3 : 0
+
 # key handlers -----------------------------------------------
 
-# FIXME a lot of this is common
+XDisplayKeycodes(Display *display, int *key_first, int *key_last)
+	use(display)
+	*key_first = 0
+	*key_last = 255
 
-def n_key_events 2
-int key_first, key_last
-thunk (*key_handlers)[n_key_events]
-char *key_down
-thunk key_handler_default
-def gr_n_keys key_last-key_first+1
+int XStringToKeysym(char *keystr)
+	if keystr[0] == '\0':
+		error("XStringToKeysym: empty key string")
+	if keystr[1] == '\0':
+		return keystr[0]
+	# FIXME lookup in a hash table
+	if cstr_eq(keystr, "Escape"):
+		return VK_ESCAPE
+	warn("XStringToKeysym: unknown key string %s", keystr)
+	return 0
 
-key_handlers_init()
-#	XDisplayKeycodes(display, &key_first, &key_last)
-	key_first = 0 ; key_last = 255   # FIXME
-	key_handlers = (void*)Nalloc(thunk, gr_n_keys*n_key_events)
-	key_down = Zalloc(char, gr_n_keys)
-	key_handlers_default()
+int XKeysymToKeycode(Display *display, KeySym keysym):
+	use(display)
+	return keysym
 
-cstr quit_key = "Escape"
+int XKeycodeToKeysym(Display *display, KeySym keycode, int shift)
+	use(display, shift)
+	return keycode
+	# TODO add case for shift?
 
-key_handlers_default()
-	key_handlers_ignore()
-	key_handler(quit_key, KeyPress) = thunk(quit)
+char key_string_static[2]  # FIXME static
 
-key_handlers_ignore()
-	for(i, 0, gr_n_keys)
-		for(j, 0, n_key_events)
-			key_handlers[i][j] = thunk()
-	key_handler_default = thunk()
+char *XKeysymToString(KeySym keysym)
+	if keysym == VK_ESCAPE:   # FIXME use X KeySym names, Escape?
+		return "Escape"
+	key_string_static[0] = keysym
+	key_string_static[1] = '\0'
+	return key_string_static
+	# FIXME lookup in a table I guess, and don't use static
 
-void *quit(void *obj, void *a0, void *event)
-	use(obj, a0, event)
-	gr_exit(0)
-	return thunk_yes
+def gr_key_avoid_auto_repeat_press(e) 0
+def gr_key_avoid_auto_repeat_release(e, is_callback) 0
 
-def key_handler(keystr, event_type) key_handlers[keystr_ix(keystr)][key_event_type_ix(event_type)]
-def key_handler_keysym(keysym, event_type) key_handlers[keysym_ix(keystr)][key_event_type_ix(event_type)]
-
-int keystr_ix(cstr keystr)
-	use(keystr)
-	return 0  # FIXME
-#	return XKeysymToKeycode(display, XStringToKeysym(keystr)) - key_first
-int keysym_ix(KeySym keysym)
-	use(keysym)
-	return 0  # FIXME
-#	return XKeysymToKeycode(display, keysym) - key_first
-
-int key_event_type_ix(int event_type)
-	which event_type
-	KeyPress	event_type = 0
-	KeyRelease	event_type = 1
-	else	error("unknown key event type: %d = %s", event_type, event_type_name(event_type))
-	return event_type
-
-
-void *key_handler_main(void *obj, void *a0, void *event)
-	use(obj,a0,event)
-	# TODO
-	return thunk_yes
 
 # mouse handlers --------------------------------------------
 
-# FIXME a lot of this is common =
-# TODO move part to main event.b
-
-def n_mouse_events 3
-def mouse_first 1
-def mouse_last 3
-def gr_n_mouse_buttons mouse_last-mouse_first+1
-thunk mouse_handlers[gr_n_mouse_buttons][n_mouse_events]
-thunk mouse_handler_default
-
-mouse_handlers_init()
-	mouse_handlers_default()
-
-mouse_handlers_default()
-	mouse_handlers_ignore()
-
-mouse_handlers_ignore()
-	for(i, 0, gr_n_mouse_buttons)
-		for(j, 0, n_mouse_events)
-			mouse_handlers[i][j] = thunk()
-	mouse_handler_default = thunk()
-
-def mouse_handler(button, event_type) mouse_handlers[button-mouse_first][mouse_event_type_ix(event_type)]
-
-int mouse_event_type_ix(int event_type)
-	which event_type
-	ButtonPress	event_type = 0
-	ButtonRelease	event_type = 1
-	MotionNotify	event_type = 2
-	else	error("unknown mouse event type: %d = %s", event_type, event_type_name(event_type))
-	return event_type
-
-void *mouse_handler_main(void *obj, void *a0, void *event)
-	use(obj,a0,event)
-	# TODO
-	return thunk_yes
+# (this is generic)
 
 
-cstr event_type_name(int type)
-	foraryp(i, event_type_names)
-		if i->k == type
-			return i->v
-	return NULL
+# recentering when the window is resized ---------------------
+
+# TODO ?
+
+
+# event type names ---------------------------------------
+
+# TODO merge with X version?
 
 long2cstr event_type_names[] =
 	{ KeyPress, "KeyPress" },
@@ -187,23 +160,3 @@ long2cstr event_type_names[] =
 	{ ButtonPress, "ButtonPress" },
 	{ ButtonRelease, "ButtonRelease" },
 	{ MotionNotify, "MotionNotify" },
-
-cstr event_key_string(gr_event *e)
-#	int shift = e->state & ShiftMask && 1
-	int shift = 0
-	return key_string(e->which, shift)
-
-char key_string_static[2]  # XXX static
-def key_string(keycode) key_string(keycode, 0)
-cstr key_string(int keycode, boolean shift)
-	use(shift)
-	key_string_static[0] = keycode
-	key_string_static[1] = '\0'
-	return key_string_static
-	# FIXME I guess
-
-key_event_debug(cstr format, gr_event *e)
-	use(format)
-	cstr key_string = event_key_string(e)
-	if key_string != NULL  # ignore unmapped keys
-		debug(format, event_type_name(e->type), key_string)

@@ -8,6 +8,8 @@ brace (0.9.9~wip) unstable; urgency=low
   * WIP event handling / yukon on mingw
   * TODO full screen on mingw
   * TODO text and show on mingw
+  * FIXME b1 on mingw
+  * FIXME error on mingw doesn't seem to cause a proper exit
 
  -- Sam Watkins <sam@nipl.net>  Sat, 14 Nov 2009 22:27:34 +1100
 

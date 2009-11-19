@@ -4,7 +4,9 @@ export gl/gl.h gl/glext.h gl/glu.h
 use error alloc m process
 export colours
 
-def gr_mingw_debug void #warn
+typedef void Display
+
+def gr_mingw_debug warn
 
 # here's the GL stuff:
 
