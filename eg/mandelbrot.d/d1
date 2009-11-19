@@ -2,6 +2,9 @@
 # ./d1 -1.635 1.18 0.03 1024 30 5
 use b
 
+# CONFIGURE!
+typedef uint32_t pixel_type  # yuk, but the nested macros lose expansions
+
 cstr usage[] = { "x y r max_i rb_i payg w h", NULL }
 
 def blank_colour 1
@@ -13,7 +16,6 @@ Main()
 	num outside = 16 # 4
 	num outside2 = outside*outside
 	num out_square = sqrt(outside2/2)
-	long i
 	num ox = -0.5, oy = 0, r = 1.5
 	long max_i = 1024, rb_i = 30, W=0, H=0
 	getargs(float, ox, oy, r)
@@ -34,15 +36,12 @@ Main()
 	bm(program)
 
 
-typedef long pixel_type  # the nested macros lose expansions
-
 def mandelbrot(pixel_type)
 	int counter = 0
 	num d = 2*r/h, x0 = ox-d*w_2, y0 = oy+d*h_2
 	cmplx c0 = x0 + y0*I
 	smooth_init()
 	pointi2 seeds[(w+h-2)*2*5]
-	pointi2 p
 	int i=0
 	for(x, 0, w)
 		seeds[i].x[0] = x
