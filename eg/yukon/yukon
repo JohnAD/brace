@@ -11,12 +11,12 @@ int show_hint_x, show_hint_y
 def gap 15
 def col_w (w-gap)/8
 def row_h 18 # 13 25
-num plot_slow_new_game = 0.005 # 0.01
+num plot_slow_new_game = mingw ? 0 : 0.005 # 0.01
 num plot_slow_stack = 0.05
 num plot_slow_stack_all = 0.01
 int moves
 num intro_fps = 100
-num hint_fps = 50
+def hint_fps mingw ? 20 : 50
 num hint_secs = 1
 num hint_wait = 0.5
 boolean fast = 0
