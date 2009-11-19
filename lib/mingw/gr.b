@@ -6,7 +6,7 @@ export colours
 
 typedef void Display
 
-def gr_mingw_debug warn
+def gr_mingw_debug void
 
 # here's the GL stuff:
 

@@ -618,13 +618,14 @@ hint *choose_non_trivial_move()
 		if !l_to:
 			warn("chose non-trivial move for king")
 			return h
-		int c_up = *(int*)v(column, h->row-1)
-		int n_up = card[c_up].n
-		int c_up_to = *(int*)v(to_column, l_to-1)
-		int n_up_to = card[c_up_to].n
-		if value(n_up) != value(n_up_to) || card_color(n_up) != card_color(n_up_to):
-			warn("chose non-trivial move")
-			return h
+		if h->row > 0:
+			int c_up = *(int*)v(column, h->row-1)
+			int n_up = card[c_up].n
+			int c_up_to = *(int*)v(to_column, l_to-1)
+			int n_up_to = card[c_up_to].n
+			if value(n_up) != value(n_up_to) || card_color(n_up) != card_color(n_up_to):
+				warn("chose non-trivial move")
+				return h
 	return NULL
 
 hint *try_move(int col, int row, int may_stack, char *already, int depth):
