@@ -115,6 +115,10 @@ int XStringToKeysym(char *keystr)
 	# FIXME lookup in a hash table
 	if cstr_eq(keystr, "Escape"):
 		return VK_ESCAPE
+	if cstr_eq(keystr, "Up"):
+		return VK_UP
+	if cstr_eq(keystr, "Down"):
+		return VK_DOWN
 	warn("XStringToKeysym: unknown key string %s", keystr)
 	return 0
 

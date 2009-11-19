@@ -4,8 +4,9 @@ brace (0.9.9~wip) unstable; urgency=low
   * got it to compile on mingw again
   * add line numbers by default now
   * fixed parsing bug with ^line ... in Process / eg/wordwrap
-  * almost all the graphics demos work on mingw
-  * WIP event handling / yukon on mingw
+  * almost all of the graphics demos work on mingw
+  * event handling and yukon on mingw
+  * WIP X keysyms on mingw
   * TODO full screen on mingw
   * TODO text and show on mingw
   * FIXME b1 on mingw
