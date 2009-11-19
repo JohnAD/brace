@@ -14,9 +14,9 @@ LDLIBS=$(SO_LDLIBS)
 BK_HEADERS=1
 DEBUG=1
 
-build:
+build: mingw/keysym.b
 #	bk
-	./build-libb.sh
+	../util/build-libb.sh
 	cp $(SONAME) $(PLAIN_SONAME)
 	cp $(SONAME) $(DEBUG_SONAME)
 	cp $(SONAME) $(PLAIN_DEBUG_SONAME)
@@ -89,5 +89,8 @@ uninstall:
 	if [ -n '$(libdir2)' ]; then rm -v -f '$(libdir2)/$(PLAIN_DEBUG_SONAME)'; fi
 	
 	rmdir -v '$(libdir)' || true
+
+mingw/keysym.b: mingw/keysymdef.h ../util/make_mingw_keysym
+	../util/make_mingw_keysym
 
 .PHONY: build clean install
