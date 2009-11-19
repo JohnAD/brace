@@ -1,33 +1,67 @@
-http://sam.nipl.net/brace
+brace / CZ
+
+   http://sam.nipl.net/brace/
+
+   by Sam Watkins, public domain
+
+   Brace is a dialect of C which looks like python.  It has two types of
+   coroutines, hygenic macros, header generation, graphics and sound.
+
+   Brace 2 might be renamed as CZ, after I finish rewriting the translator.
+
+   Brace is developed mainly on Debian GNU/Linux, but also works on various
+   other *nix with GNU tools and X11, and on MS Windows with MinGW+msys.
+   It should also work on OS X with X11, but I have not tested this.  The
+   Windows version is only slightly inferior to the Unix version.
 
 
-   brace / CZ
+Dependencies
 
-   Brace is a dialect of C which looks like python.  It has coroutines,
-   hygenic macros, header generation, and libraries with graphics and sound.
+   Brace depends on gcc, make and libpng.
+   On *nix, it also depends on libx11 and libxext.
+   On MS Windows, get msysgit, which includes MinGW+msys and other stuff.
+   I hear it does not build on OS X yet.  If you try you will need X11.
+   On Debian: apt-get install build-essential devscripts fakeroot debhelper \
+     libx11-dev libxext-dev libio-string-perl libpng12-dev
 
-   WARNING - to exit the full-screen example programs, press Escape.
 
-   Brace might be renamed as CZ after I finish rewriting the translator.
+Building and Installing
+
+   ./configure --prefix=/usr/local && make && sudo make install
+
+   on Debian: debuild -b ; sudo dpkg -i ../brace*.deb
+
+
+Examples
+
+   WARNING - to exit full-screen example programs, press Escape!
 
    There are examples in eg/ and two slideshows about CZ with pretty demos:
      cd eg
+     ./hello
+     ./hello.bb
+     ./star
      ./show slides1.txt 
      ./show slides2.txt 
 
    Some of the examples might not be in working order at any given time!
 
-   You can build the Debian package with:
 
-     debuild -b
+Documentation
 
-    or
+   There is almost no documentation yet.  Have a look at eg/slides1.txt, the
+   examples, the generated .bh files which are installed in /usr/local/include
+   or similar, and perhaps the library source code in lib.  If you would like
+   to read some tutorial or documentation for Brace, please let me know and I
+   will write something.
 
-     fakeroot debian/rules binary
 
+Contact
 
-   otherwise, try
+   Please contact the author!
 
-     ./configure
-     make
-     make install
+   Sam Watkins <sam@nipl.net>
+
+   http://sam.nipl.net/contact.html
+   http://sam.nipl.net/
+
