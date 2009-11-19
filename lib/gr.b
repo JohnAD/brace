@@ -1,6 +1,6 @@
 export types
 export stdarg.h
-use m
+use m process
 export sprite event
 export gr
 
@@ -10,20 +10,13 @@ int w_2, h_2
 num ox, oy, sc
 int _xflip = 0
 int _yflip = 0
-sprite struct__screen, *screen = &struct__screen
+sprite struct__screen, *screen = NULL
 int depth
 num pixel_size
 int pixel_size_i
 
 boolean fullscreen = 0
 boolean _deco = 1
-gr_deco(int _d)
-	_deco = _d
-
-gr_fullscreen()
-	fullscreen = 1
-	w = root_w ; h = root_h
-	gr_deco(0)
 
 # last x and y position
 num lx = 0, ly = 0   # current pos
@@ -45,6 +38,23 @@ boolean gr_done = 1  # set to 0 after successful init
 boolean gr_exiting = 0
 
 colour bg_col, fg_col
+
+sighandler_t gr_cleanup_prev_handler[sig_top+1]
+int gr_done_signal = 0
+
+int use_vid = 0
+
+num _line_width = 0
+
+colour bg_col_init
+
+gr_deco(int _d)
+	_deco = _d
+
+gr_fullscreen()
+	fullscreen = 1
+	w = root_w ; h = root_h
+	gr_deco(0)
 
 xflip()
 	_xflip = !_xflip
@@ -396,3 +406,40 @@ def pixelq() pixelq(vid, 0, 0)
 
 colour colour_rand()
 	return rgb(Rand(), Rand(), Rand())
+
+gr_at_exit()
+#	warn("gr_at_exit done = %d", gr_done)
+	gr_exiting = 1
+	if !gr_done
+#		warn("Paint")
+		Paint()
+#		warn("event_loop")
+		event_loop()
+	gr_free()
+
+void gr_cleanup_sig_handler(int sig)
+	warn("gr_cleanup_sig_handler: got signal %d, exiting", sig)
+	gr_done_signal = sig
+	Sigact(sig, gr_cleanup_prev_handler[sig])
+	gr_exit(1)
+
+gr_cleanup_catch_signals()
+	each(sig, sigs_fatal):
+		gr_cleanup_prev_handler[sig] = Sigact(sig, gr_cleanup_sig_handler)
+
+# FIXME on mingw, in the final "exit" event loop, a signal such as SIGINT does
+# not result in the sighandler being called.  The shell comes back, but the
+# window is not closed, and still responds.
+
+def width(w) line_width(w)  # XXX get rid of this?
+
+def for_screen(px):
+	for_sprite(px, screen)
+def for_screen(px, d):
+	for_sprite(px, screen, d)
+def for_screen(px, x, y):
+	for_sprite(px, screen, x, y)
+def for_screen(px, x, y, w, h):
+	for_sprite(px, screen, x, y, w, h)
+def for_screen(px, x, y, w, h, d):
+	for_sprite(px, screen, x, y, w, h, d)

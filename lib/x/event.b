@@ -8,6 +8,7 @@ use event
 XEvent x_event
 
 int events_queued(boolean wait_for_event)
+	# XXX this gets the message and removes it from the queue on mingw
 #	return XEventsQueued(display, QueuedAfterReading)
 #	warn("events_queued: wait_for_event = %d", wait_for_event)
 #	int n = XEventsQueued(display, wait_for_event||can_read(x11_fd) ? QueuedAfterReading : QueuedAlready)

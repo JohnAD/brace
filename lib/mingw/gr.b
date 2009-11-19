@@ -1,8 +1,10 @@
 use gr
 use main
-export gl/gl.h gl/glu.h
+export gl/gl.h gl/glext.h gl/glu.h
 use error alloc m process
 export colours
+
+def gr_mingw_debug void #warn
 
 # here's the GL stuff:
 
@@ -18,8 +20,9 @@ gl_size(GLsizei width, GLsizei height)
 	gluOrtho2D(0, width, 0, height)
 
 gr_init()
-	if !gr_done
-		Atexit(event_loop)
+#	if !gr_done
+	Atexit(gr_at_exit)
+	gr_cleanup_catch_signals()
 
 	colours_init()
 
@@ -27,12 +30,14 @@ gr_init()
 
 	rainbow_init()
 
+	event_handler_init()
+
 _paper(int width, int height, colour _bg_col, colour _fg_col)
 	if width
 		w = width ; h = height
 	 else
 		w = 800 ; h = 600
-	bg_col = _bg_col ; fg_col = _fg_col
+	bg_col_init = bg_col = _bg_col ; fg_col = _fg_col
 	w_2 = w/2 ; h_2 = h/2
 	ox = oy = 0
 	sc = 1
@@ -60,6 +65,10 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	pixel_size = 4
 	pixel_size_i = 4
 
+	if use_vid:
+		vid_init()
+
+	col(fg_col)
 	clear()
 
 	gr_done = 0
@@ -67,12 +76,16 @@ _paper(int width, int height, colour _bg_col, colour _fg_col)
 	Paint()
 
 gr_free()
-	# XXX does nothing yet - I guess it should!
+	if gr_done_signal
+		warn("gr_done_signal")
+	.
+	# XXX does nothing yet - maybe it should!
 
 gr_sync()
 	gr_flush()
 
 gr_flush()
+	gr_mingw_debug("gr_flush -> glFlush")
 	glFlush()
 	# does not actually sync on windows (yet)
 
@@ -109,16 +122,18 @@ colour _colour
 
 colour col(colour c)
 	fg_col = c
-	glColor3f(c.r, c.g, c.b)
+#	gr_mingw_debug("col %08lx -> %f %f %f", c, pixn_r(c), pixn_g(c), pixn_b(c))
+	glColor3f(pixn_r(c), pixn_g(c), pixn_b(c))  # XXX use an int func?
 	return c
 
 colour coln(char *name)
 	use(name)
-	error("sorry, no named colours in GL version (yet)")
-	return white
+	warn("sorry, no named colours in GL version (yet)")
+	return grey   # XXX FIXME
 
 colour rgb(double red, double green, double blue)
-	colour c = { red, green, blue }
+	colour c = pixn_rgb_safe(red, green, blue)
+#	gr_mingw_debug("rgb %f %f %f -> %08lx", red, green, blue, c)
 	return col(c)
 
 circle(double x, double y, double r)
@@ -226,11 +241,12 @@ polygon_end(struct polygon *p)
 	Free(p->points)
 
 clear()
-	colour fg = fg_col
-	col(bg_col)
-	glClearColor(fg_col.r, fg_col.g, fg_col.b, 0)
+#	colour fg = fg_col
+#	gol(bg_col)
+#	gr_mingw_debug("clear %08lx -> %f %f %f", bg_col, pixn_r(bg_col), pixn_g(bg_col), pixn_b(bg_col))
+	glClearColor(pixn_r(bg_col), pixn_g(bg_col), pixn_b(bg_col), 0)  # XXX use an int func?
 	glClear(GL_COLOR_BUFFER_BIT)
-	col(fg)
+#	col(fg)
 	gr__change_hook()
 	# TODO simplify this, no need to change with col()  ?
 	# need to call paint also to update the actual window
@@ -238,21 +254,22 @@ clear()
 # I have no font / text support in GL yet
 
 gprint(cstr s)
-	error("sorry, no text in GL version (yet)")
-	use(s)
+	warn("gprint: %s", s)  # XXX FIXME sorry, no text in GL version (yet)
 num font_height()
-	error("sorry, no text in GL version (yet)")
-	return 0
+	warn("sorry, no text in GL version (yet)")
+	return isd(10)   # XXX FIXME
 
 paint_sync(int syncage)
-	use(syncage)
 	if vid:
 		# TODO invert or something !@#!@#%!
-		glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, vid)
+		glDrawPixels(w, h, GL_BGRA, GL_UNSIGNED_BYTE, vid)
 	SwapBuffers(hDC)
-#	if syncage
-#		glFlush()  XXX do this instead of SwapBuffers again?
-	SwapBuffers(hDC)  # XXX XXX I don't know why, but apparently it's necessary to do this twice in order to get something to display!
+	if syncage
+		glFlush()  # XXX do this instead of SwapBuffers again?
+#	SwapBuffers(hDC)  # XXX XXX I don't know why, but apparently it's necessary to do this twice in order to get something to display!
+
+	if paint_handle_events || veclen(gr_need_delay_callbacks)
+		handle_events(0)
 
 # here's the Windoze stuff:
 
@@ -306,28 +323,6 @@ int _win_destroy()
 	DisableOpenGL(hWnd, hDC, hRC)
 	DestroyWindow(hWnd)
 	return msg.wParam
-
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-	# brace's switch / case syntax is pretty crap, ins't it?  :)
-	switch message
-	WM_CREATE	
-		return 0
-	WM_CLOSE	
-		PostQuitMessage(0)
-		return 0
-	WM_DESTROY	
-		return 0
-	WM_KEYDOWN	
-		switch  wParam
-		VK_ESCAPE	
-			PostQuitMessage(0)
-			return 0
-		return 0
-#	WM_SIZE	
-#		gl_size(LOWORD(lParam), HIWORD(lParam))
-# TODO fix & add more, e.g. & especially repaint!
-	else	
-		return DefWindowProc(hWnd, message, wParam, lParam)
 
 EnableOpenGL(HWND hWnd, HDC * hDC, HGLRC * hRC)
 	PIXELFORMATDESCRIPTOR pfd
@@ -385,9 +380,35 @@ def with_pixel_type(macro)
 	macro(uint32_t)
 
 # FIXME only do this for pixel()
-def pixel(vid, X, Y) (vid ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
+def pixel(vid, X, Y) (screen ? 0 : (vid_init(),0)), pixelq(vid, X, Y)
 
 vid_init()
-	vid = Malloc(w*h*pixel_size_i)
-	bzero(vid, w*h*pixel_size_i)
-	  # XXX clears to black, not to background color
+	if !screen
+		use_vid = 1
+		vid = Malloc(w*h*pixel_size_i)
+		bzero(vid, w*h*pixel_size_i)
+		  # XXX clears to black, not to background color
+		screen = &struct__screen
+		sprite_screen(screen)
+		pix_clear(bg_col_init)
+
+# XXX FIXME TODO for GL:
+
+line_width(num width)
+	_line_width = width
+	int w = SD(width)
+	use(w)
+	# TODO
+
+# XXX FIXME TODO for GL:
+
+font(cstr name, int size)
+	use(name, size)
+def font(name) font(name, 14)   # XXX bogus / inconsistent
+
+sprite_screen(sprite *s)
+	s->width = w
+	s->height = h
+	s->stride = -w
+	s->pixels = (pix_t *)pixel(vid) + w*(h-1)
+	# this is because glDrawPixels draws stuff upside down

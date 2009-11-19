@@ -72,15 +72,15 @@ def wheel(pixel_type)
 #	for(i, 0, 360)
 #		rb[i] = rainbow(i)
 	pixel_type *px = pixel()
-	int i = 0
+	int j = 0
 	for(y, -h_2, h_2)
 #		let(X, np[y+R])
 		for(x, -w_2, w_2)
 			if first || qrand() % 50 == 0
 #				let(A, a[x+R][y+R] + d[x+R][y+R])
 #				let(A, a[ix(x,y)] + d[ix(x,y)])
-#				let(A, a[i] + d[i])
-				let(A, a[i])
+#				let(A, a[j] + d[j])
+				let(A, a[j])
 				if first || qtoss()
 					A = A*2+da/2
 				else
@@ -89,7 +89,7 @@ def wheel(pixel_type)
 				*px = rb[A]
 				#col(rb[A])
 				#point(x, y)
-			++px ; ++i
+			++px ; ++j
 
 def spin()
 	rb_red_angle += 1.6*dt

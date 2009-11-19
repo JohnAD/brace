@@ -1648,3 +1648,7 @@ def NULL(p)
 def NULL(p, n)
 	for(my(i), p, p+n)
 		NULL(my(i))
+
+def break(cond)
+	if cond:
+		break

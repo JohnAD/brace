@@ -9,26 +9,18 @@ def ButtonRelease 5
 def MotionNotify 6
 
 int events_queued(boolean wait_for_event)
-	use(wait_for_event)
-	return 1  # FIXME
-
-##	return XEventsQueued(display, QueuedAfterReading)
-##	warn("events_queued: wait_for_event = %d", wait_for_event)
-##	int n = XEventsQueued(display, wait_for_event||can_read(x11_fd) ? QueuedAfterReading : QueuedAlready)
-#	int n = XEventsQueued(display, QueuedAlready)
-##	warn("   = %d", n)
-#	if !n:
-##		warn("  selecting...")
-#		num timeout = wait_for_event && !veclen(gr_need_delay_callbacks) ? time_forever : 0
-#		gr_flush()
-#		if can_read(x11_fd, timeout):
-##			warn("  reading...")
-#			n = XEventsQueued(display, QueuedAfterReading)
-##			warn("  n = %d", n)
-#	return n
-#		# is can_read necessary?
+	# XXX this gets the message and removes from the queue on mingw
+	gr_mingw_debug("events_queued")
+	if wait_for_event && !veclen(gr_need_delay_callbacks)
+		gr_mingw_debug("GetMessage")
+		return GetMessage(&msg, NULL, 0, 0)
+	gr_mingw_debug("PeekMessage")
+	int n = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)
+	gr_mingw_debug("PeekMessage = %d", n)
+	return n
 
 boolean handle_event_maybe(boolean wait_for_event)
+	gr_mingw_debug("handle_event_maybe")
 	int n = events_queued(wait_for_event)
 	if n
 		handle_event()
@@ -37,17 +29,51 @@ boolean handle_event_maybe(boolean wait_for_event)
 	return n
 
 handle_event()
+	gr_mingw_debug("handle_event")
 	# XXX FIXME XXX this is BAD as it is a busy-wait loop...
-	if PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)
-		if msg.message == WM_QUIT
-			gr_done = 1
-		else
-			TranslateMessage(&msg)
-			DispatchMessage(&msg)
+	if msg.message == WM_QUIT
+		gr_mingw_debug("WM_QUIT")
+		quit(NULL, NULL, NULL)
 	else
-		.
-	# TODO other event types
+		gr_mingw_debug("Translate/Dispatch")
+		TranslateMessage(&msg)
+		DispatchMessage(&msg)
 
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	# brace's switch / case syntax is pretty bad, ins't it?  :)
+	gr_mingw_debug("WndProc")
+	which message
+	WM_CREATE	
+		gr_mingw_debug("WM_CREATE")
+		.
+	WM_CLOSE	
+		gr_mingw_debug("WM_CLOSE")
+		PostQuitMessage(0)
+	WM_DESTROY	
+		gr_mingw_debug("WM_DESTROY")
+		PostQuitMessage(0)   # XXX ? was not here before, just blank
+	WM_KEYDOWN	
+		gr_mingw_debug("WM_KEYDOWN")
+		which wParam
+		VK_ESCAPE	
+			PostQuitMessage(0)
+	WM_PAINT	
+		gr_mingw_debug("WM_PAINT")
+		PAINTSTRUCT ps
+		HDC hdc
+		hdc = BeginPaint(hWnd, &ps)
+		boolean paint_handle_events_old = paint_handle_events
+		paint_handle_events = 0
+		Paint()
+		paint_handle_events = paint_handle_events_old    # UGH!
+		EndPaint(hWnd, &ps)
+#	WM_SIZE	
+#		gl_size(LOWORD(lParam), HIWORD(lParam))
+# TODO fix & add more, e.g. & especially repaint!
+	else	
+		gr_mingw_debug("unknown message type")
+		return DefWindowProc(hWnd, message, wParam, lParam)
+	return 0
 
 # key handlers -----------------------------------------------
 
@@ -161,3 +187,23 @@ long2cstr event_type_names[] =
 	{ ButtonPress, "ButtonPress" },
 	{ ButtonRelease, "ButtonRelease" },
 	{ MotionNotify, "MotionNotify" },
+
+cstr event_key_string(gr_event *e)
+#	int shift = e->state & ShiftMask && 1
+	int shift = 0
+	return key_string(e->which, shift)
+
+char key_string_static[2]  # XXX static
+def key_string(keycode) key_string(keycode, 0)
+cstr key_string(int keycode, boolean shift)
+	use(shift)
+	key_string_static[0] = keycode
+	key_string_static[1] = '\0'
+	return key_string_static
+	# FIXME I guess
+
+key_event_debug(cstr format, gr_event *e)
+	use(format)
+	cstr key_string = event_key_string(e)
+	if key_string != NULL  # ignore unmapped keys
+		debug(format, event_type_name(e->type), key_string)

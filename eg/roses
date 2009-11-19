@@ -41,7 +41,7 @@ num c[3][10] =
 	,
 		220,  .5, .1, 120,  .7, .2, 120,  .7, .2, -60
 
-main()
+Main()
 	space()
 	yflip()
 
@@ -49,4 +49,3 @@ main()
 		for rot = 0; rot <= 360; ++rot
 			roses()
 #			csleep(0.1)
-			Paint()

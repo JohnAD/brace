@@ -51,6 +51,7 @@ event_loop()
 # FIXME maybe have a wait_for_events() function instead of that boolean?  or a config variable?
 
 int handle_events(boolean wait_for_event)
+#	warn("handle_events wait: %d", wait_for_event)
 	int n = gr_call_need_delay_callbacks()
 	while !gr_done && handle_event_maybe(wait_for_event)
 		++n

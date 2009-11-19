@@ -15,13 +15,12 @@ Main()
 #	int n = 7
 	sprite *back = Nalloc(sprite, n)
 	space()
-	decl(screen, sprite)
+	vid_init()
 	decl(source, sprite)
 	decl(target, sprite)
 	new(s, sprite, sprite_w, sprite_h)
 	for(i, 0, n)
 		sprite_init(back+i, sprite_w, sprite_h)
-	sprite_screen(screen)
 #	sprite_clear(s, blue)
 
 	num a = 0

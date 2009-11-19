@@ -113,3 +113,5 @@ int kill(pid_t pid, int sig)
 		Exit()   # a bit dodgy!
 	errno = EPERM
 	return -1
+
+Def sigs_fatal SIGINT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGTERM

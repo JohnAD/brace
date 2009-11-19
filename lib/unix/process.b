@@ -10,8 +10,6 @@ int sig_execfailed = SIGUSR2
 # A process in brace should not otherwise be terminated by SIGUSR2.
 # If that is a problem, the program can set sig_execfailed to 64 or something.
 
-def sig_top 64   # SIGRTMAX is not necessarily a compile-time constant
-
 typedef void (*sighandler_t)(int)
 
 pid_t Fork()
@@ -478,3 +476,5 @@ int Getgrouplist(const char *user, gid_t group, vec *groups)
 	if rv < 0
 		failed("getgrouplist")
 	return ngroups
+
+Def sigs_fatal SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, SIGBUS, SIGSYS, SIGTRAP, SIGXCPU, SIGXFSZ

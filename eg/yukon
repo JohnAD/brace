@@ -36,9 +36,9 @@ vec cols[8]
 int stacks[4]
 
 Main:
-	use_vid = 1
 	load_sprites()
 	space(background_sprite.width, background_sprite.height)
+	vid_init()
 #	XDefineCursor(display, window, XCreateFontCursor(display, XC_crosshair))
 #	intro()
 	init()
@@ -54,7 +54,8 @@ Main:
 
 load_sprites:
 	char file[32] = ""
-	cd_block("cards"):
+	cstr cards_dir = path_cat(program_dir, "cards")
+	cd_block(cards_dir):
 		for(i, 0, N):
 			int suit = (i+1) % 4  # CSHD -> SHDC
 			int rank = i / 4
@@ -70,6 +71,7 @@ load_sprites:
 		sprite_load_png(&background_sprite, "greenbackground.png")
 		sprite_load_png(&show_hint_sprite, "showhint.png")
 	card_w = card_sprites[0].width ; card_h = card_sprites[0].height
+	Free(cards_dir)
 
 init:
 	for(i, 0, 8):
@@ -694,8 +696,8 @@ hint *find_hint(int col, int row, int to_col):
 	for_vec(h, hints, hint):
 		if h->col == col && h->row == row && h->to_col == to_col:
 			return h
-	warn("FIND_HINT FAILED %d %d %d", col, row, to_col)
-	kill(getpid(), SIGSTOP)
+	error("FIND_HINT FAILED %d %d %d", col, row, to_col)
+#	kill(getpid(), SIGSTOP)
 	return NULL
 
 boolean can_stack_all_from(int col, int row1):

@@ -2,23 +2,21 @@
 use b
 Main():
 	space(1024,768)
-	with_pixel_type(animate)
+	vid_init()
 
-int frame = 0
-unsigned char r=0, g=0, b=0
-num last_time = 0
+	int frame = 0
+	unsigned char r=0, g=0, b=0
+	num last_time = 0
 
-# for the GL pixel backend, I will need to use -ve stride and make sure
-# the demos do use the stride not just keep incrementing px...
-
-def animate(pixel_type):
 	repeat:
-		pixel_type *px = pixel()
+		sl_screen(sl)
 		for(y, 0, h):
 			for(x, 0, w):
+				use(x, y)
 #				*px = 7654321
 #				*px = pix_rgb((x+frame)&255,(y+frame)&255,(x+y-frame)&255)
-				*px++ = pix_rgb(r++, g, b++)
+				*sl->px++ = pix_rgb(r++, g, b++)
+			sl_next_row(sl)
 			g++ ; b++
 		r++ ; g++ ; b--
 		if frame % 100 == 0:
@@ -29,3 +27,6 @@ def animate(pixel_type):
 			last_time = t
 		++frame
 		Paint()
+
+# for the GL pixel backend, I will need to use -ve stride and make sure
+# the demos do use the stride not just keep incrementing px...
