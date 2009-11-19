@@ -171,6 +171,7 @@ void *key_handler_main(void *obj, void *a0, void *event)
 		if !ignore
 #			debug("setting key down %s", key_string(e->which))
 			key_down[e->which-key_first] = 1
+		warn("KeyPress: %d %s", e->which, key_string(e->which))
 
 	KeyRelease	.
 		event_type = 1
@@ -185,6 +186,7 @@ void *key_handler_main(void *obj, void *a0, void *event)
 #			debug("ignoring KeyRelease")
 		if gr_key_ignore_release
 			ignore = 1
+		warn("KeyRelease: %d %s", e->which, key_string(e->which))
 
 	if !ignore && XKeycodeToKeysym(display, e->which, e->state & ShiftMask && 1) == NoSymbol
 		ignore = 1

@@ -52,9 +52,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	WM_KEYUP	type = KeyRelease ; key
 #	WM_CHAR	.   # XXX?
 key		gr_mingw_debug("WM_KEYDOWN")
-#		which wParam
-#		VK_ESCAPE	
-#			PostQuitMessage(0)
+		if wParam > key_last
+			warn("keycode %d exceeds key_last %d: ignored", wParam, key_last)
+			noth
 		gr_event e =
 			type, wParam, -1, -1,
 			lParam, -1
@@ -94,8 +94,9 @@ mouse		.
 		break
 	else	.
 		gr_mingw_debug("unknown message type %d", message)
-		return DefWindowProc(hWnd, message, wParam, lParam)
+		noth
 	return 0
+noth	return DefWindowProc(hWnd, message, wParam, lParam)
 
 def which_but(wParam) (wParam & MK_LBUTTON) ? 1 : (wParam & MK_MBUTTON) ? 2 : (wParam & MK_RBUTTON) ? 3 : 0
 
@@ -119,19 +120,18 @@ int XStringToKeysym(char *keystr)
 
 int XKeysymToKeycode(Display *display, KeySym keysym):
 	use(display)
-	return keysym
+	return toupper(keysym)
 
 int XKeycodeToKeysym(Display *display, KeySym keycode, int shift)
 	use(display, shift)
-	return keycode
-	# TODO add case for shift?
+	return shift ? tolower(keycode) : toupper(keycode)
 
 char key_string_static[2]  # FIXME static
 
 char *XKeysymToString(KeySym keysym)
 	if keysym == VK_ESCAPE:   # FIXME use X KeySym names, Escape?
 		return "Escape"
-	key_string_static[0] = keysym
+	key_string_static[0] = (char)tolower(keysym)
 	key_string_static[1] = '\0'
 	return key_string_static
 	# FIXME lookup in a table I guess, and don't use static
