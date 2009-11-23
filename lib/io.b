@@ -72,6 +72,9 @@ ssize_t Write_some(int fd, const void *buf, size_t count)
 		 else
 			failed("write")
 	return bytes_written
+	# XXX I think it is usually an error on a blocking socket if write
+	# returns shorter than count.  I suppose the error will be reported at
+	# the next call of write when no data can be written.
 
 Write(int fd, const void *buf, size_t count)
 	repeat
@@ -919,8 +922,10 @@ cp(const char *from, const char *to, int mode)
 	Close(out)
 	Close(in)
 
-off_t cp_fd(int in, int out)
-	char buf[4096]
+def cp_fd(in, out) cp_fd_unbuf(in, out)
+
+off_t cp_fd_chunked(int in, int out)
+	char buf[block_size]
 	off_t count = 0
 	repeat
 		size_t len = Read(in, buf, sizeof(buf))
@@ -930,8 +935,25 @@ off_t cp_fd(int in, int out)
 		count += len
 	return count
 
+off_t cp_fd_unbuf(int in, int out)
+	# XXX this only works for a blocking fd
+	char buf[block_size]
+	off_t count = 0
+	repeat
+		size_t len = Read_some(in, buf, sizeof(buf))
+		if len == 0
+			eof
+		char *p = buf
+		while len
+			off_t sent = Write_some(out, p, len)
+			if sent == 0
+				failed("cp_fd")  # non-blocking??
+			len -= sent ; p += sent
+			count += sent
+eof	return count
+
 fcp(FILE *in, FILE *out)
-	char buf[4096]
+	char buf[block_size]
 	repeat
 		size_t len = Fread(buf, 1, sizeof(buf), in)
 		if len == 0
@@ -1176,8 +1198,8 @@ int file_cmp(cstr fa, cstr fb)
 	new(stb, Stats, fb)
 	if sta->st_size != stb->st_size
 		return 1
-	new(a, buffer, 4096)
-	new(b, buffer, 4096)
+	new(a, buffer, block_size)
+	new(b, buffer, block_size)
 	ssize_t na, nb
 	int fda = open(fa)
 	if fda == -1
