@@ -22,7 +22,9 @@ time (
 		( echo "use png.h" ; v cat $files | grep -v '^\(use\|export\) [^\.]*$' ) > .all.b
 	)
 	time v b2c < .all.b >.all.c
-	( time v $CC -o $SONAME.$VERS $CFLAGS $CINCLUDE -fPIC $LDFLAGS -shared -Wl,-soname,$SONAME.$VERS .all.c 2>&1 || echo "FAILED" 2>&1 || echo "FAILED" ) | tee libb.log 
+	( time v $CC -o $SONAME.$VERS $CFLAGS $CINCLUDE -fPIC $LDFLAGS -shared -Wl,-soname,$SONAME.$VERS $LDLIBS .all.c 2>&1 || echo "FAILED" 2>&1 ) | tee libb.log
+#	( time v $CC -c $CFLAGS $CINCLUDE -fPIC .all.c 2>&1 || echo "FAILED" 2>&1
+#	time v $CC -o $SONAME.$VERS $LDFLAGS -shared -Wl,-soname,$SONAME.$VERS .all.o $LDLIBS 2>&1 || echo "FAILED" 2>&1 ) | tee libb.log 
 	grep 'FAILED' < libb.log && exit 1
 	chmod -x $SONAME.$VERS
 	ln -sf $SONAME.$VERS $SONAME.$MAJOR ; ln -sf $SONAME.$MAJOR $SONAME
