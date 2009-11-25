@@ -235,12 +235,12 @@ int gr__mitshm_fault_h(Display *d, XErrorEvent *e)
 	return 0
 
 gr_free()
-	warn("gr_free")
+#	warn("gr_free")
 	if gr_done_signal
-		warn("gr_done_signal")
+#		warn("gr_done_signal")
 		if shmseginfo
 #			XShmDetach(display, shmseginfo)
-			warn("free_shmseg")
+#			warn("free_shmseg")
 			free_shmseg()
 			shmseginfo = NULL
 		kill(getpid(), gr_done_signal)
@@ -257,7 +257,7 @@ gr_free()
 		if gr_buf_image
 			XDestroyImage(gr_buf_image)   # frees vid
 		if shmseginfo
-			warn("free_shmseg")
+#			warn("free_shmseg")
 			free_shmseg()
 #		XFreeGC(display, gc)
 			# gr_free can be called via exit in a signal handler
