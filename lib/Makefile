@@ -45,8 +45,8 @@ install:
 			lnorcp $(SONAME).$(VERS) "$$dir"/$(SONAME).$(MAJOR); \
 			lnorcp $(SONAME).$(MAJOR) "$$dir"/$(SONAME); \
 		fi; \
-	} \
-	instlib '$(libdir)' ; if [ -n '$(libdir2)' ]; then instlib '$(libdir2)'
+	}; \
+	instlib '$(libdir)' ; if [ -n '$(libdir2)' ]; then instlib '$(libdir2)'; fi
 
 	# $(INSTALL) -m 644 libb.a '$(libdir)'
 	# $(PLAIN_SONAME).$(VERS) $(DEBUG_SONAME).$(VERS) $(PLAIN_DEBUG_SONAME).$(VERS)

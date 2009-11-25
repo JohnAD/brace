@@ -96,7 +96,7 @@ else
 	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
 	( eval $CC $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $LDLIBS || touch .cc_failed.$PID ) 2>&1
 fi | perl -ne '
-	BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || /Info: resolving/ || /auto-importing has been activated/ || /This should work unless it involves constant data structures referencing/ || /^\s*$/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
+	BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || /Info: resolving/ || /auto-importing has been activated/ || /This should work unless it involves constant data structures referencing/ || /in statically linked applications requires at runtime the shared libraries from the glibc version used for linking/ || /^\s*$/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
 ' >>"$LOG"
 
 if [ -e .cc_failed.$PID ]; then

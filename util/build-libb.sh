@@ -27,6 +27,6 @@ time (
 	  tee libb.log 
 	grep 'FAILED' < libb.log && exit 1
 	chmod -x $SONAME.$VERS
-	ln -s $SONAME.$VERS $SONAME.$MAJOR ; ln -s $SONAME.$MAJOR $SONAME
+	ln -sf $SONAME.$VERS $SONAME.$MAJOR ; ln -sf $SONAME.$MAJOR $SONAME
 #	rm .all.b .all.c .all.o
 )
