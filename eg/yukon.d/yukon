@@ -1,10 +1,11 @@
-<<<<<<< HEAD:eg/yukon
-=======
 #!/lang/b
 use b
 use X11/cursorfont.h
 
-# FIXME screen assumed to be 32bpp
+# FIXME screen assumed to be 32bpp?  always true when using GL anyway
+
+# TODO messages on the display  (ala videoprint)
+# TODO undo function?
 
 def N 52
 sprite background_sprite, card_back_sprite, show_hint_sprite, card_sprites[N], stack_base_sprites[4]
@@ -13,12 +14,12 @@ int show_hint_x, show_hint_y
 def gap 15
 def col_w (w-gap)/8
 def row_h 18 # 13 25
-num plot_slow_new_game = mingw ? 0 : 0.005 # 0.01
+num plot_slow_new_game = 0.005 # 0.01
 num plot_slow_stack = 0.05
 num plot_slow_stack_all = 0.01
 int moves
 num intro_fps = 100
-def hint_fps mingw ? 20 : 50
+num hint_fps = 50
 num hint_secs = 1
 num hint_wait = 0.5
 boolean fast = 0
@@ -26,6 +27,9 @@ int unstacked
 int uncleared
 boolean auto_pilot = 0
 int numbered_game = -1
+
+def rank_chars "_A23456789TJQK"
+def suit_chars "SHDC"
 
 struct card_state:
 	int n
@@ -126,7 +130,7 @@ new_game:
 		++numbered_game
 		warn("game number %d", numbered_game)
 
-void *quit_game(void *obj, void *a0, void *event):
+void *exit_game(void *obj, void *a0, void *event):
 	use(obj, a0, event)
 	if moving_cards:
 		move_cards_abort()
@@ -173,7 +177,7 @@ deal:
 				++col
 	for(i, 0, 4):
 		stacks[i] = 0
-	cards_moved()
+	cards_moved_hook()
 
 def plot_cards():
 	plot_cards(0)
@@ -215,11 +219,11 @@ plot_cards(num plot_slow):
 int suit(int n):
 	return n % 4
 
-int value(int n):
+int rank(int n):
 	return n / 4 + 1
 
-int card_n(int suit, int value):
-	return (value - 1)*4 + suit
+int card_n(int suit, int rank):
+	return (rank - 1)*4 + suit
 
 int card_color(int n):
 	int s = suit(n)
@@ -230,7 +234,7 @@ struct card_name:
 
 def name(n) get_card_name(n).s
 card_name get_card_name(int n):
-	return (card_name){{"_A23456789TJQK"[value(n)], "SHDC"[suit(n)], '\0'}}
+	return (card_name){{rank_chars[rank(n)], suit_chars[suit(n)], '\0'}}
 
 pointi2 card_point(int col, int row):
 	pointi2 pos
@@ -268,19 +272,22 @@ int which_row(int y):
 	return row
 
 control_play:
-	key_handler("q", KeyPress) = thunk(quit_game)
-	key_handler("a", KeyPress) = thunk(toggle_auto_pilot)
-	key_handler("h", KeyPress) = thunk(show_hint, NULL, i2p(0))
+	key_handler("x", KeyPress) = thunk(exit_game)
+	key_handler("p", KeyPress) = thunk(toggle_auto_pilot)
+	key_handler("w", KeyPress) = thunk(show_hint, NULL, i2p(0))
 	key_handler("m", KeyPress) = thunk(show_hint, NULL, i2p(1))
 	key_handler("Down", KeyPress) = thunk(speed, NULL, i2p(125))
 	key_handler("Up", KeyPress) = thunk(speed, NULL, i2p(80))
 	key_handler("f", KeyPress) = thunk(toggle_fast)
-	key_handler_default = thunk(key_input)  # TODO
 	mouse_handler(1, ButtonPress) = thunk(move_cards_start)
 	mouse_handler(1, MotionNotify) = thunk(move_cards_drag)
 	mouse_handler(1, ButtonRelease) = thunk(move_cards_stop)
 	mouse_handler(3, ButtonPress) = thunk(stack_cards)
-	# TODO hints and stuff
+	mouse_handler(2, ButtonPress) = thunk(change_card)
+	for_cstr(p, rank_chars suit_chars)
+		char s[2]
+		s[0] = *p; s[1] = '\0'
+		key_handler(s, KeyPress) = thunk(change_card)
 
 void *key_input(void *obj, void *a0, void *event):
 	use(obj, a0)
@@ -353,13 +360,13 @@ move_cards_abort():
 boolean cards_can_land(int card_floating, int col):
 	vec *column = &cols[col]
 	if !veclen(column):
-		return value(card[card_floating].n) == 13  # king
+		return rank(card[card_floating].n) == 13  # king
 	int card_base = *(int*)vec_top(column)
 	return card_can_go_on_card(card[card_floating].n, card[card_base].n)
 
 boolean card_can_go_on_card(int floating, int base):
 	return card_color(floating) != card_color(base) &&
-	 value(floating) == value(base) - 1
+	 rank(floating) == rank(base) - 1
 
 move_cards(int col):
 	vec *column = &cols[col]
@@ -372,8 +379,8 @@ move_cards(int col):
 	moving_cards = 0
 	if col != move_card_from_col
 		++moves
+		cards_moved_hook()
 		show_top_card(move_card_from_col)
-		cards_moved()
 
 show_top_card(int col):
 	vec *column = &cols[col]
@@ -383,6 +390,9 @@ show_top_card(int col):
 		if !C->face_up:
 			C->face_up = 1
 			--uncleared
+		cc_step = 2
+		cc_rank = rank(C->n)
+		cc_suit = suit(C->n)
 
 void *stack_cards(void *obj, void *a0, void *event):
 	use(obj, a0)
@@ -392,12 +402,12 @@ void *stack_cards(void *obj, void *a0, void *event):
 		vec *column = &cols[col]
 		int c = *(int*)v(column, row)
 		int n = card[c].n
-		if value(n) == 13 && (row != veclen(column)-1 || !can_stack(c)):
+		if rank(n) == 13 && (row != veclen(column)-1 || !can_stack(c)):
 			stack_all_cards()
 		 else:
 			paint_handle_events = 0
-			back(r, veclen(column), row):
-				if !stack_card(col, r):
+			back(row2, veclen(column), row):
+				if !stack_card(col, row2):
 					break
 				plot_cards()
 				csleep(plot_slow_stack)
@@ -419,8 +429,8 @@ int stack_card(int col, int row):
 		card[c].col = 7
 		card[c].row = suit(n)
 		vec_pop(column)
+		cards_moved_hook()
 		show_top_card(col)
-		cards_moved()
 		return 1
 
 stack_all_cards()
@@ -440,12 +450,12 @@ stack_all_cards()
 
 boolean can_stack(int c):
 	int n = card[c].n
-	return card[c].face_up && stacks[suit(n)] + 1 == value(n)
+	return card[c].face_up && stacks[suit(n)] + 1 == rank(n)
 
-int which_stack(int x, int y):
-	use(x, y)
-	# TODO
-	return -1
+#int which_stack(int x, int y):
+#	use(x, y)
+#	# TODO
+#	return -1
 
 int show_hint_ix = 0
 
@@ -457,10 +467,11 @@ vec struct__hints, *hints = &struct__hints
 boolean need_calc_hints = 1
 int hint_ix = 0
 
-cards_moved():
+cards_moved_hook():
 	vecclr(hints)
 	need_calc_hints = 1
 	hint_ix = 0
+	change_card_reset()
 
 def show_hint(doit):
 	show_hint(NULL, i2p(doit), NULL)
@@ -493,7 +504,7 @@ calc_hints():
 			if !card[c].face_up:
 				continue
 			int n = card[c].n
-			boolean king_at_base = value(n) == 13 && row == 0
+			boolean king_at_base = rank(n) == 13 && row == 0
 			if king_at_base:
 				continue
 			for(to_col, 0, 7):
@@ -551,7 +562,7 @@ hint *choose_best_hint_stack_lowest():
 		if h->to_col == 7:
 			vec *column = &cols[h->col]
 			int c = *(int*)v(column, h->row)
-			if value(card[c].n) == next:
+			if rank(card[c].n) == next:
 				return h
 	return NULL
 
@@ -595,8 +606,8 @@ hint *choose_best_stacking_move(boolean stack_any)
 			for(row, 0, l):
 				int c = *(int*)v(column, row)
 				int n = card[c].n
-				int v = value(n)
-				if can_stack(c) && (stack_any || v == next):
+				int r = rank(n)
+				if can_stack(c) && (stack_any || r == next):
 					if row == l-1:
 						return find_hint(col, row, 7)
 					 else:
@@ -620,14 +631,13 @@ hint *choose_non_trivial_move()
 		if !l_to:
 			warn("chose non-trivial move for king")
 			return h
-		if h->row > 0:
-			int c_up = *(int*)v(column, h->row-1)
-			int n_up = card[c_up].n
-			int c_up_to = *(int*)v(to_column, l_to-1)
-			int n_up_to = card[c_up_to].n
-			if value(n_up) != value(n_up_to) || card_color(n_up) != card_color(n_up_to):
-				warn("chose non-trivial move")
-				return h
+		int c_up = *(int*)v(column, h->row-1)
+		int n_up = card[c_up].n
+		int c_up_to = *(int*)v(to_column, l_to-1)
+		int n_up_to = card[c_up_to].n
+		if rank(n_up) != rank(n_up_to) || card_color(n_up) != card_color(n_up_to):
+			warn("chose non-trivial move")
+			return h
 	return NULL
 
 hint *try_move(int col, int row, int may_stack, char *already, int depth):
@@ -686,13 +696,13 @@ hint *try_move(int col, int row, int may_stack, char *already, int depth):
 	return NULL
 
 boolean might_move(int n, int row, int to_col, int to_row):
-	if value(n) == 13:
+	if rank(n) == 13:
 		return to_row == 0 && row != 0
 	 eif to_row > 0:
 		vec *to_column = &cols[to_col]
 		int ct = *(int*)v(to_column, to_row-1)
 		int nt = card[ct].n
-		return value(nt) == value(n)+1 && card_color(nt) != card_color(n)
+		return rank(nt) == rank(n)+1 && card_color(nt) != card_color(n)
 	return 0
 
 hint *find_hint(int col, int row, int to_col):
@@ -711,7 +721,7 @@ boolean can_stack_all_from(int col, int row1):
 	back(row, veclen(column), row1):
 		int c = *(int*)v(column, row)
 		int n = card[c].n
-		if value(n) != test_stacks[suit(n)] + 1:
+		if rank(n) != test_stacks[suit(n)] + 1:
 			return 0
 		++test_stacks[suit(n)]
 	return 1
@@ -773,5 +783,71 @@ void *toggle_fast(void *obj, void *a0, void *a1):
 	fast = !fast
 	return thunk_yes
 
+def change_card_reset() change_card_step = 1
+
+static int cc_step = 1, cc_col, cc_row, cc_rank, cc_suit
+void *change_card(void *obj, void *a0, void *event):
+	use(obj, a0)
+	gr_event *e = event
+	int to_col, to_row
+	char *p
+	warn("change_card %d", cc_step, e->which)
+
+	char k
+	if e->type == KeyPress
+		k = toupper((unsigned char)key_string(e->which)[0])
+		warn("  code %d, k = %d %c", e->which, k, k)
+
+	if e->type == ButtonPress
+		cc_step = 1
+		if which_card(&cc_col, &cc_row, e->x, e->y) == 0
+			int c = *(int*)v(&cols[cc_col], cc_row)
+			card_state *C = &card[c]
+			if !C->face_up
+				reset
+		 else
+			reset
+	 eif cc_step == 2 && e->type == KeyPress && (p = strchr(rank_chars, k))
+		cc_rank = p - rank_chars
+	 eif cc_step == 3 && e->type == KeyPress && (p = strchr(suit_chars, k))
+		cc_suit = p - suit_chars
+		warn("  changing to %c%c", rank_chars[cc_rank], suit_chars[cc_suit])
+		int result = find_card(&to_col, &to_row, cc_suit, cc_rank)
+		if result == -1
+			warn("  target is stacked already, won't swap")
+		 else
+			swap_cards(cc_col, cc_row, to_col, to_row)
+			plot_cards()
+		reset
+	 else
+reset		warn("  reset")
+		cc_step = 1
+		return thunk_yes
+	++cc_step
+	warn("  ok, to step %d", cc_step)
+	return thunk_yes
+
+int find_card(int *col_, int *row_, int s, int r)
+	# returns 0 or 1 if found, for facedown/faceup
+	# returns -1 for not found (stacked already)
+	for(col, 0, 7):
+		vec *column = &cols[col]
+		for(row, 0, veclen(column)):
+			int c = *(int*)v(column, row)
+			card_state *C = &card[c]
+			int n = card[c].n
+			if s == suit(n) && r == rank(n)
+				*col_ = col ; *row_ = row
+				return C->face_up
+	return -1
+
+swap_cards(int col1, int row1, int col2, int row2)
+	use(col1, row1, col2, row2)
+	vec *column1 = &cols[col1]
+	vec *column2 = &cols[col2]
+	int c1 = *(int*)v(column1, row1)
+	int c2 = *(int*)v(column2, row2)
+	card_state *C1 = &card[c1], *C2 = &card[c2]
+	swap(C1->n, C2->n)
+
 # LIBB
->>>>>>> d3c9b17f8b39673084aab5f3dec6183cce584624:eg/yukon.d/yukon
