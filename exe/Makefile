@@ -19,12 +19,12 @@ brace$(EXE): brace.o
 #	@../util/vd brace.c .brace.test.c || . ../util/fail "TEST FAILED! brace is broken!"
 	@echo "brace works ok, hopefully"
 
-bx$(EXE): bx.b $(BRACE_SO)/$(SONAME)
+bx$(EXE): bx.b ../$(SONAME)
 	br bx.b bx$(EXE)
 bbx$(EXE): bx$(EXE)
 	lnorcp bx$(EXE) bbx$(EXE)
 
-b1$(EXE): b1.b $(BRACE_SO)/$(SONAME)
+b1$(EXE): b1.b ../$(SONAME)
 	br b1.b b1$(EXE)
 bb1$(EXE): b1$(EXE)
 	lnorcp b1$(EXE) bb1$(EXE)
