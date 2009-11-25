@@ -23,7 +23,7 @@ time (
 	)
 	time v b2c < .all.b >.all.c
 	( time v $CC -c $CFLAGS -fPIC .all.c 2>&1 || echo "FAILED" ;
-	  time v ${LD:-ld} -o $SONAME.$VERS -shared -soname $SONAME.$VERS $LDFLAGS .all.o $LDLIBS 2>&1 || echo "FAILED" ) | \
+	  time v $LD -o $SONAME.$VERS -shared -soname $SONAME.$VERS $LDFLAGS .all.o $LDLIBS 2>&1 || echo "FAILED" ) | \
 	  tee libb.log 
 	grep 'FAILED' < libb.log && exit 1
 	chmod -x $SONAME.$VERS
