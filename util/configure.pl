@@ -51,7 +51,7 @@ End
 unless ($mingw) {
 	print <<End;
 SO_LDFLAGS=
-SO_CFLAGS=-fpic
+SO_CFLAGS=-fPIC
 SONAME=libb.so
 PLAIN_SONAME=libb_plain.so
 DEBUG_SONAME=libb_debug.so
