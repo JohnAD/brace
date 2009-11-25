@@ -72,6 +72,9 @@ ssize_t Write_some(int fd, const void *buf, size_t count)
 		 else
 			failed("write")
 	return bytes_written
+	# XXX I think it is usually an error on a blocking socket if write
+	# returns shorter than count.  I suppose the error will be reported at
+	# the next call of write when no data can be written.
 
 Write(int fd, const void *buf, size_t count)
 	repeat
@@ -741,7 +744,7 @@ Ftruncate(int fd, off_t length)
 	if ret
 		failed("ftruncate")
 
-int __readlink(const char *path, buffer *b)
+int io__readlink2(const char *path, buffer *b)
 	repeat
 		let(len, readlink(path, buffer_get_end(b), buffer_get_free(b)))
 		if len == -1
@@ -754,11 +757,8 @@ int __readlink(const char *path, buffer *b)
 			return 0
 
 _Readlink(const char *path, buffer *b)
-	if __readlink(path, b) < 0
+	if io__readlink2(path, b) < 0
 		failed("readlink")
-
-def Readlink(path, b) _Readlink(path, b), buffer_to_cstr(b)
-def readlink(path, b) __readlink(path, b) < 0 ? (cstr)NULL : buffer_to_cstr(b)
 
 # this returns a malloc'd cstr
 
@@ -766,11 +766,13 @@ cstr Readlink(const char *path)
 	new(b, buffer, 256)
 	return Readlink(path, b)
 
-cstr _readlink(const char *path)
+cstr io__readlink1(const char *path)
 	new(b, buffer, 256)
 	return readlink(path, b)
 
-def readlink(path) _readlink(path)
+def Readlink(path, b) _Readlink(path, b), buffer_to_cstr(b)
+def readlink(path, b) io__readlink2(path, b) < 0 ? (cstr)NULL : buffer_to_cstr(b)
+def readlink(path) io__readlink1(path)
 
 # readlinks must be called with a malloc'd string
 # i.e. use Strdup.
@@ -919,8 +921,10 @@ cp(const char *from, const char *to, int mode)
 	Close(out)
 	Close(in)
 
-off_t cp_fd(int in, int out)
-	char buf[4096]
+def cp_fd(in, out) cp_fd_unbuf(in, out)
+
+off_t cp_fd_chunked(int in, int out)
+	char buf[block_size]
 	off_t count = 0
 	repeat
 		size_t len = Read(in, buf, sizeof(buf))
@@ -930,8 +934,25 @@ off_t cp_fd(int in, int out)
 		count += len
 	return count
 
+off_t cp_fd_unbuf(int in, int out)
+	# XXX this only works for a blocking fd
+	char buf[block_size]
+	off_t count = 0
+	repeat
+		size_t len = Read_some(in, buf, sizeof(buf))
+		if len == 0
+			eof
+		char *p = buf
+		while len
+			off_t sent = Write_some(out, p, len)
+			if sent == 0
+				failed("cp_fd")  # non-blocking??
+			len -= sent ; p += sent
+			count += sent
+eof	return count
+
 fcp(FILE *in, FILE *out)
-	char buf[4096]
+	char buf[block_size]
 	repeat
 		size_t len = Fread(buf, 1, sizeof(buf), in)
 		if len == 0
@@ -1176,8 +1197,8 @@ int file_cmp(cstr fa, cstr fb)
 	new(stb, Stats, fb)
 	if sta->st_size != stb->st_size
 		return 1
-	new(a, buffer, 4096)
-	new(b, buffer, 4096)
+	new(a, buffer, block_size)
+	new(b, buffer, block_size)
 	ssize_t na, nb
 	int fda = open(fa)
 	if fda == -1
