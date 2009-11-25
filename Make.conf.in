@@ -21,7 +21,6 @@ OPTIMIZE=2
 DEBUG=1
 PROFILE=
 CC=gcc -pedantic -std=gnu99
-LD=ld
 EXE_CFLAGS:=-Wall -I'$(srcdir)/lib' $(CFLAGS)
 EXE_LDFLAGS:=-L'$(srcdir)/lib' $(LDFLAGS) -s
 INSTALL=install

@@ -7,7 +7,7 @@ BRACE_STANDALONE=
 all: !README dotbuild
 
 !README: debian/changelog
-	vers=`util/vers`; <\!README sed "s/([0-9][^)]*)/($$vers)/g" >.README.new
+	vers=`vers`; <\!README sed "s/([0-9][^)]*)/($$vers)/g" >.README.new
 	mv .README.new !README
 
 tgz:

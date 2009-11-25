@@ -27,7 +27,7 @@ log_fix_exit() {
 	exit 1
 }
 
-export LDFLAGS LDLIBS CFLAGS CC BRACE_LANGUAGE
+export LDFLAGS LDLIBS CFLAGS CC LD BRACE_LANGUAGE
 
 
 PROG=`basename "$0"`
@@ -77,6 +77,7 @@ fi
 XBAK="$dirname/.$basename.xbak$EXE"
 B1="$dirname/.$basename.${b}1"
 C="$dirname/.$basename.$c"
+#O="$dirname/.$basename.o"
 BBAK="$dirname/.$basename.bak"
 BBAK2="$dirname/.$basename.bak2"
 LOG="$dirname/.$basename.log"
@@ -87,20 +88,24 @@ if [ -n "$BR_DEBUG" ]; then echo \< "$B" brace_number_lines \| b2b1 \> "$B1"; fi
 if [ -n "$BR_DEBUG" ]; then echo \< "$B1" brace \> "$C"; fi
 <"$B1" brace 2>>"$LOG" >"$C" || log_fix_exit
 
+debug_run() {
+	if [ -n "$BR_DEBUG" ]; then echo "$@"; fi
+	eval "$@"
+}
 
 PID=$$
 if [ -z "$BRACE_STANDALONE" ]; then
-	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CINCLUDE $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
-	( eval $CC $CINCLUDE $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $BRACE_L_SO $LDLIBS || touch .cc_failed.$PID ) 2>&1
+	( debug_run $CC $CINCLUDE $CFLAGS "$@" -o\"$O\" \"$C\" || touch .br_failed.$PID ) 2>&1
+	( debug_run $LD $LDFLAGS "$@" -o\"$X\" \"$O\" $BRACE_L_SO $LDLIBS || touch .br_failed.$PID ) 2>&1
 else
-	if [ -n "$BR_DEBUG" ]; then echo "$CC" $CFLAGS $LDFLAGS "$@" -o"$X" "$C" $LDLIBS; fi
-	( eval $CC $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $LDLIBS || touch .cc_failed.$PID ) 2>&1
+	( debug_run $CC $CINCLUDE $CFLAGS "$@" -o\"$O\" \"$C\" || touch .br_failed.$PID ) 2>&1
+	( debug_run $LD $LDFLAGS "$@" -o\"$X\" \"$O\" $BRACE_L_SO $LDLIBS || touch .br_failed.$PID ) 2>&1
 fi | perl -ne '
 	BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || /Info: resolving/ || /auto-importing has been activated/ || /This should work unless it involves constant data structures referencing/ || /in statically linked applications requires at runtime the shared libraries from the glibc version used for linking/ || /^\s*$/ || /xim_trans\.o/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }   # XXX fix "statically linked applications" nonsense properly?
 ' >>"$LOG"
 
-if [ -e .cc_failed.$PID ]; then
-	rm .cc_failed.$PID
+if [ -e .br_failed.$PID ]; then
+	rm .br_failed.$PID
 	log_fix_exit
 elif [ -s "$LOG" ]; then
 	cat "$LOG"

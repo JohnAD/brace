@@ -156,7 +156,6 @@ else
 	fi
 fi
 
-
 LDLIBS="$BRACE_L_SO $LDLIBS"
 LDLIBS_PLAIN="$LDLIBS"
 LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
@@ -166,7 +165,7 @@ if [ -n "$DEBUG" ]; then
 	CFLAGS="$CFLAGS -ggdb"
 #	CFLAGS="$CFLAGS -g"
 else
-	LDFLAGS="-s"
+	LDFLAGS="$LDFLAGS -s"
 fi
 if [ "$OPTIMIZE" != "0" ] && [ -z "$DEBUG" -o -n "$OPTIMIZE" ]; then
 	if [ -z "$OPTIMIZE" ]; then OPTIMIZE=2; fi
