@@ -1,6 +1,8 @@
 export
+VERSION=0.0.0~wip
+VERS=0.0.0
 MAJOR=0
-VERSION=0.0
+MINOR=0.0
 
 destdir=
 realprefix=/usr/local

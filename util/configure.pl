@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 use strict; use warnings;
-our ($build, $c, $install, $libdir2, $mingw, $msys, $pathsep, $perl, $perlroot, $prefix, $pwd, $realprefix, $sep);
+our ($version, $vers, $major, $minor, $build, $c, $install, $libdir2, $mingw, $msys, $pathsep, $perl, $perlroot, $prefix, $pwd, $realprefix, $sep);
 use File::Basename;
+chomp($version = `util/vers`);
+($major, $minor) = $version =~ /^(\d+)\.(\d+\.\d+)/;
+defined $minor or die "invalid version number: $version, should be like 1.2.3[suffix] - is debian/changelog intact?\n";
+$vers = "$major.$minor";
 $mingw = $ENV{WINDIR}||$ENV{windir};
 if ($mingw) {
 	$sep = '/';
@@ -34,6 +38,10 @@ while (defined ($_=<STDIN>)) {
 	s/^(srcdir=).*/$1$build/;
 	s/^(realprefix=).*/$1$realprefix/;
 	s/^(INSTALL=).*/$1$install/;
+	s/^(VERSION=).*/$1$version/;
+	s/^(VERS=).*/$1$vers/;
+	s/^(MAJOR=).*/$1$major/;
+	s/^(MINOR=).*/$1$minor/;
 	s{[\\/]}{$sep}g;
 	next if /^(perldir=)./;
 	print;

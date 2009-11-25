@@ -80,8 +80,8 @@ if [ -z "$BRACE_USE" ]; then
 		LDLIBS="$LDLIBS -lws2_32"
 		LDLIBS_FANCY="$LDLIBS_FANCY -lopengl32 -lglu32 -lgdi32"
 	else
-		LDLIBS_FANCY="$LDLIBS_FANCY -lz -lxcb -ldl -lXau -lXdmcp"
-		  # XXX This is nonsense, shouldn't be needed, something wrong with my eee pc!
+#		LDLIBS_FANCY="$LDLIBS_FANCY -lz -lxcb -ldl -lXau -lXdmcp"
+#		  # XXX This is nonsense, shouldn't be needed, something wrong with my eee pc!
 		BRACE_USE="unix nonmingw"
 		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h ]; then
 			BRACE_USE="$BRACE_USE x"

@@ -29,32 +29,28 @@ clean:
 
 #		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' -or -name '*.c' -or -name '*.cc' \) | while read F; do \
 
+#	$(INSTALL) -m 644 $(SONAME)$(VERS) $(PLAIN_SONAME)$(VERS) $(DEBUG_SONAME)$(VERS) $(PLAIN_DEBUG_SONAME)$(VERS) "$$dir";
+
 install:
 	$(INSTALL) -d '$(libdir)'
 	find . -path '*/.*' -prune -or -type d -print | while read D; do \
 		$(INSTALL) -d '$(includedir)'/"$$D"; \
 		$(INSTALL) -v -m 644 "$$D"/*.bh '$(includedir)'/"$$D"; \
 	done
-#	$(INSTALL) -m 644 *.b *.bb *.bh *.bbh $(includedir)
-	$(INSTALL) -m 644 $(SONAME) '$(libdir)'
-	$(INSTALL) -m 644 $(PLAIN_SONAME) '$(libdir)'
-	$(INSTALL) -m 644 $(DEBUG_SONAME) '$(libdir)'
-	$(INSTALL) -m 644 $(PLAIN_DEBUG_SONAME) '$(libdir)'
-#	$(INSTALL) -m 644 libb.a '$(libdir)'
-#	$(INSTALL) -m 644 libb_plain.a '$(libdir)'
-#	$(INSTALL) -m 644 libb_plain_debug.a '$(libdir)'
-#	$(INSTALL) -m 644 libb_debug.a '$(libdir)'
-	if [ -n '$(libdir2)' ]; then cp $(SONAME) '$(libdir2)'; fi
-	if [ -n '$(libdir2)' ]; then cp $(PLAIN_SONAME) '$(libdir2)'; fi
-	if [ -n '$(libdir2)' ]; then cp $(DEBUG_SONAME) '$(libdir2)'; fi
-	if [ -n '$(libdir2)' ]; then cp $(PLAIN_DEBUG_SONAME) '$(libdir2)'; fi
-#	$(INSTALL) -m 644 libb.so.$(VERSION) '$(libdir)'
-##	$(INSTALL) -m 644 libbb.so.$(VERSION) '$(libdir)'
-#	ln -sf libb.so.$(VERSION) '$(libdir)'/libb.so.$(MAJOR)
-##	ln -sf libbb.so.$(VERSION) '$(libdir)'/libbb.so.$(MAJOR)
-#	ln -sf libb.so.$(MAJOR) '$(libdir)'/libb.so
-#	ln -sf $(SONAME) '$(libdir)'/$(SONAME)
-#	ln -sf libbb.so.$(MAJOR) '$(libdir)'/libbb.so
+	instlib() { dir="$$1"; \
+		if [ -n "$$WINDIR" ]; then \
+			$(INSTALL) -m 644 $(SONAME) "$$dir"; \
+		else \
+			$(INSTALL) -m 644 $(SONAME).$(VERS) "$$dir"; \
+			lnorcp $(SONAME).$(VERS) "$$dir"/$(SONAME).$(MAJOR); \
+			lnorcp $(SONAME).$(MAJOR) "$$dir"/$(SONAME); \
+		fi; \
+	} \
+	instlib '$(libdir)' ; if [ -n '$(libdir2)' ]; then instlib '$(libdir2)'
+
+	# $(INSTALL) -m 644 libb.a '$(libdir)'
+	# $(PLAIN_SONAME).$(VERS) $(DEBUG_SONAME).$(VERS) $(PLAIN_DEBUG_SONAME).$(VERS)
+
 	@if [ -z "$$WINDIR" ]; then echo you might need to run ldconfig; fi
 
 uninstall:
