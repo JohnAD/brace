@@ -23,22 +23,17 @@ build: mingw/keysym.b
 
 clean:
 	bk-clean
-	rm -f `find . -name '*.so.*' -or -name '*.so' -or -name '*.dll' -or -name '*.bh' -or -name '*.bbh' -or -name '*.b1' -or -name '*.c' -or -name '*.h' -or -name '*.o' -or -name '*.a'`
+	rm -f `find . -name '*.so.*' -or -name '*.so' -or -name '*.dll' -or -name '*.bh' -or -name '*.bbh' -or -name '*.b1' -or -name '*.c' -or -name '*.o' -or -name '*.a'`
 	echo done
 
 #		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' -or -name '*.c' -or -name '*.cc' \) | while read F; do \
 
 install:
 	$(INSTALL) -d '$(libdir)'
-	@echo -n 'install '; \
 	find . -path '*/.*' -prune -or -type d -print | while read D; do \
 		$(INSTALL) -d '$(includedir)'/"$$D"; \
-		find "$$D" -maxdepth 1 -type f \
-		 \( -name '*.bh' -or -name '*.bbh' \) | while read F; do \
-			echo -n "$$F " ; $(INSTALL) -m 644 "$$F" '$(includedir)'/"$$D"; \
-		done; \
-	done; \
-	echo
+		$(INSTALL) -v -m 644 "$$D"/*.bh '$(includedir)'/"$$D"; \
+	done
 #	$(INSTALL) -m 644 *.b *.bb *.bh *.bbh $(includedir)
 	$(INSTALL) -m 644 $(SONAME) '$(libdir)'
 	$(INSTALL) -m 644 $(PLAIN_SONAME) '$(libdir)'

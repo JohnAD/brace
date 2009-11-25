@@ -1,67 +1,70 @@
-brace / CZ
+brace (0.9.9~wip)
 
-   http://sam.nipl.net/brace/
+  http://sam.nipl.net/brace/
 
-   by Sam Watkins, public domain
+  by Sam Watkins, public domain
 
-   Brace is a dialect of C which looks like python.  It has two types of
-   coroutines, hygenic macros, header generation, graphics and sound.
+  Brace is a dialect of C which looks like python.  It has two types of
+  coroutines, hygenic macros, header generation, graphics and sound.
 
-   Brace 2 might be renamed as CZ, after I finish rewriting the translator.
+  Brace 1 (coming soon!) will have binary packages.
+  Brace 2 will be renamed CZ, when I finish rewriting the translator.
 
-   Brace is developed mainly on Debian GNU/Linux, but also works on various
-   other *nix with GNU tools and X11, and on MS Windows with MinGW+msys.
-   It should also work on OS X with X11, but I have not tested this.  The
-   Windows version is only slightly inferior to the Unix version.
+  Brace is developed mainly on Debian GNU/Linux, but also works on various
+  other *nix with GNU tools and X11, and on MS Windows with MinGW+msys.
+  It should also work on OS X with X11, but I have not tested this.  The
+  Windows version is only slightly inferior to the Unix version.
 
 
 Dependencies
 
-   Brace depends on gcc, make and libpng.
-   On *nix, it also depends on libx11 and libxext.
-   On MS Windows, get msysgit, which includes MinGW+msys and other stuff.
-   I hear it does not build on OS X yet.  If you try you will need X11.
-   On Debian: apt-get install build-essential devscripts fakeroot debhelper \
-     libx11-dev libxext-dev libio-string-perl libpng12-dev
+  Brace depends on gcc, make and libpng (which needs zlib).
+  On GNU/Linux/unix, it depends on libx11 and libxext (on windows it uses GL).
+  On Debian: apt-get install build-essential devscripts fakeroot debhelper \
+                     libx11-dev libxext-dev libio-string-perl libpng12-dev
+  On RedHat: yum install libX11-devel libXext-devel perl-IO-String libpng-devel
+  On MS Windows, get msysgit (fullinstall), which includes MinGW+msys etc,
+  and get libpng, zlib from the GNUWin32 project: bin and lib pkgs.
+  I hear it does not build on Mac OS X yet.  If you try you will need X11.
 
 
 Building and Installing
 
-   ./configure --prefix=/usr/local && make && sudo make install
+  ./configure --prefix=/usr/local && make && sudo make install
 
-   on Debian: debuild -b ; sudo dpkg -i ../brace*.deb
+  on Debian: debuild -b ; sudo dpkg -i ../brace*.deb
 
 
 Examples
 
-   WARNING - to exit full-screen example programs, press Escape!
+  WARNING - to exit full-screen example programs, press Escape!
 
-   There are examples in eg/ and two slideshows about CZ with pretty demos:
-     cd eg
-     ./hello
-     ./hello.bb
-     ./star
-     ./show slides1.txt 
-     ./show slides2.txt 
+  There are examples in eg/ and two slideshows about CZ with pretty demos:
+    cd eg
+    ./hello
+    ./hello.bb
+    ./star
+    ./show slides1.txt 
+    ./show slides2.txt 
 
-   Some of the examples might not be in working order at any given time!
+  Some of the examples might not be in working order at any given time!
 
 
 Documentation
 
-   There is almost no documentation yet.  Have a look at eg/slides1.txt, the
-   examples, the generated .bh files which are installed in /usr/local/include
-   or similar, and perhaps the library source code in lib.  If you would like
-   to read some tutorial or documentation for Brace, please let me know and I
-   will write something.
+  There is almost no documentation yet.  Have a look at eg/slides1.txt, the
+  examples, the generated .bh files which are installed in /usr/local/include
+  or similar, and perhaps the library source code in lib.  If you would like
+  to read some tutorial or documentation for Brace, please let me know and I
+  will write something.
 
 
 Contact
 
-   Please contact the author!
+  Please contact the author!
 
-   Sam Watkins <sam@nipl.net>
+  Sam Watkins <sam@nipl.net>
 
-   http://sam.nipl.net/contact.html
-   http://sam.nipl.net/
+  http://sam.nipl.net/contact.html
+  http://sam.nipl.net/
 

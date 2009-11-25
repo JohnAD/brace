@@ -63,11 +63,15 @@ LD_LIBRARY_PATH:=\$(BRACE_SO):\$(LD_LIBRARY_PATH)
 End
 	if ($prefix eq "/usr" && -d "/usr/share/perl5") {
 		print <<End
-perldir:=\$\(prefix\)/share/perl5
+perldir:=\$\(destdir\)\$\(prefix\)/share/perl5
 End
-	} elsif ($prefix eq "/usr/local") {
+	} elsif ($prefix eq "/usr/local" && -d "/usr/local/lib/site_perl") {
 		print <<End
-perldir:=\$\(prefix\)/lib/site_perl
+perldir:=\$\(destdir\)\$\(prefix\)/lib/site_perl
+End
+	} elsif (-e "/usr/lib/perl5/site_perl") {
+		print <<End
+perldir:=$\(destdir\)/usr/lib/perl5/site_perl
 End
 	}
 
