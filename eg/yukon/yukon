@@ -1,11 +1,9 @@
 #!/lang/b
 use b
-use X11/cursorfont.h
+#use X11/cursorfont.h
 
-# FIXME screen assumed to be 32bpp?  always true when using GL anyway
-
-# TODO messages on the display  (ala videoprint)
-# TODO undo function?
+# def debug warn
+def debug void
 
 def N 52
 sprite background_sprite, card_back_sprite, show_hint_sprite, card_sprites[N], stack_base_sprites[4]
@@ -128,7 +126,7 @@ new_game:
 	auto_pilot = 0
 	if numbered_game >= 0
 		++numbered_game
-		warn("game number %d", numbered_game)
+		debug("game number %d", numbered_game)
 	cc_col = 0; cc_row = -1
 	change_card_next()
 
@@ -413,7 +411,7 @@ show_top_card(int col):
 		cc_step = 2
 		cc_col = col; cc_row = n-1
 		cc_rank = rank(C->n); cc_suit = suit(C->n)
-		warn("revealed card %c%c", rank_chars[cc_rank], suit_chars[cc_suit])
+		debug("revealed card %c%c", rank_chars[cc_rank], suit_chars[cc_suit])
 
 void *stack_cards(void *obj, void *a0, void *event):
 	use(obj, a0)
@@ -515,7 +513,7 @@ void *show_hint(void *obj, void *a0, void *a1):
 		if hint_ix < 0:
 			hint_ix += veclen(hints)
 	if !veclen(hints):
-		warn("there are no moves!")  # TODO
+		debug("there are no moves!")  # TODO
 		auto_pilot = 0
 	 else:
 		hint *h = v(hints, hint_ix)
@@ -559,7 +557,7 @@ choose_best_hint():
 		if !best_hint:
 			best_hint = choose_best_clearing_move(1)
 		if !best_hint:
-			warn("there is no way to clear more cards")  # TODO
+			debug("there is no way to clear more cards")  # TODO
 	if !best_hint:
 		best_hint = choose_best_stacking_move(0)
 	if !best_hint:
@@ -567,14 +565,14 @@ choose_best_hint():
 	if !best_hint:
 		best_hint = choose_best_stacking_move(1)
 	if !best_hint:
-		warn("only trivial moves left!")
+		debug("only trivial moves left!")
 #		best_hint = v(hints, randi(veclen(hints)))
 		auto_pilot = 0
 	if best_hint:
 		let(tmp, *best_hint)
 		vec_cut(hints, best_hint-(hint*)vec0(hints))
 		vec_unshift(hints, &tmp)
-		warn("found a best hint")
+		debug("found a best hint")
 
 int next_to_stack()
 	int min_stack = 13
@@ -584,7 +582,7 @@ int next_to_stack()
 	return min_stack+1
 
 hint *choose_best_hint_stack_lowest():
-	warn("choose_best_hint_stack_lowest")
+	debug("choose_best_hint_stack_lowest")
 	int next = next_to_stack()
 	for_vec(h, hints, hint):
 		if h->to_col == 7:
@@ -597,14 +595,14 @@ hint *choose_best_hint_stack_lowest():
 boolean stopped_for_depth
 
 hint *choose_best_clearing_move(boolean may_stack):
-	warn("choose_best_clearing_move %d", may_stack)
+	debug("choose_best_clearing_move %d", may_stack)
 	for(col, 0, 7):
-		warn("trying col %d", col)
+		debug("trying col %d", col)
 		int depth = 1
 		repeat:
 			char already[N]
 			bzero(already, sizeof(already))
-			warn("trying depth %d", depth)
+			debug("trying depth %d", depth)
 			stopped_for_depth = 0
 			vec *column = &cols[col]
 			back(row, veclen(column), 0):
@@ -614,14 +612,14 @@ hint *choose_best_clearing_move(boolean may_stack):
 					if h:
 						return h
 					break
-			warn("stopped_for_depth %d", stopped_for_depth)
+			debug("stopped_for_depth %d", stopped_for_depth)
 			if !stopped_for_depth:
 				break
 			++depth
 	return NULL
 
 hint *choose_best_stacking_move(boolean stack_any)
-	warn("choose_best_stacking_move %d", stack_any)
+	debug("choose_best_stacking_move %d", stack_any)
 	int depth = 1
 	int next = next_to_stack()
 	repeat:
@@ -648,7 +646,7 @@ hint *choose_best_stacking_move(boolean stack_any)
 	return NULL
 
 hint *choose_non_trivial_move()
-	warn("choose_non_trivial_move")
+	debug("choose_non_trivial_move")
 	for_vec(h, hints, hint):
 		vec *column = &cols[h->col]
 		if h->to_col == 7:
@@ -657,14 +655,14 @@ hint *choose_non_trivial_move()
 		vec *to_column = &cols[h->to_col]
 		int l_to = veclen(to_column)
 		if !l_to:
-			warn("chose non-trivial move for king")
+			debug("chose non-trivial move for king")
 			return h
 		int c_up = *(int*)v(column, h->row-1)
 		int n_up = card[c_up].n
 		int c_up_to = *(int*)v(to_column, l_to-1)
 		int n_up_to = card[c_up_to].n
 		if rank(n_up) != rank(n_up_to) || card_color(n_up) != card_color(n_up_to):
-			warn("chose non-trivial move")
+			debug("chose non-trivial move")
 			return h
 	return NULL
 
@@ -685,7 +683,7 @@ hint *try_move(int col, int row, int may_stack, char *already, int depth):
 	if already[c]:
 		return NULL
 	already[c] = 1
-	warn("try_move %d %d %s", col, row, name(n))
+	debug("try_move %d %d %s", col, row, name(n))
 
 	# 1. we can already move it to a column (possibly if we stack some cards first) - do it
 	# 2. we can find a card buried in another column to move it to - try to unbury any such cards recursively
@@ -703,10 +701,10 @@ hint *try_move(int col, int row, int may_stack, char *already, int depth):
 			if might_move(n, row, to_col, to_row):
 				if to_col == col && to_row > row:
 					continue  # this doesn't work right yet.
-					warn("might move to higher on same column. ohoh!")
+					debug("might move to higher on same column. ohoh!")
 					for(r1, row+1, to_row):
-						warn("trying to split at %d", r1)
-						Fprintf(stderr, " ")
+						debug("trying to split at %d", r1)
+	#					Fprintf(stderr, " ")
 						hint *h = try_move(col, r1, may_stack, already, depth-1)
 						if h:
 							return h
@@ -715,12 +713,12 @@ hint *try_move(int col, int row, int may_stack, char *already, int depth):
 				 eif may_stack && can_stack_all_from(to_col, to_row):
 					return find_hint(to_col, l-1, 7)
 				 else:
-					Fprintf(stderr, " ")
+	#				Fprintf(stderr, " ")
 					hint *h = try_move(to_col, to_row, may_stack, already, depth-1)
 					if h:
 						return h
 
-	Fprintf(stderr, ".")
+	# Fprintf(stderr, ".")
 	return NULL
 
 boolean might_move(int n, int row, int to_col, int to_row):
@@ -758,7 +756,7 @@ suggest_move(int col, int row, int to_col, boolean doit):
 	vec *column = &cols[col]
 	int c = *(int*)v(column, row)
 	int n = card[c].n
-	warn("hint: move %s col %d row %d to col %d", name(n), col, row, to_col)
+	debug("hint: move %s col %d row %d to col %d", name(n), col, row, to_col)
 	move_start(col, row)
 	move_card_drag_offset = (pointi2){{0, 0}}
 	pointi2 p0 = card_point(col, row)
@@ -820,12 +818,12 @@ void *change_card(void *obj, void *a0, void *event):
 	gr_event *e = event
 	int to_col, to_row
 	char *p
-	warn("change_card %d", cc_step, e->which)
+	debug("change_card %d", cc_step, e->which)
 
 	char k = 0
 	if e->type == KeyPress
 		k = toupper((unsigned char)key_string(e->which)[0])
-		warn("  code %d, k = %d %c", e->which, k, k)
+		debug("  code %d, k = %d %c", e->which, k, k)
 
 	if e->type == ButtonPress
 		cc_step = 1
@@ -839,10 +837,10 @@ void *change_card(void *obj, void *a0, void *event):
 		++cc_step
 	 eif cc_step == 3 && e->type == KeyPress && (p = strchr(suit_chars, k))
 		cc_suit = p - suit_chars
-		warn("  changing to %c%c", rank_chars[cc_rank], suit_chars[cc_suit])
+		debug("  changing to %c%c", rank_chars[cc_rank], suit_chars[cc_suit])
 		int result = find_card(&to_col, &to_row, cc_suit, cc_rank)
 		if result == -1
-			warn("  target is stacked already, won't swap")
+			debug("  target is stacked already, won't swap")
 		 else
 			swap_cards(cc_col, cc_row, to_col, to_row)
 			plot_cards()
