@@ -23,10 +23,11 @@ $pwd=fix_path($ENV{PWD});
 $build="$pwd/.build";
 $realprefix=$prefix;
 $install = "install";
-if (`which ginstall` ne "") {
+
+if (`which ginstall 2>.configure.tmp` ne "") {
 	$install = "ginstall";
 }
-
+unlink ".configure.tmp";
 
 while (defined ($_=<STDIN>)) {
 	s/^(srcdir=).*/$1$build/;
