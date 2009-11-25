@@ -1,6 +1,7 @@
 include ../.Make.conf
 
 LIBB_BUILD:=1
+BRACE_LINE_NUMBERS:=0
 
 ifdef NPROCESSORS
 MAKE:=make -j$(NPROCESSORS)
