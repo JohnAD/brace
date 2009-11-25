@@ -134,14 +134,19 @@ new_game:
 
 change_card_next()
 	++cc_row
+	card_state *C
 	repeat
-		if cc_row >= veclen(cols[cc_col])
+		if cc_row >= veclen(&cols[cc_col])
 			cc_row = 0 ; ++cc_col
 			if cc_col == 8
 				cc_col = 0
-		 eif C[*(int*)v(&cols[cc_col], cc_row)].face_up == 0
-			++cc_row
-	int n = C[*(int*)v(&cols[cc_col], cc_row)].n
+		else
+			C = &card[*(int*)v(&cols[cc_col], cc_row)]
+			if C->face_up == 0
+				++cc_row
+			 else
+				break
+	int n = C->n
 	cc_rank = rank(n) ; cc_suit = suit(n)
 	cc_step = 2
 
