@@ -731,7 +731,7 @@ comm(vec *merge_v, vec *comm_v, vec *va, vec *vb, cmp_t cmp, free_t *freer)
 		 eif c < 0
 			w = 1 ; m = a
 			a += e
-		 eif c > 0
+		 else # c > 0
 			w = 2 ; m = b
 			b += e
 		void *p = vec_push(merge_v)
@@ -1358,7 +1358,7 @@ boolean version_ge(cstr v0, cstr v1)
 			return 0
 
 cstr hashbang(cstr file)
-	cstr exe
+	cstr exe = NULL
 	F_in(file)
 		exe = rl()
 		if exe

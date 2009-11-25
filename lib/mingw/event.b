@@ -52,7 +52,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	WM_KEYUP	type = KeyRelease ; key
 #	WM_CHAR	.   # XXX?
 key		gr_mingw_debug("WM_KEYDOWN")
-		if wParam > key_last
+		if (int)wParam > key_last
 			warn("keycode %d exceeds key_last %d: ignored", wParam, key_last)
 			noth
 		gr_event e =

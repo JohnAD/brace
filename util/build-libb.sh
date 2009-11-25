@@ -22,11 +22,27 @@ time (
 		( echo "use png.h" ; v cat $files | grep -v '^\(use\|export\) [^\.]*$' ) > .all.b
 	)
 	time v b2c < .all.b >.all.c
-	( time v $CC -o $SONAME.$VERS $CFLAGS $CINCLUDE -fPIC $LDFLAGS -shared -Wl,-soname,$SONAME.$VERS $LDLIBS .all.c 2>&1 || echo "FAILED" 2>&1 ) | tee libb.log
+
+	echo_run() {
+		if [ -n "$BR_DEBUG" ]; then echo "$@"; fi
+		eval "$@"
+	}
+
+  if [ -n "$WINDIR" ]; then
+		SONAME_FULL=$SONAME
+  else
+		SONAME_FULL=$SONAME.$VERS
+	fi
+
+	( time echo_run "$CC -o $SONAME_FULL $CFLAGS $CINCLUDE .all.c -fPIC $LDFLAGS -shared -Wl,-soname,$SONAME_FULL $LDLIBS" 2>&1 || echo "FAILED" 2>&1 ) | tee libb.log
+
 #	( time v $CC -c $CFLAGS $CINCLUDE -fPIC .all.c 2>&1 || echo "FAILED" 2>&1
-#	time v $CC -o $SONAME.$VERS $LDFLAGS -shared -Wl,-soname,$SONAME.$VERS .all.o $LDLIBS 2>&1 || echo "FAILED" 2>&1 ) | tee libb.log 
+#	time v $CC -o $SONAME_FULL $LDFLAGS -shared -Wl,-soname,$SONAME_FULL .all.o $LDLIBS 2>&1 || echo "FAILED" 2>&1 ) | tee libb.log 
+
 	grep 'FAILED' < libb.log && exit 1
-	chmod -x $SONAME.$VERS
-	ln -sf $SONAME.$VERS $SONAME.$MAJOR ; ln -sf $SONAME.$MAJOR $SONAME
+	chmod -x $SONAME_FULL
+	if [ -z "$WINDIR" ]; then
+		ln -sf $SONAME_FULL $SONAME.$MAJOR ; ln -sf $SONAME.$MAJOR $SONAME
+	fi
 #	rm .all.b .all.c .all.o
 )

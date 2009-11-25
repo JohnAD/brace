@@ -1,7 +1,7 @@
 include ../.Make.conf
 
 LIBB_BUILD:=1
-BRACE_LINE_NUMBERS:=0
+export BRACE_LINE_NUMBERS:=0
 
 ifdef NPROCESSORS
 MAKE:=make -j$(NPROCESSORS)
@@ -29,7 +29,7 @@ clean:
 
 #		 \( -name '*.b' -or -name '*.bb' -or -name '*.bh' -or -name '*.bbh' -or -name '*.h' -or -name '*.c' -or -name '*.cc' \) | while read F; do \
 
-#	$(INSTALL) -m 644 $(SONAME)$(VERS) $(PLAIN_SONAME)$(VERS) $(DEBUG_SONAME)$(VERS) $(PLAIN_DEBUG_SONAME)$(VERS) "$$dir";
+#	$(INSTALL) -m 644 $(SONAME).$(VERS) $(PLAIN_SONAME).$(VERS) $(DEBUG_SONAME).$(VERS) $(PLAIN_DEBUG_SONAME).$(VERS) "$$dir";
 
 install:
 	$(INSTALL) -d '$(libdir)'
