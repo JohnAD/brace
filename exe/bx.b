@@ -70,7 +70,7 @@ Main()
 	# will still be removed.  Ideally it would be nice if lock() could do
 	# that automatically.
 
-	int status = 0
+	volatile int status = 0
 
 	new(x_stat, Stats, x)
 	int need_compile = !S_EXISTS(x_stat->st_mode) || x_stat->st_size == 0 || x_stat->st_mtime < b_stat->st_mtime || x_stat->st_mtime < libb_stat->st_mtime
