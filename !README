@@ -44,10 +44,13 @@ Examples
     ./hello
     ./hello.bb
     ./star
+		./lattice
     ./show slides1.txt 
-    ./show slides2.txt 
+    cd yukon ; ./yukon
 
   Some of the examples might not be in working order at any given time!
+	Most of them do work on both Linux and Windows (at least).
+  There are many small examples with animated graphics.
 
 
 Documentation
