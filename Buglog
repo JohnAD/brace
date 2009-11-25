@@ -18,3 +18,6 @@ function!
 
 there is some bug when compiling brace, where a half-written bh header file can
 be left there to confuse subsequent makes
+
+
+TODO hack around "decl may not follow label or case" bogosity in C.

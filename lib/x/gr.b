@@ -15,7 +15,6 @@ use gr
 
 typedef int gr__x_error_handler(Display *, XErrorEvent *)
 
-Display *display = NULL
 Window root_window
 Window window = 0
 Visual *visual

@@ -744,7 +744,7 @@ Ftruncate(int fd, off_t length)
 	if ret
 		failed("ftruncate")
 
-int __readlink(const char *path, buffer *b)
+int io__readlink2(const char *path, buffer *b)
 	repeat
 		let(len, readlink(path, buffer_get_end(b), buffer_get_free(b)))
 		if len == -1
@@ -757,11 +757,8 @@ int __readlink(const char *path, buffer *b)
 			return 0
 
 _Readlink(const char *path, buffer *b)
-	if __readlink(path, b) < 0
+	if io__readlink2(path, b) < 0
 		failed("readlink")
-
-def Readlink(path, b) _Readlink(path, b), buffer_to_cstr(b)
-def readlink(path, b) __readlink(path, b) < 0 ? (cstr)NULL : buffer_to_cstr(b)
 
 # this returns a malloc'd cstr
 
@@ -769,11 +766,13 @@ cstr Readlink(const char *path)
 	new(b, buffer, 256)
 	return Readlink(path, b)
 
-cstr _readlink(const char *path)
+cstr io__readlink1(const char *path)
 	new(b, buffer, 256)
 	return readlink(path, b)
 
-def readlink(path) _readlink(path)
+def Readlink(path, b) _Readlink(path, b), buffer_to_cstr(b)
+def readlink(path, b) io__readlink2(path, b) < 0 ? (cstr)NULL : buffer_to_cstr(b)
+def readlink(path) io__readlink1(path)
 
 # readlinks must be called with a malloc'd string
 # i.e. use Strdup.

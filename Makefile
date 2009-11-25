@@ -4,7 +4,11 @@ include .Make.conf
 
 BRACE_STANDALONE=
 
-all: dotbuild
+all: !README dotbuild
+
+!README: debian/changelog
+	vers=`util/vers`; <\!README sed "s/([0-9][^)]*)/($$vers)/g" >.README.new
+	mv .README.new !README
 
 tgz:
 	tgz+ .

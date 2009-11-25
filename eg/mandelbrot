@@ -160,3 +160,5 @@ def smooth_i(i, W)
 		if a < smooth_outside[j]
 			break
 		--i
+
+def cabs2(w) creal(w*(creal(w)-cimag(w)*I))

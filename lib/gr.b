@@ -4,6 +4,8 @@ use m process
 export sprite event
 export gr
 
+Display *display = NULL
+
 int root_w, root_h
 int w, h
 int w_2, h_2

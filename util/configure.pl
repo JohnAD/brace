@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+use strict; use warnings;
+our ($build, $c, $install, $libdir2, $mingw, $msys, $pathsep, $perl, $perlroot, $prefix, $pwd, $realprefix, $sep);
 use File::Basename;
 $mingw = $ENV{WINDIR}||$ENV{windir};
 if ($mingw) {
@@ -23,16 +25,17 @@ $pwd=fix_path($ENV{PWD});
 $build="$pwd/.build";
 $realprefix=$prefix;
 $install = "install";
-if (`which ginstall` ne "") {
+
+if (`which ginstall 2>.configure.tmp` ne "") {
 	$install = "ginstall";
 }
-
 
 while (defined ($_=<STDIN>)) {
 	s/^(srcdir=).*/$1$build/;
 	s/^(realprefix=).*/$1$realprefix/;
 	s/^(INSTALL=).*/$1$install/;
 	s{[\\/]}{$sep}g;
+	next if /^(perldir=)./;
 	print;
 }
 
@@ -60,11 +63,15 @@ LD_LIBRARY_PATH:=\$(BRACE_SO):\$(LD_LIBRARY_PATH)
 End
 	if ($prefix eq "/usr" && -d "/usr/share/perl5") {
 		print <<End
-perldir:=\$\(prefix\)/share/perl5
+perldir:=\$\(destdir\)\$\(prefix\)/share/perl5
 End
-	} elsif ($prefix eq "/usr/local") {
+	} elsif ($prefix eq "/usr/local" && -d "/usr/local/lib/site_perl") {
 		print <<End
-perldir:=\$\(prefix\)/lib/site_perl
+perldir:=\$\(destdir\)\$\(prefix\)/lib/site_perl
+End
+	} elsif (-e "/usr/lib/perl5/site_perl") {
+		print <<End
+perldir:=$\(destdir\)/usr/lib/perl5/site_perl
 End
 	}
 
@@ -82,16 +89,20 @@ End
 	$perl = fix_path(`which perl.exe`);
 	$perlroot = dirname(dirname($perl));
 	if ($perlroot eq "/") { $perlroot = ""; }
-#	$perldir = "\$\(destdir\)$perlroot${sep}site${sep}lib";
-#	if ($realprefix =~ m{local}) {
-#		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}site_perl";
-#	} else {
-		$perldir = "\$\(destdir\)$perlroot${sep}lib${sep}perl5${sep}site_perl";
-#	}
+	my $perldir;
+	for my $guess ("$perlroot/lib/perl5/site_perl", "$perlroot/site/lib") {
+		$guess =~ s,/,$sep,g;
+		$perldir = $guess;
+		my $bork = $perldir; $bork =~ s,^/(.)/,$1:/,;
+		last if -d $bork;
+	}
+	$perldir = "\$\(destdir\)$perldir";
 	print <<End;
 perldir:=$perldir
 End
 }
+
+unlink ".configure.tmp";
 
 sub fix_path {
 	my ($path) = @_;
