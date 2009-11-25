@@ -129,6 +129,21 @@ new_game:
 	if numbered_game >= 0
 		++numbered_game
 		warn("game number %d", numbered_game)
+	cc_col = 0; cc_row = -1
+	change_card_next()
+
+change_card_next()
+	++cc_row
+	repeat
+		if cc_row >= veclen(cols[cc_col])
+			cc_row = 0 ; ++cc_col
+			if cc_col == 8
+				cc_col = 0
+		 eif C[*(int*)v(&cols[cc_col], cc_row)].face_up == 0
+			++cc_row
+	int n = C[*(int*)v(&cols[cc_col], cc_row)].n
+	cc_rank = rank(n) ; cc_suit = suit(n)
+	cc_step = 2
 
 void *exit_game(void *obj, void *a0, void *event):
 	use(obj, a0, event)
@@ -282,8 +297,8 @@ control_play:
 	mouse_handler(1, ButtonPress) = thunk(move_cards_start)
 	mouse_handler(1, MotionNotify) = thunk(move_cards_drag)
 	mouse_handler(1, ButtonRelease) = thunk(move_cards_stop)
-	mouse_handler(3, ButtonPress) = thunk(stack_cards)
 	mouse_handler(2, ButtonPress) = thunk(change_card)
+	mouse_handler(3, ButtonPress) = thunk(stack_cards)
 	for_cstr(p, rank_chars suit_chars)
 		char s[2]
 		s[0] = *p; s[1] = '\0'
@@ -301,7 +316,7 @@ pointi2 move_card_drag_offset, move_card_drag
 vec struct__cards_in_motion, *cards_in_motion = &struct__cards_in_motion
 
 void *move_cards_start(void *obj, void *a0, void *event):
-	use(obj, a0)
+	change_card(obj, a0, event)
 	gr_event *e = event
 	int col, row
 	if which_card(&col, &row, e->x, e->y) == 0:
@@ -391,30 +406,35 @@ show_top_card(int col):
 			C->face_up = 1
 			--uncleared
 		cc_step = 2
-		cc_rank = rank(C->n)
-		cc_suit = suit(C->n)
+		cc_col = col; cc_row = n-1
+		cc_rank = rank(C->n); cc_suit = suit(C->n)
+		warn("revealed card %c%c", rank_chars[cc_rank], suit_chars[cc_suit])
 
 void *stack_cards(void *obj, void *a0, void *event):
 	use(obj, a0)
 	gr_event *e = event
 	int col, row
+	int stacked = 0
 	if which_card(&col, &row, e->x, e->y) == 0:
 		vec *column = &cols[col]
 		int c = *(int*)v(column, row)
 		int n = card[c].n
 		if rank(n) == 13 && (row != veclen(column)-1 || !can_stack(c)):
-			stack_all_cards()
+			stacked += stack_all_cards()
 		 else:
 			paint_handle_events = 0
 			back(row2, veclen(column), row):
 				if !stack_card(col, row2):
 					break
+				++stacked
 				plot_cards()
 				csleep(plot_slow_stack)
 			paint_handle_events = 1
 	#		debug("stack cards %d %d", col, row)
 	 eif !pix_a(sprite_at(&show_hint_sprite, e->x-show_hint_x, e->y-show_hint_y)):
 		show_hint(1)
+	if stacked == 0
+		change_card(obj, a0, event)
 	return thunk_yes
 
 int stack_card(int col, int row):
@@ -433,9 +453,10 @@ int stack_card(int col, int row):
 		show_top_card(col)
 		return 1
 
-stack_all_cards()
-	paint_handle_events = 0
+int stack_all_cards()
 	int done = 0
+	int stacked = 0
+	paint_handle_events = 0
 	while !done:
 		done = 1
 		for(col, 0, 7):
@@ -443,10 +464,12 @@ stack_all_cards()
 			int row = veclen(column)-1
 			if row >= 0:
 				if stack_card(col, row):
+					++stacked
 					done = 0
 					plot_cards()
 					csleep(plot_slow_stack_all)
 	paint_handle_events = 1
+	return stacked
 
 boolean can_stack(int c):
 	int n = card[c].n
@@ -783,7 +806,8 @@ void *toggle_fast(void *obj, void *a0, void *a1):
 	fast = !fast
 	return thunk_yes
 
-def change_card_reset() change_card_step = 1
+def change_card_reset()
+	cc_step = 1
 
 static int cc_step = 1, cc_col, cc_row, cc_rank, cc_suit
 void *change_card(void *obj, void *a0, void *event):
@@ -793,7 +817,7 @@ void *change_card(void *obj, void *a0, void *event):
 	char *p
 	warn("change_card %d", cc_step, e->which)
 
-	char k
+	char k = 0
 	if e->type == KeyPress
 		k = toupper((unsigned char)key_string(e->which)[0])
 		warn("  code %d, k = %d %c", e->which, k, k)
@@ -803,12 +827,11 @@ void *change_card(void *obj, void *a0, void *event):
 		if which_card(&cc_col, &cc_row, e->x, e->y) == 0
 			int c = *(int*)v(&cols[cc_col], cc_row)
 			card_state *C = &card[c]
-			if !C->face_up
-				reset
-		 else
-			reset
+			if C->face_up
+				++cc_step
 	 eif cc_step == 2 && e->type == KeyPress && (p = strchr(rank_chars, k))
 		cc_rank = p - rank_chars
+		++cc_step
 	 eif cc_step == 3 && e->type == KeyPress && (p = strchr(suit_chars, k))
 		cc_suit = p - suit_chars
 		warn("  changing to %c%c", rank_chars[cc_rank], suit_chars[cc_suit])
@@ -818,13 +841,9 @@ void *change_card(void *obj, void *a0, void *event):
 		 else
 			swap_cards(cc_col, cc_row, to_col, to_row)
 			plot_cards()
-		reset
-	 else
-reset		warn("  reset")
-		cc_step = 1
-		return thunk_yes
-	++cc_step
-	warn("  ok, to step %d", cc_step)
+			change_card_next()
+	 eif cc_step == 3
+		cc_step = 2
 	return thunk_yes
 
 int find_card(int *col_, int *row_, int s, int r)
