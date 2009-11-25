@@ -1,0 +1,2 @@
+#!/bin/sh
+<debian/changelog sed -n 's/.*(\([^)]*\)).*/\1/; p; q'
