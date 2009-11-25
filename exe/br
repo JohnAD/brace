@@ -95,11 +95,9 @@ debug_run() {
 
 PID=$$
 if [ -z "$BRACE_STANDALONE" ]; then
-	( debug_run $CC $CINCLUDE $CFLAGS "$@" -o\"$O\" \"$C\" || touch .br_failed.$PID ) 2>&1
-	( debug_run $LD $LDFLAGS "$@" -o\"$X\" \"$O\" $BRACE_L_SO $LDLIBS || touch .br_failed.$PID ) 2>&1
+	( debug_run $CC $CINCLUDE $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $BRACE_L_SO $LDLIBS || touch .cc_failed.$PID ) 2>&1
 else
-	( debug_run $CC $CINCLUDE $CFLAGS "$@" -o\"$O\" \"$C\" || touch .br_failed.$PID ) 2>&1
-	( debug_run $LD $LDFLAGS "$@" -o\"$X\" \"$O\" $BRACE_L_SO $LDLIBS || touch .br_failed.$PID ) 2>&1
+	( debug_run $CC $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $LDLIBS || touch .cc_failed.$PID ) 2>&1
 fi | perl -ne '
 	BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || /Info: resolving/ || /auto-importing has been activated/ || /This should work unless it involves constant data structures referencing/ || /in statically linked applications requires at runtime the shared libraries from the glibc version used for linking/ || /^\s*$/ || /xim_trans\.o/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }   # XXX fix "statically linked applications" nonsense properly?
 ' >>"$LOG"
