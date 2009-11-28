@@ -1,4 +1,4 @@
-struct foo bar -> typedef foo bar foo bar!!! wtf
+struct foo bar -> typedef foo bar foo bar!!!?
 
 
 tries to include files from cwd instead of directory where src is:
