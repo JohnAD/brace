@@ -13,13 +13,12 @@ if ($mingw) {
 	$pathsep = $msys ? ':' : ';';
 	$c = fix_path("C:");
 #	$prefix = "$c${sep}Program Files${sep}brace";
-	$prefix = "/usr/local";
 	$libdir2 = fix_path($mingw);
 } else {
 	$sep = '/';
 	$pathsep = ':';
-	$prefix = "/usr/local";
 }
+$prefix = "/usr/local";
 for (@ARGV) {
 	if (/--prefix=(.*)/) {
 		$prefix = fix_path($1);
