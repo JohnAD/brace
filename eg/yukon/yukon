@@ -657,6 +657,8 @@ hint *choose_non_trivial_move()
 		if !l_to:
 			debug("chose non-trivial move for king")
 			return h
+		if h->row == 0:
+			return h
 		int c_up = *(int*)v(column, h->row-1)
 		int n_up = card[c_up].n
 		int c_up_to = *(int*)v(to_column, l_to-1)
