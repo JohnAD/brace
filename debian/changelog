@@ -6,7 +6,6 @@ brace (0.9.9~wip) unstable; urgency=low
   * fixed parsing bug with ^line ... in Process / eg/wordwrap
   * almost all of the graphics demos work on mingw
   * event handling and yukon on mingw
-  * changed to use CC then LD, not just CC in one step, to fix heisenbug
   * WIP X keysyms on mingw
   * TODO full screen on mingw
   * TODO text and show on mingw

@@ -33,8 +33,8 @@ Main()
 
 	status_file = Fopen(status, "r")
 	
-	archives_files = ls(archives)
-	partial_files = ls(partial)
+	archives_files = list_files(archives)
+	partial_files = list_files(partial)
 
 	buffer_init(&input_line, 1024)
 	repeat
@@ -109,8 +109,7 @@ package *read_package()
 			dict[k] = v
 			order.push_back(k)
 
-# TODO move ls to a library
-set<string> ls(const char *path)
+set<string> list_files(const char *path)
 	set<string> list
 	DIR *dir = Opendir(path)
 	repeat

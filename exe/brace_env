@@ -136,6 +136,9 @@ if [ "$BRACE_LANGUAGE" = C++ ]; then
 				break
 			fi
 		done
+		if [ "$CC" = g++ ]; then
+			CC="g++ -std=gnu++0x"
+		fi
 	else
 		CC="$CXX"
 	fi

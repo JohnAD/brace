@@ -12,7 +12,7 @@ int show_hint_x, show_hint_y
 def gap 15
 def col_w (w-gap)/8
 def row_h 18 # 13 25
-num plot_slow_new_game = 0.005 # 0.01
+num plot_slow_new_game = 0 # 0.005 # 0.01
 num plot_slow_stack = 0.05
 num plot_slow_stack_all = 0.01
 int moves
@@ -656,6 +656,8 @@ hint *choose_non_trivial_move()
 		int l_to = veclen(to_column)
 		if !l_to:
 			debug("chose non-trivial move for king")
+			return h
+		if h->row == 0:
 			return h
 		int c_up = *(int*)v(column, h->row-1)
 		int n_up = card[c_up].n
