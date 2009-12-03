@@ -1,4 +1,3 @@
-export sys/sendfile.h
 use net
 
 ssize_t Sendfile(int out_fd, int in_fd, off_t *offset, size_t count)

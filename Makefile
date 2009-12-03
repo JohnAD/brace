@@ -18,7 +18,7 @@ dotbuild: cp
 	cd .build ; $(MAKE) build
 cp:
 	mkdir -p .build
-	-if cp --help 2>&1 | grep -- '-a' >/dev/null; then opt=-afl; else opt=-pfR; fi; cp $$opt .Make.conf .sh.conf * .build/
+	-if cp --help 2>&1 | grep -- '-a' >/dev/null; then opt=-afl; else opt=-pfR; fi; cp $$opt .Make.conf .sh.conf * .build/ 2>/dev/null
 	#mkdir -p .build/lib/debug
 build:
 	cd exe ; $(MAKE) boot
