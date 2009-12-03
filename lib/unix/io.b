@@ -88,7 +88,7 @@ def lock(lockfile, fd, x)
 	pre(x)
 		.
 
-def fd_full(new_fd, set) new_fd >= FD_SETSIZE
+def fd_full(new_fd, set) (int)new_fd >= (int)FD_SETSIZE
 
 #def windows_setmode_binary(f)
 #	void(f)
