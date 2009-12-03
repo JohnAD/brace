@@ -1494,7 +1494,7 @@ Def tok_paste(x, y) x^^y
 #def isword(c) char_name2(c)
 
 boolean isword(char c)
-	return isalnum(c) || c == '_'
+	return Isalnum(c) || c == '_'
 
 # these boolean ops evaluate the args more than once, so are of limited use
 
@@ -1652,3 +1652,7 @@ def NULL(p, n)
 def break(cond)
 	if cond:
 		break
+
+def Isalpha(c) isalpha((unsigned)c)
+def Isspace(c) isspace((unsigned)c)
+def Isalnum(c) isalnum((unsigned)c)

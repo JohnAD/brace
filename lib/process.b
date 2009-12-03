@@ -477,7 +477,7 @@ char *sh_unquote_full(cstr s)
 					++s
 				*o++ = *s++
 			++s
-		 eif isspace(*s)
+		 eif isspace((unsigned char)*s)
 			# this will separate args with \0
 			*o++ = '\0'
 			++s

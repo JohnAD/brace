@@ -398,4 +398,3 @@ float STRTOF(const char *nptr)
 	if errno || *endptr
 		failed("strtof", nptr)
 	return rv
-

@@ -1,6 +1,6 @@
 export stdio.h sys/stat.h fcntl.h unistd.h dirent.h stdarg.h string.h utime.h
 
-export str error buffer types net vec vio
+export str error buffer types net vec vio cstr
 use m alloc util path env process main
 
 use io
@@ -1010,7 +1010,7 @@ def select_wrap(fd, read_fds, write_fds, except_fds, timeout)
 def dir1rest(path, d, b)
 	let(d, path)
 	let(b, path)
-	if mingw && isalpha(*b) && b[1] == ':'
+	if mingw && Isalpha(*b) && b[1] == ':'
 		b+=2
 	while path__is_sep(*b)
 		++b
@@ -1554,7 +1554,7 @@ cstr is_scan_space(cstr s)
 		return cstr_begins_with(s, scan_space)
 #		return strchr(scan_space, *s) ? s+1 : NULL
 	 else
-		return isspace(*s) ? s+1 : NULL
+		return Isspace(*s) ? s+1 : NULL
 
 do_delay(num t)
 	if t != time_forever

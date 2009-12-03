@@ -13,11 +13,12 @@ struct spwd
 	long  sp_expire
 	unsigned long sp_flag
 
-static static spwd _spwd_null
+static spwd struct__spwd_null, *_spwd_null = &struct__spwd_null
 
 struct spwd *getspent()
-	return &_spwd_null
+	return _spwd_null
 struct spwd *getspnam(const char *name)
-	return &_spwd_null
+	use(name)
+	return _spwd_null
 endspent()
 	.

@@ -22,7 +22,7 @@ cstr url_encode(cstr q)
 		char c = *q++
 #		if c == ' '
 #			buffer_cat_char(b, '+')
-		if !isalnum(c) && !strchr(":_-/?.", c)
+		if !Isalnum(c) && !strchr(":_-/?.", c)
 			Sprintf(b, "%%%02x", c)
 		 else
 			buffer_cat_char(b, c)
