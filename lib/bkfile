@@ -33,11 +33,11 @@ $(PLAIN_DEBUG_SONAME): $(BOBJ_PLAIN)
 	chmod -x $@
 
 libb.a: libb_debug.a
-	cp -p $< $@
+	cp -a $< $@
 	strip --strip-unneeded $@
 
 libb_plain.a: libb_plain_debug.a
-	cp -p $< $@
+	cp -a $< $@
 	strip --strip-unneeded $@
 
 libb_debug.a: $(BOBJ)
