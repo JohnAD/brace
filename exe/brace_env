@@ -93,9 +93,13 @@ if [ -z "$BRACE_USE" ]; then
 		LDLIBS="$LDLIBS -lcrypt"
 		UNAME=`uname | tr 'A-Z' 'a-z'`
 		case "$UNAME" in
-		*bsd*|sunos)
+		*bsd*|sunos)   # TODO Mac OS
 			BRACE_USE="$BRACE_USE bsd"
-			LDLIBS="$LDLIBS -lsendfile" ;;
+			case "$UNAME" in
+			*netbsd*) ;;
+			*)
+				BRACE_USE="$BRACE_USE modern"
+				LDLIBS="$LDLIBS -lsendfile" ;;
 		*)
 			BRACE_USE="$BRACE_USE nonbsd" ;;
 		esac
@@ -107,8 +111,10 @@ if [ -z "$BRACE_USE" ]; then
 			minor="${V##*.}"
 			if [ "$major" = 2.6 -a "$minor" -ge 20 ]; then
 				# XXX allegedly this is included in 2.6.19,
-				# but it's not in knoppix, perhaps glibc was too old
-				BRACE_USE="$BRACE_USE io-epoll"
+				# but it's not in knoppix, perhaps glibc was old
+				# not sure exactly when "modern"
+				# (sendfile / cork) entered Linux
+				BRACE_USE="$BRACE_USE io-epoll modern"
 			else
 				BRACE_USE="$BRACE_USE io-select"
 			fi
