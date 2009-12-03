@@ -2,37 +2,41 @@ brace (0.9.9~wip)
 
   http://sam.nipl.net/brace/
 
-  by Sam Watkins, public domain
+  )c(  by Sam Watkins 2000-2009, public domain
 
   Brace is a dialect of C which looks like python.  It has two types of
   coroutines, hygenic macros, header generation, graphics and sound.
 
-  Brace 1 (coming soon!) will have binary packages.
-  Brace 2 will be renamed CZ, when I finish rewriting the translator.
+  Brace is developed mainly on Debian GNU/Linux, but also works on at least
+  FreeBSD, NetBSD and Open Solaris with X11, and on MS Windows with MinGW+msys.
+  It should also work on OS X with X11, but I have not tested this yet.  It has
+  been built on GNU Hurd and OpenBSD in the past.  The Windows version is
+  almost as good as the *nix version.
 
-  Brace is developed mainly on Debian GNU/Linux, but also works on various
-  other *nix with GNU tools and X11, and on MS Windows with MinGW+msys.
-  It should also work on OS X with X11, but I have not tested this.  The
-  Windows version is only slightly inferior to the Unix version.
+  Brace 1 (coming soon!) will have binary packages for these platforms.
+  Brace 2 will be renamed CZ, when I finish rewriting the translator.
+    It will build and run with gcc or tcc; it will not use sh, perl or make.
 
 
 Dependencies
 
-  Brace depends on gcc, make and libpng (which needs zlib).
-  On GNU/Linux/unix, it depends on libx11 and libxext (on windows it uses GL).
+  Brace depends on gcc, GNU make and libpng (which needs zlib).
+  On GNU/Linux/Unix, it depends on libx11 and libxext (on windows it uses GL).
   On Debian: apt-get install build-essential devscripts fakeroot debhelper \
                      libx11-dev libxext-dev libio-string-perl libpng12-dev
   On RedHat: yum install libX11-devel libXext-devel perl-IO-String libpng-devel
+  On *BSD: use pkg_add / pkgsrc to install dependencies.  FIXME list here!
   On MS Windows, get msysgit (fullinstall), which includes MinGW+msys etc,
-  and get libpng, zlib from the GNUWin32 project: bin and lib pkgs.
-  I hear it does not build on Mac OS X yet.  If you try you will need X11.
+    and get libpng, zlib from the GNUWin32 project, the bin and lib pkgs.
+  It hear it does not build on Mac OS X yet.  If you try you will need X11.
 
 
 Building and Installing
 
-  ./configure --prefix=/usr/local && make && sudo make install
-
-  on Debian: debuild -b ; sudo dpkg -i ../brace*.deb
+  ./configure && make && sudo make install              # or gmake
+  # ./configure && gmake && sudo gmake install          # on *bsd etc
+  # ./configure --prefix=/usr/local                     # default
+  # debuild -i -b -us -uc ; sudo dpkg -i ../brace*.deb  # on Debian
 
 
 Examples
@@ -44,22 +48,24 @@ Examples
     ./hello
     ./hello.bb
     ./star
-		./lattice
+    ./lattice
     ./show slides1.txt 
     cd yukon ; ./yukon
 
   Some of the examples might not be in working order at any given time!
-	Most of them do work on both Linux and Windows (at least).
+  Most of them do work on both *nix and MS Windows.
   There are many small examples with animated graphics.
+  My webserver tachyon is written in brace:  http://sam.nipl.net/code/tachyon
+  The brace library libb is written in brace:  brace/lib
 
 
 Documentation
 
   There is almost no documentation yet.  Have a look at eg/slides1.txt, the
   examples, the generated .bh files which are installed in /usr/local/include
-  or similar, and perhaps the library source code in lib.  If you would like
-  to read some tutorial or documentation for Brace, please let me know and I
-  will write something.
+  or similar, and perhaps the library source code in brace/lib.  If you would
+  like to read some tutorial or documentation for Brace, please let me know
+  and I will write something.
 
 
 Contact
