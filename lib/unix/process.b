@@ -1,4 +1,4 @@
-export unistd.h stdarg.h signal.h pwd.h grp.h shadow.h sched.h sys/wait.h sys/utsname.h #crypt.h
+export unistd.h stdarg.h signal.h pwd.h grp.h sched.h sys/wait.h sys/utsname.h #crypt.h
 use string.h
 export buffer types
 use error cstr vec util sym
@@ -217,8 +217,9 @@ hashtable *load_users()
 	spwd *s
 	while (s = Getspent())
 		user *u = get(ht, s->sp_namp)
-		Free(u->pw_passwd)
-		u->pw_passwd = Strdup(s->sp_pwdp)
+		if s->sp_pwdp
+			Free(u->pw_passwd)
+			u->pw_passwd = Strdup(s->sp_pwdp)
 	endspent()
 	group *g
 	while (g = Getgrent())
