@@ -6,24 +6,24 @@ echo "
 
 # Here are the copyright and permission notices from keysymdef.h:
 
-`<mingw/keysymdef.h sed -n '/^#define/q; s/^/# /; p'`
+`<mingw/keysymdef.h sed -n '/^#define/q; s/^/# /; p;'`
 
 
 
 # Here is the generated code content of this file -----------------------------
 
-`<mingw/keysymdef.h sed -n '/#ifdef/{s/#ifdef/^define/; s/$/ 1/; p}'`
+`<mingw/keysymdef.h sed -n '/#ifdef/{s/#ifdef/^define/; s/$/ 1/; p;};'`
 
 use mingw/keysymdef.h
 
 long2cstr keysym_strings[] =
-`<mingw/keysymdef.h sed -n '/^#define/{s/#define //; s/[ \t].*//; s/^XK_//; s/.*/\t{ XK_&, "&" },/p}'`
+`<mingw/keysymdef.h sed -n '/^#define/{s/#define //; s/[ \t].*//; s/^XK_//; s/.*/\t{ XK_&, "&" },/p;};'`
 
 long2long xk_vk[] =
 `
 (
-<mingw/xk_vk.def sed -n '/^XK_/{s/^\(XK_[^\t]*\t[^\t]*\).*/\1/;p}'
-<mingw/keysymdef.h sed -n '/#ifdef XK_LATIN1/,/#endif/{/#define/{s/#define //; s/  */\t/; s/ .*//; p}}'
+<mingw/xk_vk.def sed -n '/^XK_/{s/^\(XK_[^\t]*\t[^\t]*\).*/\1/;p;};'
+<mingw/keysymdef.h sed -n '/#ifdef XK_LATIN1/,/#endif/{/#define/{s/#define //; s/  */\t/; s/ .*//; p;};};'
 ) | sed 's/\t/, /; s/.*/\t{ & },/;'
 `
 "
