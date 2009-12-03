@@ -7,7 +7,7 @@ brace (0.9.9~wip) unstable; urgency=low
   * almost all of the graphics demos work on mingw
   * event handling and yukon on mingw
   * WIP X keysyms on mingw
-  * re-ported to netbsd
+  * re-ported to netbsd and freebsd
   * TODO full screen on mingw
   * TODO text and show on mingw
   * FIXME b1 on mingw
