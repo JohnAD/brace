@@ -116,11 +116,11 @@ if [ -n "$BR_CLEAN" ]; then
 	rm "$C" "$B1"
 else
 	rm -f "$XBAK" "$BBAK2"
-	cp -a "$X" "$XBAK"
+	cp -p "$X" "$XBAK"
 	if [ -e "$BBAK" ]; then
 		mv "$BBAK" "$BBAK2"
 	fi
-	cp -a "$B" "$BBAK"
+	cp -p "$B" "$BBAK"
 fi
 
 exit 0
