@@ -733,6 +733,7 @@ off_t Lseek(int fd, off_t offset, int whence)
 	return ret
 
 def Lseek(fd, offset) Lseek(fd, offset, SEEK_SET)
+def lseek(fd, offset) lseek(fd, offset, SEEK_SET)
 
 Truncate(const char *path, off_t length)
 	int ret = truncate(path, length)
@@ -1645,3 +1646,5 @@ mode_t lstat_ft(const char *file_name)
 	struct stat buf
 	return Lstat(file_name, &buf) ? buf.st_mode & S_IFMT : 0
 
+def tell(fd) lseek(fd, 0, SEEK_CUR)
+def Tell(fd) Lseek(fd, 0, SEEK_CUR)

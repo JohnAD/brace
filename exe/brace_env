@@ -74,7 +74,7 @@ if [ -z "$BRACE_USE" ]; then
 	LDLIBS="$LDLIBS -lm"
 	LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
 	if [ -n "$MINGW" ]; then
-		BRACE_USE="mingw nongnu nonbsd nonlinux"
+		BRACE_USE="mingw gnu! bsd! linux! modern!"
 		BRACE_USE="$BRACE_USE io-select"
 		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
 		LDLIBS="$LDLIBS -lws2_32"
@@ -82,7 +82,7 @@ if [ -z "$BRACE_USE" ]; then
 	else
 #		LDLIBS_FANCY="$LDLIBS_FANCY -lz -lxcb -ldl -lXau -lXdmcp"
 #		  # XXX This is nonsense, shouldn't be needed, something wrong with my eee pc!
-		BRACE_USE="unix nonmingw"
+		BRACE_USE="unix mingw!"
 		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h -o -e /usr/pkg/include/X11/Xlib.h -o -e /usr/local/include/X11/Xlib.h ]; then
 			BRACE_USE="$BRACE_USE x"
 			LDLIBS_FANCY="$LDLIBS_FANCY -L/usr/X11R6/lib -lX11 -lXext"
@@ -96,12 +96,15 @@ if [ -z "$BRACE_USE" ]; then
 		*bsd*|sunos)   # TODO Mac OS
 			BRACE_USE="$BRACE_USE bsd"
 			case "$UNAME" in
-			*netbsd*) ;;
+			*netbsd*|*openbsd*)
+				BRACE_USE="$BRACE_USE modern!" ;;
+			# modern is about sendfile and tcp cork
+			# not sure about openbsd ? probably doesn't have them
 			*)
 				BRACE_USE="$BRACE_USE modern" ;;
 			esac ;;
 		*)
-			BRACE_USE="$BRACE_USE nonbsd" ;;
+			BRACE_USE="$BRACE_USE bsd!" ;;
 		esac
 		BRACE_USE="$BRACE_USE $UNAME"
 		echo "$UNAME"
@@ -121,13 +124,13 @@ if [ -z "$BRACE_USE" ]; then
 				# (sendfile / cork) entered Linux
 				BRACE_USE="$BRACE_USE io-epoll modern"
 			else
-				BRACE_USE="$BRACE_USE io-select"
+				BRACE_USE="$BRACE_USE io-select notmodern"
 			fi
 		else
-			BRACE_USE="$BRACE_USE nonlinux io-select"
+			BRACE_USE="$BRACE_USE linux! io-select"
 		fi
 		if [ "$UNAME" != "linux" -a "$UNAME" != "hurd" -a "$UNAME" != "gnu" ]; then
-			BRACE_USE="$BRACE_USE nongnu"
+			BRACE_USE="$BRACE_USE gnu!"
 		fi
 	fi
 	BU=""

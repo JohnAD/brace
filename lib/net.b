@@ -214,4 +214,15 @@ int Getsockerr(int fd)
 	Getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &size)
 	return err
 
+ssize_t Sendfile(int out_fd, int in_fd, off_t *offset, size_t count)
+	ssize_t rv = sendfile(out_fd, in_fd, offset, count)
+	if rv == -1
+		if errno == EAGAIN
+			rv = 0
+		 else
+			failed("sendfile")
+	return rv
+
+def cork(fd) cork(fd, 1)
+
 # TODO add / use getaddrinfo
