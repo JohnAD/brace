@@ -1,3 +1,6 @@
+with errors / exceptions, require some handler or declaration of "throwing" because tachyon bails out sometimes with errors...?
+
+
 why does libb build process not work sometimes (partial/incremental build), dependencies don't cause everything to build in the right order
 
 
