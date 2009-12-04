@@ -35,7 +35,7 @@ install:
 	$(INSTALL) -d '$(libdir)'
 	find . -path '*/.*' -prune -or -type d -print | while read D; do \
 		$(INSTALL) -d '$(includedir)'/"$$D"; \
-		$(INSTALL) -v -m 644 "$$D"/*.bh '$(includedir)'/"$$D"; \
+		$(INSTALL) -m 644 "$$D"/*.bh '$(includedir)'/"$$D"; \
 	done
 	instlib() { dir="$$1"; \
 		if [ -n "$$WINDIR" ]; then \
@@ -51,7 +51,11 @@ install:
 	# $(INSTALL) -m 644 libb.a '$(libdir)'
 	# $(PLAIN_SONAME).$(VERS) $(DEBUG_SONAME).$(VERS) $(PLAIN_DEBUG_SONAME).$(VERS)
 
-	@if [ -z "$$WINDIR" ]; then echo you might need to run ldconfig; fi
+	@echo
+	@echo -n "The shared library $(SONAME) was installed.  "
+	@if [ -z "$$WINDIR" ]; then echo -n "You might need to run ldconfig or similar."; fi
+	@echo
+	@echo
 
 uninstall:
 	find . -depth -path '*/.*' -prune -or -type d -print >.tmp.1 ; \

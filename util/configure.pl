@@ -88,6 +88,7 @@ End
 		}
 		$perldir = $best;
 	}
+	$perldir =~ s{^(\Q$prefix\E|/usr/local|/usr/pkg|/usr)/}{$prefix/};
 	print <<End
 perldir:=$perldir
 End
