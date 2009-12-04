@@ -68,19 +68,30 @@ EXE=
 PATH:=\$(srcdir)${sep}exe:\$(srcdir)${sep}util:$path
 LD_LIBRARY_PATH:=\$(BRACE_SO):\$(LD_LIBRARY_PATH)
 End
+	my $perldir;
 	if ($prefix eq "/usr" && -d "/usr/share/perl5") {
-		print <<End
-perldir:=\$\(destdir\)\$\(prefix\)/share/perl5
-End
+		$perldir = '$(destdir)$(prefix)/share/perl5';
 	} elsif ($prefix eq "/usr/local" && -d "/usr/local/lib/site_perl") {
-		print <<End
-perldir:=\$\(destdir\)\$\(prefix\)/lib/site_perl
-End
+		$perldir = '$(destdir)$(prefix)/lib/site_perl';
 	} elsif (-e "/usr/lib/perl5/site_perl") {
-		print <<End
-perldir:=$\(destdir\)/usr/lib/perl5/site_perl
-End
+		$perldir = '$(destdir)/usr/lib/perl5/site_perl';
+	} else {
+		my $best = "/usr/local/lib/perl5/site_perl";
+		my $bestscore = -1;
+		my $bestlen = 0;
+		for (@INC) {
+			my $len = length($_);
+			my $score = /\b(local|pkg)\b/+/vendor/+(/site/ / 2);
+			if ($score > $bestscore || ($score == $bestscore && $len < $bestlen)) {
+				$best = $_; $bestscore = $score; $bestlen = $len
+			}
+		}
+		$perldir = $best;
 	}
+	$perldir =~ s{^(\Q$prefix\E|/usr/local|/usr/pkg|/usr)/}{$prefix/};
+	print <<End
+perldir:=$perldir
+End
 
 } else { # if ($mingw)
 	print <<End;
@@ -96,7 +107,7 @@ End
 	$perl = fix_path(`which perl.exe`);
 	$perlroot = dirname(dirname($perl));
 	if ($perlroot eq "/") { $perlroot = ""; }
-	my $perldir;
+	my $perldir = "$perlroot/lib/perl5/site_perl";
 	for my $guess ("$perlroot/lib/perl5/site_perl", "$perlroot/site/lib") {
 		$guess =~ s,/,$sep,g;
 		$perldir = $guess;

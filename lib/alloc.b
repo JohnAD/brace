@@ -18,6 +18,8 @@ def Strdup(s) alloc_type^^_Strdup(s)
 def Strndup(s, n) alloc_type^^_Strndup(s, n)
 
 void *normal_Malloc(size_t size)
+	if size == 0
+		size = 1
 	void *ptr = malloc(size)
 	if ptr == NULL
 		failed("malloc")
@@ -33,6 +35,9 @@ void *normal_Realloc(void *ptr, size_t size)
 
 def Calloc(nmemb) Calloc(nmemb, 1)
 void *normal_Calloc(size_t nmemb, size_t size)
+	if nmemb == 0 || size == 0
+		nmemb = 1
+		size = 1
 	void *ptr = calloc(nmemb, size)
 	if (ptr == NULL)
 		failed("calloc")
