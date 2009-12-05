@@ -48,7 +48,7 @@ int io_epoll_add(io_epoll *io, int fd, boolean et)
 	if epoll_ctl(io->epfd, EPOLL_CTL_ADD, fd, &ev) < 0
 		swarning("failed epoll_ctl ADD %d", fd)
 		return -1
-	io->count += 2
+#	io->count += 2
 	if fd >= io->max_fd_plus_1
 		io->max_fd_plus_1 = fd + 1
 		return 1
@@ -58,17 +58,21 @@ epoll_event io_epoll_rm__event = { 0, { .u64 = 0 } }
 io_epoll_rm(io_epoll *io, int fd)
 	if epoll_ctl(io->epfd, EPOLL_CTL_DEL, fd, &io_epoll_rm__event)
 		swarning("failed epoll_ctl DEL %d", fd)
-	io->count -= 2
+#	io->count -= 2
 
 def io_epoll_read(io, fd)
-	.
+	++io->count
+	warn("io_epoll_read: io->count = %d", io->count)
 
 def io_epoll_write(io, fd)
-	.
+	++io->count
+	warn("io_epoll_write: io->count = %d", io->count)
 
 def io_epoll_clr_read(io, fd)
-	.
+	--io->count
+	warn("io_epoll_clr_read: io->count = %d", io->count)
 
 def io_epoll_clr_write(io, fd)
-	.
+	--io->count
+	warn("io_epoll_clr_write: io->count = %d", io->count)
 

@@ -1,0 +1,140 @@
+#!/lang/b
+
+def debug warn
+def proc_debug warn
+
+Main()
+	sched_init()
+	if add_fd(0) || add_fd(1)
+		failed("add_fd")
+	nonblock(0)
+	nonblock(1)
+	new(r1, reader_, 0)
+	new(w1, writer_, 1)
+	new(r2, reader_, 1)
+	new(w2, writer_, 0)
+	new(c1, cat)
+	new(c2, cat)
+	sh(buffer, r1, c1)
+	sh(buffer, c1, w1)
+	sh(buffer, r2, c2)
+	sh(buffer, c2, w2)
+	init(&r1->out->d, buffer, block_size)
+	init(&w1->in->d, buffer, block_size)
+	init(&r2->out->d, buffer, block_size)
+	init(&w2->in->d, buffer, block_size)
+	start(r1)
+	start(w1)
+	start(r2)
+	start(w2)
+	start(c1)
+	start(c2)
+
+	count()
+
+	run()
+	debug("run done")
+
+	count()
+
+proc cat()
+	port buffer in
+	port buffer out
+	pull(in)
+	pull(out)
+
+	repeat
+		debug("cat 1 %zd", buflen(&in))
+		if !buflen(&in)
+			debug("cat: eof")
+			break
+		bufclr(&out)
+		buffer_cat_range(&out, buffer_range(&in))
+		push(in)
+		debug("cat 2")
+		push(out)
+		debug("cat 3")
+		pull(out)
+		debug("cat 4 %zd", buflen(&out))
+		if buflen(&out)
+			failed("cat")
+		bufclr(&in)
+		debug("cat 4")
+		pull(in)
+	debug("cat done")
+	count()
+
+count()
+	debug("  ios = %d", io_count(&sched->io))
+
+def reader__init(r, fd)
+	reader__init(r, fd, block_size)
+
+def reader__init(r, fd, block_size)
+#	reader__init(r, fd, block_size, 1)
+	reader__init(r, fd, block_size, 0)
+
+proc reader_(int fd, size_t block_size, boolean sel_first)
+	port buffer out
+	if sel_first
+		read(fd)
+	repeat
+		proc_debug("reader %010p - before pull", b__p)
+		pull(out)
+		proc_debug("reader %010p - after pull", b__p)
+		buffer_ensure_free(&out, block_size)
+		ssize_t want = buffer_get_free(&out)
+		ssize_t n = read(fd, bufend(&out), want)
+		if n < 0 && errno != EAGAIN
+			n = 0
+			if errno != ECONNRESET
+				swarning("reader %010p: error", b__p)
+		if n >= 0
+			if n == 0
+				# XXX not sure if a good idea to clear buffer on EOF!
+				proc_debug("reader %010p fd %d at EOF", b__p, fd)
+				buffer_clear(&out)
+				push(out)
+				done
+			 else
+				buffer_grow(&out, n)
+			push(out)
+		if n < want
+			proc_debug("reader %010p - calling read(%d)", b__p, fd)
+			read(fd)
+done	debug("reader done")
+	count()
+
+def writer__init(w, fd)
+	writer__init(w, fd, 0)
+
+proc writer_(int fd, boolean sel_first)
+	port buffer in
+	if sel_first
+		write(fd)
+	repeat
+		proc_debug("writer %010p - before pull", b__p)
+		pull(in)
+		proc_debug("writer %010p - after pull", b__p)
+		if !buflen(&in)
+			shutdown(fd, SHUT_WR)
+			done
+		while buflen(&in)
+			ssize_t want = buflen(&in)
+			ssize_t n = write(fd, buf0(&in), want)
+			if n < 0 && errno != EAGAIN
+#				if errno != EPIPE
+				swarning("writer %010p: error", b__p)
+				# signal the caller that we have an error,
+				# by the fact that the buffer is not empty.
+				done
+			if n >= 0
+				buffer_shift(&in, n)
+			if n < want
+				proc_debug("writer %010p - calling write(%d)", b__p, fd)
+				write(fd)
+		push(in)
+done	debug("writer done")
+	count()
+
+use b

@@ -147,7 +147,8 @@ cp_owner(Lstats *sf, cstr to)
 	if chown(to, sf->st_uid, sf->st_gid)
 		warn("chown %s %0d:%0d failed", to, sf->st_uid, sf->st_gid)
 
-def Socketpair(sv[2]) Socketpair(AF_UNIX, SOCK_STREAM, 0, sv)
+def Socketpair(sv) Socketpair(AF_UNIX, SOCK_STREAM, 0, sv)
+def socketpair(sv) socketpair(AF_UNIX, SOCK_STREAM, 0, sv)
 Socketpair(int d, int type, int protocol, int sv[2])
 	if socketpair(d, type, protocol, sv) != 0
 		failed("socketpair")

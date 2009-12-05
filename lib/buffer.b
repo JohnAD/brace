@@ -366,3 +366,8 @@ buffer_cat_int(buffer *b, int i)
 buffer_cat_long(buffer *b, long i)
 	# TODO speed this up?
 	Sprintf(b, "%ld", i)
+
+buffer_clone(buffer *out, buffer *in)   # XXX name?
+	out->start = in->start
+	out->end = in->end
+	out->space_end = in->space_end
