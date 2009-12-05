@@ -62,17 +62,17 @@ io_epoll_rm(io_epoll *io, int fd)
 
 def io_epoll_read(io, fd)
 	++io->count
-	warn("io_epoll_read: io->count = %d", io->count)
+#	warn("io_epoll_read: io->count = %d", io->count)
 
 def io_epoll_write(io, fd)
 	++io->count
-	warn("io_epoll_write: io->count = %d", io->count)
+#	warn("io_epoll_write: io->count = %d", io->count)
 
 def io_epoll_clr_read(io, fd)
 	--io->count
-	warn("io_epoll_clr_read: io->count = %d", io->count)
+#	warn("io_epoll_clr_read: io->count = %d", io->count)
 
 def io_epoll_clr_write(io, fd)
 	--io->count
-	warn("io_epoll_clr_write: io->count = %d", io->count)
+#	warn("io_epoll_clr_write: io->count = %d", io->count)
 

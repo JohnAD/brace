@@ -373,6 +373,7 @@ proc reader_try(int fd, size_t block_size, boolean sel_first)
 		if n < want
 			proc_debug("reader %010p - calling read(%d)", b__p, fd)
 			read(fd)
+	proc_debug("reader done")
 
 def writer_try_init(w, fd)
 	writer_try_init(w, fd, 0)
@@ -405,6 +406,7 @@ proc writer_try(int fd, boolean sel_first)
 				proc_debug("writer %010p - calling write(%d)", b__p, fd)
 				write(fd)
 		push(in)
+	proc_debug("writer done")
 
 # FIXME this connect_nb_tcp is a bit long for a macro!
 # maybe it should be a proc?
@@ -441,3 +443,30 @@ def bclose(out)
 	# Now, we have shut writing, and they have shut writing.
 	# The socket has not been closed as such yet, sock_free does that.
 
+def cat_init(c) cat_init(c, -1)
+
+proc cat(off_t len)
+	# cat could be parallelized more,
+	# by pushing in back before waiting for write
+	# and I could use bread / bwrite instead?
+	port buffer in
+	port buffer out
+	state ssize_t count
+
+	repeat
+		bread(in)
+		count = buflen(&in)
+		if len >= 0
+			count = imin(count, len)
+		bwrite(out, buf0(&in), b(&in, count))
+		bflush(out)
+		if buflen(&out)
+			swarning("cat %010p: error", b__p)
+			break
+		len -= count
+		buffer_shift(&in, count)   # TODO use circbuf? profile? 0cp?
+		if !count || !len
+			break
+
+debug_io_count()
+	debug("  ios = %d", io_count(&sched->io))

@@ -144,15 +144,15 @@ step()
 #				continue
 			if can_read
 				proc *p = *(proc **)vec_element(&sched->readers, fd)
-				clr_reader(fd)
 				proc_debug("fd %d ready to read - resuming %010p", fd, p)
 				if p
+					clr_reader(fd)
 					sched_resume(p)
 			if can_write
 				proc *p = *(proc **)vec_element(&sched->writers, fd)
-				clr_writer(fd)
 				proc_debug("fd %d ready to write - resuming %010p", fd, p)
 				if p
+					clr_writer(fd)
 					sched_resume(p)
 
 	if sched->q.size

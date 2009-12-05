@@ -38,7 +38,7 @@ Sockaddr_unix(struct sockaddr_un *sa, char *addr)
 	sa->sun_family = AF_UNIX
 	if strlen(addr) > UNIX_PATH_MAX-1
 		error("pathname to unix socket too long: %s", addr)
-	strcpy(addr, sa->sun_path)
+	strcpy(sa->sun_path, addr)
 
 def get_winsock_errno()
 	.

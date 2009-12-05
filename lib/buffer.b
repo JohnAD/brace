@@ -249,7 +249,8 @@ def buffer_is_empty(b) b->start == b->end
 buffer_shift(buffer *b, size_t shift)
 	char *start = buffer_get_start(b)
 	size_t size = buffer_get_size(b)
-	memmove(start, start+shift, size-shift)
+	if size != shift:
+		memmove(start, start+shift, size-shift)
 	buffer_grow(b, -shift)
 
 def buffer_shift(b)

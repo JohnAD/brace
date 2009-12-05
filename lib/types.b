@@ -61,3 +61,8 @@ typedef unsigned long long unsigned_long_long
 typedef void *ptr
 
 typedef unsigned int flag
+
+#typedef flt float
+#typedef dbl double
+#typedef ldb long_double
+#typedef boo boolean
