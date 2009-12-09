@@ -17,6 +17,7 @@ def debug warn
 def verbose warn
 
 boolean debugging = 0
+boolean abort_on_error = 0
 
 int exit__error = 125
 int exit__fault = 124
@@ -225,6 +226,9 @@ error_init()
 	global(error_handlers, vec, error_handler, 16)
 	global(errors, vec, err, 16)
 	global(extra_error_messages, hashtable, int_hash, int_eq, 101)
+	if *env("DEBUG")
+		abort_on_error = 1
+		# we save this because it might be reset, e.g. by tachyon
 
 def try(h)
 	try(h, thunk_null, 1)
@@ -290,7 +294,7 @@ def die_errors() die_errors(1)
 
 die_errors(int status)
 	warn_errors()
-	if *env("DEBUG")
+	if abort_on_error
 		abort()
 	Exit(status)
 

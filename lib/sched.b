@@ -26,7 +26,8 @@ struct scheduler
 	vec writers
 	num now
 	timeouts tos
-	hashtable children
+	hashtable child_wait
+	hashtable child_status
 	int step
 	int n_children
 	int got_sigchld
@@ -44,11 +45,12 @@ scheduler_init(scheduler *sched)
 	init(&sched->writers, vec, proc_p, 8)
 	sched->now = -1
 	init(&sched->tos, timeouts)
-	init(&sched->children, hashtable, int_hash, int_eq, sched__children_n_buckets)
+	init(&sched->child_wait, hashtable, int_hash, int_eq, sched__children_n_buckets)
+	init(&sched->child_status, hashtable, int_hash, int_eq, sched__children_n_buckets)
 	sched->step = 0
 	sched->n_children = 0
 	sched->got_sigchld = 0
-	set_child_handler(sigchld_handler)
+	set_child_handler(sched_sigchld_handler)
 
 def sched_free()
 	scheduler_free(sched)
@@ -117,7 +119,7 @@ step()
 	if got_sigchld
 		pid_t pid
 		while sched->n_children && (pid = Child_done())
-			proc *p = get(&sched->children, pid)
+			proc *p = get(&sched->child_wait, pid)
 			if p
 				clr_waitchild(pid)
 				waitchild__pid = pid
@@ -125,7 +127,10 @@ step()
 				proc_debug("child %d finished - resuming %010p", pid, p)
 				sched_resume(p)
 			 else
+				drop_child(pid, NULL)
 				warn("no waiter for child %d", pid)
+				put(&sched->child_status, pid, wait__status)
+				# TODO specify parent / waiter in advance.
 
 	# TODO test timeouts, modify to work with procs directly?
 	if !timeouts_empty(tos)
@@ -218,11 +223,11 @@ fd_has_error(int fd)
 
 def read(fd)
 		set_reader(fd, b__p)
-		wait
+		wait()
 
 def write(fd)
 		set_writer(fd, b__p)
-		wait
+		wait()
 
 set_reader(int fd, proc *p)
 	proc_debug("set_reader %d", fd)
@@ -250,24 +255,47 @@ pid_t waitchild__pid
 int waitchild__status
 
 def waitchild(pid, status)
+	status = sched_child_exited(pid)
+	if status == -1
 		set_waitchild(pid, b__p)
-		wait
+		wait()
 		status = waitchild__status
+
+int sched_child_exited(pid_t pid)
+	int status = (int)p2i(get(&sched->child_status, pid, -1))
+	if status != -1
+		del(&sched->child_status, pid)  # FIXME write getdel() hash op?
+	return status
 
 # waitchild(0) or waitchild(-1) do not work yet
 
 set_waitchild(pid_t pid, proc *p)
 	proc_debug("set_waitchild %d", pid, p)
-	assert(get(&sched->children, pid) == NULL, "set_waitchild: waiter already set")
-	put(&sched->children, pid, p)
+	assert(get(&sched->child_wait, pid) == NULL, "set_waitchild: waiter already set")
+	put(&sched->child_wait, pid, p)
 	++sched->n_children
+
+# FIXME this is dodgy, needs to be improved!
+
+have_child(pid_t pid, proc *p)
+	use(pid, p)
+	++sched->n_children
+
+drop_child(pid_t pid, proc *p)
+	use(pid, p)
+	--sched->n_children
+
+def have_child(pid)
+	have_child(pid, b__p)
+def drop_child(pid)
+	drop_child(pid, b__p)
 
 clr_waitchild(pid_t pid)
 	proc_debug("clr_waitchild %d", pid)
-	del(&sched->children, pid)
+	del(&sched->child_wait, pid)
 	--sched->n_children
 
-sigchld_handler(int signum)
+sched_sigchld_handler(int signum)
 	use(signum)
 	sched->got_sigchld = 1
 

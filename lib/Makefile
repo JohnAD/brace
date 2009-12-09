@@ -21,6 +21,8 @@ build: mingw/keysym.b
 	cp $(SONAME) $(PLAIN_SONAME)
 	cp $(SONAME) $(DEBUG_SONAME)
 	cp $(SONAME) $(PLAIN_DEBUG_SONAME)
+	# XXX the main lib is a debug lib (not stripped) at the moment
+	# XXX and the plain lib is not built, just a copy of the main lib too
 
 clean:
 	bk-clean

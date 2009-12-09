@@ -30,6 +30,8 @@ pid_t Waitpid(pid_t pid, int *status, int options)
 	repeat
 		r_pid = waitpid(pid, status, options)
 		if r_pid == -1
+#			if errno != ECHILD
+#				return 0
 			if errno != EINTR
 				failed("waitpid")
 		else

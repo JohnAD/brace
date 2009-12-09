@@ -61,7 +61,7 @@ push_f(shuttle *s, proc *p)
 
 def pull(s)
 	if pull_f(&This->s->sh, b__p)
-		wait
+		wait()
 
 def push(s)
 	push_f(&This->s->sh, b__p)

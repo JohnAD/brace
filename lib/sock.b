@@ -345,6 +345,9 @@ def reader_try_init(r, fd, block_size)
 #	reader_try_init(r, fd, block_size, 1)
 	reader_try_init(r, fd, block_size, 0)
 
+# TODO fix reader_try and reader_sel to shutdown(fd, SHUT_RD) in case of a
+# failed write (like SIGPIPE)
+
 proc reader_try(int fd, size_t block_size, boolean sel_first)
 	port buffer out
 	state boolean done = 0
@@ -434,6 +437,7 @@ def bshut(out)
 	pull(out)
 	push(out)
 
+# bclose appears to be broken :/
 def bclose(out)
 	bshut(out)
 	repeat
@@ -446,16 +450,16 @@ def bclose(out)
 def cat_init(c) cat_init(c, -1)
 
 proc cat(off_t len)
-	# cat could be parallelized more,
-	# by pushing in back before waiting for write
-	# and I could use bread / bwrite instead?
 	port buffer in
 	port buffer out
 	state ssize_t count
-
-	repeat
+#	warn("cat started: len = %d", len)
+	# TODO a "don't close" option?
+	while len
 		bread(in)
 		count = buflen(&in)
+		if !count
+			break
 		if len >= 0
 			count = imin(count, len)
 		bwrite(out, buf0(&in), b(&in, count))
@@ -465,8 +469,8 @@ proc cat(off_t len)
 			break
 		len -= count
 		buffer_shift(&in, count)   # TODO use circbuf? profile? 0cp?
-		if !count || !len
-			break
+#	warn("cat done")
+	bshut(out)
 
 debug_io_count()
 	debug("  ios = %d", io_count(&sched->io))

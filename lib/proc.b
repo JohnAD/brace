@@ -5,8 +5,8 @@ use error
 use io
 use util
 
-def proc_debug void
-#def proc_debug warn
+#def proc_debug void
+def proc_debug warn
 
 typedef int (*proc_func)(proc *p)
 struct proc
@@ -19,7 +19,11 @@ proc_init(proc *p, proc_func f)
 
 int resume(proc *p)
 	proc_debug("resuming: %010p at %d", p, p->pc)
-	int rv = (*p->f)(p)
+	int rv
+	if p->pc == -1
+		rv = 0
+	 else
+		rv = (*p->f)(p)
 	proc_debug("resuming %010p returned: %d", p, rv)
 	if rv
 		p->pc = rv
@@ -28,7 +32,7 @@ int resume(proc *p)
 # primitives:
 # start is defined in sched.b
 
-def stop
+def stop()
 	return 0
 
 def yield()
@@ -37,9 +41,9 @@ def yield()
 		b__pc_inc
 	b__pc	.
 
-def wait
+def wait()
 		b__p->pc = b__pc_next
-		stop
+		stop()
 		b__pc_inc
 	b__pc	.
 
@@ -50,7 +54,7 @@ def wait
 #		b__pc	.
 #		.
 ##		...
-##		stop
+##		stop()
 
 def b__d(foo) This->foo
 
@@ -73,3 +77,19 @@ Def proc(var_name, proc_name, a1, a2, a3)
 
 proc_dump(proc *p)
 	Fprintf(stderr, "%010p(%010p %d) ", p, p->f, p->pc)
+
+def halt(p)
+	((proc*)p)->pc = -1
+
+# XXX XXX FIXME this is a busy wait.  An on-stop hook would be better than this,
+# and would also allow parallel events.
+# XXX also many procs do not "stop" as such, they simply do not get scheduled
+# any more as there is no more data... fix this, so can free them etc?
+def await(p)
+	while ((proc*)p)->pc >= 0
+		yield()
+
+# FIXME when scheduler resumes a proc, pass an event to it to indicate why it
+# was awakened (e.g. port X, child process Y, proc Z, yielded, signal, ...)
+
+# TODO maybe, use numbers 0,1,2... for ports like unix does?  not yet

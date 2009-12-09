@@ -88,7 +88,7 @@ proc Filler(int width)
 				buffer_clear(b)
 			wr(out, NULL)
 			buffer_free(b)
-			stop
+			stop()
 
 		eif cstr_is_empty(word)
 			buffer_add_nul(b)

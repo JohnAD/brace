@@ -30,6 +30,7 @@ def del(ht, key) hashtable_delete(ht, i2p(key))
 def KV(ht, key) hashtable_lookup_or_die(ht, i2p(key))
 def kv(ht, key, init) hashtable_lookup_or_add_key(ht, i2p(key), i2p(init))
 def already(ht, key) hashtable_already(ht, i2p(key))
+# TODO: def getdel(ht, key, value)
 
 def set(ht, key, value)
 	set(ht, key, value, void)
