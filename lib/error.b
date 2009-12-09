@@ -18,6 +18,7 @@ def verbose warn
 
 boolean debugging = 0
 boolean abort_on_error = 0
+boolean die = 0
 
 int exit__error = 125
 int exit__fault = 124
@@ -296,6 +297,7 @@ die_errors(int status)
 	warn_errors()
 	if abort_on_error
 		abort()
+	die = 1
 	Exit(status)
 
 clear_errors()

@@ -1,6 +1,6 @@
 export types
 export stdarg.h
-use m process
+use m process error
 export sprite event
 export gr
 
@@ -412,7 +412,7 @@ colour colour_rand()
 gr_at_exit()
 #	warn("gr_at_exit done = %d", gr_done)
 	gr_exiting = 1
-	if !gr_done
+	if !die && !gr_done
 #		warn("Paint")
 		Paint()
 #		warn("event_loop")
