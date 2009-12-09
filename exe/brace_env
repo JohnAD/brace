@@ -93,7 +93,7 @@ if [ -z "$BRACE_USE" ]; then
 		LDLIBS="$LDLIBS -lcrypt"
 		UNAME=`uname | tr 'A-Z' 'a-z'`
 		case "$UNAME" in
-		*bsd*|sunos)   # TODO Mac OS
+		*bsd*|sunos|dragonfly|darwin)
 			BRACE_USE="$BRACE_USE bsd"
 			case "$UNAME" in
 			*netbsd*|*openbsd*)
