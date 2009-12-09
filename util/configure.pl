@@ -2,6 +2,7 @@
 use strict; use warnings;
 our ($version, $vers, $major, $minor, $build, $c, $install, $libdir2, $mingw, $msys, $pathsep, $perl, $perlroot, $prefix, $pwd, $realprefix, $sep);
 use File::Basename;
+use Cwd;
 $version = $ARGV[0];
 ($major, $minor) = $version =~ /^(\d+)\.(\d+\.\d+)/;
 defined $minor or die "invalid version number: $version, should be like 1.2.3[suffix] - is debian/changelog intact?\n";
@@ -24,7 +25,7 @@ for (@ARGV) {
 		$prefix = fix_path($1);
 	}
 }
-$pwd=fix_path($ENV{PWD});
+$pwd=fix_path(getcwd());
 $build="$pwd/.build";
 $realprefix=$prefix;
 $install = "install";
