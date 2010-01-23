@@ -13,8 +13,8 @@ Main()
 
 	Pr(int, n1, n2, n3, n4)
 
-#	space()
-	space(300, 300) ; zoom(0.5)
+	space()
+	zoom(0.5)
 
 	for(o, 0.0, 360, 0.5)
 		clear()
@@ -39,6 +39,6 @@ Main()
 				d = d * 0.9
 		handle_event_maybe(0)
 		Paint()
-#		Rsleep(0.01)
+		Rsleep(0.01)
 
 use b

@@ -27,3 +27,6 @@ port buffer in, out   # does not work
 
 
 macros should expand to single lines somehow, so that #line still works right
+
+
+X11 still does not work properly without MIT shm??

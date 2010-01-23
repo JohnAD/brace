@@ -1,0 +1,65 @@
+#!/lang/b
+use b
+
+int testing = 0
+
+int vt = 2
+
+Main():
+	int work = 60*60, rest = 5*60, now = 0
+	getargs(int, work, rest, now, testing)
+	space()
+	if !testing:
+		ignore_quit_key()
+
+	Say("Warning: brest is a rest enforcer!")
+	Say("It stops the ssh process during rest time.")
+	Say("Do not run this on your server!")
+
+	font("helvetica-medium", 80)
+	text_home()
+	gsayf("It's time to have a rest!")
+	gsayf("and do some exercise.")
+	gsayf("Obey the product of your")
+	gsayf("higher intention!")
+	window_hide()
+	Paint()
+	if now:
+		restnow
+	repeat:
+		window_hide()
+		brest_sleep(work, 0)
+restnow		window_show()
+		brest_sleep(rest, 1)
+
+brest_sleep(int delay, int rest_time):
+	time_t target = time() + delay
+	int ssh_running = 0
+	if rest_time && System("pidof sshd") == 0:
+		ssh_running = 1
+		Systemf("sudo /etc/init.d/ssh stop")
+	while time() < target:
+		sleep(1)
+		handle_events(0)
+		if rest_time:
+			Systemf("sudo chvt %d", vt)
+	if ssh_running:
+		Systemf("sudo /etc/init.d/ssh start")
+
+window_hide():
+	XUnmapWindow(display, window)
+	if fullscreen && fullscreen_grab_keyboard
+		XUngrabKeyboard(display, CurrentTime)
+	handle_events(0)
+
+window_show():
+	XMapRaised(display, window)
+	if fullscreen && fullscreen_grab_keyboard
+		XGrabKeyboard(display, window, True, GrabModeAsync, GrabModeAsync, CurrentTime)
+	handle_events(0)
+
+mind_quit_key():
+	key_handler(quit_key, KeyPress) = thunk(quit)
+
+ignore_quit_key():
+	key_handler(quit_key, KeyPress) = thunk()

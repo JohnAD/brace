@@ -1,3 +1,7 @@
+windows graphical programs without command prompt - compile with  -Wl,-subsystem,windows
+  http://www.allegro.cc/forums/print-thread/594895
+
+
 with errors / exceptions, require some handler or declaration of "throwing" because tachyon bails out sometimes with errors...?
 
 
