@@ -11,8 +11,8 @@ use main buffer util path env
 
 use error
 
-def debug warn
-#def debug void
+#def debug warn
+def debug void
 
 def verbose warn
 
