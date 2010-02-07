@@ -1,15 +1,16 @@
 #!/lang/b
 use b
 
-int testing = 0
+int strict = 1
+int kill_ssh = 0, keep_same_vt = 0
 
 int vt = 2
 
 Main():
 	int work = 60*60, rest = 5*60, now = 0
-	getargs(int, work, rest, now, testing)
+	getargs(int, work, rest, now, strict)
 	space()
-	if !testing:
+	if strict:
 		ignore_quit_key()
 
 	Say("Warning: brest is a rest enforcer!")
@@ -35,13 +36,13 @@ restnow		window_show()
 brest_sleep(int delay, int rest_time):
 	time_t target = time() + delay
 	int ssh_running = 0
-	if rest_time && System("pidof sshd") == 0:
+	if rest_time && kill_ssh && System("pidof sshd") == 0:
 		ssh_running = 1
 		Systemf("sudo /etc/init.d/ssh stop")
 	while time() < target:
 		sleep(1)
 		handle_events(0)
-		if rest_time:
+		if rest_time && keep_same_vt:
 			Systemf("sudo chvt %d", vt)
 	if ssh_running:
 		Systemf("sudo /etc/init.d/ssh start")
