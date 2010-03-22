@@ -70,11 +70,13 @@ PATH:=\$(srcdir)${sep}exe:\$(srcdir)${sep}util:$path
 LD_LIBRARY_PATH:=\$(BRACE_SO):\$(LD_LIBRARY_PATH)
 End
 	my $perldir;
-	if ($prefix eq "/usr" && -d "/usr/share/perl5") {
+	if ($prefix !~ m{^/usr(/.*)?$}) {
+		$perldir = '$(destdir)$(prefix)/perl';   # XXX ok on mingw?
+	} elsif ($prefix eq "/usr" && -d "/usr/share/perl5") {
 		$perldir = '$(destdir)$(prefix)/share/perl5';
 	} elsif ($prefix eq "/usr/local" && -d "/usr/local/lib/site_perl") {
 		$perldir = '$(destdir)$(prefix)/lib/site_perl';
-	} elsif (-e "/usr/lib/perl5/site_perl") {
+	} elsif (-e "/usr/lib/perl5/site_perl" && $prefix =~ m{^/usr(/.*)?$}) {
 		$perldir = '$(destdir)/usr/lib/perl5/site_perl';
 	} else {
 		my $best = "/usr/local/lib/perl5/site_perl";
@@ -83,11 +85,13 @@ End
 		for (@INC) {
 			my $len = length($_);
 			my $score = /\b(local|pkg)\b/+/vendor/+(/site/ / 2);
+			# TODO bonus if it's under $prefix!! or exclude if not?
 			if ($score > $bestscore || ($score == $bestscore && $len < $bestlen)) {
 				$best = $_; $bestscore = $score; $bestlen = $len
 			}
 		}
-		$perldir = $best;
+#		$perldir = $best;    # XXX was this
+		$perldir = '$(destdir)'.$best;  # XXX changed to this, ok?
 	}
 	$perldir =~ s{^(\Q$prefix\E|/usr/local|/usr/pkg|/usr)/}{$prefix/};
 	print <<End

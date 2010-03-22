@@ -44,13 +44,13 @@ clean:
 	rm -f .mk_foo_stamp .mk_bar_stamp .mk_baz_stamp brace brace.exe bx bx.exe bbx bbx.exe brace.o brace.bh bx.bh .brace.1 .brace.2 .brace.test.c .bx.1 .bx.2 .bx.bak .bx.b1 .bx.c .bx.log .bx.b.xbak b1 b1.exe bb1 bb1.exe .b1.bak .b1.c .b1.b.xbak .b1.b1 .b1.bak2
 
 install: build
-	$(INSTALL) -d '$(bindir)' "$(langdir)"
+	$(INSTALL) -d '$(bindir)' "$(langdir)" || true
 	$(INSTALL) `../util/lsx .` '$(bindir)'
 	$(INSTALL) -m 644 brace_env '$(bindir)'
 	lnorcp '$(bindir)/br' '$(bindir)/bbr'
 	lnorcp bx$(EXE) '$(bindir)/bbx$(EXE)'
-	lnorcp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE)
-	lnorcp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE)
+	lnorcp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || true
+	lnorcp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/bb$(EXE) || true
 	lnorcp b1$(EXE) '$(bindir)/bb1$(EXE)'
 
 uninstall:
