@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 
 def system_in 40
 def system_out 185

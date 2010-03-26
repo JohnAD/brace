@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 use b
 # LC_ALL=POSIX xterm -lc
 Main()

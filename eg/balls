@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 
 struct ball
 	num x, y, r

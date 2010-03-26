@@ -52,7 +52,7 @@ fi
 shift
 X="$1"
 
-if perl -ne 'exit !m{^#!/lang/bb$}' "$B"; then
+if perl -ne 'exit !m{^#!.*bbx?$}' "$B"; then
 	BRACE_LANGUAGE=C++
 fi
 

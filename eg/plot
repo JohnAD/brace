@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 
 Main()
 	num x0, x1, y0, y1, t0, t1, t, dt

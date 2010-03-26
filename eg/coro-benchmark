@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 use b
 
 # This program counts to 10000000 using five different methods:

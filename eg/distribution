@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 # this is a bar graph of Larry's "interesting distribution"
 use b
 Main()

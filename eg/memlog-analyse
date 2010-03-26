@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 use b
 size_t n_buckets = 10007
 Main()

@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 use main util io
 
 cstr version = "1.0"

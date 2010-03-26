@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 
 def debug void
 def proc_debug void

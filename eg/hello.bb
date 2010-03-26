@@ -1,4 +1,4 @@
-#!/lang/bb
+#!/usr/bin/env bxb
 
 main()
 	cout << "Hello, World!" << endl

@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 
 def usage()
 	usage("[n1 n2 n3 n4]  e.g. 10 5 5 10")

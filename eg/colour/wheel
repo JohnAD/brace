@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 
 Main()
 	int size = atoi(Getenv("size", "400"))

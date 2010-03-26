@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 use b
 
 cstr usage[] = { "x y r max_i rb_i w h", NULL }

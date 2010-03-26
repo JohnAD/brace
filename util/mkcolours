@@ -1,4 +1,4 @@
-#!/lang/b
+#!/usr/bin/env bx
 
 main()
 	new(colours_init, buffer)

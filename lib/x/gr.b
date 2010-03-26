@@ -277,7 +277,8 @@ xfont(const char *font_name)
 #	gnl()
 	# XXX does this have a memory leak?
 	if (_font = XLoadQueryFont(display, font_name)) == NULL
-		error("cannot load font %s", font_name)
+		warn("cannot load font %s", font_name)
+		return
 	gcvalues.font = _font->fid
 	XChangeGC(display, gc, GCFont, &gcvalues)
 #	gnl(-1)
