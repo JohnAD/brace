@@ -31,14 +31,14 @@ export LDFLAGS LDLIBS CFLAGS CC LD BRACE_LANGUAGE
 
 
 PROG=`basename "$0"`
-if [ "$PROG" = "br" -o "$1" = "-b" ]; then
+if [ "$PROG" = "br" -o "x$1" = "x-b" ]; then
 	BRACE_LANGUAGE=C
 	b=b
-elif [ "$PROG" = "bbr" -o "$1" = "-bb" ]; then
+elif [ "$PROG" = "bbr" -o "x$1" = "x-bb" ]; then
 	BRACE_LANGUAGE=C++
 	b=bb
 fi
-if [ "$1" = "-b" -o "$1" = "-bb" ]; then
+if [ "x$1" = "x-b" -o "x$1" = "x-bb" ]; then
 	shift
 fi
 if [ "$BRACE_LANGUAGE" = C ]; then b=b; else b=bb; fi

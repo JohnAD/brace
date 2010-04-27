@@ -1,4 +1,4 @@
-#!/usr/bin/env bxb
+#!/usr/bin/env bbx
 
 using namespace std
 

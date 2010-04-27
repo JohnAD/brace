@@ -122,14 +122,19 @@ if [ -z "$BRACE_USE" ]; then
 			major="${V%.*}"
 			minor="${V##*.}"
 #			echo "$major $minor"
-			if [ "$major" = 2.6 -a "$minor" -ge 20 -a "$ARM" = 0 ]; then
+			if [ "$major" = 2.6 -a "$minor" -ge 20 ]; then
 				# XXX allegedly this is included in 2.6.19,
 				# but it's not in knoppix, perhaps glibc was old
 				# not sure exactly when "modern"
 				# (sendfile / cork) entered Linux
-				BRACE_USE="$BRACE_USE io-epoll modern"
+				BRACE_USE="$BRACE_USE modern"
+				if [ "$ARM" = 0 ]; then
+					BRACE_USE="$BRACE_USE io-epoll"
+				else
+					BRACE_USE="$BRACE_USE io-select"
+				fi
 			else
-				BRACE_USE="$BRACE_USE io-select modern-"
+				BRACE_USE="$BRACE_USE modern- io-select"
 			fi
 		else
 			BRACE_USE="$BRACE_USE linux- io-select"

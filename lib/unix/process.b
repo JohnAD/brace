@@ -103,7 +103,7 @@ int mygid = -1
 def Getuid() (uid_t)(myuid != -1 ? myuid : (myuid = getuid()))
 def Getgid() (gid_t)(mygid != -1 ? mygid : (mygid = getgid()))
 
-int auth(user *u, cstr pass)
+int auth(User *u, cstr pass)
 	return auth_pw((passwd *)u, pass)
 int auth_pw(passwd *pw, cstr pass)
 	char *x = pw->pw_passwd
@@ -190,7 +190,7 @@ typedef struct passwd passwd
 typedef struct spwd spwd
 typedef struct group group
 
-struct user
+struct User
 	char *pw_name
 	char *pw_passwd
 	uid_t pw_uid
@@ -214,18 +214,18 @@ hashtable *load_users()
 	New(ht, hashtable, cstr_hash, cstr_eq, passwd_n_buckets)
 	passwd *p
 	while (p = Getpwent())
-		user *u = passwd_to_user(p)
+		User *u = passwd_to_user(p)
 		put(ht, u->pw_name, u)
 	spwd *s
 	while (s = Getspent())
-		user *u = get(ht, s->sp_namp)
+		User *u = get(ht, s->sp_namp)
 		if s->sp_pwdp
 			Free(u->pw_passwd)
 			u->pw_passwd = Strdup(s->sp_pwdp)
 	endspent()
 	group *g
 	while (g = Getgrent())
-		user *u = get(ht, g->gr_name)
+		User *u = get(ht, g->gr_name)
 		if !u  # XXX FIXME there must be a user for each group
 			continue
 		char **p = g->gr_mem
@@ -238,7 +238,7 @@ hashtable *load_users()
 		gid_t *mid = u->mids
 		p = g->gr_mem
 		while *p
-			user *m = get(ht, *p)
+			User *m = get(ht, *p)
 			++m->n_groups
 			*member++ = sym(*p)
 			*mid++ = m->pw_uid
@@ -246,16 +246,16 @@ hashtable *load_users()
 	endgrent()
 	setpwent()
 	while (p = Getpwent())
-		user *u = get(ht, p->pw_name)
+		User *u = get(ht, p->pw_name)
 		u->groups = Nalloc(char *, u->n_groups)
 		u->gids = Nalloc(gid_t, u->n_groups)
 		u->n_groups = 0
 	setpwent()
 	while (p = Getpwent())
-		user *u = get(ht, p->pw_name)
+		User *u = get(ht, p->pw_name)
 		int i = 0
 		for ; i<u->n_members ; ++i
-			user *m = get(ht, u->members[i])
+			User *m = get(ht, u->members[i])
 			m->groups[m->n_groups] = u->pw_name
 			m->gids[m->n_groups] = u->pw_gid
 			++m->n_groups
@@ -280,8 +280,8 @@ hashtable *load_users()
 #	Free(p->pw_shell)
 #	Free(p)
 
-user *passwd_to_user(passwd *p)
-	user *u = Talloc(user)
+User *passwd_to_user(passwd *p)
+	User *u = Talloc(User)
 	*(passwd*)u = *p
 	u->pw_name = sym(p->pw_name)
 	u->pw_passwd = Strdup(p->pw_passwd)
@@ -296,7 +296,7 @@ user *passwd_to_user(passwd *p)
 	u->mids = NULL
 	return u
 
-user_free(user *u)
+user_free(User *u)
 #	Free(u->pw_name)
 	Free(u->pw_passwd)
 	Free(u->pw_gecos)
