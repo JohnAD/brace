@@ -111,13 +111,18 @@ if [ -z "$BRACE_USE" ]; then
 		if [ "$UNAME" = "linux" ]; then
 			V=`uname -r`
 			V="${V%%-*}"
+			A=`arch`
+			case "$A" in
+			arm*) ARM=1;;
+			*) ARM=0;;
+			esac
 			while [ "${V#*.*.*.}" != "$V" ]; do
 				V="${V%.*}"
 			done
 			major="${V%.*}"
 			minor="${V##*.}"
 #			echo "$major $minor"
-			if [ "$major" = 2.6 -a "$minor" -ge 20 ]; then
+			if [ "$major" = 2.6 -a "$minor" -ge 20 -a "$ARM" = 0 ]; then
 				# XXX allegedly this is included in 2.6.19,
 				# but it's not in knoppix, perhaps glibc was old
 				# not sure exactly when "modern"
