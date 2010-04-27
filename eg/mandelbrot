@@ -4,7 +4,8 @@
 use b
 
 # CONFIGURE!
-typedef uint32_t pixel_type  # yuk, but the nested macros lose expansions
+#typedef uint32_t pixel_type  # yuk, but the nested macros lose expansions
+typedef uint16_t pixel_type  # yuk, but the nested macros lose expansions
 
 cstr usage[] = { "x y r max_i rb_i payg w h", NULL }
 
@@ -32,7 +33,7 @@ Main()
 	Pr(long, max_i, rb_i, payg, w, h)
 	bm_start()
 	rainbow_init()
-	assert(sizeof(pixel_type) == pixel_size, "defined pixel_type does not match pixel_size %d, please redefine it", pixel_size)
+	assert(sizeof(pixel_type) == pixel_size, "defined pixel_type does not match pixel_size %f, please redefine it", pixel_size)
 	with_pixel_type(mandelbrot)
 	Paint()
 	bm(program)

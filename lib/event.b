@@ -121,7 +121,7 @@ key_handlers_init()
 	key_down = Zalloc(char, gr_n_keys)
 	key_handlers_default()
 
-cstr quit_key = "Escape"
+cstr quit_key = "q"
 
 key_handlers_default()
 	key_handlers_ignore()
