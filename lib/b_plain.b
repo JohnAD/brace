@@ -7,7 +7,7 @@ export sched proc shuttle pipe timeout sock ccoro
 export types main util
 export darcs
 export html http
-export tsv
+export tsv csv
 export vio
 export hunk
 

@@ -285,7 +285,7 @@ def _for_hashtable(_key, _value, ht, _kv, ref, bucket, end, _next)
 		_value = (typeof(_value))_kv->v
 		_next = ref->next
 
-def hashtable_exists(ht, key) hashtable_lookup(kt, key)
+def hashtable_exists(ht, key) hashtable_lookup(ht, key)
 
 # this is redundant to hashtable_lookup I guess?
 # should def hashtable_exists hashtable_lookup  ?
