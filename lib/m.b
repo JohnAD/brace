@@ -112,7 +112,7 @@ def randi(min, max) randi(max-min)+min
 
 long Randi(long min, long max)
 	return random() / ((1U<<31) / (max - min)) + min
-def Randi(long max) Randi(0, max)
+def Randi(max) Randi(0, max)
 def Randi() randi()
 
 def RANDOM_TOP (1UL<<31)

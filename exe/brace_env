@@ -111,7 +111,7 @@ if [ -z "$BRACE_USE" ]; then
 		if [ "$UNAME" = "linux" ]; then
 			V=`uname -r`
 			V="${V%%-*}"
-			A=`arch`
+			A=`uname -m`
 			case "$A" in
 			arm*) ARM=1;;
 			*) ARM=0;;

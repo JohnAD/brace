@@ -37,7 +37,7 @@ install:
 	$(INSTALL) -d '$(libdir)'
 	find . -path '*/.*' -prune -or -type d -print | while read D; do \
 		$(INSTALL) -d '$(includedir)'/"$$D"; \
-		$(INSTALL) -m 644 "$$D"/*.bh '$(includedir)'/"$$D"; \
+		$(INSTALL) -m 644 "$$D"/*.bh "$$D"/*.b '$(includedir)'/"$$D"; \
 	done
 	instlib() { dir="$$1"; \
 		if [ -n "$$WINDIR" ]; then \
