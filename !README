@@ -41,7 +41,7 @@ Building and Installing
 
 Examples
 
-  WARNING - to exit full-screen example programs, press Escape!
+  WARNING - to exit full-screen example programs, press 'q' (was Escape).
 
   There are examples in eg/ and two slideshows about CZ with pretty demos:
     cd eg
