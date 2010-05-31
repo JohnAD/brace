@@ -216,8 +216,9 @@ hashtable *load_users()
 	while (p = Getpwent())
 		User *u = passwd_to_user(p)
 		put(ht, u->pw_name, u)
+	# shadow might not be present, so don't use Getspent
 	spwd *s
-	while (s = Getspent())
+	while (s = getspent())
 		User *u = get(ht, s->sp_namp)
 		if s->sp_pwdp
 			Free(u->pw_passwd)
