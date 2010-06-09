@@ -27,6 +27,7 @@ load_mimetypes_vio()
 		if ext++
 			*Strchr(type, '\t') = '\0'
 			type = sym(type)
+			lc(ext)
 			cstr *exts = split(ext, ' ')
 			forary_null(e, exts)
 				kv(mimetypes, sym(e), type)
@@ -36,8 +37,14 @@ load_mimetypes_vio()
 			Free(exts)
 
 cstr mimetype(cstr ext)
-	return get(mimetypes, ext, NULL)
+	char ext_lc[strlen(ext)+1]
+	strcpy(ext_lc, ext)
+	lc(ext_lc)
+	return get(mimetypes, ext_lc, NULL)
 
 cstr Mimetype(cstr ext)
-	return Get(mimetypes, ext)
+	cstr mt = mimetype(ext)
+	if !mt
+		failed("mimetype", ext)
+	return mt
 
