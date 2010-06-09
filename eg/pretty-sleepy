@@ -35,7 +35,7 @@ def pretty(pixel_type)
 				r2 += 2*x+1   # maintain r2 = x*x+y*y
 
 		Paint()
-		bm_ps("painted")
+#		bm_ps("painted")
 		csleep(4)
 
 def screen_trans fast

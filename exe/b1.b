@@ -45,7 +45,7 @@ Main()
 			start = end+1
 		++arg ; --args
 	 else
-		eachline(l)
+		Eachline(l)
 			putline(l)
 	Fclose(f)
 	cx(file)

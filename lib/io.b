@@ -451,7 +451,7 @@ vec *slurp_lines_0()
 	return slurp_lines(lines)
 
 vec *slurp_lines(vec *lines)
-	eachline(s)
+	Eachline(s)
 		vec_push(lines, Strdup(s))
 	return lines
 

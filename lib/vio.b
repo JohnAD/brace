@@ -495,7 +495,7 @@ vec *read_cstrs(cstr file)
 def read_file_to_vec(v, file, type, l, map)
 	New(v, vec, type, 200)
 	F_in(file)
-		eachline(l)
+		Eachline(l)
 			vec_push(v, map)
 	vec_squeeze(v)
 

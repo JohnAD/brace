@@ -46,7 +46,7 @@ clean:
 install: build
 	$(INSTALL) -d '$(bindir)' "$(langdir)" || true
 	$(INSTALL) `../util/lsx .` '$(bindir)'
-	$(INSTALL) -m 644 brace_env '$(bindir)'
+	$(INSTALL) -m 644 brace_env br_env_dev br_env_run '$(bindir)'
 	lnorcp '$(bindir)/br' '$(bindir)/bbr'
 	lnorcp bx$(EXE) '$(bindir)/bbx$(EXE)'
 	lnorcp "$(realprefix)"/bin/bx$(EXE) "$(langdir)"/b$(EXE) || true

@@ -58,7 +58,7 @@ ldef out()
 	buffer_clear(b)
 
 html_join()
-	eachline(l)
+	Eachline(l)
 		for(i, cstr_range(l))
 			which *i
 			'\r'	*i = '\n'
@@ -144,7 +144,7 @@ cstr html2text(cstr html)
 	new(decoded, buffer, 1024)
 
 	cb_io(b_split, b_text)
-		eachline(s)
+		Eachline(s)
 			if s[0] != '<'
 				if !hide
 					bufclr(decoded)

@@ -68,7 +68,7 @@ def for_env(k, v)
 
 load_config(cstr file)
 	F_in(file)
-		eachline(l)
+		Eachline(l)
 			if among(*l, '#', '\0')
 				continue
 			cstr key = Strdup(l)

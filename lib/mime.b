@@ -19,7 +19,7 @@ hashtable struct__mimetypes, *mimetypes = NULL
 load_mimetypes_vio()
 	mimetypes_init()
 	sym_init()
-	eachline(l)
+	Eachline(l)
 		if among(*l, '#', '\0')
 			continue
 		cstr type = l

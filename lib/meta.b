@@ -37,7 +37,7 @@ int read_struct(void *s, type__struct_union *t, opt_err unknown_key)
 	boolean more = 0
 	long i = 0
 	long n = t->n
-	eachline(l)
+	Eachline(l)
 		scan_kv(l, k, v)
 		if *k
 			if !v

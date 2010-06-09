@@ -381,13 +381,17 @@ def forary(e, a)
 		let(e, *my(i))
 		.
 
+def Eachline(v)
+	char *v
+	eachline(v)
+
 def eachline(v)
 	new(my(b), buffer)
 	repeat
 		buffer_clear(my(b))
 		if rl(my(b))
 			break
-		char *v = buffer_get_start(my(b))
+		v = buffer_get_start(my(b))
 
 # can't do this because of recursion; need a way to map which is non-recursive
 #def ln log
@@ -504,7 +508,7 @@ def format_add_nl(format1, format)
 def readtsv(v, stream)
 	new(v, vec, cstr)
 	char *my(null) = NULL
-	eachline(my(l), md)
+	Eachline(my(l))
 		vec_clear(v)
 		repeat
 			vec_push(v, my(l))
