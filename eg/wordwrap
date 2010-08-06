@@ -97,7 +97,7 @@ proc Filler(int width)
 
 		else
 			int len = strlen(word)
-			if buffer_get_size(b) && (int)buffer_get_size(b) + len > width
+			if buffer_get_size(b) && (int)buffer_get_size(b) + len >= width
 				buffer_add_nul(b)
 				wr(out, strdup(buffer_get_start(b)))
 				buffer_clear(b)

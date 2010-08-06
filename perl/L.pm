@@ -11,6 +11,7 @@ our @EXPORT = qw(slurp belch prod p x touch odds evens escape_tsv unescape_tsv
 	needargs op shuffle cp
 	uniqo
 	);
+our @EXPORT_OK = qw(In And Or Sub);
 #	sql_connect sql_dbh sql_command sql_query sql_query_hash sql_multi_query sql_multi_query_headers sql_multi_query_hash
 use IO::File;
 use IO::String;
