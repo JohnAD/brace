@@ -15,6 +15,8 @@ use gr
 
 typedef int gr__x_error_handler(Display *, XErrorEvent *)
 
+def X_ShmAttach 1   # this constant is missing in Ubuntu 10.04
+
 Window root_window
 Window window = 0
 Visual *visual
