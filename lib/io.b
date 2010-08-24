@@ -406,7 +406,7 @@ Closedir(DIR *dir)
 	if closedir(dir) != 0
 		failed("closedir")
 
-def Ls-a(name) Ls(name, 1)
+def Ls_a(name) Ls(name, 1)
 def Ls(name) Ls(name, 0)
 vec *Ls(const char *name, int all)
 	vec *v = ls(name, all)

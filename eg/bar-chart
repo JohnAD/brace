@@ -14,7 +14,7 @@ Main()
 	for(i, 0, bars)
 		y[i] = 0
 
-	eachline(l)
+	Eachline(l)
 		int x = atoi(l)
 		if x < min
 			min = x

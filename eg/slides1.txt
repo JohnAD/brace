@@ -118,7 +118,7 @@ def max(m, a)
 - foo foo() foo(a) foo(a, b) etc
 - reliable inlining
 
-eachline(l)
+Eachline(l)
 	Say(*l)
 
 def trig_unit deg

@@ -2,7 +2,7 @@
 use b
 Main()
 	new(v, vec, num, 200)
-	eachline(l)
+	Eachline(l)
 		vec_push(v, (num)atof(l))
 
 	nl()

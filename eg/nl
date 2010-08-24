@@ -2,7 +2,7 @@
 
 Main()
 	long n = 1
-	eachline(l)
+	Eachline(l)
 		Sayf("%ld\t%s", n, l)
 		++n
 

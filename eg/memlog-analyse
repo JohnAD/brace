@@ -4,7 +4,7 @@ size_t n_buckets = 10007
 Main()
 	new(alloced, hashtable, cstr, n_buckets)
 	int n = 1
-	eachline(l)
+	Eachline(l)
 		if !(among(*l, 'A', 'F') || l[1] == '\t')
 			continue
 		let(words, split(l, '\t'))

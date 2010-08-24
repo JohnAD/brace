@@ -21,7 +21,7 @@ Main()
 	O = get_options(options)
 	boolean follow = opt("follow") && 1
 	decl(s, struct stat)
-	eachline(f)
+	Eachline(f)
 		if follow ? Stat(f, s) : Lstat(f, s)
 			let(m, s->st_mode)
 			if S_ISREG(m)

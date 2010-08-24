@@ -1,7 +1,7 @@
 #!/usr/bin/env bx
 
 Main()
-	eachline(l)
+	Eachline(l)
 		let(target, Readlink(l))
 		Print(l)
 		tab()

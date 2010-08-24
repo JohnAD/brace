@@ -2,7 +2,7 @@
 
 Main()
 	let(hidden, cstr_eq(program, "hidden"))
-	eachline(l)
+	Eachline(l)
 		if xor(path_hidden(l), !hidden)
 			Say(l)
 

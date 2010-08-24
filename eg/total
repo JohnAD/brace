@@ -2,6 +2,6 @@
 use b
 Main()
 	long long int total = 0
-	eachline(l)
+	Eachline(l)
 		total += atoll(l)
 	Sayf("%lld", total)
