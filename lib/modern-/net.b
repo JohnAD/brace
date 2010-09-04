@@ -5,7 +5,7 @@ ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count)
 	int err = 0
 	char buf[block_size]
 	off_t totsent = 0
-	off_t old_offset
+	off_t old_offset = 0
 	if offset
 		old_offset = tell(in_fd)
 		if old_offset == -1
