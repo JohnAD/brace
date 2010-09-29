@@ -1,0 +1,7 @@
+#!/usr/bin/env bx
+use b
+Main()
+	long long int total = 0
+	Eachline(l)
+		total += atoll(l)
+	Sayf("%lld", total)

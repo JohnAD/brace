@@ -1,0 +1,40 @@
+#!/bin/sh
+exec perl -e '
+
+use strict; use warnings; use L;
+require "brace_parser.pl";
+
+use Brace::Map;
+use File::Copy;
+
+our @lines;
+
+my $fail = 0;
+for my $file (@ARGV) {
+	if (-e "$file~") {
+		warn "$file~ already exists\n";
+		$fail = 1;
+	}
+}
+if ($fail) { die "please move all the *~ files!\n"; }
+
+my ($map, $globby) = read_map(\*STDIN);
+
+for my $file (@ARGV) {
+	chomp $file;
+	print STDERR $file, " "x(16-length($file));
+
+	@lines = ();
+	read_lines($file);
+	if (my $n = brace_map_hash($map, $globby)) {
+		print STDERR " $n";
+		copy($file, "$file~") or
+			die "cp failed\n";
+		print STDERR " $file~";
+		output_lines($file);
+#		print STDERR " $file\n";
+	} else {
+		print STDERR "=\n";
+	}
+}
+' "$@"

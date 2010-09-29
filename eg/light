@@ -1,0 +1,6 @@
+#!/usr/bin/env bx
+
+Main()
+	paper()
+
+use b

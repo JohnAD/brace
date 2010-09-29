@@ -1,0 +1,278 @@
+#!/usr/bin/env bx
+use b
+
+num margins = 40
+int font_ref = 200
+num effect_duration = 1
+boolean step_by_step = 1
+boolean effects = 1
+num delay = 0, delay_demo = 0, delay_page = 0
+cstr demos_dir = "."
+boolean loop = 0
+boolean smooth = 1
+int smooth_steps = 30
+int smooth_dur = 0.50
+def smooth_delay smooth_dur / smooth_steps
+num x_expose_delay = 0.2
+
+num old_y, old_font_size, old_height
+boolean start_of_page = 1
+
+int page = 0
+
+def usage()
+	usage("slides_file [start_page]")
+
+Main():
+	Atexit(kill_demo_child)
+	paint_handle_events = 0
+
+	int start_page = 0
+
+	if *Getenv("quick")
+		step_by_step = 0
+	if *Getenv("nofx")
+		effects = 0
+	if *Getenv("nosmooth")
+		smooth = 0
+	demos_dir = Getenv("demos", demos_dir)
+	delay = atof(Getenv("delay", "0"))
+	delay_demo = atof(Getenv("delay_demo", "0"))
+	delay_page = atof(Getenv("delay_page", "0"))
+	eachp(d, delay_demo, delay_page, delay)
+		if !*d
+			*d = delay ? delay * 4 : time_forever
+	if *Getenv("loop")
+		loop = 0
+
+	args(cstr, slides_file)
+	getargs(int, start_page)
+
+	dirbasename(slides_file, dir, base)
+	Chdir(dir)
+	slides_file = base
+
+	space()
+#	space(800, 600)
+	gprint_anchor(-1, 1)
+	csleep(smooth_delay)
+
+	new(lines, vec, cstr, 16)
+
+	repeat
+		vec_clear(lines)
+		tofree_block()
+			F_in(slides_file):
+				warn("%d", page)
+				show_slides(lines, start_page)
+		if !loop
+			break
+	gr_done = 1
+
+show_slides(vec *lines, int start_page)
+	Eachline(l):
+		boolean show = page >= start_page
+		boolean end_of_page = *l == ''
+
+		if *l == '!'
+			if show
+				run_demo(l+1)
+		 eif *l == '<'
+			F_in(tofree(format("%s/%s", demos_dir, l+1)))
+				show_slides(lines, start_page)
+		 else
+		 	if !end_of_page
+				vec_push(lines, Strdup(l))
+
+			if show
+				if end_of_page
+					if !step_by_step
+						show_slide(lines)
+					gr_do_delay(delay_page)
+					if effects
+						effect()
+				 eif (step_by_step && *l)
+					show_slide(lines)
+					gr_do_delay(delay)
+
+			if end_of_page
+				++page
+				warn("%d", page)
+				vec_clear(lines)
+				start_of_page = 1
+
+int paint_sync_count = 0
+
+show_slide(vec *lines):
+	int n = veclen(lines)
+	font("helvetica-medium", font_ref)
+	num height = font_height()
+	num max_width = 0
+	for_vec(l, lines, cstr):
+		max_width = nmax(max_width, text_width(*l))
+	num x_scale = (w - margins) / max_width
+	num y_scale = (h - margins) / (height * n)
+	num scale = nmin(x_scale, y_scale)
+	num font_size = font_ref * scale
+	height *= scale
+	
+	num y = height * n / 2
+
+	paint_sync_count = 0
+
+	if smooth && !start_of_page
+		for(i, 0.0, 1.0, 1.0/smooth_steps)
+			num y1 = blend(i, old_y, y)
+			num font_size1 = blend(i, old_font_size, font_size)
+			num height1 = blend(i, old_height, height)
+			draw_lines(lines, y1, font_size1, height1)
+			csleep(smooth_delay)
+
+	draw_lines(lines, y, font_size, height)
+
+	old_y = y
+	old_font_size = font_size
+	old_height = height
+
+	start_of_page = 0
+
+draw_lines(vec *lines, num y, num font_size, num height)
+	font("helvetica-medium", font_size)
+	clear()
+	white()
+	for_vec(l, lines, cstr):
+		move(-w_2 + margins/2, y)
+		gsayf(*l)
+		y -= height
+	Paint()
+
+effect():
+	with_pixel_type(effect)
+
+def effect(pixel_type):
+	num time = rtime()
+	which page % 4:
+	0	for int i=0; ; ++i:
+			pixel_type *px = pixel()
+			long x, y
+			for y=-h_2; y<h_2; ++y:
+				for x=-w_2; x<w_2; ++x:
+					if toss() && x>-w_2 && x<w_2-1 && y>-h_2+1 && y<h_2-1:
+						*px = px[toss()*2-1 + toss()*3*w-2*w]
+						if *px:
+							*px -= 0x0202
+					++px
+			if i % 10:
+				Paint()
+			effect_stop()
+	1	black()
+		for int i=0; ; ++i:
+			circle(randi(-w_2, w_2), randi(-h_2, h_2), randi(h_2))
+			if i % 10 == 0:
+				Paint()
+			if i % 100 == 0:
+				hsv(i/3000.0 * 360 * 2, Sin(180*i/3000.0)/2, 0)
+			effect_stop()
+	2	for int i=0; ; ++i:
+			pixel_type *px = pixel()
+			long x, y
+			colour c = hsv(i/100.0 * 360, 1-(i/100.0), 1-(i/100.0))
+			for y=-h_2; y<h_2; ++y:
+				for x=-w_2; x<w_2; ++x:
+					if *px
+						*px = c
+					++px
+			Paint()
+			effect_stop()
+	3	black()
+		for int i=0; ; ++i
+			hsv(i/100.0 * 360, 1-(i/100.0), 0)
+			circle_fill(randi(w)-w_2, randi(h)-h_2, randi(10, 100))
+			if i % 3 == 0
+				Paint()
+			effect_stop()
+
+pid_t demo_child = 0
+run_demo(cstr file)
+	demo_child = Fork()
+	if demo_child == 0
+		Close(3)
+		Execl(format("%s/%s", demos_dir, file), NULL)
+	gr_do_delay(delay_demo)
+	kill_demo_child()
+	Rsleep(x_expose_delay)
+#	handle_events()
+
+kill_demo_child:
+	if demo_child
+		int demo_child_ = demo_child
+		demo_child = 0
+		kill(demo_child_, SIGTERM)
+		Child_wait()
+
+def effect_stop():
+	if i % 10 && rtime() > time+effect_duration:
+		break
+
+# LIBB
+
+# LIBB already
+#
+#boolean gr_do_delay_done
+#gr_do_delay(num dt)
+#	gr_do_delay_done = 0
+#	thunk old_handler = key_handler_default
+#	key_handler_default = thunk(gr_do_delay_handler)
+#	if dt == time_forever
+#		while !gr_do_delay_done
+##			warn("gr_do_delay forever looping calling handle_events: veclen(gr_need_delay_callbacks) = %d", veclen(gr_need_delay_callbacks))
+#			int n = handle_events(1)
+##			warn("  %d", n)
+#	 else
+#		num t = rtime()
+#		num t1 = t + dt
+#		while t < t1 && !gr_do_delay_done
+#			if events_queued(0) || veclen(gr_need_delay_callbacks) || can_read(x11_fd, t1-t)
+##				warn("gr_do_delay %f looping calling handle_events", dt)
+#				handle_events(0)
+#			t = rtime()
+#	key_handler_default = old_handler
+#
+#void *gr_do_delay_handler(void *obj, void *a0, void *event)
+#	use(obj, a0)
+#	gr_event *e = event
+#	if e->type == KeyPress:
+#		gr_do_delay_done = 1
+#	return thunk_yes
+#
+#int handle_events(boolean wait_for_event)
+#	int n = gr_call_need_delay_callbacks()
+#	while !gr_done && handle_event_maybe(wait_for_event)
+#		++n
+#		wait_for_event = 0
+#	return n
+#
+#int events_queued(boolean wait_for_event)
+##	return XEventsQueued(display, QueuedAfterReading)
+##	warn("events_queued: wait_for_event = %d", wait_for_event)
+##	int n = XEventsQueued(display, wait_for_event||can_read(x11_fd) ? QueuedAfterReading : QueuedAlready)
+#	int n = XEventsQueued(display, QueuedAlready)
+##	warn("  n = %d", n)
+#	if !n:
+##		warn("  selecting...")
+#		num timeout = wait_for_event && !veclen(gr_need_delay_callbacks) ? time_forever : 0
+#		gr_flush()
+#		if can_read(x11_fd, timeout):
+##			warn("  reading...")
+#			n = XEventsQueued(display, QueuedAfterReading)
+##			warn("  n = %d", n)
+#	return n
+#		# is can_read necessary?
+#
+#boolean handle_event_maybe(boolean wait_for_event)
+#	int n = events_queued(wait_for_event)
+#	if n
+#		handle_event()
+#	 else
+#		gr_flush()
+#	return n

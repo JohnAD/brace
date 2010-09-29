@@ -1,0 +1,50 @@
+filenames:
+  foo.b   is a braced version of C
+  foo.bb  is a braced version of C++
+  foo.bh  is a braced header file, usually these are generated automatically
+		  do we need a  foo.bbh  to distinguish C and C++ headers?
+  if I ever learn objc, which would be a good idea, we can have foo.objb too!
+
+
+adds ; to end of lines
+adds { } around indented blocks
+refuses to accept code with spurious spaces at start or end of line
+blank lines must be indented to same depth as their block
+. by itself on a line is ignored, and serves to mark indent depth
+void return type and (void) arg are added to function declarations
+() are added around for, while, switch, if, else if expressions
+#include can be omitted, just write <foo.h> for example
+# becomes // for shell-style comments
+which keyword is switch with implicit breaks
+goto labels are in first column, no need for :
+a single indented word is a goto
+case labels are in same column as switch/which, no "case" or ":"
+numeric goto labels have "_" prepended automatically
+
+coroutines / threads, . in first column indicates a yield point
+
+add , at end of lines in enum, array/struct init, etc?
+can omit () in func declaration? func call?
+nested goto scopes?
+interleaved case scopes? (how to do it!)
+goto case?
+includes at current indent
+templates / macros
+change pointer (esp. func pointer) syntax to something sane
+include is just <...  not <...>?
+support for static before function decl & auto-void?
+implicit main() like python?  implicit exits(0)?
+until, unless?
+and, or?
+
+loop with condition in the middle?  not unprecedented
+- e.g. switch, if, else if, else
+
+char line[MAXLINE]
+int eof
+loop
+	readln(&line, &eof)
+until eof
+	writeln(&line)
+
+repeat is an infinite loop, use break to exit it

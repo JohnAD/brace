@@ -1,0 +1,38 @@
+#!/usr/bin/env bx
+use b
+
+Main()
+	int size
+	num s0, s1, v0, v1
+	
+	size = atoi(Getenv("size", "100"))
+
+	which args
+	0	s0 = s1 = 1
+		v0 = 0 ; v1 = 1
+	4	s0 = atof(arg[0]) ; s1 = atof(arg[1])
+		v0 = atof(arg[2]) ; v1 = atof(arg[3])
+
+	space(size, size)
+#	hsv_init()
+	
+	num r = min(w_2, h_2) - 10
+
+	for(x, -w_2, w_2)
+		for(y, -h_2, h_2)
+			num a = Atan2(x, y)
+			num i = hypot(x, y) / r
+			
+#			if !tween(a, -120, 120) && i<=1
+			
+			num s = i*(s1-s0) + s0
+			num v = i*(v1-v0) + v0
+			hsv(a, s, v)
+		
+			point(x, y)
+		Paint()
+
+Def trig_unit lun
+ # todo, make it angle_unit ?
+
+use lib_extra.b

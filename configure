@@ -1,0 +1,9 @@
+#!/bin/sh -e
+cd "`dirname "$0"`"
+<Make.conf.in perl util/configure.pl `util/vers` -- "$@" >.Make.conf
+< .Make.conf sed 's/:=/=/; s/[()]//g; s/=\(.*\)/="\1"/; s/^export$/set -a/' > .sh.conf
+for A in exe util eg; do
+	cd $A
+	chmod +x `../util/lsx`
+	cd ..
+done

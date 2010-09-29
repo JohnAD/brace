@@ -1,0 +1,2 @@
+export BR_DEBUG=1
+export OPTIMIZE=0

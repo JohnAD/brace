@@ -1,0 +1,8 @@
+#!/usr/bin/env bx
+use b
+Main()
+	buffer *i = slurp()
+	new(o, buffer, 128)
+	b_io(i, o)
+		base64_decode()
+	fwrite(buf0(o), 1, buflen(o), stdout)

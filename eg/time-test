@@ -1,0 +1,12 @@
+#!/usr/bin/env bx
+use b
+Main()
+	char buf[256]
+	struct tm tm
+	time_t t = time()
+	strftime(buf, 256, "%b %d %T", localtime(&t))
+	printf("%s\n", buf)
+	strptime("Sep 24 05:19:28", "%b %d %T", &tm)
+	tm.tm_year = 2009 - 1900
+	t = mktime(&tm)
+	printf("%ld\n", (long)t)

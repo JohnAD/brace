@@ -1,0 +1,35 @@
+# - if <foo.h> is in foo.b, should it also be in foo.bh ?  I think not.
+#   both are desirable: <foo.h> exports it; local <foo.h> doesn't
+# - MAYBE put:
+#   #ifdef __cplusplus
+#   extern "C" {
+#   #endif
+#   ...
+#   etc
+#   around headers if the first line is #!/lang/c or something...???
+#   NO! the C++ program can do it, I think that's neater
+# TODO
+# - get brace and libb good enough
+#   that this can be written shorter in brace (hah!)
+# - maybe put #ifndef foo_h ; #define foo_h ... #endif  around the file
+# - C++: skip method bodies defined in classes or structs ??
+
+# need an option to generate `local' headers, prototypes, so a program can have
+# its functions in some sensible order instead of bottom-up order - but what
+# about struct defs, will it hurt to define them twice?  it would be good to
+# have a 2-pass C compiler that ignored things it couldn't grok 1st time
+# around, but this might actually need more than 2 passes, silly me.  Need to
+# make a dependency DAG, sort the functions, structs, typedefs, etc. according
+# to it, prototype where necessary, and then feed it to the compiler.  The
+# programmer shouldn't have to worry about any of this.  Sounds like a job for
+# another day...  now that brace is getting to have a reasonably stable syntax
+# it would be feasible to write a complete parser for it.  I could simplify and
+# fix some weird parts of C to make the parsing simpler.  Parsing is supposed
+# to be easy, I should read Damian's Parse::RecDescent pod and code.
+# Maybe my csort program would be more useful to people if it operated on C code,
+# not brace code?  then I could use an existing C parser too.  Hmmm.
+# thinking of using the gcc bison parser, that would be a nightmare as gcc has
+# so many extensions and stuff over normal C.  I think I'll stick with brace code,
+# and brace will be as simple as possible, like python, so easy to process.  ok!
+
+

@@ -1,0 +1,11 @@
+#!/usr/bin/env bx
+
+Main()
+	Eachline(l)
+		let(target, Readlink(l))
+		Print(l)
+		tab()
+		Say(target)
+		Free(target)
+
+use b

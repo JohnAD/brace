@@ -1,0 +1,65 @@
+#!/bin/sh
+exec perl -e '
+use File::Find;
+use IO::File;
+
+use strict; use warnings;
+
+my $timestamp_file = "headers.timestamp";
+my $timestamp;
+if (-e $timestamp_file) {
+	$timestamp = mtime($timestamp_file);
+} else {
+	$timestamp = -1;
+}
+
+my @files = ();
+find(\&wanted, ".");
+sub wanted {
+	my $b = $File::Find::name;
+	$b =~ s,^\./,,;
+	push @files, $b;
+}
+for my $b (@files) {
+	if (($b =~ /\.b$/ || $b =~ /\.bb$/) && $b !~ m{(^|/)\.}) {
+		my $bh = $b;
+		$bh =~ s/$/h/; # .bh or .bbh
+		if (mtime($b) > $timestamp || ! -s $bh) {
+			my $is_c_plus_plus = $b =~ /\.bb$/ ? 1 : 0;
+			# TODO get brace_parser.pl and brace_header so can use as a library
+			print "$b -> $bh\n";
+			my $bq = quotemeta($b);
+			my $headers = `sh -c "< $bq brace_number_lines $bq | b2bh"`; # XXX will not cope with dodgy filenames  # win32
+			prod($bh, $headers);
+		}
+	}
+}
+
+# update timestamp
+IO::File->new($timestamp_file, "w")->print("not empty!");
+
+sub mtime {
+	my ($filename) = @_;
+	return (stat($filename))[9];
+}
+
+sub slurp {
+	my $f = IO::File->new($_[0], "r") or
+		die "cannot open file \"$_[0]\" to read: $!";
+	return join "", <$f>;
+}
+
+sub belch {
+	my $f = IO::File->new($_[0], "w") or
+		die "cannot open file \"$_[0]\" to write: $!";
+	print $f $_[1] or
+		die "cannot write to \"$_[0]\": $!";
+}
+
+sub prod {
+	# used to be called belch_if_changed
+	if (! -e $_[0] || slurp($_[0]) ne $_[1]) {
+		belch($_[0], $_[1]);
+	}
+}
+' "$@"

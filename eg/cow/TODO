@@ -1,0 +1,6 @@
+brace:
+error support:
+	must, guard, error returns,
+	auto-check functions for error return,
+	(try?)
+`shift' instead of raw varargs

@@ -1,0 +1,9 @@
+#!/usr/bin/env bx
+use b
+Main()
+	ignore_ctrl_c()
+	Say("hello")
+	Rsleep(5)
+	Say("world")
+	allow_ctrl_c()
+	Rsleep(5)

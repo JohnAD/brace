@@ -1,0 +1,8 @@
+#!/bin/sh
+[ -n "`pidof msgd 2>/dev/null`" ] || echo "WARNING: msgd is not running" >&2
+[ "$#" \> 1 ] || . fail "syntax: $0 message time-spec"
+MSG="$1"
+shift
+#echo "echo '$MSG' | wall ; alarm & msg '$MSG'" |
+echo "msg `shesc "$MSG"`" |
+at_date "$*"

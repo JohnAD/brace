@@ -1,0 +1,51 @@
+#!/usr/bin/env bx
+use b
+
+Main()
+	test_speed()
+#	test_interactive()
+
+test_speed()
+	new(ht, hashtable, cstr_hash, cstr_eq, 100003)
+	Eachline(l)
+		hashtable_add(ht, strdup(l), "bogus def")
+	cstr word
+	cstr definition
+	for_hashtable(word, definition, ht)
+		Sayf("%s %s", word, definition)
+
+test_interactive()
+#	new(ht, hashtable, cstr_hash, cstr_eq, 131)
+	new(ht, hashtable, cstr_hash, cstr_eq, 5)
+
+	hashtable_dump(ht)
+
+	hashtable_add(ht, strdup("cow"), strdup("moo"))
+	hashtable_add(ht, strdup("dog"), strdup("woof"))
+	hashtable_add(ht, strdup("sheep"), strdup("baa"))
+	hashtable_add(ht, strdup("cat"), strdup("meow"))
+	hashtable_add(ht, strdup("horse"), strdup("neigh"))
+
+	hashtable_dump(ht)
+
+	Eachline(l)
+		list *L = hashtable_lookup_ref(ht, l)
+#		list_dump(L)
+
+		if hashtable_ref_exists(L)
+			key_value *kv = hashtable_ref_key_value(L)
+			Sayf("%s", kv->v)
+			key_value KV = hashtable_ref_delete(L)
+			Free(KV.k)
+			Free(KV.v)
+		 else
+		 	cstr val = Input("value: ")
+			hashtable_ref_add(L, cstr_copy(l), val)
+
+		hashtable_dump(ht)
+
+#		key_value *kv = hashtable_lookup(ht, l)
+#		kv = kv
+#		cstr s = hashtable_value(ht, l)
+#		Say(s == NULL ? s : "hello")
+

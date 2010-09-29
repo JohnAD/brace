@@ -1,0 +1,9 @@
+#!/usr/bin/env bx
+
+Main()
+	long n = 1
+	Eachline(l)
+		Sayf("%ld\t%s", n, l)
+		++n
+
+use b

@@ -1,0 +1,126 @@
+#!/bin/sh -e
+#  brace compiler
+
+# some useful env variables you can set to 1:
+#  BX_DEBUG
+#  DEBUG
+#  BRACE_STANDALONE
+#  BR_FIX
+#  BRACE_LINE_NUMBERS
+#  BR_CLEAN
+#  BRACE_PLAIN
+#  OPTIMIZE    (set to desired -O level)
+
+fail() {
+	echo fatal: "$@" >&2
+	exit 1
+}
+
+log_fix_exit() {
+	cat "$LOG" >&2
+	if [ -n "$BR_FIX" -a -t 0 -a -t 1 ]; then
+		fix "$B"
+		echo '^C to stop, enter to continue compiling'
+		read line
+		exit 123
+	fi
+	exit 1
+}
+
+export LDFLAGS LDLIBS CFLAGS CC LD BRACE_LANGUAGE
+
+
+PROG=`basename "$0"`
+if [ "$PROG" = "br" -o "x$1" = "x-b" ]; then
+	BRACE_LANGUAGE=C
+	b=b
+elif [ "$PROG" = "bbr" -o "x$1" = "x-bb" ]; then
+	BRACE_LANGUAGE=C++
+	b=bb
+fi
+if [ "x$1" = "x-b" -o "x$1" = "x-bb" ]; then
+	shift
+fi
+if [ "$BRACE_LANGUAGE" = C ]; then b=b; else b=bb; fi
+
+[ -n "$1" ] || fail "syntax: ${b}r [-b|-bb] foo.$b [foo [cc/ld flags]]"
+
+B="$1"
+if [ "$MINGW" = 1 ]; then
+	B=`echo "$B" | perl -pe 's{^([a-z]):(\\\\|/)?}{/$1/}i; s{\\\\}{/}g;'`
+fi
+shift
+X="$1"
+
+if perl -ne 'exit !m{^#!.*bbx?$}' "$B"; then
+	BRACE_LANGUAGE=C++
+fi
+
+
+. brace_env
+
+
+dirname="`dirname "$B"`"
+basename="`basename "$B"`"
+if [ -n "$X" -a "$X" = "${X#-}" ]; then
+	shift
+	X="${X%$EXE}$EXE"
+else
+	if [ -x "$B" ]; then
+		X="$dirname/.$basename$EXE"
+	else
+		X="$B$EXE"
+		[ "$X" = "$B" ] &&
+			fail "please specify a name for the executable"
+	fi
+fi
+XBAK="$dirname/.$basename.xbak$EXE"
+B1="$dirname/.$basename.${b}1"
+C="$dirname/.$basename.$c"
+#O="$dirname/.$basename.o"
+BBAK="$dirname/.$basename.bak"
+BBAK2="$dirname/.$basename.bak2"
+LOG="$dirname/.$basename.log"
+rm -f "$B1" "$C" "$LOG"
+if [ -n "$BR_DEBUG" ]; then echo "BRACE_USE=$BRACE_USE"; fi
+if [ -n "$BR_DEBUG" ]; then echo \< "$B" brace_number_lines \| b2b1 \> "$B1"; fi
+<"$B" brace_number_lines "$B" | b2b1 2>"$LOG" >"$B1" || log_fix_exit
+if [ -n "$BR_DEBUG" ]; then echo \< "$B1" brace \> "$C"; fi
+<"$B1" brace 2>>"$LOG" >"$C" || log_fix_exit
+
+debug_run() {
+	if [ -n "$BR_DEBUG" ]; then echo "$@"; fi
+	eval "$@"
+}
+
+PID=$$
+if [ -z "$BRACE_STANDALONE" ]; then
+	( debug_run $CC $CINCLUDE $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $BRACE_L_SO $LDLIBS || touch .br_failed.$PID ) 2>&1
+else
+	( debug_run $CC $CFLAGS $LDFLAGS "$@" -o\"$X\" \"$C\" $LDLIBS || touch .br_failed.$PID ) 2>&1
+fi | perl -ne '
+	BEGIN { $|=1; } /Each undeclared identifier is reported only once/ || /for each function it appears in/ || /Info: resolving/ || /auto-importing has been activated/ || /This should work unless it involves constant data structures referencing/ || /in statically linked applications requires at runtime the shared libraries from the glibc version used for linking/ || /^\s*$/ || /xim_trans\.o/ || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }   # XXX fix "statically linked applications" nonsense properly?
+' >>"$LOG"
+
+if [ -e .br_failed.$PID ]; then
+	rm .br_failed.$PID
+	log_fix_exit
+elif [ -s "$LOG" ]; then
+	cat "$LOG"
+fi
+if [ \! -s "$LOG" ]; then rm "$LOG"; fi
+#if [ -z "$DEBUG" ]; then
+#	strip -s "$X"
+#fi
+if [ -n "$BR_CLEAN" ]; then
+	rm "$C" "$B1"
+else
+	rm -f "$XBAK" "$BBAK2"
+	cp -p "$X" "$XBAK"
+	if [ -e "$BBAK" ]; then
+		mv "$BBAK" "$BBAK2"
+	fi
+	cp -p "$B" "$BBAK"
+fi
+
+exit 0

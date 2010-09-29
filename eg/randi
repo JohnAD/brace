@@ -1,0 +1,7 @@
+#!/usr/bin/env bx
+use b
+Main()
+	repeat(10):
+		repeat(10):
+			pr(long, randi(0, 10))
+		nl()

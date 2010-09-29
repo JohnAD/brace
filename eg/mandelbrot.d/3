@@ -1,0 +1,146 @@
+#!/usr/bin/env bx
+# ./mandelbrot -.74364386269 .13182590271 .00000006763 16000 1000
+# ./mandelbrot -.743643135 .131825963 .0000054855 16000 400 5
+use b
+
+cstr usage[] = { "x y r max_i rb_i payg w h", NULL }
+
+def blank_colour 1
+
+def paint_as_you_go 1
+int payg = 5
+
+Main()
+	num outside = 4 # 16
+	num outside2 = outside*outside
+	num out_square = sqrt(outside2/2)
+	long i
+	num ox = -0.5, oy = 0, r = 1.5
+	long max_i = 1024, rb_i = 30, W=0, H=0
+	getargs(float, ox, oy, r)
+	getargs(long, max_i, rb_i, payg, W, H)
+	if args
+		usage()
+	pr(float, ox, oy, r)
+	Pr(long, max_i, rb_i, W, H)
+	if W
+		space(W, H, blank_colour)
+	 else
+		space(blank_colour)
+	bm_start()
+	rainbow_init()
+	with_pixel_type(mandelbrot)
+	Paint()
+	bm(program)
+
+
+typedef long pixel_type  # the nested macros lose expansions
+
+def mandelbrot(pixel_type)
+	int counter = 0
+	num d = 2*r/h, x0 = ox-d*w_2, y0 = oy+d*h_2
+	cmplx c0 = x0 + y0*I
+	smooth_init()
+	pointi2 seeds[(w+h-2)*2*5]
+	pointi2 p
+	int i=0
+	for(x, 0, w)
+		seeds[i].x[0] = x
+		seeds[i].x[1] = 0
+		seeds[i+1].x[0] = x
+		seeds[i+1].x[1] = h-1
+		i+=2
+	for(y, 1, h-1)
+		seeds[i].x[0] = 0
+		seeds[i].x[1] = y
+		seeds[i+1].x[0] = w-1
+		seeds[i+1].x[1] = y
+		i+=2
+
+	flood_4(seeds, 0, 0, w, h, blank, test, fill)
+	for_pixels(px)
+		if *px == blank_colour
+			*px = 0
+
+def flood_4(seeds, x0, y0, x1, y1, blank, test, fill)
+	int s = sizeof(seeds) / sizeof(*seeds)
+	int n = i
+	i = 0
+	while(i!=n)
+		pointi2 *p = seeds + i
+		pointi2 *new
+		++i
+		if i == s
+			i = 0
+		if blank(*p)
+			fill(*p)
+			if n == s
+				n = 0
+			new = seeds + n
+			*new = *p
+			boolean t
+			if p->x[0] > x0
+				new->x[0] = p->x[0] - 1
+				flood_test_push(p, new, blank, test, t, seeds)
+			if p->x[0] < x1-1
+				new->x[0] = p->x[0] + 1
+				flood_test_push(p, new, blank, test, t, seeds)
+			new->x[0] = p->x[0]
+			if p->x[1] > y0
+				new->x[1] = p->x[1] - 1
+				flood_test_push(p, new, blank, test, t, seeds)
+			if p->x[1] < y1-1
+				new->x[1] = p->x[1] + 1
+				flood_test_push(p, new, blank, test, t, seeds)
+
+def flood_test_push(p, new, blank, test, t, seeds)
+	if blank(*new)
+		test(t, *p, *new)
+		if t
+			++n
+			if n == s
+				n = 0
+			new = seeds + n
+			*new = *p
+
+def blank(p) *(pixel_type*)pixel(vid, p.x[0], p.x[1]) == blank_colour
+def test(t, a, b)
+	t = *(pixel_type*)pixel(vid, a.x[0], a.x[1]) != 0
+def fill(p)
+	pixel_type *px = (pixel_type *)pixel(vid, p.x[0], p.x[1])
+	cmplx c = c0 + d*p.x[0] - d*p.x[1]*I
+	cmplx W = c
+#	i=0
+	long it
+	for it=0; it < max_i; ++it
+		W = W*W + c
+#		if cabs(W) > outside
+#		if (creal(W) < -out_square || creal(W) > out_square || cimag(W) < -out_square || cimag(W) > out_square) && cabs2(W) > outside2
+#		if (fabs(creal(W)) > out_square || fabs(cimag(W)) > out_square) && cabs2(W) > outside2
+		num re = fabs(creal(W))
+		num im = fabs(cimag(W))
+		if (re > out_square || im > out_square) && (re*re + im*im) > outside2
+			break
+	smooth_i(it, W)
+	*px = it < max_i*smooth_n ? rb[it*359 / (rb_i*smooth_n) % 360] : black
+#	*px = i < max_i ? rb[i*359 / rb_i % 360] : black
+	if paint_as_you_go && payg && counter++ > (n-i+s) % s * payg
+		counter = 0
+		Paint()
+
+def smooth_init()
+	int smooth_n = 8 # 32
+	num smooth_fac = pow(2, 1.0/smooth_n)
+	num smooth_outside[smooth_n]
+	for(j, 0, smooth_n)
+		smooth_outside[j] = pow(outside, pow(smooth_fac, j))
+
+def smooth_i(i, W)
+	num a = cabs(W)
+	i = i * smooth_n + smooth_n-1
+	for(j, 1, smooth_n)
+		if a < smooth_outside[j]
+			break
+		--i
+
+def cabs2(w) creal(w*(creal(w)-cimag(w)*I))

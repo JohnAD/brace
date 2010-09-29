@@ -1,0 +1,13 @@
+#!/usr/bin/env bx
+
+cstr usage[] =
+	"base rel",
+	NULL
+
+Main()
+	args(cstr, base, dir)
+	let(path, path_relative_to(Strdup(base), dir))
+	path = path_tidy(path)
+	Say(path)
+
+use b

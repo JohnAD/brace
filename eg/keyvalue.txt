@@ -1,0 +1,18 @@
+name: Sam Watkins
+sex: m
+asawa: Nika Aguila
+yob: 1976
+weight: 74.5
+
+name: Nika Aguila
+sex: f
+asawa: Sam Watkins
+yob: 1986
+weight: 57.1
+
+weight: 11.5
+sex: m
+giraffe: Killy
+yob: 2007
+name: Sean Watkins
+

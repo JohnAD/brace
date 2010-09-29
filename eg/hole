@@ -1,0 +1,10 @@
+#!/usr/bin/env bx
+use b
+Main()
+	if args != 2
+		usage("file size")
+	cstr file = arg[0]
+	off_t size = atoll(arg[1])
+	fd = Open(file, O_WRONLY|O_CREAT|O_TRUNC)
+	Close(fd)
+	Truncate(file, size)

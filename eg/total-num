@@ -1,0 +1,7 @@
+#!/usr/bin/env bx
+use b
+Main()
+	long double total = 0
+	Eachline(l)
+		total += strtold(l, NULL)
+	Sayf("%Lf", total)
