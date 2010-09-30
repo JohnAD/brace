@@ -1655,10 +1655,13 @@ def Tmpnul(p, c)
 	char c
 	tmpnul(p, c)
 def tmpnul(p, c)
+	tmpnul(p, c, my(p0))
+def tmpnul(p, c, p0):
+	let(p0, p)
 	post(x)
-		*p = c
+		*p0 = c
 	pre(x)
-		c = *p ; *p = '\0'
+		c = *p0 ; *p0 = '\0'
 
 def bounce(x, vx, wall, cmp, vfac)
 	if x cmp wall
