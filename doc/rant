@@ -146,7 +146,7 @@ rid of the parens and , in function / macro invocations, and grouping
 expressions based on spacing, e.g. 1+2 * 3  ->  9
 
 
-#!/lang/b
+#!/usr/bin/env bx
 
 Main()
 	let(n, 1)
