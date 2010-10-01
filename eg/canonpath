@@ -1,0 +1,21 @@
+#!/usr/bin/env bx
+
+Main()
+	Eachline(path)
+		let(target, strdup(path))
+		readlinks(target)
+		Print(path)
+		tab()
+		Say(target)
+		Free(target)
+
+use b
+
+# see also p, which reads symlinks
+#for A; do
+#	case "$A" in
+#	/) echo / ;;
+#	.) pwd ;;
+#	*) echo $(canonpath "`dirname -- "$A"`")/"`basename -- "$A"`"
+#	esac
+#done

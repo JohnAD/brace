@@ -1,0 +1,2 @@
+#!/bin/sh
+cpp $CFLAGS | grep -v -e '^$' -e '^#' | perl -ne 'BEGIN { $_ = <STDIN>; chomp; print; } chomp; if (s/^\s+/ /) { print } else { print "\n$_" }' | unbrace

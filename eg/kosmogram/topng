@@ -1,0 +1,1 @@
+xwd -root | ~sam/hacks/xwdtopng >| kosmogram.png

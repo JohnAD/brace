@@ -1,0 +1,12 @@
+#!/bin/sh
+file="${1:-test.b}"
+if [ ! -e "$file" ]; then
+	cat <<'End' >"$file"
+#!/usr/bin/env bx
+use b
+Main()
+	
+End
+fi
+chmod +x "$file"
+exec vi + "$file"

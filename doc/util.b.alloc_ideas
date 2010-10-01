@@ -1,0 +1,54 @@
+# new fine-grained object / memory management primitives, developing:
+
+def box(var, type)                  # ? call box, not pointer
+	type *var
+
+                                    # have a "link" reference type for ref-counted objects
+
+def alloc_stack(var, type)          # ? call this temp()
+	type struct__^^var
+	var = &struct__^^var
+def temp(v, t) alloc_stack(v, t)
+
+def alloc_heap(var, type)           # ? call this shared() or message().  shared would be ref-counted
+	var = Talloc(type)
+def message(v, t) alloc_heap(v, t)
+
+# ? also shared
+
+#def alloc_global(var, type)        # ? call this global()
+#	# this will need language support	
+
+#def local_alloc(var, type)         # ? call this local()
+#	# this will need language support	
+
+# ? also, state() for coros / objects
+
+# not worth fussing about this right now
+
+
+Def renew(var, type)
+	stack(var, type)
+	init(var, type)
+Def renew(var, type, a1)
+	stack(var, type)
+	init(var, type, a1)
+Def renew(var, type, a1, a2)
+	stack(var, type)
+	init(var, type, a1, a2)
+Def renew(var, type, a1, a2, a3)
+	stack(var, type)
+	init(var, type, a1, a2, a3)
+
+Def Renew(var, type)
+	heap(var, type)
+	init(var, type)
+Def Renew(var, type, a1)
+	heap(var, type)
+	init(var, type, a1)
+Def Renew(var, type, a1, a2)
+	heap(var, type)
+	init(var, type, a1, a2)
+Def Renew(var, type, a1, a2, a3)
+	heap(var, type)
+	init(var, type, a1, a2, a3)

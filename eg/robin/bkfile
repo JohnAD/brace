@@ -1,0 +1,5 @@
+export CFLAGS:=$(CFLAGS) -I/usr/include/loudmouth-1.0 -I/usr/include/glib-2.0 -I /usr/lib/glib-2.0/include
+export LDFLAGS:=-lglib-2.0 -lloudmouth-1
+
+robin: robin.o jabber.o
+robin.o: jabber.bh

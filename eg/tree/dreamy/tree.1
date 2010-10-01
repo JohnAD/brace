@@ -1,0 +1,10 @@
+tree(int forks, real x, real y, real r, real a)
+
+	polar_to_rect(x, y, a, r, x1, y1)
+	branch(x, y, x1, y1, r/6)
+	
+	if forks == 0
+		leaf(x1, y1, a, r/6)
+	 else
+		tree(forks-1, x1, y1, r*0.7, a-34)
+		tree(forks-1, x1, y1, r*0.7, a+43)

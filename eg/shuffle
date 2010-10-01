@@ -1,0 +1,11 @@
+#!/usr/bin/env bx
+use b
+
+Main:
+	if args:
+		usage("< file")
+	let(lines, lines())
+	int n = lines->size
+	For(i, lines):
+		swap(*i, i[randi(n--)])
+		Say(*i)

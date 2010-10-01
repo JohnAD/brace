@@ -1,0 +1,73 @@
+#!/usr/bin/env bx
+use b
+
+# connect component labelling
+
+Main()
+	cstr image_file = "hs-2004-30-a-full_jpg.png"
+	int threshold = 30
+	getargs(cstr, image_file)
+	getargs(int, threshold)
+	sprite *image = sprite_load_png(image_file)
+	New(components, sprite, image->width, image->height)
+	sprite_clear(components, -1)
+
+	space()
+	autopaint(1)
+	decl(screen, sprite)
+
+	sprite_screen(screen)
+
+	sprite_put(screen, image, 0, 0)
+	gr_getc()
+
+	new(seeds, deq, pointi2, (image->width+image->height)*2)
+	pix_t *i0 = image->pixels
+	pix_t *c0 = components->pixels
+	pix_t *i = i0
+	pix_t *c = c0
+	for(y, 0, image->height)
+		for(x, 0, image->width)
+			if ccl_blank_code(*c)
+#				int region = i - image->pixels
+				int region = qrand()
+				pointi2 p = {{ x, y }}
+				deq_push(seeds, p)
+				flood_4(seeds, 0, 0, image->width, image->height, ccl_blank, ccl_test, ccl_fill)
+			++i ; ++c
+
+	warn("done")
+
+	repeat
+		sprite_put(screen, components, 0, 0)
+		gr_getc()
+
+		sprite_put(screen, image, 0, 0)
+		gr_getc()
+
+# def flood_lines_4(v_seeds, h_seeds
+
+def ccl_ix(p) p.x[0] + p.x[1] * image->stride
+def ccl_c(p) c0[ccl_ix(p)]
+def ccl_i(p) i0[ccl_ix(p)]
+
+def ccl_blank(p) ccl_blank_code(ccl_c(p))
+def ccl_blank_code(code) code+1 == 0
+def ccl_test(t, a, b)
+	ccl_test(t, a, b, my(d))
+def ccl_test(t, a, b, d)
+	int d
+	pixdiff(d, ccl_i(a), ccl_i(b))
+	t = d <= threshold
+def ccl_fill(p)
+	ccl_c(p) = region
+
+def pixdiff(d, A, B)
+	pixdiff(d, A, B, my(a), my(b), my(rd), my(gd), my(bd))
+
+def pixdiff(d, A, B, a, b, rd, gd, bg)
+	int a = A, b = B
+	int rd = pix_r(a) - pix_r(b)
+	int gd = pix_g(a) - pix_g(b)
+	int bd = pix_b(a) - pix_b(b)
+	d = iabs(rd)+iabs(gd)+iabs(bd)

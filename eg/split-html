@@ -1,0 +1,8 @@
+#!/usr/bin/env bx
+use b
+
+Main()
+	html_split()
+
+# idea - functions that have access to env of caller "automatically" without
+# having to pass in params, create automatically for each macro YYY!

@@ -1,0 +1,6 @@
+#!/bin/sh -e
+cd
+cd brace 2>/dev/null || cd code/brace
+./configure
+make
+sudo make install

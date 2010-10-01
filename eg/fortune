@@ -1,0 +1,12 @@
+#!/usr/bin/env bx
+use b
+
+Main:
+	long n = 1
+	cstr choice = NULL
+	Eachline(l):
+		if randi(n++) == 0:
+			Free(choice)
+			choice = Strdup(l)
+	if choice:
+		Say(choice)

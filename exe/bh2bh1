@@ -1,0 +1,26 @@
+#!/bin/sh
+exec perl -e '
+
+use strict; use warnings; use L;
+
+my $which = program();
+my $funcname = $which;
+$which =~ s,^brace_,,;
+my $Which = $which;
+$Which =~ s/(^|_)(.)/uc($2)/ge;
+
+require "brace_parser.pl";
+
+eval "use Brace::$Which";
+die $@ if $@;
+
+our @lines;
+our $text;
+
+parse(\*STDIN);
+
+eval "$funcname(\@ARGV)";
+die $@ if $@;
+
+print $text;
+' "$@"

@@ -1,0 +1,7 @@
+latitude	ns
+longitude	ew
+spin	rot
+delta_latitude	dns
+delta_longitude	dew
+delta_spin	drot
+dfac_zoom	fzoom

@@ -1,0 +1,2 @@
+#!/bin/sh
+brace_files "$@" | tee /dev/stderr | xa cat | brace_tokens_uniq

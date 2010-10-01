@@ -1,0 +1,169 @@
+#!/usr/bin/env bbx
+
+using namespace std
+
+use stdio.h
+use map
+use vector
+use string
+use set
+use ctype.h
+use iostream
+
+use error
+use io
+use cstr
+use main
+
+const char *status = "/var/lib/dpkg/status"
+const char *archives= "/var/cache/apt/archives"
+const char *partial = "/var/cache/apt/archives/partial"
+
+set<string> archives_files, partial_files
+
+FILE *status_file
+
+buffer input_line
+
+bool act = 1
+
+Main()
+	if args > 0 && strcmp(arg[0], "-n") == 0
+		act = 0
+
+	status_file = Fopen(status, "r")
+	
+	archives_files = list_files(archives)
+	partial_files = list_files(partial)
+
+	buffer_init(&input_line, 1024)
+	repeat
+		package *b = read_package()
+
+		if b == NULL
+			break
+
+		map<string, string> &dict = b->dict
+
+		const char *version = dict["Version"].c_str()
+		const char *colon = strchr(version, ':')
+		if colon
+			version = colon + 1
+
+		if cstr_ends_with(dict["Status"].c_str(), " installed")
+			string prefix = dict["Package"] + "_" + version + "_"
+			check_archives(prefix, archives, archives_files)
+			check_archives(prefix, partial, partial_files)
+
+		delete b
+
+	buffer_free(&input_line)
+
+	return 0
+
+check_archives(string &prefix, const char *dir, set<string> &files)
+	const char *pre = prefix.c_str()
+	set<string>::const_iterator i = files.lower_bound(prefix), end = files.end()
+	for ; i != end && cstr_begins_with(i->c_str(), pre) ; ++i
+		string path = dir + ("/" + escape(*i))
+		cerr << "Del " << path << endl
+		if act
+			Remove(path.c_str())
+
+struct package
+	package() : dict(), order() {}
+	map<string, string> dict
+	vector<string> order
+
+package *read_package()
+	package *b = new package()
+	map<string, string> &dict = b->dict
+	vector<string> &order = b->order
+
+	string k, v
+
+	repeat
+		buffer_set_size(&input_line, 0)
+		if Freadline(&input_line, status_file) != 0
+			if order.size() != 0
+				error("missing newline at end of file")
+			return NULL
+		if buffer_get_size(&input_line) == 0
+			return b
+		char *l = input_line.start
+		if isspace(l[0])
+			if k.length()
+				k += "\n" ; k += l
+			else
+				error("continuing line before main line in database: %s", l)
+		else
+			char *colon = strchr(l, ':')
+			if colon == NULL || (colon[1] != ' ' && colon[1] != '\0')
+				error("bad syntax in database: %s", l)
+			*colon = '\0'
+			k = l
+			v = colon[1] == ' ' ? colon + 2 : ""
+			
+			if dict.find(k) != dict.end()
+				error("duplicate key in database: %s", l)
+			dict[k] = v
+			order.push_back(k)
+
+set<string> list_files(const char *path)
+	set<string> list
+	DIR *dir = Opendir(path)
+	repeat
+		dirent *e = Readdir(dir)
+		if e == NULL
+			break
+		list.insert(unescape(string(e->d_name)))
+	Closedir(dir)
+	return list
+
+string unescape(const string &from)
+	string to
+	const char *f = from.c_str()
+	repeat
+		const char *percent = strchr(f, '%')
+		if percent == NULL
+			to += f
+			break
+		else
+			to += string(f, percent)
+			if percent[1] == '\0' || percent[2] == '\0'
+				error("bad escaping")
+			to += (char)strtol(string(percent+1, percent+3).c_str(), NULL, 16)
+			f = percent + 3
+	return to
+
+string escape(const string &from)
+	string to
+	const char *f = from.c_str()
+	repeat
+		const char *colon = strchr(f, ':')
+		if colon == NULL
+			to += f
+			break
+		else
+			to += string(f, colon) + "%3a"
+			f = colon + 1
+	return to
+
+cstr cstr_begins_with(const char *s, const char *substr)
+	repeat
+		if *substr == '\0'
+			return (cstr)s
+		if *substr != *s
+			return NULL
+		++s ; ++substr
+
+int cstr_ends_with(const char *s, const char *substr)
+	size_t s_len = strlen(s)
+	size_t substr_len = strlen(substr)
+	if substr_len > s_len
+		return 0
+	const char *expect = s + s_len - substr_len
+	return cstr_eq(expect, substr)
+
+int cstr_eq(const char *s1, const char *s2)
+	return strcmp(s1, s2) == 0

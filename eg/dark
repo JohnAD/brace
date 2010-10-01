@@ -1,0 +1,6 @@
+#!/usr/bin/env bx
+
+Main()
+	space()
+
+use b

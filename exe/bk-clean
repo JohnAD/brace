@@ -1,0 +1,13 @@
+#!/bin/sh
+find . -type d -name .build >.tmp
+<.tmp xargs rm -rvf
+rm .tmp
+find . -type f \( -perm -u+x -o -perm -g+x -o -perm -o+x \) >.tmp
+<.tmp grep -v '[/\\]\.' >.tmp.1
+<.tmp.1 sed 's,.*/,&.,; s,^\./,,; s,.*,&\n&,; s,\([^/]\)\.[^/.]*$,\1,;' >.tmp.2
+<.tmp.2 xargs rm -rvf
+rm .tmp .tmp.1 .tmp.2
+find . -name '.*.b1' -o -name '.*.bb1' -o -name '.*.c' -o -name '.*.cc' -o -name '.*.log' -o -name '.*.exe' -o -name '.*.bak' -o -name '.*.bak2' -o -name '.*.xbak' -o -name '.*.lock' -o -name '.*.bh' >.tmp
+<.tmp xargs rm -rvf
+rm .tmp
+rm -vf bk.log bkfile.1 bkfile_cc headers.timestamp bk.failed

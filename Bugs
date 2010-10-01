@@ -1,0 +1,32 @@
+struct foo bar -> typedef foo bar foo bar!!!?
+
+
+tries to include files from cwd instead of directory where src is:
+  
+  $ cd brace/lib
+  $ ../eg/nl.b
+  could not find include file: ./b.bh
+  br compile failed...
+  $
+  
+  (fixed I think - it stills prefers files from currect directory compared to libraries, but that is ok I think)
+
+
+can't return a struct from a function, because it adds ';' on the end of the
+function!
+
+
+there is some bug when compiling brace, where a half-written bh header file can
+be left there to confuse subsequent makes
+
+
+TODO hack around "decl may not follow label or case" bogosity in C.
+
+
+port buffer in, out   # does not work
+
+
+macros should expand to single lines somehow, so that #line still works right
+
+
+X11 still does not work properly without MIT shm??

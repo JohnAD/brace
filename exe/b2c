@@ -1,0 +1,2 @@
+#!/bin/sh -e
+b2b1 | brace

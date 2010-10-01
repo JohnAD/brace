@@ -1,0 +1,2 @@
+sorry, brace is almost totally undocumented so far.  You'd be better off looking at the examples and generated header files or source code.  These are just my own notes.
+Sam

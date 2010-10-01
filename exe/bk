@@ -1,0 +1,106 @@
+#!/bin/sh -e
+
+# TODO remove .b files etc from .build if they are no-longer in the source dir
+# TODO use a gcc option -Werror to make warnings fatal ??
+
+
+. brace_env
+
+
+#BK_LIB=`readlink -f \`dirname "$0"\`/../include/bk`
+BK_LIB="`dirname "$0"`/../lib/bk"
+D="$PWD"
+export BK_LIB D
+
+
+#mkdir -p .build
+#find . -mindepth 1 -type d \! \( -name '.build' -or -path '*/.build/*' -or -name '_darcs' -or -path '*/_darcs/*' \) |
+#while read A; do
+#	mkdir -p .build/"$A"
+#done
+
+#find . -type f \( -name '*.b' -or -name '*.bb' -or \! -perm ++x \) \! \( -path '*/.build/*' -or -path '*/_darcs/*' \) |
+#while read A; do
+#	ln -f "$D/$A" .build/"$A"
+#done
+#
+#cd .build
+
+# remove empty files to cope with build errors . disabled because some files are meant to be empty
+# find . -type f -size 0 -print0 | xargs -0 rm -f
+
+if [ -z "$BRACE_HEADER_GUARD_PREFIX" ]; then
+	BRACE_HEADER_GUARD_PREFIX="BRACE_HEADER_GUARD_`basename "$D"`_"
+	export BRACE_HEADER_GUARD_PREFIX
+fi
+echo "BRACE_HEADER_GUARD_PREFIX=$BRACE_HEADER_GUARD_PREFIX" >&2
+
+export TARGET="$*"
+
+if [ "$TARGET" != clean ]; then
+	brace_update_headers
+fi
+
+brace_mk_cc >bkfile_cc
+
+# split the bkfile, so var decls come before include
+# FIXME this is a bit dodgy, e.g. won't work if we have
+# an assignment with a ': ' in it!
+<bkfile sed -n '/: /q; p' >bkfile.1
+#echo 'include $(BK_LIB)' >>bkfile.1
+cat "$BK_LIB" >>bkfile.1
+<bkfile sed -n '/: /,$p' >>bkfile.1
+echo 'include bkfile_cc' >>bkfile.1
+
+rm -f bk.failed
+
+#( make -f bkfile.1 $TARGET 2>&1 || touch bk.failed ) |
+#grep --line-buffered -ve 'Each undeclared identifier is reported only once' \
+#  -e 'for each function it appears in' |
+#sed -u 's,^[^.:]*\.\(c\|cc\):,.build/&,' |
+#tee bk.log
+
+if [ -z "$MAKE" ]; then
+	MAKE=make
+	which gmake >/dev/null && MAKE=gmake
+fi
+
+( $MAKE -f bkfile.1 $TARGET 2>&1 || touch bk.failed ) |
+perl -ne '
+	BEGIN { $|=1; }
+	/Each undeclared identifier is reported only once/ ||
+	/for each function it appears in/ ||
+	print
+	 # || do { s,(^[^.:]*\.(c|cc):),.build/$1,; print }
+' |
+tee bk.log
+
+[ -e bk.failed ] && {
+	rm -f bk.failed
+	echo >&2 bk: failed
+	exit 1
+}
+
+exit 0
+
+#find \( -type f -o -type l \) \( -perm ++x -o -name '*.so' -o -name '*.so.[0-9]*' -o -name '*.dll' \) |
+#while read A; do
+#	# find -perm ++x returns true for all symlinks :/
+#	if [ -x "$A" ]; then
+#		rm -f ../"$A"
+#	 	cp -a "$A" ../"$A"
+#	else
+#		case "$A" in
+#		*.so|*.so.[0-9]*)
+#		rm -f ../"$A"
+#		cp -a "$A" ../"$A" ;;
+#		esac
+#	fi
+#done
+#
+#if [ -n "$BK_HEADERS" ]; then
+#	find -type f \( -name '*.bh' -o -name '*.bbh' \) |
+#	while read A; do
+#		ln -f "$A" ../"$A"
+#	done
+#fi
