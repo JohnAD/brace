@@ -1,0 +1,331 @@
+windows graphical programs without command prompt - compile with  -Wl,-subsystem,windows
+  http://www.allegro.cc/forums/print-thread/594895
+
+
+with errors / exceptions, require some handler or declaration of "throwing" because tachyon bails out sometimes with errors...?
+
+
+why does libb build process not work sometimes (partial/incremental build), dependencies don't cause everything to build in the right order
+
+
+don't produce wonky switch stuff when there's a trailing tab on a line, give an error instead (maybe) ?
+
+
+decent "asm" syntax for brace
+
+
+initializer functions, call from main before all else, in order of dependency (?)
+
+
+brace_mk_cc is broken w.r.t circular deps, e.g. test_preprocessor.b, test_header.bh, test_header2.bh
+
+
+Use GNU build system?  (autoconf, automake, libtool)?
+
+preserve blank lines inside functions, etc
+
+Have a catalog of library functions and their header files and LDFLAGS,
+and if a function call is not met within the project, include / link the appropriate library;
+  so hi.b can be just:
+main()
+	printf("Hello World!\n")
+
+or
+
+main()
+	print("Hello World!")
+
+
+Then, support plaint-like function calls:
+
+main
+	print "Hello World!"
+
+Yay, this is really simple!
+Maybe also automatically collect statements from the top level and build a `main' from them...???
+or maybe not!
+
+
+foo ; stop
+  brace doesn't recognise a `stop' which is not the only thing on the line
+
+in C++, brace inserts a `void' before constructor definition (if it is outside class declaration)
+
+
+for dereffing function pointers, allow something like:
+
+a = sin
+printf("%f", a(pi/3));
+
+this will be good for dynamic linking.
+
+  like lua, in other words, easy to redefine functions, etc.
+
+  This is doable! (see sin.c); we can replace _all_ function calls foo(1, 2, 3)
+  with (*foo)(1, 2, 3).  Then brace's output will cease to be nice, however :(
+  Brace needs a proper parser.  Wouldn't be too hard, I think.
+  Brace also needs to be implemented sensibly in c++ (b++!) with strings and
+  pipelines, no more of this bullshit strlen, strcat stuff...
+
+
+
+Have different syntax for including a header for private use,
+and including a header where the functions included should be exported
+to someone who uses this file's header...  if that makes any sense...
+
+e.g. in io.c:
+
+<stdio.h>
+...
+
+
+if someone uses io.h, they don't get printf(...) for free.
+Perhaps they should.  We could write
+
+export <stdio.h>
+
+for ones that should be exported
+
+or
+
+static <stdio.h>
+
+for ones that shouldn't be exported
+
+the latter is more consistent with existing C
+
+The keyword `static' is very nondescript, actually it has 2 different meanings.
+Replace it with `local' for the file-scope declarative meaning.  I can do this now!
+
+Also, if a function is extern void foo(...) or static void foo(...),
+should be able to omit the `void' in brace, but can't at the moment.  Hmmm.  TODO l8r
+
+
+use `use foo.h' or `import foo.h' or `module foo.h' or something instead of `<foo.h>'
+
+# TODO `init' blocks for brace, like perl's BEGIN {}
+# these get amalgamated into a brace_init function, which is called from main
+# ???  what about libraries?  perhaps we could do this using a more general `hooks' mechanism?  I still need to learn how to program with hooks one day.
+#    perhaps could use make-like dependencies to implement hooks?
+#      declarative dependencies, before/after relationships between `events'
+# in this case, the pi_times_2 should really be evaluated at compile-time
+# C++ apparently does allow initializers to call functions, anyway
+
+
+different types of quoting, like Perl (but not quite so much), with rx in mind -
+   python's """ but with a single " and tab indented sounds good to me :)
+
+
+We can support importing functions from different namespaces with automatically
+generated `inline' functions or defines that remap the names.  We need a way to
+extract function prototypes from standard header files too - I suppose we should
+run them through the preprocessor first?
+
+
+Need to produce a table / dependency graph of functions, types, etc. instead of this headers files crap.
+
+
+namespaces, i.e. automatically add a prefix to each function name, variable name ???
+
+Have a file that defines the name-map for a project, can be mostly auto-generated.
+
+
+need a mk-real-clean that deletes the targets too.
+
+# maybe I really should use _ to match "anything"?
+# ... ...
+
+let enum symbols be local to that type, they should not interfere with other symbols (namespaces)
+
+port brace and libb to work on windoze, with the appropriate support tools
+
+use B instead of bb ?  yes?  no, windoze will barf on it cause of case sensitivity :/
+
+
+
+make libb comprehensive over unix syscalls and libc (stdc) and POSIX eventually :)  a BIG whopper humungo whammy of a job!
+
+
+
+New idea for standard in brace, based on English noun convention.
+
+A type or singleton (proper) starts with a capital letter.
+An instance of that type (improper) starts with a lower-case letter.
+
+So:
+
+  List  is the type of lists
+  list	might be a name for a list
+
+This is better than list_t link_t node_t and type_t anyway
+
+How about verbs / functions then?
+
+We should not use words that are ambiguous as to whether they are verbs or nouns!!!
+
+e.g. "list"
+
+rather, for each such ambiguity, we should use either as a verb or a noun _consistently_
+
+??
+
+Should functions be named after an action / opteration / function / process / relation,
+or after the result of that?
+
+
+Perhaps use ALL CAPS for functions / verbs like BASIC?!
+
+PRINT "Hello world"
+
+DRAW 1 2 3 4
+
+fred = SIN tan + a + b + c
+
+
+but what about if the verb itself is referenced by a variable, i.e. a function pointer?
+must use dereferencing for that?  but they are already all names.
+
+fred = sin
+a = fred(1)
+
+that makes sense.
+
+
+It's a convention to use capitals letters at the start for global unique things, like types,
+  e.g. Fried_Fish
+
+and lower-case for locals,
+  e.g. fried_fish
+
+
+If a type name is omited in a function prototype/declaration, we could attempt
+to guess it by capitalising, e.g.
+
+  print buf
+
+becomes
+
+  print  Buf buf
+or
+  print(Buf buf)
+
+
+???!
+
+
+typed macros should behave like functions w.r.t. types, e.g. convert types using "soft casting", e.g. isdigit((char)'a') on netbsd should not give warning
+
+
+
+pselect / epoll_pwait issues, self-pipe trick:
+
+	pselect is currently emulated with a user-space wrapper that has a race
+	condition.  (probably not any more)  For reliable (and more portable) sig- nal
+	trapping, use the self-pipe trick.  (Where a signal handler writes to a pipe
+	whose other end  is  read  by  the  main loop.)
+
+	Under  Linux,  select  may  report  a socket file descriptor as "ready for
+	reading", while nevertheless a subsequent read blocks. This could for example
+	happen when data has arrived but upon examination has wrong  checksum and  is
+	discarded.  There may be other circumstances.  Thus it may be safer to use
+	O_NONBLOCK on sockets that should not block.
+
+
+# like in English, use lower-case for types (and parameters?),
+# and title-case for proper things.. ?
+
+
+
+
+# LIBB TODO ------------------------------------------------------------------
+
+
+
+
+When assert is used in a library, we would need separate debug and normal libraries
+Perhaps do not call assert from libraries, only from macro wrappers?
+
+check out and maybe use parts of / get ideas from other libraries:
+	libapr0 - The Apache Portable Runtime
+	nspr / geckopr
+	glib / gtk
+	qt
+	boost (C++, www.boost.org)
+	...
+
+finish gr.b, based loosely on roses.b, rocks.b and graph.b
+rx.b for perl-compatible regular expressions (use libpcre)
+
+opt.b for command-line options (sane - canonical syntax, all command-line
+functions available from the API, like GetOpt::OO.pm was meant to be)
+
+a macro to wrap a lib call, check for an error value, and call failed if it was an error, i.e.
+
+	failif(pclose, (stream), != 0)
+
+	  ->
+
+	if pclose(stream) != 0
+		failed("pclose")
+	
+	(this is wrong in fact, pclose returns an meaningful int - exit status)
+	
+	
+	return failif(popen, (command, type), == NULL)
+
+	  ->
+	
+	FILE *rv = popen(command, type)
+	if rv == NULL
+		failed("popen")
+	return rv
+
+
+	Could make another macro for complete wrapper functions, in the simple
+	case.
+
+
+Functions which take a buffer as arg for output append to it.  Rename them, and
+make the normal functions overwrite (i.e. set b->size = 0 then call the other)
+
+
+Write a dirbasename function that changes the last / in a filename to a \0 and
+returns a pointer to the char after it; or if no /, returns NULL.  In the case
+of input "/foo", output would be ("", "foo") rather than ("/", "foo")
+unfortunately.  Unix convention for root is bad, it should be like Acorn's:
+$.foo.bar ; but then have to use another special character.  Could be "//foo/bar" like windows.  How about this mapping? :
+
+  unix	new
+  ----	---
+  /foo	./foo
+  ./foo	/foo
+  .	""  (empty string)
+  ./	/
+  /	.
+  ..	..
+
+foo/bar/../baz -> foo/bar/./baz
+
+  That would work better, with "" as the current directory - or could refer to
+  it as /.  Should always refer to a directory as foo/ to distinguish from a
+  file, and to allow virtual filesystems (e.g. to access inside archives like this:
+    foo.zip   (the file)
+    foo.zip/  (the top directory in the file)
+    foo.zip/item1
+    foo.zip/subdir/item2
+
+  Under unix, dirbasename can return a struct (tuple) of two char *, and the
+  const strings "." and "/" where necessary.
+
+important:  don't use foo_is_bar method names for boolean queries, use _q on end instead:
+	foo_bar_q ???
+
+because some boolean questions don't sound right with "is", e.g. hashtable_ref_exists
+
+idea: my
+
+#def my(a)
+#	set(my a, (a))
+
+
+for IO of lines / fields, allow to change delimiter chars (e.g. '\n', '\0' for find, '\r', etc - but not multi-byte \r\n!)

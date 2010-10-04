@@ -1,0 +1,5 @@
+#!/usr/bin/env bx
+use b
+Main()
+	eacharg(a)
+		cstr_dump(a)

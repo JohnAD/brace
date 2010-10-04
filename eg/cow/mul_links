@@ -1,0 +1,1 @@
+find "$@" -type f -print0 | xargs -0 stat -c $'%h\t%i\t%n' | perl -ne 'print unless /^1\t/ || m,\t(/usr(/local)?)?/s?bin/,' | sort -k2,2n -k3,3

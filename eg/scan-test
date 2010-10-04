@@ -1,0 +1,13 @@
+#!/usr/bin/env bx
+use b
+
+Main()
+	scan_space = ":" ; print_space = "\t"
+
+	F_in("/etc/passwd")
+		Eachline(l)
+			# root:x:0:0:root:/root:/bin/bash
+			Sc(cstr, l, user, crypt) ; Sc(int, l, uid, gid)
+			if tween(uid, 1000, 65000)
+				Sc(cstr, l, desc, home, shell)
+				pr(int, uid) ; Pr(cstr, user, desc)

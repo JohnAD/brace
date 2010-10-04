@@ -1,0 +1,10 @@
+#!/usr/bin/env bx
+
+Main()
+	space()
+	repeat
+		for(a, 0, 360)
+			clear(rainbow(a))
+			Paint()
+
+use b

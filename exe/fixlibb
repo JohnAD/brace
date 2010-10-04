@@ -1,0 +1,3 @@
+#!/bin/sh
+cd ~/libb
+vi -o ~/libbc/.all.c ~/libbc/libb.log

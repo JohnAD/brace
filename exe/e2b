@@ -1,0 +1,115 @@
+#!/bin/sh
+exec perl -e '
+
+# TODO finish it!
+# to test, e.g.
+#   b2b0 < brace.b | ./e2b | less
+
+# looking for more than one token together without space and with balanced brackets and not already bracketed
+
+use strict; use warnings;
+
+require "brace_parser.pl";
+
+our @lines;
+
+read_lines(\*STDIN);
+
+use Data::Dumper;
+
+for (@lines) {
+	chomp;
+	my $tokens = tokenize_ng($_);
+	$tokens = process_expr($tokens);
+	$_ = untokenize_ng_spaces($tokens)."\n";
+}
+
+output_lines();
+
+
+sub process_expr {
+	my ($tokens) = @_;
+	my $continue;
+	for (@$tokens) {
+		if (ref $_) {
+			$_ = process_expr($_);
+		}
+	}
+	do {
+		$continue = 0;
+		my $out = [];
+		while (@$tokens) {
+			my ($expr, $continue1);
+			($expr, $tokens, $continue1) = process_expr_1($tokens);
+			push @$out, @$expr;
+			$continue ||= $continue1;
+		}
+		$tokens = $out;
+	} while $continue;
+	return $tokens;
+}
+
+sub process_expr_1 {
+	my ($tokens) = @_;
+	my $continue = 0;
+	my $out = [];
+
+	while (@$tokens) {
+		my $t = shift @$tokens;
+		if (ref $t) {
+			push @$out, process_expr($t);
+		} elsif ($t =~ /^[]})({[]$/) {
+			push @$out, $t;
+		} elsif ($t =~ /^\s+$/) {
+			if ($t =~ /^ ( *)$/) {
+				if (length($1)) {
+					push @$out, $1;
+					$continue = 1;
+				}
+			} else {
+				push @$out, $t;
+			}
+		} else {
+			# a non-space token
+			my @collect;
+			my $c = 0;
+			while(1) {
+				if (!ref $t and $t =~ /^[])}]$/ || $t =~ /^\s+$/) {
+					unshift @$tokens, $t;
+					last;
+				}
+				push @collect, $t;
+				if (@$tokens == 0) { last }
+				$t = shift @$tokens;
+			}
+			if (@collect > 1) {
+				if (@$out && $$out[-1] =~ /^[({[]$/ && @$tokens && $$tokens[0] =~ /^[])}]$/) {
+					push @$out, @collect;
+				} else {
+					unshift @$tokens, ["(", @collect, ")"];
+				}
+			} else {
+				push @$out, @collect;
+			}
+		}
+	}
+
+	return $out, $tokens, $continue;
+}
+
+sub untokenize_ng_spaces {
+	my ($tokens) = @_;
+	my $text = "";
+	for (@$tokens) {
+		if ($text ne "") {
+			$text .= " ";
+		}
+		if (ref $_) {
+			$text .= untokenize_ng_spaces($_);
+		} else {
+			$text .= $_;
+		}
+	}
+	return $text;
+}
+' "$@"

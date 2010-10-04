@@ -1,0 +1,16 @@
+#!/bin/sh
+exec perl -e '
+
+use strict; use warnings; use L;
+
+require "brace_parser.pl";
+
+use MODULE;
+
+our $text;
+$text = slurp(\*STDIN);
+
+FUNCTION(\@ARGV);
+
+print $text;
+' "$@"

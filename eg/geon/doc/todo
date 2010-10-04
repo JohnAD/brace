@@ -1,0 +1,39 @@
+# TODO write an operator- for vec3
+# TODO use x[0] x[1] x[2] instead of x y z ?
+#   it would be good to have transparent unions / aliases within a struct
+#   can I get brace to do this?  8)
+
+# TODO rename these headers to:
+#   b/graphics.h
+#   b/math.h
+#   (and add b/time.h)
+#   Add a "b.h" (or just "b"?) that includes all the normal headers, for simplicity?
+
+# TODO give brace a nicer syntax for const and not-const reference args
+# (and const / non-const reference return types too I guess)
+
+# TODO get brace to predeclare all functions (and structs and classes) using brace_header or similar, not hard.
+#   1. declare all structs (no def though)
+#   2. declare all functions
+#   3. define all structs
+#   4. declare all variables ?
+#   5. define all functions
+
+# TODO why is my STL code so ugly?
+# TODO reimplement poly_angle3_to_poly_vec3 as a generic `map' function
+# but can't call it map due to STL calling their dicts `map'.  :(
+# maybe call it vector_map or something
+
+work out how to profile C / C++ code
+  - record number of function calls per function
+  - time how long each function takes in a separate program ???
+  - look for existing profiling programs
+
+
+
+center-on-land function (again)
+
+keyboard / mouse navigation
+
+
+use bzip2 to compress the data for transfer over internet ?

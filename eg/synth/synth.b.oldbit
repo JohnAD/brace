@@ -1,0 +1,17 @@
+	# TODO brace should add commas on end of initialiser lines!
+	sample s[] =
+		0.0,
+		-1.5,
+		0.5,
+		0.1,
+#	vector_from_array(v, s)
+	fit(S)
+	sound_print(S)
+	init(e, dsp_buffer, array_size(s))
+	dsp_encode(S, dsp_buffer_get_start(e))
+	dsp_buffer_print(e)
+
+	printf("%f\n", 440*5/4.0)
+	printf("%f\n", freq2pitch(440*5/4.0))
+	printf("%f\n", pitch2freq(4))
+	warning("start")

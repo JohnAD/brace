@@ -1,0 +1,214 @@
+# brace environment
+
+# some useful env variables you can set to 1:
+#  BX_DEBUG
+#  DEBUG
+#  BRACE_STANDALONE
+#  BR_FIX
+#  BRACE_LINE_NUMBERS
+#  BR_CLEAN
+#  BRACE_PLAIN
+#  OPTIMIZE    (set to desired -O level)
+
+export CFLAGS LDFLAGS LDLIBS LDLIBS_PLAIN CC BRACE_LANGUAGE BRACE_LIB BRACE_USE
+
+MINGW=
+EXE=
+if [ -n "$WINDIR" -o -n "$windir" ]; then
+	MINGW=1
+	EXE=.exe
+fi
+
+USER_CFLAGS="$CFLAGS" ; CFLAGS=""
+USER_LDFLAGS="$LDFLAGS" ; LDFLAGS=""
+USER_LDLIBS="$LDLIBS" ; LDLIBS=""
+
+CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS"  # WTF needs --shared??
+CFLAGS="$CFLAGS -I/usr/local/include"
+LDLIBS="$LDLIBS -L/usr/local/lib"
+
+# msys 'which' is a shell script which for some reason won't run from here :/
+# this should be a bit faster anyway
+which() {
+	# this unfortunately depends on the shell
+	A=`type "$@" 2>/dev/null || true`
+	B="${A%: not found}"
+	if [ "$A" != "$B" ]; then
+		A=""
+	fi
+	if [ -n "$A" ]; then
+		A="/${A#*/}"
+		echo "$A"
+	else
+		return 1
+	fi
+}
+
+BRACE_DIR=`which brace$EXE`
+BRACE_DIR=`dirname "$BRACE_DIR"`
+BRACE_DIR=`dirname "$BRACE_DIR"`
+if [ -z "$BRACE_SO" ]; then
+	BRACE_SO="$BRACE_DIR/lib"
+fi
+if [ -z "$BRACE_LIB" ]; then
+	BRACE_LIB="$BRACE_DIR/include"
+	if [ \! -d "$BRACE_LIB" ]; then
+		BRACE_LIB="$BRACE_SO"
+	fi
+fi
+if [ -z "$BRACE_STANDALONE" -a -z "$LIBB_BUILD" ]; then
+	LB="-lb"
+	if [ -n "$BRACE_PLAIN" ]; then
+		LB="${LB}_plain"
+	fi
+	if [ -n "$BRACE_DEBUG" ]; then
+		LB="${LB}_debug"
+	fi
+	LDLIBS="$LDLIBS $LB"
+	BRACE_L_SO="-L\"$BRACE_SO\""
+else
+	BRACE_L_SO=
+fi
+
+if [ -z "$BRACE_USE" ]; then
+	LDLIBS="$LDLIBS -lm"
+	LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
+	if [ -n "$MINGW" ]; then
+		BRACE_USE="mingw gnu- bsd- linux- modern-"
+		BRACE_USE="$BRACE_USE io-select"
+		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
+		LDLIBS="$LDLIBS -lws2_32"
+		LDLIBS_FANCY="$LDLIBS_FANCY -lopengl32 -lglu32 -lgdi32"
+	else
+#		LDLIBS_FANCY="$LDLIBS_FANCY -lz -lxcb -ldl -lXau -lXdmcp"
+#		  # XXX This is nonsense, shouldn't be needed, something wrong with my eee pc!
+		BRACE_USE="unix mingw-"
+		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h -o -e /usr/pkg/include/X11/Xlib.h -o -e /usr/local/include/X11/Xlib.h ]; then
+			BRACE_USE="$BRACE_USE x"
+			LDLIBS_FANCY="$LDLIBS_FANCY -L/usr/X11R6/lib -lX11 -lXext"
+			CFLAGS="$CFLAGS -I/usr/X11R6/include"
+		else
+			BRACE_USE="$BRACE_USE gr_dummy"  # XXX this is bogus
+		fi
+		LDLIBS="$LDLIBS -lcrypt"
+		UNAME=`uname | tr 'A-Z' 'a-z'`
+		case "$UNAME" in
+		*bsd*|sunos|dragonfly|darwin)
+			BRACE_USE="$BRACE_USE bsd"
+			case "$UNAME" in
+			*netbsd*|*openbsd*)
+				BRACE_USE="$BRACE_USE modern-" ;;
+			# modern is about sendfile and tcp cork
+			# not sure about openbsd ? probably doesn't have them
+			*)
+				BRACE_USE="$BRACE_USE modern" ;;
+			esac ;;
+		*)
+			BRACE_USE="$BRACE_USE bsd-" ;;
+		esac
+		BRACE_USE="$BRACE_USE $UNAME"
+#		echo "$UNAME"
+		if [ "$UNAME" = "linux" ]; then
+			V=`uname -r`
+			V="${V%%-*}"
+			A=`uname -m`
+			case "$A" in
+			arm*) ARM=1;;
+			*) ARM=0;;
+			esac
+			while [ "${V#*.*.*.}" != "$V" ]; do
+				V="${V%.*}"
+			done
+			major="${V%.*}"
+			minor="${V##*.}"
+#			echo "$major $minor"
+			if [ "$major" = 2.6 -a "$minor" -ge 20 ]; then
+				# XXX allegedly this is included in 2.6.19,
+				# but it's not in knoppix, perhaps glibc was old
+				# not sure exactly when "modern"
+				# (sendfile / cork) entered Linux
+				BRACE_USE="$BRACE_USE modern"
+				if [ "$ARM" = 0 ]; then
+					BRACE_USE="$BRACE_USE io-epoll"
+				else
+					BRACE_USE="$BRACE_USE io-select"
+				fi
+			else
+				BRACE_USE="$BRACE_USE modern- io-select"
+			fi
+		else
+			BRACE_USE="$BRACE_USE linux- io-select"
+		fi
+		if [ "$UNAME" != "linux" -a "$UNAME" != "hurd" -a "$UNAME" != "gnu" ]; then
+			BRACE_USE="$BRACE_USE gnu-"
+		fi
+	fi
+	BU=""
+	for A in $BRACE_USE; do
+		[ -e "$BRACE_LIB/$A" ] && BU="$BU $A"
+	done
+	BRACE_USE="${BU# }"
+fi
+
+if [ -z "$BRACE_LANGUAGE" ]; then BRACE_LANGUAGE=C; fi
+
+if [ "$BRACE_LANGUAGE" = C++ ]; then
+	c=cc
+	if [ -z "$CXX" ]; then
+		for CC in g++ c++ gcc tcc cc; do
+			if [ -n "`which $CC$EXE`" ]; then
+				break
+			fi
+		done
+		if [ "$CC" = g++ ]; then
+			CC="g++ -std=gnu++0x"
+		fi
+	else
+		CC="$CXX"
+	fi
+	USER_CFLAGS="$USER_CFLAGS $CXXFLAGS"
+	CFLAGS="$CFLAGS -Weffc++"
+	LDLIBS="$LDLIBS -lstdc++"
+else
+	c=c
+	if [ -z "$CC" ]; then
+		for CC in gcc tcc cc; do
+			if [ -n "`which $CC$EXE`" ]; then
+				break
+			fi
+		done
+		if [ "$CC" = gcc ]; then
+			CC="$CC -pedantic -std=gnu99"
+		fi
+	fi
+fi
+
+LDLIBS="$BRACE_L_SO $LDLIBS"
+LDLIBS_PLAIN="$LDLIBS"
+LDLIBS="$LDLIBS_PLAIN $LDLIBS_FANCY"
+CFLAGS="-Wall -Wextra $CFLAGS"  # -I. -Werror
+CINCLUDE="-I\"$BRACE_LIB\""
+if [ -n "$DEBUG" ]; then
+	CFLAGS="$CFLAGS -ggdb"
+#	CFLAGS="$CFLAGS -g"
+else
+	LDFLAGS="$LDFLAGS -s"
+fi
+if [ "$OPTIMIZE" != "0" ] && [ -z "$DEBUG" -o -n "$OPTIMIZE" ]; then
+	if [ -z "$OPTIMIZE" ]; then OPTIMIZE=2; fi
+	CFLAGS="$CFLAGS -O$OPTIMIZE"
+fi
+if [ -n "$PROFILE" ]; then
+	CFLAGS="$CFLAGS -pg"
+	LDFLAGS="$LDFLAGS -pg"
+fi
+CFLAGS="${CFLAGS## }"
+LDFLAGS="${LDFLAGS## }"
+LDLIBS="${LDLIBS## }"
+LDLIBS_PLAIN="${LDLIBS_PLAIN## }"
+if [ -n "$BRACE_PLAIN" ]; then
+	LDLIBS="$LDLIBS_PLAIN"
+fi
+CFLAGS="$CFLAGS $USER_CFLAGS"
+LDFLAGS="$LDFLAGS $USER_LDFLAGS"
+LDLIBS="$LDLIBS $USER_LDLIBS"

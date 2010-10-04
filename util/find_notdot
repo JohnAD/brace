@@ -1,0 +1,8 @@
+#!/bin/sh
+where="$1"
+if [ -n "$where" -a "${where#-}" = "$where" ]; then
+	shift
+else
+	where="."
+fi
+exec find "$where" -path '*/.*' -prune -or "$@" -print

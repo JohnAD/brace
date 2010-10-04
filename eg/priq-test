@@ -1,0 +1,54 @@
+#!/usr/bin/env bx
+use b
+
+Main()
+	int max_int = 100
+	int n_ints = 30
+	new(q, priq, int, n_ints+1)
+	for(c, 0, n_ints)
+		int v = randi(0, max_int)
+		priq_push(q, int, int_cmp_macro, &v)
+		if toss()
+			priq_shift(q, int, int_cmp_macro)
+	priq_check(q, int_cmp_macro)
+
+	decl(q2, vec)
+	vec_dup(q2, q)
+	int from = randi(0, priq_get_size(q2))
+	int i = from
+	int v0 = *(int *)priq_element(q, i)
+	int v = randi(0, max_int)
+	*(int *)priq_element(q2, i) = v
+	priq_repos(q2, int, int_cmp_macro, i, move_notify, (void*)1)
+
+	priq_check(q2, int_cmp_macro)
+
+	nl()
+	dump_heap(q)
+	dumpout(q)
+	nl()
+	Sayf("q[%d] was %d := %d", from, v0, v)
+	nl()
+	dump_heap(q2)
+	dumpout(q2)
+	nl()
+
+def dump_heap(q)
+	Print("[")
+	for_vec(my(i), q, int)
+		Printf("%d", *my(i))
+		if my(i) != vec_get_end(q)
+			spc()
+	Print("\b]")
+	nl()
+
+def dumpout(q)
+	while !priq_empty(q)
+		Printf("%d ", *(int *)priq_peek(q))
+		priq_shift(q, int, int_cmp_macro)
+	nl()
+
+def int_cmp_macro(a, b) *(int*)a - *(int*)b
+
+def move_notify(q, to, from, arg)
+	Sayf("move_notify %d <- %d", to, from)

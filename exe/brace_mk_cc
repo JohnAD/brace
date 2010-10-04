@@ -1,0 +1,138 @@
+#!/bin/sh
+exec perl -e '
+use File::Find;
+use IO::File;
+use L;
+
+use strict; use warnings;
+
+use Brace::ResolveDeps;
+
+my %brace_deps_hash = ();
+my %brace_deps_hash_1 = ();
+my @files = ();
+find(\&wanted, ".");
+sub wanted {
+	my $b = $File::Find::name;
+	$b =~ s,^\./,,;
+	push @files, $b;
+}
+for my $b (@files) {
+	if ($b =~ /\.b$/ || $b =~ /\.bb$/) {
+		local $ENV{BRACE_LANGUAGE} = $ENV{BRACE_LANGUAGE}||"C";
+		if ($b =~ /\.bb/) {
+			$ENV{BRACE_LANGUAGE} = "C++";
+		}
+		my $b1 = $b;
+		$b1 =~ s/$/1/;
+		my $c = $b;
+		$c =~ s/\.bb$/.cc/;
+		$c =~ s/\.b$/.c/;
+		my $o = $c;
+		$o =~ s/\.c+$/.o/;
+		my @h = brace_cc_deps($b);
+		for (@h) {chomp}
+		my @bh = grep /\.bb?h$/, @h;
+		my @ch = grep !/\.bb?h$/, @h;
+
+		for ($b1, $b, @bh, $o, $c, @ch) {
+			$_ = quotemeta($_);
+			my %map = map {$_,$_} qw(. : / - );
+			$map{"\\"} = "/";
+			s{\\(.)}{ if (exists($map{$1})) { $map{$1} } else { "\\$1"; } }ge;
+			s{^.\/(.)}{$1};
+		}
+
+		print "$b1: $b";
+		print " $_" for @bh;
+		print "\n";
+		print "$o: $c";
+		print " $_" for @ch;
+		print "\n";
+	}
+}
+
+# brace_deps
+# this is recursive now,
+# does not look at system headers, only those in . and $BRACE_LIB -
+# otherwise it will be really slow!
+
+# this is BROKEN, WRT mutually recursive headers files.  :(  fix it
+# need to do in stages:
+#   1. extract all "level 1" deps from all files
+#   2. calc full deps, need smartness!  like a flood-fill
+
+# can do it like this, when reading a file,
+#   1. read whole file, collect list of "use"s
+#   2. register all these as its 
+
+# for now, I am hacking around it by getting rid of b/colors.bh  :(
+
+# I THINK I fixed all those problems....
+
+sub brace_cc_deps {
+	my ($file) = @_;
+	my @input = ($file);
+	my @to_return;
+	my %done = ();
+	while (@input) {
+		my $filename = shift @input;
+		if (! $done{$filename}) {
+			push @to_return, $filename;
+			my $c = $filename ne $file && $filename !~ /\.bb?h$/;
+			my @uses = brace_cc_deps_1($filename);
+			unshift @input, @uses;
+			$done{$filename} = 1;
+		}
+	}
+	shift @to_return;  # do not include the file itself
+	return @to_return;
+}
+
+sub brace_cc_deps_1 {
+	my ($file, $is_c_not_brace) = @_;
+#	print "brace_deps_1: $file, $is_c_not_brace\n";
+	if ($brace_deps_hash_1{$file}) {
+		return @{$brace_deps_hash_1{$file}};
+	}
+	my @to_return;
+	my $fh = IO::File->new($file) or
+		die "cannot open file $file: $!";
+
+	my $headernames = brace_resolve_deps_init();
+	for my $headername (@$headernames) {
+		if (-f $headername) {
+			if ($headername ne $file) {
+				push @to_return, $headername;
+			}
+		}
+	}
+
+	while (defined($_ = <$fh>)) {
+		my $headernames;
+		if ($is_c_not_brace) {
+			($headernames) = /^\s*#include\s*(?:[<"])([^>"]*)/;
+		} else {
+			($headernames) = /^\t*(?:use|export) (.+)/;
+		}
+		if (defined $headernames) {
+			for my $headername (split / /, $headernames, -1) {
+				my $found = 0;
+				my @extras;
+				my $headernames_2 = resolve_dep($headername);
+				for my $headername_2 (@$headernames_2) {
+					if (-f $headername_2) {
+						if ($headername_2 ne $file) {
+							push @to_return, $headername_2;
+						}
+					}
+				}
+			}
+		}
+	}
+	$fh->close();
+	@to_return = uniqo(@to_return);
+	$brace_deps_hash_1{$file} = \@to_return;
+	return @to_return;
+}
+' "$@"

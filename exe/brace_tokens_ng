@@ -1,0 +1,31 @@
+#!/bin/sh
+exec perl -e '
+# brace_tokens_ng
+
+use strict;
+use warnings;
+
+require "brace_parser.pl";
+my $text = join "", <STDIN>;
+my $tokens = tokenize_ng($text);
+
+use Data::Dumper;
+print Dumper $tokens;
+print "                                             \n";
+print "                                             \n";
+print "---------------------------------------------\n";
+print "---------------------------------------------\n";
+print "---------------------------------------------\n";
+print "                                             \n";
+print "                                             \n";
+
+
+print untokenize_ng($tokens);
+
+#my $cont = 0;
+#for (@$tokens) {
+#	if (!/^ +$/ && $cont) { print "\\\n" }
+#	print;
+#	$cont = $_ ne "\n";
+#}
+' "$@"

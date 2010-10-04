@@ -1,0 +1,59 @@
+#!/usr/bin/env bx
+
+Main()
+	cstr l
+	repeat
+		l = Input()
+		if !l
+			break
+		if l[0] == '#' || l[0] == '\0'
+			continue
+
+		cstr program = l
+		l = strstr(l, "() {")
+		if !l
+			error("expected shell function: %s", l)
+		*l = '\0'
+		++l
+
+		Say(program)
+
+		if exists(program)
+			cstr tilde = format("%s~", program)
+			if exists(tilde)
+				error("tilde file %s exists already", tilde)
+			Rename(program, tilde)
+			Free(tilde)
+
+		let(out, Fopen(program, "w"))
+
+		if cstr_ends_with(l, "}")
+			# single line
+
+			l = strchr(l, '{') + 1
+			while *l == ' '
+				++l
+			let(r, strrchr(l, ';'))
+			if r == NULL
+				error("missing ; in line %s", l)
+			*r = '\0'
+			Fprint(out, "exec ")
+			Fsay(out, l)
+
+		 eif cstr_ends_with(l, "{")
+			# multi line
+
+			Eachline(l)
+				if strlen(l) == 1 && l[0] == '}'
+					break
+				if l[0] != '\t'
+					error("function not indented: %s", l)
+				Fsay(out, l+1)
+
+		 else
+			error("don't understand syntax: %s", l)
+
+		Fclose(out)
+		cx(program)
+
+use io main cstr error util alloc

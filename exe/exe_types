@@ -1,0 +1,23 @@
+brace_foo	brace_deps
+brace_foo	brace_expand
+brace_foo	brace_header
+brace_foo	brace_include
+brace_foo	brace_pc
+brace_foo	brace_process
+brace_foo	brace_proto
+brace_foo	brace_resolve_deps
+brace_foo	brace_rm_comments_blank
+brace_foo	brace_shuffle
+brace_foo	brace_split_use
+brace_foo	brace_split_vars
+brace_foo	brace_strip
+brace_foo	brace_typedef
+brace_foo	brace_uniq
+brace_foo	brace_wrap
+
+brace_bar	brace_contlines
+brace_bar	brace_grep
+brace_bar	brace_map
+brace_bar	brace_split_semicolons
+
+brace_baz	brace_header_export

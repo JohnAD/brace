@@ -1,0 +1,3 @@
+#!/bin/sh
+brace_files |
+brace_grep_many "$@"

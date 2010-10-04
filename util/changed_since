@@ -1,0 +1,4 @@
+#!/bin/sh
+dir="$1" ; stamp="$2"
+if [ ! -e "$stamp" ]; then exit 0; fi
+[ "`find "$dir" -path '*/.*' -prune -or -type f -cnewer "$stamp" -print | wc -l`" != "0" ]

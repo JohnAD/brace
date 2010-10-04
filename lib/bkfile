@@ -1,0 +1,57 @@
+include ../.Make.conf
+
+BRACE_LANGUAGE=C
+
+finder=find . $(BRACE_USE) -maxdepth 1 -name
+grep_plain=grep -v -w -e b -e gr -e colours -e turtle -e sound -e music -e key -e tty -e cgi_png -e sprite -e event
+BOBJ=$(shell $(finder) "*.b" | perl -pe 's/\\/\//g; s/\.b$$/.o/')
+BBOBJ=$(shell $(finder) "*.bb" | perl -pe 's/\.bb$$/.o/')
+BHEADERS=$(shell $(finder) "*.b" | perl -pe 's/\.b$$/.bh/')
+BBHEADERS=$(shell $(finder) "*.bb" | perl -pe 's/\.bb$$/.bbh/')
+BOBJ_PLAIN=$(shell $(finder) "*.b" | perl -pe 's/\\/\//g; s/\.b$$/.o/' | $(grep_plain))
+BHEADERS_PLAIN=$(shell $(finder) "*.b" | perl -pe 's/\.b$$/.bh/' | $(grep_plain))
+
+all: $(SONAME) $(PLAIN_SONAME) b.h b_plain.h $(DEBUG_SONAME) $(PLAIN_DEBUG_SONAME) libb.a libb_plain.a libb_debug.a libb_plain_debug.a
+ # libb.so.$(MAJOR) libb.so.$(MINOR)
+
+$(SONAME): $(BOBJ)
+	$(CC) -o$@ $(CFLAGS) -shared -Wl,-soname,$(SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
+#	strip --strip-unneeded $@     # XXX borks on sunos/gcc
+	chmod -x $@
+
+$(PLAIN_SONAME): $(BOBJ_PLAIN)
+	$(CC) -o$@ $(CFLAGS) -shared -Wl,-soname,$(PLAIN_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
+#	strip --strip-unneeded $@     # XXX borks on sunos/gcc
+	chmod -x $@
+
+$(DEBUG_SONAME): $(BOBJ)
+	$(CC) -o$@ $(CFLAGS) -shared -Wl,-soname,$(DEBUG_SONAME) $(LDFLAGS) $(BOBJ) $(LDLIBS)
+	chmod -x $@
+
+$(PLAIN_DEBUG_SONAME): $(BOBJ_PLAIN)
+	$(CC) -o$@ $(CFLAGS) -shared -Wl,-soname,$(PLAIN_DEBUG_SONAME) $(LDFLAGS) $(BOBJ_PLAIN) $(LDLIBS_PLAIN)
+	chmod -x $@
+
+libb.a: libb_debug.a
+	cp -p $< $@
+	strip --strip-unneeded $@
+
+libb_plain.a: libb_plain_debug.a
+	cp -p $< $@
+	strip --strip-unneeded $@
+
+libb_debug.a: $(BOBJ)
+	rm -f $@
+	ar rcs $@ $(BOBJ)
+
+libb_plain_debug.a: $(BOBJ_PLAIN)
+	rm -f $@
+	ar rcs $@ $(BOBJ_PLAIN)
+
+# TODO a program to export the headers like this..?
+
+b.h: $(BHEADERS)
+	cat $(BHEADERS) | BH_NO_MACROS=1 b2bh | b2b1 | brace_header_export "" b_h | brace > b.h
+
+b_plain.h: $(BHEADERS_PLAIN)
+	cat $(BHEADERS_PLAIN) | b2bh | b2b1 | brace_header_export "" b_plain_h | brace > b_plain.h

@@ -1,0 +1,44 @@
+Now I want block-level macro parameters!
+
+I want to be able to say, for example:
+
+define forever
+	while 1
+		...
+	.
+
+speaking of ".", maybe the default should be for the macro to
+end at the same level it started, but a dot on the last line can
+be used to change that.  (or the first line?)
+
+It would be good to be able to define general syntactic forms:
+
+define
+	while(cond)
+		(body)
+	else
+		(last)
+as
+	repeat
+		if !cond
+			last
+			break
+		body
+
+
+define
+	foreach(i, sequence)
+		(body)
+as
+	it = sequence.begin()
+	end = sequence.end()
+	for ; it != end ; ++it
+		i = *it
+		(body)
+
+define
+	channel(type)
+as
+	struct channel_^^type
+		rendezvous r
+		type d

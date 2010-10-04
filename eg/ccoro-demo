@@ -1,0 +1,42 @@
+#!/usr/bin/env bx
+use stdio.h
+use ccoro
+
+# ccoro demo program
+
+int factorial(int n)
+	if n == 0
+		return 1
+	return n * factorial(n-1)
+
+int fibonacci(int n)
+	if n == 0 || n == 1
+		return n
+	return fibonacci(n-1) + fibonacci(n-2)
+
+my_factorial_coro(coro *caller)
+	int i
+	for i=9 ; i>=0 ; --i
+		int j = factorial(i)
+		printf("  %d %d\n", i, j)
+		yield(&caller)
+
+my_fibonacci_coro(coro *caller)
+	int i
+	for i=1 ; i<8 ; ++i
+		int j = fibonacci(i)
+		printf("    %d %d\n", i, j)
+		yield(&caller)
+
+int main()
+	coro *c = new_coro(my_fibonacci_coro)
+	coro *c2 = new_coro(my_factorial_coro)
+	int i
+	for i=0 ; i<10 ; ++i
+		printf("%d\n", i)
+		yield(&c)
+		yield(&c2)
+	if c || c2
+		fprintf(stderr, "the coros did not finish\n")
+		return 1
+	return 0

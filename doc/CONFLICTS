@@ -1,0 +1,15 @@
+/usr/include/c++/3.3/backward/alloc.h
+/usr/include/c++/3.3/backward/deque.h
+/usr/include/c++/3.3/backward/list.h
+/usr/include/c++/3.3/backward/rope.h
+
+/usr/include/error.h
+/usr/include/sched.h
+/usr/include/time.h
+/usr/include/c++/3.3/backward/vector.h
+/usr/include/c++/3.3/deque
+/usr/include/c++/3.3/list
+/usr/include/c++/3.3/ext/rope
+/usr/include/c++/3.3/vector
+
+arg from C++ "complex" header <-> arg from Main()

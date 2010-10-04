@@ -1,0 +1,28 @@
+#!/bin/sh
+file="${1}"
+
+# basename is broken in unxutils
+basename() {
+	local d="`dirname "$1"`"
+	echo "${1#$d?}"
+}
+
+d=`dirname "$file"`
+b=`basename "$file"`
+#stem="${b%.*}"
+c="$d/.$b.c"
+cc="$d/.$b.cc"
+if [ ! -e "$c" -a -e "$cc" ]; then
+	c="$cc"
+fi
+
+log="$d/.$b.log"
+if [ ! -e "$log" ]; then
+	if [ -e "$d/bk.log" ]; then
+		log="$d/bk.log"
+	elif [ -e "bk.log" ]; then
+		log="bk.log"
+	fi
+fi
+
+exec "${EDITOR:-vi}" -o "$c" "$file" "$log"

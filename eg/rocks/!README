@@ -1,0 +1,20 @@
+To play rocks...
+
+On a MS Windows machine:
+	1. Download and install python 2.2.2 from http://python.org/
+	2. Double click the `rocks.py' or `rocks.old.py' programs.
+
+On a Linux / UNIX / Mac OS X machine:
+	You can also download rocks.py and play it.
+	Or, you can use `brace' to build the C++ version from `brace.b'.
+	You would need to download and compile /brace which might not be very easy!
+
+Have fun!
+
+Please contact me if you like rocks or want to report a bug or give me a
+patch or if you can't get it to work, or just for a chat.  Thanks!
+
+Sam Watkins
+sam@nipl.net
+
+2004-02-05

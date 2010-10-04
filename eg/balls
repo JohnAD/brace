@@ -1,0 +1,46 @@
+#!/usr/bin/env bx
+
+struct ball
+	num x, y, r
+	num o, s, v, af
+	num vx, vy
+
+ball_init(ball *b)
+	b->r = Rand(0.1, 0.2)*360
+	b->x = Rand(-w_2+b->r, w_2-b->r) ; b->y = Rand(-h_2+b->r, h_2-b->r)
+	b->o = Rand(360) ; b->s = Rand(0.5, 1) ; b->v = Rand(0, 0.5)
+	b->af = Rand()
+	b->vx = Rand(-12, 12) ; b->vy = Rand(-12, 12)
+
+Main()
+	space()
+
+	int n = 5
+	new(v, vec, ball, n)
+	repeat(n)
+		ball *b = vec_push(v)
+		init(b, ball)
+
+	repeat
+		clear()
+		for_vec(b, v, ball)
+			if Rand() < 0.005
+				init(b, ball)
+			black()
+			num f = b->r/360.0
+			disc(b->x, b->y, 380*f)
+			back(a, 360, 0, 5/f)
+				hsv(a*b->af+b->o, b->s, b->v)
+				disc(b->x, b->y, a*f)
+			b->x += b->vx ; b->y += b->vy
+			bounce(b->x, b->vx, -w_2+b->r, <, 1)
+			bounce(b->x, b->vx, w_2-b->r, >, 1)
+			bounce(b->y, b->vy, -h_2+b->r, <, 1)
+			bounce(b->y, b->vy, h_2-b->r, >, 1)
+			b->vy -= 0.5
+#			b->s *= 0.98
+#			b->v *= 0.98
+#		csleep(1.0/100)
+		Paint()
+
+use b

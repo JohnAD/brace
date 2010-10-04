@@ -1,0 +1,14 @@
+#!/usr/bin/env bx
+use b
+Main()
+	space(600, 600)
+	for(x, -300, 300, 1)
+		int o = mod(x, 16) / 2
+		for(y, -300-o, 300+o+1, 1)
+			int p = mod(y, 16) / 2
+			if (o+p) % 2 == 0
+				rgb(0, 1, 0)
+			 else
+				rgb(1, 0, 0)
+			point(x, y)
+		Paint()

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+#find "$@" -maxdepth 1 \( -perm -u+x -o -perm -g+x -o -perm -o+x \) -type f \! -name '.*' | sed 's,^\./,,'
+
+grep -lr '#!/' . >.tmp.$$ 2>/dev/null
+find . -type f \( -name '*.exe' -o -perm -u+x -o -perm -g+x -o -perm -o+x \) \! -name '.*' >.tmp.1.$$ 2>/dev/null
+<.tmp.$$ perl -ne 'm{(^|[/\\])(brace_foo|brace_bar|brace_baz|fail)$} || print' >>.tmp.1.$$
+< .tmp.1.$$ sed 's,^\.[/\\],,' >.tmp.2.$$
+<.tmp.2.$$ sort -u
+rm .tmp.$$ .tmp.1.$$ .tmp.2.$$

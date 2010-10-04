@@ -1,0 +1,4 @@
+#!/usr/bin/env bx
+use b
+Main():
+	cp_fd(STDIN_FILENO, STDOUT_FILENO)
