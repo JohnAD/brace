@@ -2,8 +2,6 @@ export buffer io types alloc list
 export stdarg.h string.h strings.h
 use m
 
-def my(a) skip(1, `my__prefix)^^a
-
 def unless(cond)
 	if !cond
 

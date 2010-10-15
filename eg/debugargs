@@ -1,5 +1,7 @@
 #!/usr/bin/env bx
 use b
 Main()
+	int i = 0
 	eacharg(a)
+		Fprintf(stderr, "arg %d: ", i++)
 		cstr_dump(a)

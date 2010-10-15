@@ -2,7 +2,7 @@
 use b
 size_t n_buckets = 10007
 Main()
-	new(alloced, hashtable, cstr, n_buckets)
+	new(alloced, hashtable, cstr_hash, cstr_eq, n_buckets)
 	int n = 1
 	Eachline(l)
 		if !(among(*l, 'A', 'F') || l[1] == '\t')
@@ -14,12 +14,12 @@ Main()
 		cstr size = words[3]
 		cstr location = words[4]
 		if *type == 'A'
-			key_value = kv(alloced, addr, NULL)
-			if key_value->v == NULL
-				key_value->k = strdup(addr)
-				key_value->v = strdup(l)
+			key_value *kv = kv(alloced, addr, NULL)
+			if kv->v == NULL
+				kv->k = strdup(addr)
+				kv->v = strdup(l)
 			 else
-				Say("bad\t%s", l)
+				sf("bad\t%s", l)
 		 else  # type == 'F'
 			int addr_not_null = 0
 			for_cstr(i, addr)
@@ -28,6 +28,6 @@ Main()
 					break
 			if addr_not_null
 				if kv_is_null(del(alloced, addr))
-					Say("bad\t%s", l)
+					sf("bad\t%s", l)
 	
 

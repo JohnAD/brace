@@ -26,8 +26,7 @@ sub brace_process {
 #my $uses_process = 0;
 my @new_funcs;
 for my $function (@function) {
-	# two options for keyword - I can't decide!
-	if ($function =~ s/^(?:proc) (.*)/$1/) {
+	if ($function =~ s/^proc (.*)/$1/) {
 		my %port_type;
 		my %state_type;
 		my %struct_already;

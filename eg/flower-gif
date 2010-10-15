@@ -1,4 +1,6 @@
 #!/usr/bin/env bx
+# depends: gifsicle
+
 use b
 
 Main()

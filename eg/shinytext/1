@@ -7,8 +7,8 @@ num whiteness
 Main()
 	rt3 = sqrt(3.0)
 
-#	space(640, 480)
-	space()
+	space(640, 480)
+#	space()
 	gprint_anchor(0, 0)
 
 	cstr s = fortune()
@@ -16,14 +16,17 @@ Main()
 
 	repeat(50)
 		col(rb[randi(0,360)])
-		font("helvetica-medium", fs/randi(2, 5))
+		font("arial-medium", fs/randi(2, 5))
 		move(randi(-w_2, w_2), randi(-h_2, h_2))
 		gsayf(s)
 
-	font("helvetica-bold", fs)
+	font("arial-bold", fs)
 	col(white)
 	move(0, 0)
 	gsayf(s)
+
+	Paint()
+	Rsleep(0.5)
 
 	if depth <= 16
 		warn("shinytext works best in true colour, not %d bit colour", depth)
@@ -42,17 +45,17 @@ cstr fortune()
 	return s
 
 int font_size_to_fit(cstr s)
-	font("helvetica-medium", 200)
+	font("arial-medium", 200)
 	num tw = text_width(s)
 	int fs = (int)(200*w/tw * 0.90)
-	font("helvetica-medium", fs)
+	font("arial-medium", fs)
 	return fs
 
 def shiny(pixel_type)
 	int c = 0
 	colour cl = white
 	repeat
-		font("helvetica-bold", fs)
+		font("arial-bold", fs)
 		int m = ++c % 100
 		if m == 0
 			cl = white
@@ -60,7 +63,7 @@ def shiny(pixel_type)
 			cl = rb[randi(0, 360)]
 		if Rand() < 0.3
 			col(rb[randi(0,360)])
-			font("helvetica-medium", fs/randi(2, 5))
+			font("arial-medium", fs/randi(2, 5))
 			move(randi(-w_2, w_2), randi(-h_2, h_2))
 			gsayf(s)
 			Paint()
@@ -68,7 +71,7 @@ def shiny(pixel_type)
 			s = fortune()
 			fs = font_size_to_fit(s)
 			col(cl)
-			font("helvetica-bold", fs)
+			font("arial-bold", fs)
 			move(0, 0)
 			gsayf(s)
 		pixel_type *px = (pixel_type *)pixel(vid, 1, 1)

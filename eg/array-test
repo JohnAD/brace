@@ -1,5 +1,16 @@
 #!/usr/bin/env bx
 
+Def For(v)
+	For(v, v^^0, v^^1)
+
+Def For(v, ary)
+	For(v, ary^^0, ary^^1)
+
+def For(v, from, to)
+	v = from
+	let(my(end), to)
+	for ; v<my(end); ++v
+
 Main()
 	array(a, 10, num)
 	array(b, 10, num)
