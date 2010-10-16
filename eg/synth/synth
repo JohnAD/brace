@@ -81,8 +81,8 @@ Main()
 
 	envelope(0.025, 0.05)
 	dur(0.1)
-#	music_wave = violin
-	music_wave = oboe
+	music_wave = violin
+#	music_wave = oboe
 #	music_wave = sawtooth
 #	music_wave = puretone
 #	vibrato(1.2, 10)
