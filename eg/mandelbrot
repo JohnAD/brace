@@ -4,8 +4,8 @@
 use b
 
 # CONFIGURE!
-#typedef uint32_t pixel_type  # yuk, but the nested macros lose expansions
-typedef uint16_t pixel_type  # yuk, but the nested macros lose expansions
+typedef uint32_t pixel_type  # yuk, but the nested macros lose expansions
+#typedef uint16_t pixel_type  # yuk, but the nested macros lose expansions
 
 cstr usage[] = { "x y r max_i rb_i payg w h", NULL }
 
