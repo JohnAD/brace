@@ -38,7 +38,7 @@ Main()
 
 		repeat
 			let(client, Fdopen(Accept(ear)))
-			eachline(message, client)
+			Eachline(message, client)
 				Fsayf(server, "privmsg %s :%s", channel, message)
 				Fflush(server)
 		
@@ -47,7 +47,7 @@ Main()
 		Waitpid(child)
 	 else
 		# child
-		eachline(reply, server)
+		Eachline(reply, server)
 			Say(reply)  # do something sensible with this?
 
 		Fclose(server)

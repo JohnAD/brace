@@ -1,0 +1,27 @@
+#!/usr/bin/env bx
+use b
+
+# What is a common free font in X11 and preferably windoze etc too????
+
+def font_family "arial"
+
+Main()
+	cstr s
+	if args == 1:
+		s = arg[0]
+	 else
+		s = format("usage: %s string", program)
+	space()
+	gprint_anchor(0, -0.5)
+	font_size_to_fit(s)
+	gsay(s)
+
+int font_size_to_fit(cstr s)
+	font(font_family "-medium", 200)
+	num tw = text_width(s)
+	num th = font_height()
+	int fsw = (int)(200*w/tw * 0.90)
+	int fsh = (int)(200*h/th * 0.90)
+	int fs = imin(fsw, fsh)
+	font(font_family "-medium", fs)
+	return fs

@@ -2,6 +2,6 @@
 use b
 Main()
 	long double total = 0
-	eachline(l)
+	Eachline(l)
 		total += strtold(l, NULL)
 	Sayf("%Lf", total)

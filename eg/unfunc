@@ -43,7 +43,7 @@ Main()
 		 eif cstr_ends_with(l, "{")
 			# multi line
 
-			eachline(l)
+			Eachline(l)
 				if strlen(l) == 1 && l[0] == '}'
 					break
 				if l[0] != '\t'

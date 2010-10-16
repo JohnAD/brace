@@ -3,7 +3,7 @@
 Main()
 	if args != 1
 		usage("string")
-	eachline(l)
+	Eachline(l)
 		Print(arg[0])
 		Say(l)
 

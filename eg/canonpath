@@ -1,7 +1,7 @@
 #!/usr/bin/env bx
 
 Main()
-	eachline(path)
+	Eachline(path)
 		let(target, strdup(path))
 		readlinks(target)
 		Print(path)

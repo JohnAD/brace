@@ -70,7 +70,7 @@ Main():
 	gr_done = 1
 
 show_slides(vec *lines, int start_page)
-	eachline(l):
+	Eachline(l):
 		boolean show = page >= start_page
 		boolean end_of_page = *l == ''
 

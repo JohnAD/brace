@@ -1,0 +1,37 @@
+export gr
+
+struct Point
+	^line 2 "shape.b"
+	double x, y
+
+struct Shape
+	^line 5 "shape.b"
+	int n_points
+	^line 6 "shape.b"
+	Point *points
+
+struct Transform
+	^line 9 "shape.b"
+	double xx, xy, yx, yy, dx, dy
+
+Shape *get_temporary_shape(int n_points)
+XPoint *get_temporary_xpoints(int n_points)
+transform_point(Point *p0, Point *p1, Transform *trans)
+Shape *transform_shape(Shape *src, Shape *dest, Transform *trans)
+round_point(Point *p0, XPoint *p1)
+XPoint *round_shape(Shape *src, XPoint *dest)
+scale_transform(Transform *src, Transform *dest, double mag)
+translate_transform(Transform *src, Transform *dest, double dx, double dy)
+make_rotate_transform(Transform *dest, double angle)
+make_transform(Transform *dest, double angle, double scale, double x, double y, boolean flip)
+make_inverse_transform(Transform *dest, double angle, double scale, double x, double y, boolean flip)
+flip_transform(Transform *toflip)
+compose_transform(Transform *src0, Transform *src1, Transform *dest)
+print_transform(Transform *t)
+
+extern Transform id_trans
+extern int temporary_shape_points
+extern Shape temporary_shape
+extern int temporary_xpoints_points
+extern XPoint *temporary_xpoints
+

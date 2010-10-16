@@ -4,7 +4,7 @@ use b
 Main:
 	long n = 1
 	cstr choice = NULL
-	eachline(l):
+	Eachline(l):
 		if randi(n++) == 0:
 			Free(choice)
 			choice = Strdup(l)

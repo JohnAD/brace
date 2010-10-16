@@ -74,7 +74,7 @@ if [ -z "$BRACE_USE" ]; then
 	LDLIBS="$LDLIBS -lm"
 	LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
 	if [ -n "$MINGW" ]; then
-		BRACE_USE="mingw gnu- bsd- linux- modern-"
+		BRACE_USE="cz- mingw gnu- bsd- linux- modern-"
 		BRACE_USE="$BRACE_USE io-select"
 		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
 		LDLIBS="$LDLIBS -lws2_32"
@@ -82,7 +82,7 @@ if [ -z "$BRACE_USE" ]; then
 	else
 #		LDLIBS_FANCY="$LDLIBS_FANCY -lz -lxcb -ldl -lXau -lXdmcp"
 #		  # XXX This is nonsense, shouldn't be needed, something wrong with my eee pc!
-		BRACE_USE="unix mingw-"
+		BRACE_USE="cz- unix mingw-"
 		if [ -e /usr/include/X11/Xlib.h -o -e /usr/X11R6/include/X11/Xlib.h -o -e /usr/pkg/include/X11/Xlib.h -o -e /usr/local/include/X11/Xlib.h ]; then
 			BRACE_USE="$BRACE_USE x"
 			LDLIBS_FANCY="$LDLIBS_FANCY -L/usr/X11R6/lib -lX11 -lXext"

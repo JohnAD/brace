@@ -3,6 +3,6 @@ use b
 
 Main()
 	print_space = "\t"
-	eachline(l)
+	Eachline(l)
 		dirbasename(l, dir, base)
 		Pr(cstr, dir, base)

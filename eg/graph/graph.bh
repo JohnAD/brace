@@ -1,0 +1,72 @@
+export shape
+export structure
+export control
+export gr
+export util
+
+typedef void (*Thunk)(void)
+
+test_diagram()
+Node *add_node(int x, int y)
+Arc *add_arc(Node *n0, Node *n1)
+calculate_viewpoint_transform()
+calculate_node_transform(Node *node)
+Node *lookup_node(int x, int y)
+int main()
+quit()
+set_key_handler(KeySym keysym, void (*handler)())
+command_keyboard(int keycode, int state)
+ignore(int x, int y)
+motion_mode()
+structure_mode()
+button_event(int button, int type, int x, int y)
+event_loop()
+redraw(boolean moved, boolean clear)
+draw_node(Node *node, boolean moved)
+draw_arc(Arc *arc)
+draw_node_and_arcs(Node *node, boolean moved)
+draw_rubber_band(int x0, int y0, int x1, int y1)
+configure_notify()
+
+extern Point triang_points[]
+extern Shape triang
+extern Point rectangle_points[]
+extern Shape rectangle
+extern Point add_points[]
+extern Shape add
+extern Node _nodes[]
+extern int _n_nodes
+extern int add_node_i
+extern unsigned int window_width
+extern unsigned int window_height
+extern double viewpoint_angle
+extern double viewpoint_scale
+extern double viewpoint_x
+extern double viewpoint_y
+extern double min_node_scale_for_point
+extern double min_node_scale_for_outline
+extern double min_node_scale_for_label
+extern double max_node_scale_to_manipulate
+extern const char *font_name
+extern ButtonController ignore_button
+extern ButtonController move_button
+extern ButtonController rotate_button
+extern ButtonController scale_button
+extern ButtonController add_node_button
+extern ButtonController add_arc_button
+extern ButtonController delete_button
+extern Controller motion_controller
+extern Controller structure_controller
+extern Transform viewpoint_transform
+extern Transform inverse_viewpoint_transform
+extern Display *display
+extern Window window
+extern Colormap colormap
+extern GC gc
+extern XFontStruct *_font
+extern XEvent event
+extern int first_keycode
+extern int last_keycode
+extern Thunk *key_handlers
+extern Controller *controller
+

@@ -1,0 +1,39 @@
+export vector
+export shape
+
+struct Node
+	^line 2 "structure.b"
+	int index
+	^line 3 "structure.b"
+	char *name
+	^line 4 "structure.b"
+	Shape *shape
+	^line 5 "structure.b"
+	double angle, scale
+	^line 6 "structure.b"
+	Point o
+	^line 7 "structure.b"
+	Transform transform
+	^line 8 "structure.b"
+	Region region
+	^line 9 "structure.b"
+	XPoint so
+
+struct Arc
+	^line 15 "structure.b"
+	int from
+	^line 16 "structure.b"
+	int to
+	^line 17 "structure.b"
+	char *name
+
+structure_init()
+Node *new_node()
+Arc *new_arc(int from, int to)
+delete_node(Node *node)
+delete_arc(Arc *arc)
+for_each_arc_to_or_from(Node *node, void (*f)(Arc *))
+
+extern Vector *nodes
+extern Vector *arcs
+

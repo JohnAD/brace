@@ -18,11 +18,11 @@ DEBUG=1
 build: mingw/keysym.b
 #	bk
 	../util/build-libb.sh
-	cp $(SONAME) $(PLAIN_SONAME)
+	#../util/build-libb_plain.sh
 	cp $(SONAME) $(DEBUG_SONAME)
-	cp $(SONAME) $(PLAIN_DEBUG_SONAME)
-	# XXX the main lib is a debug lib (not stripped) at the moment
-	# XXX and the plain lib is not built, just a copy of the main lib too
+#	cp $(PLAIN_SONAME) $(PLAIN_DEBUG_SONAME)
+	strip --strip-debug $(DEBUG_SONAME)
+#	strip --strip-debug $(PLAIN_DEBUG_SONAME)
 
 clean:
 	bk-clean

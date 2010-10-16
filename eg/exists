@@ -2,7 +2,7 @@
 
 Main()
 	let(not, *Getenv("not", ""))
-	eachline(l)
+	Eachline(l)
 		if xor(exists(l), not)
 			Say(l)
 

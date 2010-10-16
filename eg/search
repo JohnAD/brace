@@ -27,7 +27,7 @@ Main()
 
 		new(v, vec, search_results, 10)
 		cb_in(b_split)
-			eachline(s)
+			Eachline(s)
 				if cstr_begins_with(s, "<a ") && strstr(s, " class=l")
 					cstr href = Strchr(s, '"')+1;
 					*Strchr(href, '"') = '\0';
@@ -75,7 +75,7 @@ Main()
 			decl(b_text, buffer)
 			buffer_from_cstr(b_text, i->text)
 			b_in(b_text)
-				eachline(s)
+				Eachline(s)
 					sf("\t%s", s)
 
 			say()
@@ -85,7 +85,7 @@ Main()
 			decl(b_html, buffer)
 			buffer_from_cstr(b_html, i->html)
 			b_in(b_html)
-				eachline(s)
+				Eachline(s)
 					sf("\t%s", s)
 
 			say()

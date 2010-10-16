@@ -2,8 +2,6 @@ export buffer io types alloc list
 export stdarg.h string.h strings.h
 use m
 
-def my(a) skip(1, `my__prefix)^^a
-
 def unless(cond)
 	if !cond
 
@@ -194,6 +192,10 @@ Def new(var, type, a1, a2, a3, a4)
 Def new(var, type, a1, a2, a3, a4, a5)
 	decl(var, type)
 	init(var, type, a1, a2, a3, a4, a5)
+Def new(var, type, a1, a2, a3, a4, a5, a6)
+	decl(var, type)
+	init(var, type, a1, a2, a3, a4, a5, a6)
+
 
 Def New(var, type)
 	Decl(var, type)
@@ -213,6 +215,10 @@ Def New(var, type, a1, a2, a3, a4)
 Def New(var, type, a1, a2, a3, a4, a5)
 	Decl(var, type)
 	init(var, type, a1, a2, a3, a4, a5)
+Def New(var, type, a1, a2, a3, a4, a5, a6)
+	Decl(var, type)
+	init(var, type, a1, a2, a3, a4, a5, a6)
+
 
 Def NEW(var, type)
 	heap(var, type)
@@ -232,6 +238,10 @@ Def NEW(var, type, a1, a2, a3, a4)
 Def NEW(var, type, a1, a2, a3, a4, a5)
 	heap(var, type)
 	init(var, type, a1, a2, a3, a4, a5)
+Def NEW(var, type, a1, a2, a3, a4, a5, a6)
+	heap(var, type)
+	init(var, type, a1, a2, a3, a4, a5, a6)
+
 
 Def init(var, type)
 	type^^_init(var)
@@ -245,6 +255,9 @@ Def init(var, type, a1, a2, a3, a4)
 	type^^_init(var, a1, a2, a3, a4)
 Def init(var, type, a1, a2, a3, a4, a5)
 	type^^_init(var, a1, a2, a3, a4, a5)
+Def init(var, type, a1, a2, a3, a4, a5, a6)
+	type^^_init(var, a1, a2, a3, a4, a5, a6)
+
 
 def global(var, type)
 	heap(var, type)
@@ -1634,12 +1647,19 @@ def delimit(s, c)
 	cstr my(p)
 	delimit(my(p), s, c)
 
-def tmpnul(p)
-	char my(tmp)
+def Tmpnul(p)
+	Tmpnul(p, my(c))
+def Tmpnul(p, c)
+	char c
+	tmpnul(p, c)
+def tmpnul(p, c)
+	tmpnul(p, c, my(p0))
+def tmpnul(p, c, p0):
+	let(p0, p)
 	post(x)
-		*p = my(tmp)
+		*p0 = c
 	pre(x)
-		my(tmp) = *p ; *p = '\0'
+		c = *p0 ; *p0 = '\0'
 
 def bounce(x, vx, wall, cmp, vfac)
 	if x cmp wall

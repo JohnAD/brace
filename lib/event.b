@@ -121,11 +121,12 @@ key_handlers_init()
 	key_down = Zalloc(char, gr_n_keys)
 	key_handlers_default()
 
-cstr quit_key = "Q"  # Escape
+cstr quit_key[] = {"Q", "Escape", NULL}
 
 key_handlers_default()
 	key_handlers_ignore()
-	key_handler(quit_key, KeyPress) = thunk(quit)
+	forary_null(key, quit_key)
+		key_handler(key, KeyPress) = thunk(quit)
 
 key_handlers_ignore()
 	for(i, 0, gr_n_keys)

@@ -7,7 +7,7 @@ Main()
 
 test_speed()
 	new(ht, hashtable, cstr_hash, cstr_eq, 100003)
-	eachline(l)
+	Eachline(l)
 		hashtable_add(ht, strdup(l), "bogus def")
 	cstr word
 	cstr definition
@@ -28,7 +28,7 @@ test_interactive()
 
 	hashtable_dump(ht)
 
-	eachline(l)
+	Eachline(l)
 		list *L = hashtable_lookup_ref(ht, l)
 #		list_dump(L)
 
