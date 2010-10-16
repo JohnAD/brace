@@ -90,7 +90,10 @@ buffer_clear(buffer *b)
 
 # this should use a reference or pointer?
 char buffer_last_char(buffer *b)
-	return b->start[buffer_get_size(b)-1]
+	ssize_t l = buffer_get_size(b)
+	if !l:
+		return '\0'
+	return b->start[l-1]
 
 boolean buffer_ends_with_char(buffer *b, char c)
 	return buffer_get_size(b) && buffer_last_char(b) == c

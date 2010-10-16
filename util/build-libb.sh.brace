@@ -23,7 +23,6 @@ for A in $modules; do
 done
 ( echo "use png.h" ; v cat $files | grep -v '^\(use\|export\) [^\.]*$' ) > .all.b
 v b2c < .all.b >.all.c
-#v gdb -ex run --args cz -t .all.b ; mv ..all.c .all.c
 
 if [ -n "$WINDIR" ]; then
 	SONAME_FULL=$SONAME
