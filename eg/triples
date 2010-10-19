@@ -1,6 +1,6 @@
 #!/usr/bin/env bx
 use b
-Main()
+Main:
 	long max = 500000000
 	long k, v, a_max, a, b, c, c2
 	for k=1 ; ; ++k:
@@ -8,13 +8,16 @@ Main()
 		if v > max:
 			break
 		a_max = sqrt(v)
-		for a=1; a<=a_max; ++a
+		for a=1; a<=a_max; ++a:
 			b = v/a
 			if a*b == v:
 				c2 = a*a + b*b
 				c = (long)round(sqrt(c2))
 				if c*c == c2:
-					printf("%ld * %ld = %ld ; %ld^2 + %ld^2 = %ld^2 ; %ld*%ld*%ld*%ld/4 = %ld\n", a, b, v, a, b, c, k, k+1, k+2, k+3, v)
+					found()
+
+def found():
+	printf("%ld * %ld = %ld ; %ld^2 + %ld^2 = %ld^2 ; %ld*%ld*%ld*%ld/4 = %ld\n", a, b, v, a, b, c, k, k+1, k+2, k+3, v)
 
 # $ time ./triples
 # 12 * 35 = 420 ; 12^2 + 35^2 = 37^2 ; 5*6*7*8/4 = 420
