@@ -1,3 +1,0 @@
-<'/usr/local/include/m.b' brace_number_lines '/usr/local/include/m.b' | b2bh >'/usr/local/include/m.bh'
-/bin/sh: cannot create /usr/local/include/m.bh: Permission denied
-make: *** [/usr/local/include/m.bh] Error 2
