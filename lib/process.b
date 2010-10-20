@@ -117,6 +117,8 @@ Vexecle(const char *path, va_list ap)
 sh_quote(const char *from, buffer *to)
 	char c
 	int i = buffer_get_size(to)
+	if *from == '\0':
+		buffer_cat_cstr(to, "''")
 	repeat
 		c = *from
 		if c == '\0'
@@ -145,7 +147,7 @@ sh_quote(const char *from, buffer *to)
 
 # as usual, you should set to->size to 0 first
 cmd_quote(const char *from, buffer *to)
-	let(quote, strchr(from, ' ') != NULL)
+	let(quote, strchr(from, ' ') != NULL || !*from)
 	if quote
 		buffer_cat_char(to, '"')
 	buffer_cat_cstr(to, (cstr)from)
