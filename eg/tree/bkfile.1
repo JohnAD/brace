@@ -1,0 +1,43 @@
+#export BRACE_STANDALONE = 1
+#LDFLAGS += -L/usr/X11R6/lib -lX11 -lm -lb
+DIR=$(PWD)
+
+#ifndef DEBUG
+#LDFLAGS += -s
+#endif
+
+# TODO redefine the %.o: %.c and %.o: %.cc patterns?
+
+%.b1: %.b
+	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C b2b1 >'$@'
+%.bb1: %.bb
+	<'$<' brace_number_lines '$<' | BRACE_LANGUAGE=C++ b2b1 >'$@'
+%.bh1: %.bh
+	<'$<' BRACE_LANGUAGE=C brace_header_export "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
+%.bbh1: %.bbh
+	<'$<' BRACE_LANGUAGE=C++ brace_header_export "$(BRACE_HEADER_GUARD_PREFIX)" '$<' >'$@'
+
+%.c: %.b1
+	<'$<' BRACE_LANGUAGE=C brace >'$@'
+%.cc: %.bb1
+	<'$<' BRACE_LANGUAGE=C++ brace >'$@'
+
+%.h: %.bh1
+	<'$<' BRACE_LANGUAGE=C brace >'$@'
+%.h: %.bbh1
+	<'$<' BRACE_LANGUAGE=C++ brace >'$@'
+
+# These are also handled by brace_update_headers:
+%.bh: %.b
+	<'$<' brace_number_lines '$<' | b2bh >'$@'
+%.bbh: %.bb
+	<'$<' brace_number_lines '$<' | b2bh >'$@'
+
+.PRECIOUS: %.b1 %.bb1 %.bh %.bbh %.bh1 %.bbh1 %.c %.cc %.h
+all: windy still
+still: still.o tree.o
+windy: windy.o tree.o
+clean:
+	bk-clean
+	rm -f *.py[co] *.o bk.log *.bh dreamy/*.bh *.b1 *.c still windy
+include bkfile_cc
