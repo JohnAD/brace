@@ -7,6 +7,7 @@ def read_tsv_vec(v, l)
 		cstr l = Input()
 		if l == NULL
 			break
+		vecclr(v)
 		splitv(v, l)
 
 def read_tsv_vec_n(v, n)
@@ -63,5 +64,31 @@ def _read_tsv(v, a1, a2, a3, a4)
 		cstr a3 = *(cstr *)vec_element(v, 2)
 		cstr a4 = *(cstr *)vec_element(v, 3)
 #FIXME Free(v)!
+
+def read_tsv(a1, a2, a3, a4, a5)
+	_read_tsv(my(v), a1, a2, a3, a4, a5)
+def _read_tsv(v, a1, a2, a3, a4, a5)
+	new(v, vec, cstr, 5)
+	read_tsv_vec_n(v, 5)
+		cstr a1 = *(cstr *)vec_element(v, 0)
+		cstr a2 = *(cstr *)vec_element(v, 1)
+		cstr a3 = *(cstr *)vec_element(v, 2)
+		cstr a4 = *(cstr *)vec_element(v, 3)
+		cstr a5 = *(cstr *)vec_element(v, 4)
+#FIXME Free(v)!
+
+def read_tsv(a1, a2, a3, a4, a5, a6)
+	_read_tsv(my(v), a1, a2, a3, a4, a5, a6)
+def _read_tsv(v, a1, a2, a3, a4, a5, a6)
+	new(v, vec, cstr, 6)
+	read_tsv_vec_n(v, 6)
+		cstr a1 = *(cstr *)vec_element(v, 0)
+		cstr a2 = *(cstr *)vec_element(v, 1)
+		cstr a3 = *(cstr *)vec_element(v, 2)
+		cstr a4 = *(cstr *)vec_element(v, 3)
+		cstr a5 = *(cstr *)vec_element(v, 4)
+		cstr a6 = *(cstr *)vec_element(v, 5)
+#FIXME Free(v)!
+
 
 # etc!  need snazzy variadic macros :)
