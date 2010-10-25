@@ -1,0 +1,13 @@
+#!/usr/local/bin/cz --
+Main:
+	space(400, 400)
+	XDrawArc(display, gr_buf, gc, 75, 25, 250, 350, 0, 64*360)
+	num mm = 5.3
+	num x = mm * sqrt(2) * 50 / 2
+	move(-x, 0)
+	draw(0, -x)
+	draw(x, 0)
+	draw(0, x)
+	draw(-x, 0)
+
+use b
