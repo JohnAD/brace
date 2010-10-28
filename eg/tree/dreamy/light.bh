@@ -1,0 +1,19 @@
+extern main  int argc  char *argv[]
+	^line 7 "dreamy/light.b"
+	gr_init 400 300
+	^line 8 "dreamy/light.b"
+	if argc < 2
+		^line 9 "dreamy/light.b"
+		error "syntax: %s depth [colour]" argv[0]
+	^line 10 "dreamy/light.b"
+	if argc > 2
+		^line 11 "dreamy/light.b"
+		col argv[2]
+	^line 12 "dreamy/light.b"
+	clear
+	^line 13 "dreamy/light.b"
+	int depth
+extern tree  num x  num y  num a  num r  int depth
+	^line 18 "dreamy/light.b"
+	if depth
+

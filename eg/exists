@@ -1,0 +1,9 @@
+#!/usr/bin/env bx
+
+Main()
+	let(not, *Getenv("not", ""))
+	Eachline(l)
+		if xor(exists(l), not)
+			Say(l)
+
+use b

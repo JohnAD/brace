@@ -1,0 +1,60 @@
+some useful programs
+
+- arcs - file syncing
+- a2b - file conversion
+- tachyon - web server
+- freens - DNS management
+- CZ - programming language
+
+arcs
+
+- file syncing, collaboration and history
+- uses git, svn or another vcs as a backend
+- `arcs` commits changes and syncs
+- detects and handles renames 
+- keep code, websites in sync across boxes
+- can run make automatically
+
+a2b
+
+- file conversion: text, docs, images, audio, video
+- applies external tools in series, graph search
+- can convert from e.g. mp3 to flac
+- fancy stuff: html -> txt -> wav (speech) -> mp3
+- options, e.g. quality, time stretching
+
+tachyon
+
+- fast webserver, written using CZ coroutines
+- faster than everything else except zeus
+- unix permissions authentication as needed
+  - uses stunnel https, http auth, shadow
+- small: 897 lines of code, 19432 bytes
+
+freens
+
+- creates bind name server zone files
+- input is a simple table of host and address
+- makes it easy to manage a name server
+- converts CNAME records to A records as necessary
+- adds MX, NS records for hosts ns1 mx1 etc.
+- supports round-robin DNS and automatic failover
+
+CZ - "C easy"
+
+- my programming language, based on C
+- looks like python - easy to read
+- easy for beginners to do graphics
+- #!, auto headers, try, macros, coros
+
+!star
+!flower
+!balls
+!roses
+!pretty
+!lattice
+!fps1
+!rainbow2
+!mandelbrot
+!fps2
+!heart

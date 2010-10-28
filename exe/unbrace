@@ -1,0 +1,18 @@
+#!/bin/sh
+#TODO translate this into perl?
+sed '
+	/^#include */{ s/.*</use /; s/>.*$//; }
+	s/^local /static /;
+	s/;$//;
+	/^	*[{}]$/d;
+	s/ *{$//;
+	s/^\(	*\)} */\1/;
+	s/^\(	*\)\(if\|else\|else if\|for\|switch\|while\|do\) *(\(.*\))$/\1\2 \3/;
+	s/^void \([^*]\)/\1/;
+	s/(void)/()/;
+	s:#define:def:;
+	s:#define:def:;
+	s:^\(	*\)//:\1#:;
+	s: *\*/::g;
+	s:/\* *:# :g;
+'

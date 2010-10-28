@@ -1,0 +1,73 @@
+#!/usr/bin/env bx
+use b
+
+num rt3
+Main()
+	space(midnightblue)
+	gprint_anchor(0, 0)
+	zoom(40)
+	rt3 = sqrt(3.0)
+
+	num a = -360
+	num da = 0
+	num dda = 0.01
+
+	repeat
+		move(0, 0)
+		east()
+		rt(a)
+		clear()
+		draw_lattice()
+		Paint()
+		a += da
+		if a > 0
+			dda = -0.01
+		 eif a < 0
+			dda = 0.01
+		da += dda
+
+def draw_lattice()
+#	Printf("%f ", rtime())
+#	int xc = Floor(w_2/(sc*rt3/2)+1)
+#	int yc = Floor(h_2/sc+1)
+	int xc = Floor(hypot(w_2, h_2)/(sc*rt3/2)+1)
+	int yc = xc
+	for(pass, 0, 4)
+		which pass
+		0	blue()
+		1	white()
+		2	black()
+		3	green()
+		for(x, -xc, xc)
+			for(y, -yc, yc)
+				int X = x - Div(y, 2)
+				int Y = y
+				turtle_branch()
+					move()
+					fd(X)
+					lt(60)
+					fd(Y)
+					draw()
+					if fabs(lx) > w_2+sc*3 || fabs(ly) > h_2+sc*3
+						continue
+					if mod(X-Y, 3) == 0
+						which pass
+						0	draw_star(1)
+						1	circle(0.5)
+						2	circle(rt3/2)
+					 else
+						which pass
+						2	disc(0.2)
+						3	gprintf("%d,%d", X, Y)
+	#	Sayf("%f", rtime())
+
+draw_star(num unit)
+	repeat(6)
+		turtle_branch()
+			fd(unit)
+		rt(60)
+	rt(30)
+	repeat(3)
+		turtle_branch()
+			fd(rt3*unit)
+		rt(60)

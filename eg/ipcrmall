@@ -1,0 +1,2 @@
+#!/bin/sh
+ipcs -m | cut -d' ' -f2 | tail -n +4 | grep -v '^$' | xargs -n1 ipcrm -m

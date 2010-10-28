@@ -1,0 +1,33 @@
+#!/usr/bin/env bx
+use b
+size_t n_buckets = 10007
+Main()
+	new(alloced, hashtable, cstr_hash, cstr_eq, n_buckets)
+	int n = 1
+	Eachline(l)
+		if !(among(*l, 'A', 'F') || l[1] == '\t')
+			continue
+		let(words, split(l, '\t'))
+		cstr type = words[0]
+		cstr func = words[1]
+		cstr addr = words[2]
+		cstr size = words[3]
+		cstr location = words[4]
+		if *type == 'A'
+			key_value *kv = kv(alloced, addr, NULL)
+			if kv->v == NULL
+				kv->k = strdup(addr)
+				kv->v = strdup(l)
+			 else
+				sf("bad\t%s", l)
+		 else  # type == 'F'
+			int addr_not_null = 0
+			for_cstr(i, addr)
+				if *i != '0'
+					addr_not_null = 1
+					break
+			if addr_not_null
+				if kv_is_null(del(alloced, addr))
+					sf("bad\t%s", l)
+	
+

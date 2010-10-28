@@ -1,0 +1,23 @@
+#!/usr/bin/env bx
+
+main()
+	new(colours_init, buffer)
+	buffer_cat_cstr(colours_init, "colours_init()\n")
+	eachline(colour)
+		Printf("colour %s\n", colour)
+		Printf("def %s() col(%s)\n", colour, colour)
+		Sprintf(colours_init, "\t%s = coln(\"%s\")\n", colour, colour)
+#		buffer_dump(colours_init)
+	buffer_add_nul(colours_init)
+	Print(buffer_get_start(colours_init))
+#	Say("<b/gr.bh>")
+	Say("typedef long colour")
+	Say("colour coln(char *name)")
+	# this last is a HACK to compensate for brace_mk_cc not handling mutual recursion yet :(
+# hack around brace_mk_cc bug (no mutual recursion)
+
+use util io types
+
+
+#perl -pe 's/^colour //; s/, */\n/g; s/ *//; s/\n\n/\n/g' |
+#perl -pe 'chomp; s/(.*)/def $1()\n\tcolc($1)\n/'

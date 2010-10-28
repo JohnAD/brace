@@ -1,0 +1,5 @@
+#!/bin/sh
+diff -w "$1" "$2" >/dev/null || {
+	which vim && vim -d "$1" "$2"
+	exit 1
+}

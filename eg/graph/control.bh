@@ -1,0 +1,32 @@
+export graph
+
+typedef void (*EventHandler)(int x, int y)
+typedef EventHandler ButtonController[3]
+
+struct Controller
+	^line 5 "control.b"
+	ButtonController *button[3]
+	^line 6 "control.b"
+	void (*keyboard)(int keycode, int state)
+
+delete_press(int x, int y)
+delete_motion(int x, int y)
+add_node_press(int x, int y)
+add_arc_press(int x, int y)
+add_arc_motion(int x, int y)
+add_arc_release(int x, int y)
+move_press(int x, int y)
+move_motion(int x, int y)
+rotate_press(int x, int y)
+rotate_motion(int x, int y)
+scale_press(int x, int y)
+scale_motion(int x, int y)
+
+extern Node *node
+extern double drag_x
+extern double drag_y
+extern double drag_scale
+extern double drag_angle
+extern double old_angle
+extern double old_scale
+

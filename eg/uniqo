@@ -1,0 +1,11 @@
+#!/usr/bin/env bx
+
+use b
+
+# TODO fix my hashtables, they are apparently very broken, try on /usr/share/dict/words for example
+
+Main()
+	new(ix, hashtable, cstr_hash, cstr_eq, 10001)
+	Eachline(l)
+		if hashtable_add_maybe(ix, l, NULL)
+			Say(l)

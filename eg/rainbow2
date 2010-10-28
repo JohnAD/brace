@@ -1,0 +1,106 @@
+#!/usr/bin/env bx
+
+Main()
+	space()
+#	paper(640, 480, black)
+	qmath_init()
+
+	let(dt, angle2rad(1))
+	dt = dt
+
+	int R = hypot(w_2, h_2)
+#	int R = 768/2
+
+	short *a = Nalloc(short, (R*2+1) * (R*2+1))
+	short *d = Nalloc(short, (R*2+1) * (R*2+1))
+#	int a[R*2+1][R*2+1]
+#	int d[R*2+1][R*2+1]
+	colour rb[360]
+	int np[R*2+1]
+
+	for(i, 0, 360)
+		rb[i] = rainbow(i)
+
+	bm_enabled = 0
+
+	bm_start()
+	int i = 0
+	for(y, -h_2, h_2)
+		let(X, (int)notpot(R, y))
+		np[y+R] = X
+		for(x, -w_2, w_2)
+#			d[x+R][y+R] = hypot(x, y)
+#			d[i] = hypot(x, y)
+			int d = hypot(x, y)
+			num A
+			qAtan2(A, y, x)
+#			a[x+R][y+R] = mod(((int)A), 360)
+			A += 360
+#			a[i] = A
+			a[i] = A + d
+			++i
+	bm("done a init")
+
+	let(da, 0)
+
+	int first = 1
+	bm_start()
+	wheel()
+	Paint()
+	bm("done first wheel")
+	Rsleep(0.5)
+	first = 0
+
+	repeat
+		bm_start()
+		wheel()
+		bm("done wheel")
+		Paint()
+		#spin()
+		#da -= 5
+		da -= 8
+		if da < 0
+			da += 720
+		first = 0
+
+#def ix(x,y) (x+R) + (y+R) * (R*2+1)
+
+def wheel()
+	with_pixel_type(wheel)
+
+def wheel(pixel_type)
+#	for(i, 0, 360)
+#		rb[i] = rainbow(i)
+	pixel_type *px = pixel()
+	int j = 0
+	for(y, -h_2, h_2)
+#		let(X, np[y+R])
+		for(x, -w_2, w_2)
+			if first || qrand() % 50 == 0
+#				let(A, a[x+R][y+R] + d[x+R][y+R])
+#				let(A, a[ix(x,y)] + d[ix(x,y)])
+#				let(A, a[j] + d[j])
+				let(A, a[j])
+				if first || qtoss()
+					A = A*2+da/2
+				else
+					A = A*3+da
+				A = A % 360
+				*px = rb[A]
+				#col(rb[A])
+				#point(x, y)
+			++px ; ++j
+
+def spin()
+	rb_red_angle += 1.6*dt
+	rb_green_angle += 2*dt
+	rb_blue_angle += -1*dt
+
+
+use main
+use m
+use gr
+use error
+use time
+use io
+use qmath

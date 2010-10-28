@@ -1,0 +1,84 @@
+#!/usr/bin/env bx
+use b
+
+# This program counts to 10000000 using five different methods:
+# - ccoro (yields 20000000 times)
+# - stcoro with scheduler (yields and resumes 10000000 times)
+# - stcoro without scheduler (yields and resumes 10000000 times)
+# - function calls (calls the function and returns 10000000 times)
+# - inline (just loops 10000000 times)
+
+# It uses a volatile int counter to avoid over-optimizing the inline version.
+
+# results for my eee pc:
+# 
+# 10000000
+# ccoro test done: 2786619.852543 / sec
+# 10000000
+# stcoro test done - with sched: 5044382.902249 / sec
+# 10000000
+# stcoro test done - without sched: 66197561.884079 / sec
+# 10000000
+# function call test done: 97060937.539774 / sec
+# 10000000
+# inline test done: 125259564.759041 / sec
+
+def N 10000000
+
+boolean my_func()
+	static volatile int i=0
+	++i
+	if i == N
+		warn("%d", i)
+		return 0
+	return 1
+
+proc my_stcoro()
+	state volatile int i=0
+	while i < N
+		++i
+		yield()
+	warn("%d", i)
+
+my_ccoro(coro *caller)
+	volatile int i=0
+	while i < N
+		++i
+		yield(&caller)
+	warn("%d", i)
+
+Main()
+	sched_init()
+
+	bm_start()
+	coro *c = new_coro(my_ccoro)
+	while c
+		yield(&c)
+	bm_ps("ccoro test done", N)
+
+	bm_start()
+	new(s, my_stcoro)
+	start(s)
+	run()
+	bm_ps("stcoro test done - with sched", N)
+
+	bm_start()
+	new(S, my_stcoro)
+	repeat
+		int pc = S->p.pc = my_stcoro_f(&S->p)
+		if !pc
+			break
+	run()
+	bm_ps("stcoro test done - without sched", N)
+
+	bm_start()
+	while my_func()
+		.
+	bm_ps("function call test done", N)
+
+	bm_start()
+	volatile int i=0
+	while i < N
+		++i
+	warn("%d", i)
+	bm_ps("inline test done", N)

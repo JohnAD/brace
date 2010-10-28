@@ -1,0 +1,81 @@
+#!/usr/bin/env bx
+use b
+
+def xy()
+	num A = a+(i-n/2)*d
+	num y = Cos(A*3)
+	num x = Sin(A*4.02) * sqrt(1-y*y)
+	x *= r
+	y *= r
+
+Main()
+	int sprite_w = 150, sprite_h = 150
+	int n = 10
+#	int sprite_w = 600, sprite_h = 600
+#	int n = 7
+	sprite *image = sprite_load_png("samseanalpha.png")
+	sprite *back = Nalloc(sprite, n)
+	space()
+	vid_init()
+	decl(source, sprite)
+	decl(target, sprite)
+	new(s, sprite, sprite_w, sprite_h)
+	new(image_back, sprite, image->width, image->height)
+	for(i, 0, n)
+		sprite_init(back+i, sprite_w, sprite_h)
+#	sprite_clear(s, blue)
+
+	num a = 0
+	num r = 300
+	num d = 123456.0 / n
+	int xi = 0
+	int yi = 0
+#	bm_enabled = 0
+	repeat
+		bm_start()
+		sprite_gradient_angle(s, red, yellow, blue, green, deg2rad(a*40)+0.0001)
+		sprite_circle_aa(s)
+		sprite_translucent(s, 0.75+0.25*Sin(a*12))
+
+		for(i, 0, n)
+			xy()
+			hsv(A, 1, 0.75)
+			point(x, y)
+			repeat(5)
+				hsv(Rand(120, 240), Rand(0, 0.5), Rand(0, 0.2))
+				int x1 = randi(-w_2, w_2)
+				int y1 = randi(-h_2, h_2)
+				if hypot(x1, y1) > r + 40
+					circle(x1, y1, randi(0, 30))
+		gr_sync()
+		for(i, 0, n)
+			xy()
+			sprite_clip(target, source, screen, s, x - s->width/2 + w/2, h/2 - y - s->height/2)
+			sprite_blit(back+i, target)
+		sprite_clip(target, source, screen, image, xi - image->width/2 + w/2, h/2 - yi - image->height/2)
+		sprite_blit(image_back, target)
+		sprite_blit_transl(target, source)
+		for(i, 0, n)
+			xy()
+			sprite_clip(target, source, screen, s, x - s->width/2 + w/2, h/2 - y - s->height/2)
+			sprite_blit_transl(target, source)
+#			sprite_blit_transp(target, source)
+#			sprite_blit(target, source)
+		Paint()
+		back(i, n)
+			xy()
+			sprite_clip(target, source, screen, s, x - s->width/2 + w/2, h/2 - y - s->height/2)
+			sprite_blit(target, back+i)
+		sprite_clip(target, source, screen, image, xi - image->width/2 + w/2, h/2 - yi - image->height/2)
+		sprite_blit(target, image_back)
+#		Readline()
+#		Rsleep(0.01)
+		a += 0.2
+		++xi
+		++yi
+		if yi > h_2
+			yi = -h_2
+		if xi > w_2
+			xi = -w_2
+
+		bm_ps("fps")

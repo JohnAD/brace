@@ -1,0 +1,6 @@
+#!/usr/bin/env bx
+
+Main()
+	Sayf("Hello, %s!", args ? arg[0] : "World")
+
+use b

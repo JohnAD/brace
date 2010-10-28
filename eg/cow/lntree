@@ -1,0 +1,9 @@
+#!/bin/sh
+# lntree
+export from=`readlink -f "$1"`
+mkdir -p "$2"
+export to=`readlink -f "$2"`
+{ cd "$from"; find . -type d -print0; } |
+  { cd "$to"; xargs -0 mkdir -p; }
+{ cd "$from"; find . -type f; } |
+  perl -ne 'chomp; s,^\.,,; $f = $ENV{from}.$_; $t = $ENV{to}.$_; link $f, $t';

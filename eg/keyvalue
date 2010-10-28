@@ -1,0 +1,29 @@
+#!/usr/bin/env bx
+use b
+
+struct person
+	cstr name
+	cstr sex
+	cstr asawa
+	int yob
+	float weight
+
+Main()
+	meta_init()
+	type_add((type*)t_person)
+	kv_io_init()
+	person p
+#	type *t_person = type_get("person")
+	while read_struct(&p, t_person, OE_CONT|OE_WARN)
+		write_struct(&p, t_person)
+
+# XXX this initialization of flexible array members gives a warning, may not be portable:
+
+type__struct_union struct__t_person =
+	{ TYPE_STRUCT, "person", sizeof(person) }, 5,
+		{ (type*)t_cstr, "name", offsetof(person, name) },
+		{ (type*)t_cstr, "sex", offsetof(person, sex) },
+		{ (type*)t_cstr, "asawa", offsetof(person, asawa) },
+		{ (type*)t_int, "yob", offsetof(person, yob) },
+		{ (type*)t_float, "weight", offsetof(person, weight) }
+type__struct_union *t_person = &struct__t_person

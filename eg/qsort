@@ -1,0 +1,7 @@
+#!/usr/bin/env bx
+
+use b
+
+Main():
+	For(sort(lines())):
+		Say(*i)

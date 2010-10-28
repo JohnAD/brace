@@ -1,0 +1,26 @@
+enum {not_free = -1}
+
+struct Vector
+	^line 8 "vector.b"
+	int n, space, first_free
+	^line 9 "vector.b"
+	size_t element_size
+	^line 10 "vector.b"
+	void *elements
+
+struct VectorIterator
+	^line 13 "vector.b"
+	int count
+	^line 14 "vector.b"
+	size_t element_size
+	^line 15 "vector.b"
+	void *element
+
+vector_init(Vector *v, size_t element_size)
+void *vector_alloc(Vector *v)
+vector_dealloc(Vector *v, void *e)
+void *vector_ref(Vector *v, int i)
+int vector_index(Vector *v, void *e)
+vector_iterator_init(Vector *v, VectorIterator *i)
+void *vector_iterator_next(VectorIterator *i)
+

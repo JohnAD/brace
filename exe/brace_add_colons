@@ -1,0 +1,11 @@
+#!/usr/bin/perl -p
+$last_i = $i;
+($tabs = $_) =~ tr/\t//dc;
+$i = length($tabs);
+if ($i > $last_i) {
+	print ":";
+}
+if (defined $last_i) {
+	print "\n";
+}
+chomp;

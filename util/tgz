@@ -1,0 +1,17 @@
+#!/bin/sh -e
+P=$PWD
+for D; do
+	D1=`readlink1 -f "$D"`
+	cd "$D1"
+	N=`basename "$D1"`
+	rm -f "$N.tgz"
+	cd ..
+	find_notdot "$N" -type f |
+	  tar --files-from - -c -z -f "$N.tgz"
+	cd "$P"
+	if [ ! -e "$N.tgz" ]; then
+		mv "$D/../$N.tgz" ./
+	fi
+	hide "$N.tgz"
+	cd "$P"
+done

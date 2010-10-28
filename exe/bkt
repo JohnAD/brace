@@ -1,0 +1,17 @@
+#!/bin/sh
+# make and test
+
+fail() {
+	echo fatal: "$@" >&2
+	exit 1
+}
+
+bk || fail bk failed: not testing
+grep "make: Nothing to be done for" ./.build/bk.log >/dev/null &&
+	fail bk did nothing: not testing
+grep "warning:" ./.build/bk.log >/dev/null &&
+	fail bk gave warning/s: not testing
+PROG=`find -maxdepth 1 -type f -perm +u+x |
+xargs stat -c"%Y %n" | sort -rn |
+head -n1 | cut -d' ' -f2`
+exec "$PROG" "$@" # >/dev/tty 2>&1

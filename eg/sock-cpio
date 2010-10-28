@@ -1,0 +1,35 @@
+#!/usr/bin/env bx
+
+def debug void
+def proc_debug void
+
+Main()
+	int in = 0, out = 1
+	which args
+	1	out = Client(arg[0])
+	2	out = Client(arg[0], atoi(arg[1]))
+
+	sched_init()
+	if add_fd(in) || add_fd(out)
+		failed("add_fd")
+	nonblock(in)
+	nonblock(out)
+	new(r1, reader, in)
+	new(w1, writer, out)
+	new(r2, reader, out)
+	new(w2, writer, in)
+	new(c1, cat)
+	new(c2, cat)
+	sh(buffer, r1, c1)
+	sh(buffer, c1, w1)
+	sh(buffer, r2, c2)
+	sh(buffer, c2, w2)
+	init(&r1->out->d, buffer, block_size)
+	init(&w1->in->d, buffer, block_size)
+	init(&r2->out->d, buffer, block_size)
+	init(&w2->in->d, buffer, block_size)
+	start(r1); start(w1); start(r2); start(w2); start(c1); start(c2)
+
+	run()
+
+use b

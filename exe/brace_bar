@@ -1,0 +1,17 @@
+#!/bin/sh
+exec perl -e '
+
+use strict; use warnings; use L;
+
+require "brace_parser.pl";
+
+use MODULE;
+
+our @lines;
+
+read_lines(\*STDIN);
+
+FUNCTION(\@ARGV);
+
+output_lines()
+' "$@"

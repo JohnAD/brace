@@ -1,0 +1,9 @@
+#!/usr/bin/env bx
+
+Main()
+	let(hidden, cstr_eq(program, "hidden"))
+	Eachline(l)
+		if xor(path_hidden(l), !hidden)
+			Say(l)
+
+use b

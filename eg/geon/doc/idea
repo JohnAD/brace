@@ -1,0 +1,149 @@
+
+Render a map of the world from overhead any point (long/lat),
+  at any scale,
+with +ve y direction specified by a reference point,
+  could use the ref point to determine the scale too.
+(can't always use the north pole, at least not when you're at the south pole)
+
+So, viewpoint can be specified by two points (ox, oy, ux, uy).
+How to enumerate the points on a great circle (defined by two points)?
+    i.e. given an origin and direction (ref point) and angle, find point at that angle on the great circle.
+How to enumerate the points on a smaller circle (defined by three points, or a center and another point).
+
+
+
+so we have x, y ; ox, oy ; ux, uy , need to produce sx, sy
+	(where 0,0 is center of screen, 0,1 is top center)
+
+
+
+Don't know how to do this!
+
+
+long is east-west (-180 to 180)
+lat is north-south (-90 to 90)
+
+
+What can I do in spherical geometry?
+
+- convert a (long,lat) point to (x,y,z)
+- choose a random (long,lat) point on the sphere
+
+- convert (x,y,z) to (long,lat) ?
+atan2(x, y) -> long
+asin(z) -> lat
+
+- derive a transform that moves a particular point to the north pole?
+  1 way is to get it to 0 longitude first with a rotation of -long about the polar axis,
+  then rotate it through lat+90 toward the north pole.
+
+  (then could rotate it back +long to get a `shortest transform')
+
+  ok, that's doable.
+
+- ok, then it's easy to get a second point to be at the top of the screen,
+- AND it's easy to generate points on the great circle, and on small circles centered at the new origin.
+- AND it's easy to invert the transform and send them back... ok.
+
+This may not be `the best' way to do it, but it will do.
+
+
+
+What type of geometrical objects on the map?
+
+- points
+- lines
+  - great circle arcs
+  - minor circle arcs (especially east-west)
+- curves (actually, polygon arcs)
+- regions
+	- circles (e.g. for cities)
+	- polygons
+	- polygons that have holes in!  (i.e. lakes, inland seas)
+
+- need to be able to define polygons which refer to sub-sections of other polygons or curves,
+  e.g. victoria's boundary is a section of a river, a section of coastline, and a line.
+
+- lines with (constant) width
+- lines with variable width?  (rivers)
+
+
+
+Clipping detail is easy, just have multiple levels of detail.
+1. include only a point every ~1024m
+2. include a point every 512m (but not those in 1)
+3. include a point every 256m (but not those in 1 or 2)
+4. include a point every 128m (but not those in 1 or 2 or 3)
+...
+10. include a point every 1m (but not those above)
+
+i.e. each level contains twice the detail of the previous level,
+
+
+
+Now, how about clipping to a region?
+
+Obviously what we really need is to be able to clip to a rectangular region -
+but practically the server is not going to be able to do precise clipping for everyone,
+and remember what data they already have, etc.  It would be better to split the globe up
+into a number of predefined regions at each scale, and allow that data to be fetched (and cached!).
+We shouldn't duplicate data either.  This will mean that viewing a closeup map also requires all the data to be loaded for the larger-scale maps centered at this point.  Perhaps this is not good!  ***
+
+How to divide up the globe?  maybe e.g. 10 degrees
+  - 10 degrees of latitude
+  - 10 degrees of longitude at the equator
+  - scale up number of degrees of longitude depending on 1/cos(lat), or whatever...
+  - and one at each pole! (or four / six)
+
+Is this sensible?  Well, if we can work out the max and min long and lat for
+each screen, we can get those areas ok.
+
+How to do that?  Well, we know the x and y limits.  If we assume we're centered at the north pole... no that won't work because it's 
+
+Well, if we imagine a circle centered with the screen and with diameter equal to the screen diagonal, that circle contains the screen.  We can work out the long,lat limits of that circle easier, I think...
+
+Hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm...
+
+A projection of the screen border onto the sphere (ignoring perspective) will be contained within a rectangle made of great circle arcs.  Now, is every such rectangle 
+
+
+
+
+Is there a better way to divide up the globe? no that I can think of!
+
+Hmmmph.  Well, to do it badly, we can ...  !?
+
+
+
+  *** regarding having to load all large-scale containing maps...
+  If each map is about 10k of data...
+  How many maps from street level to world level? if the scale doubles each time?
+
+  Probably 100m on the side of a map would be about the smallest.
+  The diameter of earth is what???
+  circumference is about 39600km (from our world map)
+  diameter is then ~12600km
+
+  That's 17 levels,
+  So 170k for all 17.
+
+
+how to clip polygons to a rectangle, and fill them properly?  Replace the
+missing arc of polygon with an arc of the rectangle - but how to know which
+one?  Well, all polygons can be stored in a clockwise direction, then we know that the thing is filled to the right of each segment, and if it's leaving the clip rect, we know the rect. segment to the right of the line (clockwise on the rect) must be filled, until the next ingress.
+
+The polygon may become multiple polygons when clipped.
+
+How about with hollow polygons / lakes?  They can be clipped in the same way, that's ok.
+
+
+I should get in touch with the gmt people and ask their advice.
+
+
+We need to be able to clip to the edge of the visible earth (a great circle) too.  This is a bit different, as it can't be done after the viewpoint transform / flattening.  We only need this for the world view!  We could do line segments in 3d and work out which segments cross the z=0 plane, then where they cross it...  The same clockwise rule should still work.
+
+Don't know how to clip to an arbitrary poly, perhaps use bin-sorting to narrow down the search for intersecting lines, otherwise it's an n*m problem!  We don't need this, anyway.
+
+Given a polygon, how to work out if it's clockwise or anti-clockwise?  Well, could go around and add up the turn angles - if +360, clockwise, -360, anti-clockwise!  Might loose precision?
+
+Look at left-most point; if the angle (before - leftmost - after) is anticlockwise, the polygon is clockwise.

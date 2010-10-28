@@ -1,0 +1,26 @@
+#!/bin/sh
+exec perl -e '
+#!/usr/bin/env perl
+
+use strict; use warnings; use L;
+
+my ($template) = shift;
+my $template_text = slurp($template);
+
+for my $target (@ARGV) {
+	unlink($target);
+	-e $target and die "cannot unlink $target";
+
+	(my $func = $target) =~ s,^.*/,,;
+	(my $which = $func) =~ s/^brace_//;
+	(my $Which = $which) =~ s/(^|_)(.)/uc($2)/ge;
+	my $module = "Brace::$Which";
+
+	my $text = $template_text;
+	$text =~ s/FUNCTION/$func/g;
+	$text =~ s/MODULE/$module/g;
+
+	belch($target, $text);
+	chmod 0755, $target;
+}
+' "$@"

@@ -1,0 +1,9 @@
+#!/usr/bin/env bx
+use b
+Main:
+	space()
+	fd(100) ; rt(180)
+	repeat(100):
+		fd(200)
+		rt(153)
+	Paint()
