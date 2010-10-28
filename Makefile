@@ -33,7 +33,7 @@ clean:
 	rm -rf .build
 install: .build
 	#cp .build/lib/$(SONAME) .build/util
-	$(INSTALL) -d "$(libdir)" "$(perldir)"
+	$(INSTALL) -d "$(libdir)" "$(perldir)" || true
 	$(INSTALL) -m 644 lib/bk "$(libdir)"
 	cp -pR perl/* "$(perldir)"
 	PERL5LIB= perl -MIO::String -e '' 2>/dev/null || cp -pR cpan/IO "$(perldir)"

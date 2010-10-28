@@ -34,9 +34,9 @@ clean:
 #	$(INSTALL) -m 644 $(SONAME).$(VERS) $(PLAIN_SONAME).$(VERS) $(DEBUG_SONAME).$(VERS) $(PLAIN_DEBUG_SONAME).$(VERS) "$$dir";
 
 install:
-	$(INSTALL) -d '$(libdir)'
+	$(INSTALL) -d '$(libdir)' || true
 	find . -path '*/.*' -prune -or -type d -print | while read D; do \
-		$(INSTALL) -d '$(includedir)'/"$$D"; \
+		$(INSTALL) -d '$(includedir)'/"$$D" || true; \
 		$(INSTALL) -m 644 "$$D"/*.bh "$$D"/*.b '$(includedir)'/"$$D"; \
 	done
 	instlib() { dir="$$1"; \
