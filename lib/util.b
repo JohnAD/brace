@@ -1380,8 +1380,8 @@ cstr hashbang(cstr file)
 		exe = rl()
 		if exe
 			cstr_chomp(exe)
-			if cstr_begins_with(exe, "#!") == 0
-				cstr_chop_start(exe, exe+2)
+			if cstr_begins_with(exe, "#!")
+				exe = cstr_chop_start(exe, exe+2)
 			 else
 				Free(exe)
 	return exe
