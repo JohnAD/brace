@@ -1,0 +1,17 @@
+#!/usr/local/bin/cz --
+use b
+ulong cstr_to_ulong(cstr s):
+	return strtoul(s, NULL, 10)
+Main:
+	ulong i = 0
+	boolean pand
+	getargs(ulong, i)
+	pand = pan_digital(i)
+	say(pand ? "yes" : "no")
+
+boolean pan_digital(ulong i):
+	char d[10]
+	while i:
+		d[i%10]++
+		i/=10
+	return memchr(d, 0, 10) ? 1 : 0

@@ -1,0 +1,18 @@
+#!/usr/local/bin/cz --
+use b
+
+Main:
+	space()
+	origin(300, 300)
+
+	repeat:
+		for(o, 0, 20):
+			clear()
+			for(x, o, 601, 20):
+				line(x, 0, 600, x)
+				line(600, x, 600-x, 600)
+				line(600-x, 600, 0, 600-x)
+				line(0, 600-x, x, 0)
+			paint()
+
+#	line(8, 480,   60,80)
