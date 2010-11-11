@@ -5,14 +5,23 @@ Main:
 	space()
 	origin(300, 300)
 
+	int i = 0
+	int r1 = sqrt(2) * 300
 	repeat:
 		for(o, 0, 20):
+			if i < r1:
+				++i
 			clear()
+			for(r, 0, i, 20):
+				rainbow(r)
+				circle(300, 300, r+o)
+			white()
 			for(x, o, 601, 20):
 				line(x, 0, 600, x)
 				line(600, x, 600-x, 600)
 				line(600-x, 600, 0, 600-x)
 				line(0, 600-x, x, 0)
-			paint()
+			Paint()
+			csleep(0.02)
 
 #	line(8, 480,   60,80)
