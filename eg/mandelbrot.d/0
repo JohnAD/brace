@@ -1,7 +1,7 @@
 #!/usr/bin/env bx
 use b
 
-Main():
+Main:
 	num outside = 16, ox = -0.5, oy = 0, r = 1.5
 	long i, max_i = 100, rb_i = 30
 	space()
@@ -15,4 +15,3 @@ Main():
 				w = w*w + c
 			*px++ = i < max_i ? rainbow(i*359 / rb_i % 360) : black
 			c += d
-	Paint()
