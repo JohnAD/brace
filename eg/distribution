@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 # this is a bar graph of Larry's "interesting distribution"
 use b
 Main()

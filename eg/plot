@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 
 Main()
 	num x0, x1, y0, y1, t0, t1, t, dt

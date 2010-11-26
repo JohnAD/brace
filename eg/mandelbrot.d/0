@@ -1,9 +1,9 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 use b
 
 Main:
 	num outside = 16, ox = -0.5, oy = 0, r = 1.5
-	long i, max_i = 100, rb_i = 30
+	long i, max_i = 50, rb_i = 30
 	space()
 	uint32_t *px = pixel()  # CONFIGURE!
 	num d = 2*r/h, x0 = ox-d*w_2, y0 = oy+d*h_2

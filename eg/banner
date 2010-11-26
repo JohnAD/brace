@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 use b
 
 # What is a common free font in X11 and preferably windoze etc too????

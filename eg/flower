@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 
 def usage()
 	usage("[n1 n2 n3 n4]  e.g. 10 5 5 10")
