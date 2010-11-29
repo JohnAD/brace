@@ -3,7 +3,7 @@ use b
 
 # What is a common free font in X11 and preferably windoze etc too????
 
-def font_family "arial"
+def font_family "helvetica"  # arial
 
 Main()
 	cstr s, c = NULL
