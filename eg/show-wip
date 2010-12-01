@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 # XXX auto-repeat-kbd-buffer-fix-wip
 use b
 

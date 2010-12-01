@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 # ./d1 -1.635 1.18 0.03 1024 30 5
 use b
 

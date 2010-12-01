@@ -1,19 +1,20 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 use b
 
 num margins = 40
 int font_ref = 200
 num effect_duration = 1
 boolean step_by_step = 1
-boolean effects = 1
+boolean effects = 0
 num delay = 0, delay_demo = 0, delay_page = 0
 cstr demos_dir = "."
 boolean loop = 0
 boolean smooth = 1
-int smooth_steps = 30
-int smooth_dur = 0.50
+int smooth_steps = 15
+int smooth_dur = 0.25
 def smooth_delay smooth_dur / smooth_steps
 num x_expose_delay = 0.2
+boolean echo_lines = 1
 
 num old_y, old_font_size, old_height
 boolean start_of_page = 1
@@ -73,6 +74,9 @@ show_slides(vec *lines, int start_page)
 	Eachline(l):
 		boolean show = page >= start_page
 		boolean end_of_page = *l == ''
+
+		if echo_lines:
+			say(l)
 
 		if *l == '!'
 			if show

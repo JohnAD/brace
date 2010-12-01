@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 
 # try ./wheel.b 0.88 0.5 1
 
