@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 
 Main()
 	let(ear, Server("127.0.0.1", 7777))

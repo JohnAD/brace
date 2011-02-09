@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 
 Def For(v)
 	For(v, v^^0, v^^1)

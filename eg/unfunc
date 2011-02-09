@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 
 Main()
 	cstr l

@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 use b
 Main()
 	cstr s = "1000Ω"

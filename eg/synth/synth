@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 
 Def S array_range(s)
 

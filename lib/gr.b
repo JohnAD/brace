@@ -349,8 +349,8 @@ colour _rainbow(num a)
 	num b = rb_blue_power * (cos(a-rb_blue_angle)+1)/2
 	return rgb(r, g, b)
 
-random_colour()
-	rgb(rand(), rand(), rand())
+colour random_colour()
+	return rgb(rand(), rand(), rand())
 
 def grey(p) rgb(p, p, p)
 
