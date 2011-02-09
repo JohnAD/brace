@@ -1,0 +1,29 @@
+#!/usr/local/bin/cz --
+use b
+
+int n = 1000
+
+Main:
+	test(0, "no")
+	test(1, "fsync")
+	test(2, "fdatasync")
+
+test(int which_fsync, cstr desc):
+	int fd = Open("fsync.tmp", O_WRONLY|O_TRUNC|O_CREAT)
+	int fd2 = Open("fsync.tmp2", O_WRONLY|O_TRUNC|O_CREAT)
+	fsync(fd)
+	fsync(fd2)
+	bm_block(desc):
+		repeat(n):
+			write(fd, "hello world\n", 12)
+			which which_fsync:
+			0	.
+			1	fsync(fd)
+			2	fdatasync(fd)
+			write(fd2, "hello world\n", 12)
+			which which_fsync:
+			0	.
+			1	fsync(fd2)
+			2	fdatasync(fd2)
+	Close(fd)
+	Close(fd2)
