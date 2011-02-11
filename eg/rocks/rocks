@@ -1,4 +1,4 @@
-#!/usr/bin/env bbx
+#!/usr/local/bin/cz++ --
 
 use b
 

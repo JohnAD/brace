@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 use b
 num f(num t)
 	return sqrt(abs(t))+5*pow(t, 3)

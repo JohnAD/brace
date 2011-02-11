@@ -1,4 +1,4 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 use openssl/sha.h
 use openssl/md5.h
 use b

@@ -1,19 +1,15 @@
-#!/usr/bin/env bx
+#!/usr/local/bin/cz --
 
-use m
-use error
-
-use stdio.h
-use stdlib.h
+use b
 
 num offset(num d, num L, num x)
 	return hypot(x+d/2, L) - hypot(x-d/2, L)
 
-int main(int argc, char **argv)
-	if argc != 3
-		error("syntax: %s d L", argv[0])
-	num d = atof(argv[1])
-	num L = atof(argv[2])
+Main:
+	if args != 2
+		usage("d L")
+	num d = atof(arg[0])
+	num L = atof(arg[1])
 	
 	num x
 	for x=0; x < 100; x+= 0.1
