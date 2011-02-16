@@ -81,6 +81,9 @@ show_slides(vec *lines, int start_page)
 		if *l == '!'
 			if show
 				run_demo(l+1)
+		 eif cstr_begins_with(l, "<!"):
+			f_in(Popen(l+2, "r")):
+				show_slides(lines, start_page)
 		 eif *l == '<'
 			F_in(tofree(format("%s/%s", demos_dir, l+1)))
 				show_slides(lines, start_page)
@@ -146,7 +149,7 @@ draw_lines(vec *lines, num y, num font_size, num height)
 	white()
 	for_vec(l, lines, cstr):
 		move(-w_2 + margins/2, y)
-		gsayf(*l)
+		gsay(*l)
 		y -= height
 	Paint()
 
@@ -201,7 +204,9 @@ run_demo(cstr file)
 	demo_child = Fork()
 	if demo_child == 0
 		Close(3)
-		Execl(format("%s/%s", demos_dir, file), NULL)
+		System(file)
+		Exit(0)
+#		Execl(format("%s/%s", demos_dir, file), NULL)
 	gr_do_delay(delay_demo)
 	kill_demo_child()
 	Rsleep(x_expose_delay)
