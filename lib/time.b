@@ -246,9 +246,9 @@ def bm()
 			bm_end = rtime()
 
 def bm(s)
-	bm()
-	if bm_end
-		warn("%s: %f", s, bm_end-bm_start)
+	bm():
+		if bm_end
+			warn("%s: %f", s, bm_end-bm_start)
 
 def bm(s, n)
 	bm()

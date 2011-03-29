@@ -305,7 +305,8 @@ def ln(x) log(x)
 num blend(num i, num x0, num x1)
 	return (x1-x0)*i + x0
 
-def iabs(a) a >= 0 ? a : -a
+def Abs(a) a >= 0 ? a : -a
+def iabs(a) Abs(a)  # compat: TODO remove
 
 struct pointi1
 	int x[1]

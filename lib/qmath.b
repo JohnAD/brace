@@ -35,6 +35,15 @@ def qcos(c, a)
 def qCos(c, a)
 	qcos(c, angle2rad(a))
 
+def qsincos(s, c, a)
+	int my(ang)
+	mod_fast(my(ang), a*(qsincos_n/(2*pi)), qsincos_n)
+	s = _qsin[my(ang)]
+	c = _qcos[my(ang)]
+
+def qSinCos(s, c, a)
+	qsincos(s, c, angle2rad(a))
+
 def qatan(a, t)
 	num my(_t) = t
 	if my(_t) > 0

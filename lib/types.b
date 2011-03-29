@@ -6,6 +6,7 @@ export float.h
 typedef uint8_t byte
 typedef double num
 typedef unsigned char boolean
+typedef unsigned char bit
   # TODO change all boolean to bool
 #typedef int bool
   # TODO hack around C++ with an ^ifndef __c_plus_plus ?
