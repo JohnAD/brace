@@ -1,0 +1,19 @@
+#!/usr/local/bin/cz --
+use b
+
+struct arc:
+	num x0, y0, x1, y1, angle, bend
+
+struct shape:
+	int n_arcs
+	arc *arcs
+
+shape *s = &(shape){2, (arc[2]){{-1,0,1,0,M_PI,1},{1,0,-1,0,M_PI/2,-0.5}}}
+
+arc_draw(arc *a):
+	# XDrawArc is useless
+
+
+Main:
+	space()
+	circle(0, 0, 100)
