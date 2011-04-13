@@ -1,19 +1,92 @@
 #!/usr/local/bin/cz --
 use b
 
+# TODO try with GL
+
 struct arc:
-	num x0, y0, x1, y1, angle, bend
+	num x0, y0, x1, y1, angle, bend, shear
 
 struct shape:
 	int n_arcs
 	arc *arcs
 
-shape *s = &(shape){2, (arc[2]){{-1,0,1,0,M_PI,1},{1,0,-1,0,M_PI/2,-0.5}}}
+shape_calc(polygon *p, shape *s):
+	for(i, 0, s->n_arcs):
+		arc_calc(p, &s->arcs[i])
 
-arc_draw(arc *a):
-	# XDrawArc is useless
+const num pi2 = M_PI * 2
 
+#def trig_unit deg
+
+arc_calc(polygon *p, arc *a):
+	calc_arc(p, a->x0, a->y0, a->x1, a->y1, a->angle, a->bend, a->shear)
+
+# max number of pixels error
+num calc_arc_dev = 0.25
+calc_arc(polygon *p, num x0, num y0, num x1, num y1, num angle, num bend, num shear):
+	num dx, dy, d, hf, ox, oy, r, da, x, y, s, c, x_, y_, altx, alty, alt
+
+	# TODO try it with GL/GLES - GL_POLYGON / GL_TRIANGLE_FAN;  compare the performance to X11 polygons.
+	# TODO put the GL and GLES support in libb, and configured in BRACE_USE
+	# TODO use transformation matrix for X11 if not using GL.  But, should use GL.
+	# TODO apply shear
+
+	if angle == 0:
+		polygon_point(p, x0, y0)
+		return
+
+	dx = (x1 - x0)/2
+	dy = (y1 - y0)/2
+	d = hypot(dx, dy)
+
+	# calc origin
+	hf = 1 / Tan(angle / 2)
+	ox = x0 + dx + dy*hf * bend
+	oy = y0 + dy - dx*hf * bend
+
+	# radius
+	r = d / Sin(angle / 2)
+
+	# length
+#	l = pi2*r * angle / 360
+
+	# delta angle
+	# r * (1 - Cos(da/2)) == calc_arc_dev
+	da = Acos(1 - calc_arc_dev * a_pixel / r) * 2
+#	warn("da = %f   old_da(3) = %f  old_da(16) = %f", da, angle / l * 3 * a_pixel, angle / l * 16 * a_pixel)
+
+#	da = angle / l * calc_arc_d * a_pixel
+
+	altx = dy * hf
+	alty = -dx * hf
+	alt = hypot(altx, alty)
+	altx /= alt
+	alty /= alt
+
+	polygon_point(p, x0, y0)
+	for(a, -angle/2, angle/2, da):
+		s = Sin(a)
+		c = Cos(a) * bend
+		x_ = s * r
+		y_ = c * r
+		x = dy * hf
+		x = ox - x_ * alty - y_ * altx
+		y = oy + x_ * altx - y_ * alty
+		polygon_point(p, x, y)
 
 Main:
 	space()
-	circle(0, 0, 100)
+	zoom(100)
+	shape *s = &(shape){2, (arc[]){{-1,0,1,0.5,90,1,0},{1,0.5,-1,0,180,0.75,0}}}
+	new(p, polygon, 240)
+	bm()
+	int rep = 1000
+	repeat(rep):
+		shape_calc(p, s)
+		blue()
+		polygon_fill(p)
+		yellow()
+		polygon_draw(p)
+		polygon_clear(p)
+	polygon_end(p)
+	bm("drew it", rep)

@@ -1,0 +1,87 @@
+#!/usr/local/bin/cz --
+use b
+
+# TODO try with GL
+
+struct arc:
+	num x0, y0, x1, y1, angle, bend, shear
+
+struct shape:
+	int n_arcs
+	arc *arcs
+
+shape_draw(shape *s, bit fill):
+	for(i, 0, s->n_arcs):
+		arc_draw(&s->arcs[i], fill)
+
+const num pi2 = M_PI * 2
+
+#def trig_unit deg
+
+arc_draw(arc *a, bit fill):
+	draw_arc(a->x0, a->y0, a->x1, a->y1, a->angle, a->bend, a->shear, fill)
+
+# max number of pixels error
+num draw_arc_dev = 0.25
+draw_arc(num x0, num y0, num x1, num y1, num angle, num bend, num shear, bit fill):
+	num dx, dy, d, hf, ox, oy, r, da, x, y, s, c
+
+	if angle == 0:
+		line(x0, y0, x1, y1)
+		return
+
+	dx = x1 - x0
+	dy = y1 - y0
+	d = hypot(dx, dy)
+
+	# calc origin
+	hf = 0.5 / Tan(angle / 2)
+	ox = x0 + dx/2 + dy*hf * bend
+	oy = y0 + dy/2 - dx*hf * bend
+
+	# radius
+	r = d / 2 / Sin(angle / 2)
+
+	# length
+#	l = pi2*r * angle / 360
+
+	# delta angle
+	# r * (1 - Cos(da/2)) == draw_arc_dev
+	da = Acos(1 - draw_arc_dev * a_pixel / r) * 2
+#	warn("da = %f   old_da(3) = %f  old_da(16) = %f", da, angle / l * 3 * a_pixel, angle / l * 16 * a_pixel)
+
+#	da = angle / l * draw_arc_d * a_pixel
+
+	move(x0, y0)
+	x0 -= ox ; y0 -= oy
+	for(a, .0, angle, da):
+		s = Sin(a)
+		c = Cos(a)
+		x = ox + c * x0 + s * y0
+		y = oy + c * y0 - s * x0
+		if fill:
+			move(ox, oy)
+			triangle(x, y)
+		 else:
+			draw(x, y)
+#			draw(ox, oy)
+#			move(x, y)
+	if fill:
+		move(ox, oy)
+		triangle(x1, y1)
+	 else:
+		draw(x1, y1)
+
+#	point(ox, oy)
+
+Main:
+	space()
+	zoom(100)
+	shape *s = &(shape){2, (arc[]){{-1,0,1,0.5,180,1,0},{1,0.5,-1,0,90,1,0}}}
+	bm()
+	repeat(1000)
+		blue()
+		shape_draw(s, 1)
+		yellow()
+		shape_draw(s, 0)
+	bm("drew it 1000 times")

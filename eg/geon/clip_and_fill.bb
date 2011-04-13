@@ -84,7 +84,7 @@ poly_vec3_vp_clip_and_fill(poly_vec3 poly)
 		# no crossings! easy!
 		#debug("no crossings!\n")
 		if first_point_visible
-			polygon_start(&render_poly, poly.size())
+			polygon_init(&render_poly, poly.size())
 			add_poly_arc_to_polygon(render_poly, poly, 0, 0)
 			polygon_fill(&render_poly)
 			polygon_end(&render_poly)
@@ -92,7 +92,7 @@ poly_vec3_vp_clip_and_fill(poly_vec3 poly)
 		# hoho, figure out what polygons to render
 		#debug("crossings!!!\n")
 		do
-			polygon_start(&render_poly, poly.size())
+			polygon_init(&render_poly, poly.size())
 			# start at an `in'
 			in_angle_to_arc_t::iterator i
 			i = in_angle_to_arc.begin()

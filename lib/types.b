@@ -4,7 +4,7 @@ export limits.h
 export float.h
 
 typedef uint8_t byte
-typedef double num
+typedef double num   # TODO allow num -> float
 typedef unsigned char boolean
 typedef unsigned char bit
   # TODO change all boolean to bool

@@ -8,6 +8,7 @@ Def trig_unit deg
 # TODO: trig01, trig_neg1_to_1, grad
 
 const num pi = M_PI
+const num pi2 = M_PI * 2
 const num e = M_E
 
 def Rad(a) deg2rad(a)

@@ -402,7 +402,7 @@ struct polygon
 	int n_points
 	int space
 
-polygon_start(struct polygon *p, int n_points_estimate)
+polygon_init(struct polygon *p, int n_points_estimate)
 	p->points = Malloc(n_points_estimate * sizeof(XPoint))
 	p->n_points = 0
 	p->space = n_points_estimate
@@ -439,6 +439,9 @@ polygon_fill(struct polygon *p)
 	# should probably use Nonconvex instead of Complex,
 	# it might be faster
 	gr__change_hook()
+
+polygon_clear(struct polygon *p)
+	p->n_points = 0
 
 polygon_end(struct polygon *p)
 	Free(p->points)

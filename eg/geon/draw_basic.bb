@@ -30,7 +30,7 @@ draw_to_vec3_vp(vec3 v)
 
 poly_vec3_vp_and_fill(const poly_vec3 &poly)
 	polygon p
-	polygon_start(&p, poly.size())
+	polygon_init(&p, poly.size())
 	accumulate(poly.begin(), poly.end(), &p, vec3_polygon_accumulator)
 	polygon_fill(&p)
 	polygon_end(&p)

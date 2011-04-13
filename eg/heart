@@ -44,7 +44,7 @@ heart(num x, num y, num r)
 			num y_down = rt3on2*squash_y * r0*2
 			num yoff = (y_down - y_up)/2
 
-			polygon_start(p, 100)
+			polygon_init(p, 100)
 
 			num a
 			
