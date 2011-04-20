@@ -13,8 +13,11 @@ lsleep(num dt)
 #	rtime_to_timeval(dt, &v.it_value)
 #	v.it_interval.tv_sec = v.it_interval.tv_usec = 0
 #	Setitimer(ITIMER_REAL, &v, NULL)
+
+	# TODO it would be good to block then reenable signals somehow,
+	# but don't think there is such a 'sleep'.
 	Ualarm(dt)
-	rsleep(dt+1)
+	rsleep(dt+asleep_small/10)
 
 typedef struct itimerval itimerval
 

@@ -321,3 +321,56 @@ struct pointn2
 	num x[2]
 struct pointn3
 	num x[3]
+
+
+def sin_cos(s, c, a):
+	s = sin(a)
+	c = cos(a)
+
+def Sin_Cos(s, c, a):
+	s = Sin(a)
+	c = Cos(a)
+
+def sin_cos(s, c, a, r):
+	s = sin(a) * r
+	c = cos(a) * r
+
+def Sin_Cos(s, c, a, r):
+	s = Sin(a) * r
+	c = Cos(a) * r
+
+
+struct affine2d:
+	num x[6]
+
+affine2d_id(affine2d *m):
+	*m = (affine2d){{ 1,0, 0,1, 0,0 }}
+
+affine2d_tlt(affine2d *m, num x, num y):
+	*m = (affine2d){{ 1,0, 0,1, x,y }}
+
+affine2d_rot(affine2d *m, num a):
+	num s, c
+	sin_cos(s, c, a)
+	*m = (affine2d){{ c,s, -s,c, 0,0 }}
+
+affine2d_rot_tlt(affine2d *m, num a, num x, num y):
+	num s, c
+	sin_cos(s, c, a)
+	*m = (affine2d){{ c,s, -s,c, x,y }}
+
+affine2d_mul(affine2d *o, affine2d *a_, affine2d *b_):
+	num *a = a_->x, *b = b_->x
+	*o = (affine2d){{
+	 a[0]*b[0] + a[1]*b[2], a[0]*b[1] + a[1]*b[3],
+	 a[2]*b[0] + a[3]*b[2], a[2]*b[1] + a[3]*b[3],
+	 a[4]*b[0] + a[5]*b[2] + b[4], a[4]*b[1] + a[5]*b[3] + b[5] }}
+
+def affine2d_apply(x_, y_, x, y, m_):
+	affine2d_apply_(x_, y_, x, y, m_, my(m))
+def affine2d_apply_(x_, y_, x, y, m_, m):
+	num *m = m_->x
+	let(my(x__), m[0] * x + m[2] * y + m[4])
+	y_ = m[1] * x + m[3] * y + m[5]
+	x_ = my(x__)
+

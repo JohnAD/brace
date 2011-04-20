@@ -1,0 +1,28 @@
+#!/usr/local/bin/cz --
+use b
+
+main:
+	qmath_init()
+	space()
+	num x, y, x_, y_
+	affine2d m, n
+	affine2d_rot(&m, 60*pi/180)
+	affine2d_tlt(&n, -100, -100)
+	affine2d_mul(&m, &n, &m)
+	for(x, -100.0, 100)
+		y = sin(x/100*pi)*100
+		affine2d_apply(x_, y_, x, y, &m)
+		point(x, y)
+		point(x_, y_)
+
+	num s, c
+	curve()
+	for(a, -180.0, 180):
+		Sin_Cos(s, c, a, 500)
+		curve(s, c)
+
+
+# moved -> libb:
+
+
+# TODO move -> libb:

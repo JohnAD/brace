@@ -382,14 +382,19 @@ def disc(r)
 	disc(lx, ly, r)
 
 boolean curve_at_start = 1
+num curve0_x, curve0_y
 def curve()
 	curve_at_start = 1
 curve(num x, num y)
 	if curve_at_start
 		move(x, y)
+		curve0_x = x
+		curve0_y = y
 		curve_at_start = 0
 	 else
 	 	draw(x, y)
+curve_close()
+	curve(curve0_x, curve0_y)
 
 def for_pixels(px)
 	pixel_type *px = pixel()

@@ -141,7 +141,7 @@ boolean sleep_debug = 0
 # You should call it once first outside the loop to initialize it.
 # The first time you call it, it records csleep_last, and optionally syncs the
 # current time to match the step so printing the time will make more sense.  If
-# one sleep is to short, the next will probably be longer.  If too long, the
+# one sleep is too short, the next will probably be longer.  If too long, the
 # next should be shorter.
 # TODO do this as an object, and make it proc compatible.
 
@@ -195,7 +195,7 @@ long double asleep(long double dt, long double t)
 	if dt <= 0.0
 		return t
 	t += dt
-	if dt <= asleep_small
+	if dt <= asleep_small * 2     # the * 2 ensures lsleep is called with a delay >= asleep_small
 		long double t1
 		while (t1=rtime()) < t
 			.
