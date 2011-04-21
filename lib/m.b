@@ -374,3 +374,46 @@ def affine2d_apply_(x_, y_, x, y, m_, m):
 	y_ = m[1] * x + m[3] * y + m[5]
 	x_ = my(x__)
 
+
+struct affine3d:
+	num x[12]
+
+affine3d_id(affine3d *m):
+	*m = (affine3d){{ 1,0,0, 0,1,0, 0,0,1, 0,0,0 }}
+
+affine3d_tlt(affine3d *m, num x, num y, num z):
+	*m = (affine3d){{ 1,0,0, 0,1,0, 0,0,1, x,y,z }}
+
+affine3d_rot_z(affine3d *m, num a):
+	num s, c
+	sin_cos(s, c, a)
+	*m = (affine3d){{ c,s,0, -s,c,0, 0,0,1, 0,0,0 }}
+
+affine3d_rot_x(affine3d *m, num a):
+	num s, c
+	sin_cos(s, c, a)
+	*m = (affine3d){{ 1,0,0, 0,c,s, 0,-s,c, 0,0,0 }}
+
+affine3d_rot_y(affine3d *m, num a):
+	num s, c
+	sin_cos(s, c, a)
+	*m = (affine3d){{ c,0,-s, 0,1,0, s,0,c, 0,0,0 }}
+
+affine3d_mul(affine3d *o, affine3d *a_, affine3d *b_):
+	num *a = a_->x, *b = b_->x
+	*o = (affine3d){{
+	 a[0]*b[0] + a[1]*b[3] + a[2]*b[6], a[0]*b[1] + a[1]*b[4] + a[2]*b[7], a[0]*b[2] + a[1]*b[5] + a[2]*b[8],
+	 a[3]*b[0] + a[4]*b[3] + a[5]*b[6], a[3]*b[1] + a[4]*b[4] + a[5]*b[7], a[3]*b[2] + a[4]*b[5] + a[5]*b[8],
+	 a[6]*b[0] + a[7]*b[3] + a[8]*b[6], a[6]*b[1] + a[7]*b[4] + a[8]*b[7], a[6]*b[2] + a[7]*b[5] + a[8]*b[8],
+	 a[9]*b[0] + a[10]*b[3] + a[11]*b[6] + b[9], a[9]*b[1] + a[10]*b[4] + a[11]*b[7] + b[10], a[9]*b[2] + a[10]*b[5] + a[11]*b[8] + b[11] }}
+
+def affine3d_apply(x_, y_, z_, x, y, z, m_):
+	affine3d_apply_(x_, y_, z_, x, y, z, m_, my(m))
+def affine3d_apply_(x_, y_, z_, x, y, z, m_, m):
+	num *m = m_->x
+	let(my(x__), m[0] * x + m[3] * y + m[6] * z + m[9])
+	let(my(y__), m[1] * x + m[4] * y + m[7] * z + m[10])
+	z_ = m[2] * x + m[5] * y + m[8] * z + m[11]
+	x_ = my(x__)
+	y_ = my(y__)
+
