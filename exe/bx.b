@@ -28,7 +28,7 @@ Main()
 
 	let(brace_bin_dir, dir_name(brace))
 	if add_to_PATH
-		Putenv(format("PATH=%s%c%s", brace_bin_dir, PATH_sep, Getenv("PATH")))
+		Putenv(Format("PATH=%s%c%s", brace_bin_dir, PATH_sep, Getenv("PATH")))
 
 	let(brace_dir, dir_name(brace_bin_dir))
 	let(brace_lib_dir, path_cat(brace_dir, "lib"))
@@ -51,9 +51,9 @@ Main()
 
 	dirbasename(strdup(b), dir, base)
 
-	volatile cstr x = path_tidy(format("%s%c.%s%s", dir, path__sep, base, EXE))
-	cstr lockfile = path_tidy(format("%s%c.%s.lock", dir, path__sep, base))
-	cstr log = path_tidy(format("%s%c.%s.log", dir, path__sep, base))
+	volatile cstr x = path_tidy(Format("%s%c.%s%s", dir, path__sep, base, EXE))
+	cstr lockfile = path_tidy(Format("%s%c.%s.lock", dir, path__sep, base))
+	cstr log = path_tidy(Format("%s%c.%s.log", dir, path__sep, base))
 
 	new(b_stat, Stats, b)
 	if !S_EXISTS(b_stat->st_mode)
@@ -88,7 +88,7 @@ Main()
 				try(err)
 					do
 						if mingw
-							status = Systeml(format("sh%s", EXE), br, langopt, b, x, NULL)
+							status = Systeml(Format("sh%s", EXE), br, langopt, b, x, NULL)
 						 else
 							status = Systeml(br, langopt, b, x, NULL)
 					 while status == br_return_again_after_fix

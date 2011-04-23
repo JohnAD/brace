@@ -24,7 +24,7 @@ jabber_init(jabber *j, cstr server, cstr user, cstr pass, cstr resource,
 	vec_init(j->present, cstr, 16)
 
 	j->c = Lm_connection_new(server)
-	lm_connection_set_jid(j->c, format("%s@%s", user, server))
+	lm_connection_set_jid(j->c, Format("%s@%s", user, server))
 	lm_connection_set_keep_alive_rate(j->c, 30)
 	Lm_connection_open_and_block(j->c)
 	Lm_connection_authenticate_and_block(j->c, user, pass, resource)

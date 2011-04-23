@@ -134,9 +134,9 @@ def toss() randi() > RANDI_MAX/2
 # TODO speed up some other rand functions like with toss
 
 seed()
-	int s = (int)((rmod(rtime()*1000, pow(2, 32)))) ^ (getpid()<<16)
+	uint s = (uint)(rmod(rtime()*1000, pow(2, 32))) ^ (getpid()<<16)
 	seed(s)
-def seed(s) srandom(s)
+def seed(s) srandom((uint)s)
 
 # TODO remap to Mod ?
 int mod(int i, int base)

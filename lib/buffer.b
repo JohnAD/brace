@@ -128,7 +128,7 @@ int Sprintf(buffer *b, const char *format, ...)
 
 # TODO move these?
 
-cstr format(const char *format, ...)
+cstr Format(const char *format, ...)
 	collect(vformat, format)
 
 cstr vformat(const char *format, va_list ap)

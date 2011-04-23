@@ -19,7 +19,7 @@ Main()
 		Say(program)
 
 		if exists(program)
-			cstr tilde = format("%s~", program)
+			cstr tilde = Format("%s~", program)
 			if exists(tilde)
 				error("tilde file %s exists already", tilde)
 			Rename(program, tilde)

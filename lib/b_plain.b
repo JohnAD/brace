@@ -16,6 +16,7 @@ export cgi
 export qmath
 export mime
 export meta
+export device
 
 # export tty
 #   curses has conflicting symbols with libb etc, see ../curses_syms_conflicts

@@ -20,12 +20,12 @@ cgi_png(int w, int h, num scale)
 	cgi_content_type("image/png")
 #	Say("Content-Type: text/plain\r")
 
-	Putenv(format("DISPLAY=%s", cgi_png_display))
+	Putenv(Format("DISPLAY=%s", cgi_png_display))
 #	Setenv("PATH", "/home/sam/all/brace/exe:/usr/lib/ccache/bin:/home/share/aliases:/home/share/hacks:/home/share/abbrev:/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin:/usr/local/bin:/usr/local/sbin:/opt/bin:/opt/blackdown-jre-1.4.1/bin:/usr/games:/home/share/lib/sh:/home/sam/all/darcs-utils")
 	cstr user = whoami()
 	Setenv("USER", user)
-	Putenv(format("HOME=/home/%s", user))
-#	Setenv("HOME", format("/home/%s", user))
+	Putenv(Format("HOME=/home/%s", user))
+#	Setenv("HOME", Format("/home/%s", user))
 
 	Systemf(SH_QUIET "tightvncserver -kill %s; tightvncserver %s -geometry %dx%d -depth 16 ; xsetroot -solid black", cgi_png_display1, cgi_png_display1, w, h)
 	# FIXME set resolution based on paper size!

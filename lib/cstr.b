@@ -100,12 +100,12 @@ cstr cstr_of_size(size_t n)
 
 # TODO maybe rename cstr_copy to cstr_dup
 def cstr_copy(s) Strdup(s)
-def cstr_cat(a, b) format("%s%s", a, b)
-def cstr_cat(a, b, c) format("%s%s%s", a, b, c)
-def cstr_cat(a, b, c, d) format("%s%s%s%s", a, b, c, d)
-def cstr_cat(a, b, c, d, e) format("%s%s%s%s%s", a, b, c, d, e)
-def cstr_cat(a, b, c, d, e, f) format("%s%s%s%s%s%s", a, b, c, d, e, f)
-def cstr_cat(a, b, c, d, e, f, g) format("%s%s%s%s%s%s%s", a, b, c, d, e, f, g)
+def cstr_cat(a, b) Format("%s%s", a, b)
+def cstr_cat(a, b, c) Format("%s%s%s", a, b, c)
+def cstr_cat(a, b, c, d) Format("%s%s%s%s", a, b, c, d)
+def cstr_cat(a, b, c, d, e) Format("%s%s%s%s%s", a, b, c, d, e)
+def cstr_cat(a, b, c, d, e, f) Format("%s%s%s%s%s%s", a, b, c, d, e, f)
+def cstr_cat(a, b, c, d, e, f, g) Format("%s%s%s%s%s%s%s", a, b, c, d, e, f, g)
 
 cstr cstr_chop_end(cstr c, cstr end)
 	Realloc(c, end - c)

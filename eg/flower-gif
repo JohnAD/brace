@@ -48,7 +48,7 @@ Main()
 		Paint()
 		gr_sync()
 
-		cstr file = format("flower-%06d.gif", count++)
+		cstr file = Format("flower-%06d.gif", count++)
 		dump_img("gif", file, 0.25)
 		Free(file)
 

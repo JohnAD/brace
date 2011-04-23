@@ -87,7 +87,7 @@ cstr path_relative_to(cstr path, cstr origin)
 		return path
 	origin = Strdup(origin)
 	let(dir, dir_name(origin))
-	let(_path, format("%s" path__sep_cstr "%s", dir, path))
+	let(_path, Format("%s" path__sep_cstr "%s", dir, path))
 	Free(origin)
 	Free(path)
 	return _path
@@ -211,9 +211,9 @@ boolean path_hidden_normal(cstr p)
 boolean path_has_component(cstr path, cstr component)
 	# XXX inefficient
 	# XXX if path uses / but component \ for example on win32, it won't work - fix it using path_tidy first
-	let(c0, format(path__sep_cstr "%s" path__sep_cstr, component))
-	let(c1, format(path__sep_cstr "%s", component))
-	let(c2, format("%s" path__sep_cstr, component))
+	let(c0, Format(path__sep_cstr "%s" path__sep_cstr, component))
+	let(c1, Format(path__sep_cstr "%s", component))
+	let(c2, Format("%s" path__sep_cstr, component))
 	boolean has = strstr(path, c0) ||
 	 cstr_ends_with(path, c1) ||
 	 cstr_begins_with(path, c2) ||
@@ -260,13 +260,13 @@ cstr Which(cstr file)
 
 PATH_prepend(cstr dir)
 	PATH_rm(dir)
-	cstr new_PATH = format("%s%c%s", dir, PATH_sep, Getenv("PATH"))
+	cstr new_PATH = Format("%s%c%s", dir, PATH_sep, Getenv("PATH"))
 	Setenv("PATH", new_PATH)
 	Free(new_PATH)
 
 PATH_append(cstr dir)
 	PATH_rm(dir)
-	cstr new_PATH = format("%s%c%s", Getenv("PATH"), PATH_sep, dir)
+	cstr new_PATH = Format("%s%c%s", Getenv("PATH"), PATH_sep, dir)
 	Setenv("PATH", new_PATH)
 	Free(new_PATH)
 

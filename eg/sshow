@@ -85,7 +85,7 @@ show_slides(vec *lines, int start_page)
 			f_in(Popen(l+2, "r")):
 				show_slides(lines, start_page)
 		 eif *l == '<'
-			F_in(tofree(format("%s/%s", demos_dir, l+1)))
+			F_in(tofree(Format("%s/%s", demos_dir, l+1)))
 				show_slides(lines, start_page)
 		 else
 		 	if !end_of_page
@@ -206,7 +206,7 @@ run_demo(cstr file)
 		Close(3)
 		System(file)
 		Exit(0)
-#		Execl(format("%s/%s", demos_dir, file), NULL)
+#		Execl(Format("%s/%s", demos_dir, file), NULL)
 	gr_do_delay(delay_demo)
 	kill_demo_child()
 	Rsleep(x_expose_delay)

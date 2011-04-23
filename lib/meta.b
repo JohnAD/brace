@@ -10,7 +10,7 @@ type_add(type *t)
 	if among(t->type, TYPE_STRUCT, TYPE_UNION)
 		decl_cast(s, type__struct_union, t)
 		for(i, 0, s->n)
-			cstr element_name = format("%s.%s", name, s->e[i].name)
+			cstr element_name = Format("%s.%s", name, s->e[i].name)
 			put(type_ix, element_name, i)
 
 type *type_get(cstr name)

@@ -1031,7 +1031,7 @@ gprint(char *p)
 #	Rsleep(1)
 
 font(cstr name, int size)
-	let(xfontname, format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
+	let(xfontname, Format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
 	xfont(xfontname)
 	Free(xfontname)
 

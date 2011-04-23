@@ -43,7 +43,7 @@ boolean gr_alloced = 0
 
 # TODO remember font name and size?
 font(cstr name, int size)
-	let(xfontname, format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
+	let(xfontname, Format("-*-%s-r-normal--%d-*-100-100-p-*-iso8859-1", name, size))
 	xfont(xfontname)
 	Free(xfontname)
 
@@ -589,10 +589,10 @@ dump_img(cstr type, cstr file, num scale)
 		new(b, buffer, 256)
 		system_quote(file, b)
 		cstr file_q = buffer_to_cstr(b)
-		file_out = format("> %s", file_q)
+		file_out = Format("> %s", file_q)
 		Free(file_q)
 	if scale != 1
-		scale_filter = format("pnmscale %f |", scale)
+		scale_filter = Format("pnmscale %f |", scale)
 	Systemf(SH_QUIET "xwd -id %ld | xwdtopnm | %s %s %s", window, scale_filter, tool, file_out)
 	 # pnmcrop -black
 	if file

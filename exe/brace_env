@@ -23,8 +23,8 @@ USER_CFLAGS="$CFLAGS" ; CFLAGS=""
 USER_LDFLAGS="$LDFLAGS" ; LDFLAGS=""
 USER_LDLIBS="$LDLIBS" ; LDLIBS=""
 
-CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS"  # WTF needs --shared??
-CFLAGS="$CFLAGS -I/usr/local/include"
+CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT"  # WTF needs --shared??
+CFLAGS="$CFLAGS -I/usr/local/include -I/usr/include/SDL"
 LDLIBS="$LDLIBS -L/usr/local/lib"
 
 # msys 'which' is a shell script which for some reason won't run from here :/
@@ -72,9 +72,9 @@ fi
 
 if [ -z "$BRACE_USE" ]; then
 	LDLIBS="$LDLIBS -lm"
-	LDLIBS_FANCY="$LDLIBS_FANCY -lpng"
+	LDLIBS_FANCY="$LDLIBS_FANCY -lpng -lSDL -lSDL_mixer"
 	if [ -n "$MINGW" ]; then
-		BRACE_USE="cz- mingw gnu- bsd- linux- modern-"
+		BRACE_USE="cz- mingw gnu- bsd- linux- modern- pc gl"
 		BRACE_USE="$BRACE_USE io-select"
 		LDFLAGS="$LDFLAGS -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc"
 		LDLIBS="$LDLIBS -lws2_32"
@@ -142,6 +142,19 @@ if [ -z "$BRACE_USE" ]; then
 		if [ "$UNAME" != "linux" -a "$UNAME" != "hurd" -a "$UNAME" != "gnu" ]; then
 			BRACE_USE="$BRACE_USE gnu-"
 		fi
+
+		# devices: TODO N900, etc.
+		if [ -e '/proc/pandora' ]; then
+			DEVICE=pandora
+			GL=gles
+			LDLIBS_FANCY="$LDLIBS_FANCY -lEGL -lGLES_CM -lpvrPVR2D_X11WSEGL"
+		else
+			DEVICE=pc
+			GL=gl
+			LDLIBS_FANCY="$LDLIBS_FANCY -lGL"
+		fi
+		BRACE_USE="$BRACE_USE $DEVICE $GL"
+
 	fi
 	BU=""
 	for A in $BRACE_USE; do
