@@ -17,13 +17,13 @@ fb_var_screeninfo framebuffer_info
 framebuffer_init():
 	int rv
 	int Bpp
+	framebuffer_fd = Open(framebuffer_file, O_RDWR)
 	Ioctl(rv, framebuffer_fd, FBIOGET_VSCREENINFO, framebuffer_info)
 	w = framebuffer_info.xres
 	h = framebuffer_info.yres
 	depth = framebuffer_info.bits_per_pixel
 	Bpp = depth / 8
 	framebuffer_buflen = w*h*Bpp
-	framebuffer_fd = Open(framebuffer_file, O_RDWR)
 	framebuffer = Mmap(NULL, framebuffer_buflen, PROT_WRITE, MAP_SHARED, framebuffer_fd, 0)
 	vid = (void*)framebuffer
 	w_2 = w/2 ; h_2 = h/2
