@@ -1,5 +1,48 @@
 export SDL.h
 export SDL_mixer.h
+export gl
+
+int audio_rate = 44100
+Uint16 audio_format = AUDIO_S16
+int audio_channels = 2
+int audio_buffers = 4096
+
+bit mix_open
+Mix_Music *music
+
+SDL_Surface *sdl_surface
+
+sdl_init(int vw, int vh, bit fullscreen, cstr title):
+	if SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) < 0:
+		error("Unable to init SDL: %s\n", SDL_GetError())
+	atexit(sdl_pre_exit)
+
+	if Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers):
+		failed("Mix_OpenAudio")
+	mix_open = 1
+
+	# TODO: remove these?  they are not necessary / already the default?
+	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1)
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
+#	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1)
+#	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4)
+
+	# TODO can't specify desired refresh rate with SDL?  use xrandr?  does not restore nicely in that case.
+	sdl_surface = SDL_SetVideoMode(vw, vh, 32, sdl_gl_mode|(fullscreen?SDL_FULLSCREEN:0))
+	if !sdl_surface:
+		error("Unable to set %dx%d video: %s\n", vw, vh, SDL_GetError())
+#	Systemf("xrandr -r %.0f", fps)
+	gl_init()
+#	glEnable(GL_MULTISAMPLE)
+#	glEnable(GL_POINT_SMOOTH)
+#	glEnable(GL_LINE_SMOOTH)
+
+	SDL_WM_SetCaption(title, title)
+	SDL_ShowCursor(SDL_DISABLE)
+
+	which sdl_surface->format->BytesPerPixel:
+	4	.
+	else	error("Need 32bpp video, but not available")
 
 struct sdl_key
 	cstr name
@@ -263,3 +306,25 @@ cstr sdl_key_name_by_code(SDLKey code)
 			return k->name
 	return NULL
 
+sdl_pre_exit:
+	if mix_open:
+		stop_music()
+		Mix_CloseAudio()
+	gl_final()
+	SDL_Quit()
+
+stop_music:
+	if Mix_PlayingMusic():
+		Mix_HaltMusic()
+	if music:
+		Mix_FreeMusic(music)
+
+play_music(cstr music_file):
+	music = Mix_LoadMUS(music_file)
+	Mix_PlayMusic(music, -1)
+#	Mix_HookMusicFinished(music_done)
+
+#music_done:
+#	Mix_HaltMusic()
+#	Mix_FreeMusic(music)
+#	music = NULL

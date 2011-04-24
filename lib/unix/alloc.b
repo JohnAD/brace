@@ -14,3 +14,8 @@ int Munmap(void *addr, size_t length)
 		failed("munmap")
 	return rv
 
+Msync(void *addr, size_t length, int flags):
+	int rv = msync(addr, length, flags)
+	if rv < 0:
+		failed("msync")
+

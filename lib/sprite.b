@@ -33,7 +33,7 @@ def pixn_g(p) pix_g(p) / 256.0
 def pixn_b(p) pix_b(p) / 256.0
 def pixn_a(p) pix_a(p) / 256.0
 
-def pixn_rgb(r, g, b) pix_rgb((int)r*256, (int)g*256, (int)b*256)
+def pixn_rgb(r, g, b) pix_rgb((int)(r*256), (int)(g*256), (int)(b*256))
 def pixn_rgb_safish(r, g, b) pix_rgb(n_to_byte_top(r), n_to_byte_top(g), n_to_byte_top(b))
 def pixn_rgb_safe(r, g, b) pix_rgb(n_to_byte(r), n_to_byte(g), n_to_byte(b))
 
