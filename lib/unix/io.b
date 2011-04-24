@@ -162,3 +162,24 @@ nonblock_fcntl(int fd, int nb)
 		Fcntl_setfl(fd, Fcntl_getfl(fd) & ~O_NONBLOCK)
 
 def O_BINARY 0
+
+def Ioctl(rv, d, request)
+	rv = ioctl(d, request)
+	if rv == -1:
+		failed("ioctl")
+
+def Ioctl(rv, d, request, a0)
+	rv = ioctl(d, request, a0)
+	if rv == -1:
+		failed("ioctl")
+
+def Ioctl(rv, d, request, a0, a1)
+	rv = ioctl(d, request, a0, a1)
+	if rv == -1:
+		failed("ioctl")
+
+def Ioctl(rv, d, request, a0, a1, a2)
+	rv = ioctl(d, request, a0, a1, a2)
+	if rv == -1:
+		failed("ioctl")
+

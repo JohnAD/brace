@@ -11,14 +11,21 @@ cstr framebuffer_file = "/dev/fb0"
 int framebuffer_fd
 long *framebuffer
 size_t framebuffer_buflen
+typedef struct fb_var_screeninfo fb_var_screeninfo
+fb_var_screeninfo framebuffer_info
 
-framebuffer_init(int vw, int vh, int Bpp):
-	framebuffer_buflen = vw*vh*Bpp
+framebuffer_init():
+	int rv
+	int Bpp
+	Ioctl(rv, framebuffer_fd, FBIOGET_VSCREENINFO, framebuffer_info)
+	w = framebuffer_info.xres
+	h = framebuffer_info.yres
+	depth = framebuffer_info.bits_per_pixel
+	Bpp = depth / 8
+	framebuffer_buflen = w*h*Bpp
 	framebuffer_fd = Open(framebuffer_file, O_RDWR)
 	framebuffer = Mmap(NULL, framebuffer_buflen, PROT_WRITE, MAP_SHARED, framebuffer_fd, 0)
 	vid = (void*)framebuffer
-	depth = Bpp * 8
-	w = vw ; h = vh
 	w_2 = w/2 ; h_2 = h/2
 	vid_init()
 
@@ -32,4 +39,3 @@ framebuffer_final():
 wait_for_vsync():
 	int arg = 0
 	ioctl(framebuffer_fd, FBIO_WAITFORVSYNC, &arg)
-
