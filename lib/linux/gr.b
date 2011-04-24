@@ -18,7 +18,7 @@ framebuffer_init():
 	int rv
 	int Bpp
 	framebuffer_fd = Open(framebuffer_file, O_RDWR)
-	Ioctl(rv, framebuffer_fd, FBIOGET_VSCREENINFO, framebuffer_info)
+	Ioctl(rv, framebuffer_fd, FBIOGET_VSCREENINFO, &framebuffer_info)
 	w = framebuffer_info.xres
 	h = framebuffer_info.yres
 	depth = framebuffer_info.bits_per_pixel
