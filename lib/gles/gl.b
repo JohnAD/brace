@@ -3,6 +3,7 @@ export EGL/egl.h
 export GLES/gl.h
 
 def gl_num GLfloat
+def GL_NUM GL_FLOAT
 
 def sdl_gl_mode SDL_SWSURFACE|SDL_FULLSCREEN
 def must_be_fullscreen 1

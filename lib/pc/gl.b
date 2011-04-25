@@ -3,6 +3,7 @@ export SDL_opengl.h
 #use GL/glxext.h
 
 def gl_num GLdouble
+def GL_NUM GL_DOUBLE
 
 def sdl_gl_mode SDL_OPENGL
 def must_be_fullscreen 0

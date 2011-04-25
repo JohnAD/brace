@@ -12,7 +12,7 @@ Main()
 
 def fps1(pixel_type)
 	repeat
-		bm_start()
+#		bm_start()
 		pixel_type *px = pixel()
 		long x, y, x2, y2, r2
 		for y=-h_2; y<h_2; ++y
@@ -24,7 +24,7 @@ def fps1(pixel_type)
 				r2 += 2*x + 1
 #		csleep(1.0/30)
 #		Paint()
-		bm_ps("painted")
+#		bm_ps("painted")
 
 #local int rv = 0
 #def r() rv = ((rv * 12345678) ^ rv) + (rv>>17) + 89356913, rv < 0
