@@ -2,11 +2,14 @@
 use b
 
 Main()
-	http_debug = 1
+#	http_debug = 1
 	http_fake_browser(1)
 	eacharg(a)
 		cstr query = url_encode(a)
-		cstr url = Format("http://www.google.com/search?name=f&hl=en&q=%s", query)
+		int num = 10
+		int start = 0
+		cstr fmt = "http://www.google.com/search?name=f&hl=en&num=%d&start=%d&q=%s"
+		cstr url = Format(fmt, num, start, query)
 		Free(query)
 
 		new(b, buffer, 1024)
@@ -21,11 +24,11 @@ Main()
 		cb_io(cb, b_split)
 			html_split()
 
-		buffer_free(b)
+#		buffer_free(b)
 
-		circbuf_to_buffer(b, b_split)
+#		circbuf_to_buffer(b, b_split)
 
-		new(v, vec, search_results, 10)
+		new(v, vec, search_results, num)
 		cb_in(b_split)
 			Eachline(s)
 				if cstr_begins_with(s, "<a ") && strstr(s, " class=l")
@@ -62,37 +65,39 @@ Main()
 			sf("url:\t%s", i->href)
 			sf("title:\t%s", i->title)
 			sf("desc:\t%s", i->desc)
+			nl()
 
-			if !strstr(i->href, ".cpan.")
-				continue
-
-			i->html = http_get(i->href)
-			i->text = html2text(i->html)
-			cstr_dos_to_unix(i->text)
-
-			say("text:")
-
-			decl(b_text, buffer)
-			buffer_from_cstr(b_text, i->text)
-			b_in(b_text)
-				Eachline(s)
-					sf("\t%s", s)
-
-			say()
-
-			say("html:")
-
-			decl(b_html, buffer)
-			buffer_from_cstr(b_html, i->html)
-			b_in(b_html)
-				Eachline(s)
-					sf("\t%s", s)
-
-			say()
+#			if !strstr(i->href, ".cpan.")
+#				sf()
+#				continue
+#
+#			i->html = http_get(i->href)
+#			i->text = html2text(i->html)
+#			cstr_dos_to_unix(i->text)
+#
+#			say("text:")
+#
+#			decl(b_text, buffer)
+#			buffer_from_cstr(b_text, i->text)
+#			b_in(b_text)
+#				Eachline(s)
+#					sf("\t%s", s)
+#
+#			say()
+#
+#			say("html:")
+#
+#			decl(b_html, buffer)
+#			buffer_from_cstr(b_html, i->html)
+#			b_in(b_html)
+#				Eachline(s)
+#					sf("\t%s", s)
+#
+#			say()
 
 struct search_results
 	cstr href
 	cstr title
 	cstr desc
-	cstr html
-	cstr text
+#	cstr html
+#	cstr text

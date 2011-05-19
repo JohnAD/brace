@@ -13,10 +13,10 @@ long *framebuffer
 size_t framebuffer_buflen
 typedef struct fb_var_screeninfo fb_var_screeninfo
 fb_var_screeninfo framebuffer_info
+int Bpp  # TODO globalize into /gr.b
 
 framebuffer_init():
 	int rv
-	int Bpp
 	framebuffer_fd = Open(framebuffer_file, O_RDWR)
 	Ioctl(rv, framebuffer_fd, FBIOGET_VSCREENINFO, &framebuffer_info)
 	w = framebuffer_info.xres
