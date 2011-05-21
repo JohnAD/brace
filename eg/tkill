@@ -1,0 +1,15 @@
+#!/usr/local/bin/cz --
+use b
+
+cstr usage[] =
+	"tid [tgid [sig-num]]",
+	NULL
+
+Main:
+	int tid, tgid = -1, sig = 15
+	Getargs(int, tid)
+	getargs(int, tgid, sig)
+	if tgid >= 0:
+		Tgkill(tgid, tid, sig)
+	 else:
+		Tkill(tid, sig)

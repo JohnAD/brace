@@ -223,9 +223,10 @@ def hash_mult 101 #7123
 # TODO is this a good hash function?  I forget!
 unsigned long cstr_hash(void *s)
 	unsigned long rv = 0
-	for(i, cstr_range((char *)s))
+	char *i = s
+	while *i:
 		rv *= hash_mult
-		rv += *i
+		rv += *i++
 	return rv
 
 hashtable_dump(hashtable *ht)
