@@ -45,8 +45,13 @@ void *normal_Calloc(size_t nmemb, size_t size)
 
 def Talloc(type) Nalloc(type, 1)
 def Nalloc(type, nmemb) (type *)Malloc(nmemb * sizeof(type))
+
 def Zalloc(type) Zalloc(type, 1)
 def Zalloc(type, nmemb) (type *)Calloc(nmemb, sizeof(type))
+
+# Valloc, allocs void * = NULL; assuming zero here
+def Valloc(type) Valloc(type, 1)
+def Valloc(type, nmemb) Zalloc(type, nmemb)
 
 def Renalloc(ptr, type, nmemb) Realloc(ptr, nmemb * sizeof(type))
 

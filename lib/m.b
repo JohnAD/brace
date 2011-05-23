@@ -169,15 +169,15 @@ def rmod_fast(num m, num r, num base)
 
 def rdiv(r, base) floor(r / base)
 
-# typedef real vec2[2]
-# typedef real vec3[3]
-# 
-# vec2 unit2(real a)
-# 	vec2 v
-# 	v[0] = cos(a)
-# 	v[1] = sin(a)
-# 
-# def Unit2(a) unit2(deg2rad(a)
+#typedef real vec2[2]
+#typedef real vec3[3]
+#
+#vec2 unit2(real a)
+#	vec2 v
+#	v[0] = cos(a)
+#	v[1] = sin(a)
+#
+#def Unit2(a) unit2(deg2rad(a)
 
 num dist(num x0, num y0, num x1, num y1)
 	return hypot(x1-x0, y1-y0)
@@ -416,4 +416,36 @@ def affine3d_apply_(x_, y_, z_, x, y, z, m_, m):
 	z_ = m[2] * x + m[5] * y + m[8] * z + m[11]
 	x_ = my(x__)
 	y_ = my(y__)
+
+
+# prime 2^n-k below each 2^n
+# from: http://primes.utm.edu/lists/2small/
+# there are 401 of these primes, from 2^0+1, 2^1-1, 2^2-1, ... to 2^400-593
+
+const short primes_below_2pow[] = { -1, 0, 1, 1, 1, 1, 3, 1, 5, 3, 3, 9, 3, 1, 3, 19, 15, 1, 5, 1, 3, 9, 3, 15, 3, 39, 5, 39, 57, 3, 35, 1, 5, 9, 41, 31, 5, 25, 45, 7, 87, 21, 11, 57, 17, 55, 21, 115, 59, 81, 27, 129, 47, 111, 33, 55, 5, 13, 27, 55, 93, 1, 57, 25, 59, 49, 5, 19, 23, 19, 35, 231, 93, 69, 35, 97, 15, 33, 11, 67, 65, 51, 57, 55, 35, 19, 35, 67, 299, 1, 33, 45, 83, 25, 3, 15, 17, 141, 51, 115, 15, 69, 33, 97, 17, 13, 117, 1, 59, 31, 21, 37, 75, 133, 11, 67, 3, 279, 5, 69, 119, 73, 3, 67, 59, 9, 137, 1, 159, 25, 5, 69, 347, 99, 45, 45, 113, 13, 105, 187, 27, 9, 111, 69, 83, 151, 153, 145, 167, 31, 3, 195, 17, 69, 243, 31, 143, 19, 15, 91, 47, 159, 101, 55, 63, 25, 5, 135, 257, 643, 143, 19, 95, 55, 3, 229, 233, 339, 41, 49, 47, 165, 161, 147, 33, 303, 371, 85, 125, 25, 11, 19, 237, 31, 33, 135, 15, 75, 17, 49, 75, 55, 183, 159, 167, 81, 5, 91, 299, 33, 47, 175, 23, 3, 185, 157, 377, 61, 33, 121, 77, 3, 117, 235, 63, 49, 5, 405, 93, 91, 27, 165, 567, 3, 83, 15, 209, 181, 161, 87, 467, 39, 63, 9, 189, 163, 107, 81, 237, 75, 207, 9, 129, 273, 245, 19, 189, 93, 87, 361, 149, 223, 71, 747, 275, 49, 3, 265, 77, 241, 53, 169, 237, 205, 305, 129, 89, 103, 93, 69, 47, 139, 83, 45, 173, 9, 165, 115, 167, 493, 47, 19, 167, 601, 35, 171, 285, 123, 341, 69, 153, 265, 267, 121, 75, 103, 503, 99, 159, 493, 77, 45, 203, 139, 113, 465, 57, 33, 165, 795, 197, 9, 11, 141, 23, 399, 101, 595, 155, 139, 255, 61, 707, 483, 243, 321, 3, 75, 15, 147, 293, 229, 65, 199, 119, 475, 45, 211, 117, 285, 113, 61, 657, 139, 153, 49, 173, 243, 671, 411, 719, 369, 605, 75, 923, 169, 167, 487, 315, 25, 495, 741, 177, 333, 65, 679, 57, 259, 417, 19, 65, 313, 105, 31, 317, 265, 231, 615, 45, 21, 137, 105, 107, 93, 377, 531, 605, 81, 131, 91, 593 }
+
+def prime_2pow_32_log(n) 1L<<n - primes_below_2pow[n]
+def prime_2pow_64_log(n) 1LL<<n - primes_below_2pow[n]
+def prime_2pow_32(n) prime_2pow_32_log(log2int32(n)+1)
+def prime_2pow_64(n) prime_2pow_64_log(log2int64(n)+1)
+
+
+# find log2(n)
+# http://graphics.stanford.edu/~seander/bithacks.html#IntegerLogLookup
+
+static const char LogTable256[256] =
+	-1, 0, 1, 1, four(2), eight(3),
+	sixteen(4), sixteen(5), sixteen(5), sixteen(6), sixteen(6), sixteen(6), sixteen(6),
+	sixteen(7), sixteen(7), sixteen(7), sixteen(7), sixteen(7), sixteen(7), sixteen(7), sixteen(7)
+
+def log2int8(v) LogTable256[v]
+def log2int16(v) v>>8 ? 8 + log2int8(v>>8) : log2int8(v)
+def log2int32_(v) v>>16 ? 16 + log2int16(v>>16) : log2int16(v)
+def log2int64_(v) v>>32 ? 32 + log2int32_(v>>32) : log2int32_(v)
+
+int log2int32(uint32_t v):
+	return log2int32_(v)
+
+int log2int64(uint64_t v):
+	return log2int64_(v)
 

@@ -1680,3 +1680,9 @@ def break(cond)
 def Isalpha(c) isalpha((unsigned)c)
 def Isspace(c) isspace((unsigned)c)
 def Isalnum(c) isalnum((unsigned)c)
+
+Def two(n) n, n
+Def four(n) n, n, n, n
+Def eight(n) four(n), four(n)
+Def sixteen(n) eight(n), eight(n)
+

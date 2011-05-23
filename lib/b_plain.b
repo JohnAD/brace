@@ -1,7 +1,7 @@
 # This includes all the headers you're likely to need,
 # excluding graphics and sound (which require extra libraries / interface).
 
-export buffer cstr circbuf vec deq str rope list hash sym priq thunk cons
+export buffer cstr circbuf vec deq str rope list hash dict sym priq thunk cons
 export error alloc io path m time env find ccomplex
 export sched proc shuttle pipe timeout sock ccoro
 export types main util

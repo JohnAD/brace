@@ -1,0 +1,29 @@
+#!/usr/local/bin/cz --
+use b
+
+Main:
+	bm_start()
+	pr(int, test1())
+	bm("test1")
+
+	bm_start()
+	pr(int, test2())
+	bm("test2")
+
+int test1():
+	int n = 1031
+	int i = 0
+	int s = 211
+	repeat(1000000):
+		i += s
+		if i >= n:
+			i -= n
+	return i
+
+int test2():
+	int n = 1031
+	int i = 0
+	int s = 211
+	repeat(1000000):
+		i = (i + s) % n
+	return i

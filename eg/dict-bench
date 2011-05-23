@@ -1,0 +1,36 @@
+#!/usr/local/bin/cz --
+use b
+Main:
+	dict_test()
+	hash_test()
+
+dict_test:
+	bm_start()
+	new(d, dict)
+	int i = 0
+	repeat(1000000):
+		dict_put(d, "hello", "world")
+		dict_put(d, "goodnight", "sam")
+		void *x = dict_get(d, "hello")
+		void *y = dict_get(d, "goodnight")
+		dict_del1(d, "hello")
+		dict_del1(d, "goodnight")
+		i += p2i(x) + p2i(y)
+	pr(int, i)
+	bm("dict")
+
+hash_test:
+	bm_start()
+	new(d, hashtable)
+	int i = 0
+	repeat(1000000):
+		put(d, "hello", "world")
+		put(d, "goodnight", "sam")
+		void *x = get(d, "hello")
+		void *y = get(d, "goodnight")
+		del(d, "hello")
+		del(d, "goodnight")
+		i += p2i(x) + p2i(y)
+	pr(int, i)
+	bm("hashtable")
+
