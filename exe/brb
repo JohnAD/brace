@@ -7,4 +7,4 @@ sudo make install
 cd
 cd cz 2>/dev/null || cd code/cz
 make
-make devinst
+sudo make devinst
