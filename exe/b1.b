@@ -24,11 +24,7 @@ Main()
 		int fd = Temp(b, "b1-", dotb)
 		file = buffer_to_cstr(b)
 		f = Fdopen(fd, "w")
-<<<<<<< HEAD
 	Fsayf(f, "#!%s", Getenv("BX", "/usr/local/bin/cz --"))
-=======
-	Fsayf(f, "#!/usr/local/bin/cz --", lang)
->>>>>>> in
 	Fsayf(f, "use b")
 	if cplusplus
 		Fsayf(f, "using namespace std")
