@@ -14,7 +14,6 @@ cgibindir=$(libdir)/cgi-bin
 perldir=$(prefix)/lib/perl5/site_perl
 includedir=$(prefix)/include
 datadir=$(prefix)/share
-langdir=$(destdir)/lang
 srcdir=.
 
 OPTIMIZE=2
