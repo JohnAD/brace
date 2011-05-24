@@ -3,11 +3,11 @@ Section: devel
 Priority: extra
 Maintainer: Sam Watkins <sam@nipl.net>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 4), libx11-dev, libxext-dev, libio-string-perl, libpng12-dev
+Build-Depends: debhelper (>= 4), libx11-dev, libxext-dev, libio-string-perl, libpng12-dev, libsdl-mixer1.2-dev, libgl1-mesa-dev
 
 Package: brace
 Architecture: any
-Depends: libc6, ${perl:Depends}, libc6-dev | libc-dev, gcc (>= 3:3.3), g++ (>= 3:3.3), make, libio-string-perl, libx11-dev, libxext-dev, libpng12-dev
+Depends: libc6, ${perl:Depends}, libc6-dev | libc-dev, gcc (>= 3:3.3), g++ (>= 3:3.3), make, libio-string-perl, libx11-dev, libxext-dev, libpng12-dev, libsdl-mixer1.2-dev, libgl1-mesa-dev
 Recommends: libncurses5-dev, msttcorefonts, fortunes, gsfonts-x11
 Description: the brace programming language
  Brace is a dialect of C which looks like python.  It has two types of
