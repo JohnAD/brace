@@ -45,7 +45,7 @@ uninstall:
 	cd .build/lib ; $(MAKE) uninstall
 	rm -f '$(libdir)'/bk
 	for D in `ls perl`; do rm -rf '$(perldir)'/"$$D"; done  # XXX this could trash other Brace::* packages
-	rmdir '$(libdir)' '$(includedir)' '$(perldir)' '$(bindir)' '$(langdir)' '$(realprefix)' || true
+	rmdir '$(libdir)' '$(includedir)' '$(perldir)' '$(bindir)' '$(realprefix)' || true
 
 distclean: clean
 	rm .Make.conf .sh.conf
