@@ -1,4 +1,4 @@
-#!/usr/local/bin/cz --
+#!/usr/local/bin/bx
 use b
 
 # This program counts to 10000000 using five different methods:

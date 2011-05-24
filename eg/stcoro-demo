@@ -1,4 +1,4 @@
-#!/usr/local/bin/cz --
+#!/usr/local/bin/bx
 use b
 
 int factorial(int n)
